@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121214">
+<meta name="referrer" content="no-referrer">
+<title>Cortège</title>
+<meta name="description" content="La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Sans compte, sans pistage, partout en France. Par @neru.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cortège">
+<meta property="og:title" content="Cortège — la carte en direct des manifs">
+<meta property="og:description" content="Signale et évite CRS, lacrymo, nasses ; trouve street medics et legal team. Sans compte, sans pistage. Par @neru.">
+<meta property="og:url" content="https://cortege.neru.tv/">
+<meta property="og:image" content="https://cortege.neru.tv/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cortège, la carte en direct des manifs, par @neru">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cortege.neru.tv/og.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/vendor/leaflet.css">
+<link rel="stylesheet" href="/vendor/MarkerCluster.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="map" aria-label="Carte de la manifestation"></div>
+
+<header class="topbar">
+  <a class="brand" id="brandLink" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer">
+    <img class="logo-img" src="/brand/logo.png" alt="" width="38" height="38" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+    <span class="logo" aria-hidden="true" hidden></span>
+    <div class="brand-txt">
+      <div class="name">Cortège <span class="by">par <b class="handle">@neru</b></span></div>
+      <div class="event" id="eventName">—</div>
+    </div>
+  </a>
+  <div class="top-right">
+    <span class="orga-chip" id="orgaChip" hidden></span>
+    <div class="status" id="status" data-state="connecting"><span class="dot"></span><span class="txt">Connexion…</span></div>
+    <button class="share-btn" id="btnShareTop" title="Partager l’appli" aria-label="Partager l’appli (QR code)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"></path></svg>
+    </button>
+  </div>
+</header>
+
+<div class="overlays">
+  <div class="alert" id="alert" hidden role="alert"></div>
+  <div class="ann urgent" id="pauseBanner" hidden role="status"><div class="ann-text">Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable.</div></div>
+  <div id="anns" class="anns" aria-live="polite"></div>
+</div>
+
+<div class="crosshair" id="crosshair" hidden aria-hidden="true"><span></span></div>
+
+<div class="tools">
+  <button class="round install-tool" id="btnInstallTool" hidden title="Installer l’appli" aria-label="Installer l’appli">⤓</button>
+  <button class="round" id="btnSearch" title="Chercher une ville" aria-label="Chercher une ville">⌕</button>
+  <button class="round" id="btnLocate" title="Me localiser" aria-label="Me localiser">◎</button>
+  <button class="round" id="btnList" title="Liste des signalements" aria-label="Liste des signalements">☰</button>
+  <button class="round orga-tool" id="btnOrga" hidden title="Espace orga" aria-label="Espace orga">📣</button>
+  <button class="round" id="btnRights" title="Mes droits" aria-label="Mes droits">⚖</button>
+  <button class="round" id="btnInfo" title="Réflexes" aria-label="Réflexes et infos">?</button>
+</div>
+
+<footer class="bottombar">
+  <div class="filters" id="filters" role="group" aria-label="Filtres"></div>
+  <button class="report" id="btnReport">Signaler</button>
+</footer>
+
+<!-- Choix de catégorie -->
+<section class="sheet" id="sheetReport" hidden aria-labelledby="srTitle">
+  <div class="sheet-head">
+    <h2 id="srTitle">Qu’est-ce qui se passe ici ?</h2>
+    <button class="ghost" id="srClose">Annuler</button>
+  </div>
+  <p class="hint" id="srHint">Place le viseur au bon endroit sur la carte, puis choisis.</p>
+  <div id="catGrid" class="catgrid"></div>
+  <label class="note-label" for="srNote">Précision (facultatif)</label>
+  <input id="srNote" maxlength="120" placeholder="ex. : remontent le boulevard vers la gare" autocomplete="off">
+  <p class="fine">Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class="inline-link" href="/legal.html#regles">Règles</a></p>
+</section>
+
+<!-- Recherche -->
+<section class="sheet" id="sheetSearch" hidden aria-labelledby="ssTitle">
+  <div class="sheet-head">
+    <h2 id="ssTitle">Aller à une ville</h2>
+    <button class="ghost" id="ssClose">Fermer</button>
+  </div>
+  <form id="searchForm" role="search">
+    <label class="note-label" for="searchInput">Ville, quartier ou adresse</label>
+    <input id="searchInput" type="search" autocomplete="off" placeholder="ex. : Montpellier, Lyon 7e, place de la République">
+  </form>
+  <ul id="searchResults" class="results"></ul>
+</section>
+
+<!-- Liste -->
+<section class="sheet" id="sheetList" hidden aria-labelledby="slTitle">
+  <div class="sheet-head">
+    <h2 id="slTitle">Signalements dans la zone affichée</h2>
+    <button class="ghost" id="slClose">Fermer</button>
+  </div>
+  <ol id="list" class="list"></ol>
+  <p class="empty" id="listEmpty">Rien de signalé pour l’instant. Appuie sur « Signaler » pour ajouter le premier point.</p>
+</section>
+
+<!-- Réflexes -->
+<section class="sheet" id="sheetInfo" hidden aria-labelledby="siTitle">
+  <div class="sheet-head">
+    <h2 id="siTitle">Avant de partir</h2>
+    <button class="ghost" id="siClose">Fermer</button>
+  </div>
+  <div class="ig-card" id="igCard">
+    <div class="ig-head">
+      <img class="ig-logo" src="/brand/logo.png" alt="" width="56" height="56" onerror="this.hidden=true">
+      <span class="ig-txt">
+        <span class="ig-kicker">Une appli créée par</span>
+        <span class="ig-handle handle">@neru</span>
+        <span class="ig-line">Pas un accident. Un système. Une chronique chaque jour sur Instagram.</span>
+      </span>
+    </div>
+    <div class="ig-links">
+      <a class="ig-btn ig-btn-main" id="igLink" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1" fill="currentColor"></circle></svg>
+        Suivre sur Instagram</a>
+      <a class="ig-btn" id="siteLink" href="https://neru.tv" target="_blank" rel="noopener noreferrer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>
+        neru.tv</a>
+    </div>
+  </div>
+  <div class="install-box" id="installBox" hidden>
+    <button class="install" id="btnInstall">Installer l’appli sur mon téléphone</button>
+    <p class="install-help" id="installHelp" hidden></p>
+  </div>
+  <button class="secondary share-wide" id="btnShare">Faire installer l’appli à quelqu’un (QR code)</button>
+  <ul class="tips">
+    <li><b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.</li>
+    <li><b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor.</li>
+    <li><b>Un point disparaît</b> à l’expiration, ou quand deux personnes disent « Plus là ». « Toujours là » le prolonge.</li>
+    <li><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Garder la zone » pour que la carte s’affiche hors ligne.</li>
+    <li><b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.</li>
+  </ul>
+  <button class="secondary" id="btnPrefetch">Garder la zone hors ligne</button>
+  <p class="fine" id="prefetchState"></p>
+  <p class="fine"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
+</section>
+
+<!-- Partage -->
+<section class="sheet" id="sheetShare" hidden aria-labelledby="shTitle">
+  <div class="sheet-head">
+    <h2 id="shTitle">Fais scanner ce code</h2>
+    <button class="ghost" id="shClose">Fermer</button>
+  </div>
+  <div class="qr" id="qr" role="img" aria-label="QR code vers l’appli Cortège"></div>
+  <p class="qr-url" id="qrUrl"></p>
+  <div class="row2">
+    <button class="secondary" id="btnNativeShare">Partager le lien</button>
+    <button class="secondary" id="btnCopyLink">Copier le lien</button>
+  </div>
+  <p class="fine">Monte la luminosité de ton écran. Le code s’affiche même sans réseau ; la personne en face aura besoin de data pour ouvrir l’appli la première fois.</p>
+  <div class="credit">
+    <span>Cortège est un projet de <a class="handle-link" id="shareIg" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a></span>
+    <a id="shareSite" href="https://neru.tv" target="_blank" rel="noopener noreferrer">neru.tv</a>
+  </div>
+</section>
+
+<!-- Mes droits -->
+<section class="sheet" id="sheetRights" hidden aria-labelledby="rgTitle">
+  <div class="sheet-head">
+    <h2 id="rgTitle">Mes droits</h2>
+    <button class="ghost" id="rgClose">Fermer</button>
+  </div>
+  <a class="violence-btn" id="violenceLink" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">
+    <b>Signaler une violence policière</b>
+    <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>
+  </a>
+  <div class="legal-box" id="legalBox">
+    <div class="legal-title">Legal team de ta zone</div>
+    <div id="legalList"></div>
+    <p class="legal-none" id="legalNone">Aucune legal team n’a publié de numéro pour cette zone. Demande-le aux orgas de ton cortège et écris-le au stylo sur ton bras.</p>
+  </div>
+
+  <details class="right" open>
+    <summary>Sommations et dispersion</summary>
+    <ul>
+      <li>Un attroupement peut être dispersé par la force après <b>deux sommations</b> restées sans effet. Elles sont annoncées par haut-parleur ou par un signal (fusée rouge, signal sonore).</li>
+      <li>Rester volontairement dans un attroupement <b>après les sommations</b> est un délit.</li>
+      <li><b>Si tu les entends :</b> éloigne-toi par une rue dégagée, sans courir vers les forces de l’ordre.</li>
+    </ul>
+  </details>
+  <details class="right">
+    <summary>Contrôle d’identité</summary>
+    <ul>
+      <li>Tu dois justifier ton identité <b>par tout moyen</b> : carte d’identité, passeport, permis, voire un témoin. Avoir une pièce sur toi n’est pas obligatoire, mais ça évite d’être retenu·e.</li>
+      <li>Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche.</li>
+    </ul>
+  </details>
+  <details class="right">
+    <summary>Garde à vue</summary>
+    <ul>
+      <li><b>Droit de te taire.</b> Tu donnes ton identité, et tu peux ne rien dire d’autre.</li>
+      <li><b>Demande un·e avocat·e tout de suite</b>, dès le début. Si tu n’en connais pas, un·e avocat·e commis·e d’office est gratuit·e.</li>
+      <li>Droit de faire prévenir un proche et ton employeur, de voir un médecin, d’avoir un·e interprète.</li>
+      <li>Durée : 24 heures, prolongeable une fois de 24 heures pour la plupart des délits.</li>
+      <li><b>Ne signe rien</b> que tu n’as pas lu et compris. Tu peux refuser de signer un procès-verbal.</li>
+    </ul>
+  </details>
+  <details class="right">
+    <summary>Ton téléphone</summary>
+    <ul>
+      <li>Refuser de donner le code de déverrouillage peut, dans certains cas, être poursuivi (Cour de cassation, 2022).</li>
+      <li><b>Avant de partir :</b> verrouille ton téléphone avec un code plutôt qu’avec l’empreinte ou le visage, et masque le contenu des notifications sur l’écran verrouillé.</li>
+      <li>Pense aussi à sauvegarder tes photos ailleurs que sur le téléphone : il peut être saisi ou cassé.</li>
+    </ul>
+  </details>
+  <details class="right">
+    <summary>Filmer</summary>
+    <ul>
+      <li>Filmer les forces de l’ordre en intervention est <b>légal</b>.</li>
+      <li>Diffuser des éléments permettant d’identifier un agent dans le but qu’on lui porte atteinte est un délit.</li>
+      <li>Floute les visages avant de publier, ceux des manifestant·es aussi.</li>
+    </ul>
+  </details>
+  <details class="right">
+    <summary>Visage couvert</summary>
+    <ul>
+      <li>Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit. La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer.</li>
+    </ul>
+  </details>
+  <details class="right">
+    <summary>Après une interpellation</summary>
+    <ul>
+      <li>En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Demande-le.</li>
+      <li>Blessé·e : fais établir un <b>certificat médical</b> au plus vite, garde photos et témoignages, contacte ta legal team.</li>
+      <li>Victime ou témoin de violences : <a class="inline-link violence-inline" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">signale-les à la LDH</a>.</li>
+    </ul>
+  </details>
+  <p class="fine">Informations générales sur le droit français, pas un conseil juridique. En cas d’interpellation, la seule personne à qui parler de l’affaire est ton avocat·e.</p>
+  <div class="credit">
+    <span>Décryptage des luttes chaque jour : <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a></span>
+    <a href="https://neru.tv" target="_blank" rel="noopener noreferrer">neru.tv</a>
+  </div>
+</section>
+
+<!-- Espace orga -->
+<section class="sheet" id="sheetOrga" hidden aria-labelledby="orTitle">
+  <div class="sheet-head">
+    <h2 id="orTitle">Espace orga</h2>
+    <button class="ghost" id="orClose">Fermer</button>
+  </div>
+  <p class="hint">Tu publies en tant que <b id="orgaName">—</b>. L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier.</p>
+  <form id="annForm" class="orga-form">
+    <fieldset class="seg">
+      <legend>Type</legend>
+      <label><input type="radio" name="kind" value="info" checked> Annonce</label>
+      <label><input type="radio" name="kind" value="legal"> Numéro legal team</label>
+    </fieldset>
+    <div id="annInfoFields">
+      <label class="note-label" for="annText">Message</label>
+      <textarea id="annText" maxlength="220" rows="3" placeholder="ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail"></textarea>
+      <fieldset class="seg">
+        <legend>Importance</legend>
+        <label><input type="radio" name="level" value="info" checked> Info</label>
+        <label><input type="radio" name="level" value="urgent"> Urgent (vibre)</label>
+      </fieldset>
+    </div>
+    <div id="annLegalFields" hidden>
+      <label class="note-label" for="annPhone">Numéro de téléphone</label>
+      <input id="annPhone" type="tel" inputmode="tel" maxlength="20" placeholder="06 00 00 00 00">
+      <label class="note-label" for="annLegalText">Précision (facultatif)</label>
+      <input id="annLegalText" maxlength="120" placeholder="ex. : permanence jusqu’à 22 h">
+    </div>
+    <div class="row2">
+      <label class="note-label" for="annRadius">Zone
+        <select id="annRadius"><option value="1">1 km</option><option value="3" selected>3 km</option><option value="10">10 km</option><option value="30">30 km</option></select>
+      </label>
+      <label class="note-label" for="annMinutes">Durée
+        <select id="annMinutes"><option value="30">30 min</option><option value="60">1 h</option><option value="180" selected>3 h</option><option value="360">6 h</option><option value="720">12 h</option></select>
+      </label>
+    </div>
+    <button class="install" type="submit">Publier</button>
+  </form>
+  <h3 class="group-title">Annonces actives dans la zone</h3>
+  <ol id="annList" class="list"></ol>
+  <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
+  <button class="ghost danger-link" id="btnOrgaLogout">Quitter le mode orga sur ce téléphone</button>
+</section>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="/vendor/leaflet.js"></script>
+<script src="/vendor/leaflet.markercluster.js"></script>
+<script src="/vendor/qrcode.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

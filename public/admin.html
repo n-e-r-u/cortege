@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Cortège — admin</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<style>
+/* Page de lecture : en-tête, chiffres clés, puis détail par catégorie, par heure et par ville. */
+:root {
+  --bg: #121214; --surface: #1c1c20; --surface-2: #26262c; --line: #34343c;
+  --fg: #f2f1f4; --muted: #a3a1ad; --accent: #ec9fa4; --accent-fg: #17121f;
+  --brand-grad: linear-gradient(135deg, #ec9fa4, #a191d8 60%, #7d86dc);
+  --fdo: #e5484d; --danger: #f5a524; --soutien: #30a46c; --info: #8e8cd8;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font); }
+main { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; display: flex; flex-direction: column; gap: 22px; }
+header { display: flex; align-items: center; gap: 12px; }
+header img { width: 44px; height: 44px; object-fit: contain; }
+h1 { margin: 0; font-size: 22px; line-height: 1.2; }
+h1 small { display: block; font-size: 13px; color: var(--muted); font-weight: 500; }
+h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.controls label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+input, select { height: 42px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; min-width: 0; }
+button { height: 42px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--brand-grad); color: var(--accent-fg); font: inherit; font-weight: 800; cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.msg { color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.kpi b { display: block; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi span { color: var(--muted); font-size: 13px; }
+section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar { display: grid; grid-template-columns: minmax(0, 190px) 1fr 44px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar .track { height: 12px; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 6px; background: var(--c); }
+.bar .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.bar .first { grid-column: 2 / -1; font-size: 12px; color: var(--muted); margin-top: -6px; }
+.hours { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 3px; align-items: end; height: 140px; }
+.hours div { background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
+.hours div.zero { background: var(--surface-2); }
+.hour-labels { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 3px; font-size: 10px; color: var(--muted); text-align: center; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.hour-labels span:nth-child(odd) { visibility: hidden; }
+pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font: 14px/1.5 var(--font); margin: 0 0 10px; }
+.fine { font-size: 12px; color: var(--muted); max-width: 65ch; }
+.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; color: var(--muted); padding: 0 14px; height: 44px; font-weight: 700; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.panel { display: flex; flex-direction: column; gap: 18px; }
+.org-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.org-list li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.org-list li:first-child { border-top: 0; }
+.org-list .meta { font-size: 13px; color: var(--muted); }
+.org-list button { height: 36px; font-size: 13px; }
+button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a9d; }
+.newlink { background: var(--bg); border: 1px solid var(--accent); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.newlink code { font: 14px/1.4 ui-monospace, Menlo, monospace; overflow-wrap: anywhere; color: var(--fg); }
+.newlink .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.warn { color: var(--danger); font-size: 13px; margin: 0; }
+@media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/brand/logo.png" alt="">
+    <h1>Administration <small>Cortège par @neru · accès réservé</small></h1>
+  </header>
+
+  <form class="controls" id="loginForm">
+    <label for="key">Clé admin (variable ADMIN_KEY)
+      <input id="key" type="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit">Entrer</button>
+  </form>
+  <p class="msg" id="loginMsg"></p>
+
+  <div id="app" hidden>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas">Orgas</button>
+    <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports">Urgences</button>
+    <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest">Digest</button>
+  </nav>
+
+  <section class="panel" id="panelOrgas" role="tabpanel" aria-labelledby="tabOrgas">
+    <section class="card">
+      <h2>Ajouter une orga</h2>
+      <form class="controls" id="orgaForm">
+        <label for="orgaLabel" style="flex:1;min-width:220px">Nom affiché sur ses annonces
+          <input id="orgaLabel" maxlength="60" placeholder="ex. : Legal Team Montpellier" required>
+        </label>
+        <button type="submit">Créer le lien</button>
+      </form>
+      <div class="newlink" id="newLink" hidden>
+        <div><b id="newLabel"></b> : voici son lien d’accès.</div>
+        <code id="newUrl"></code>
+        <div class="row">
+          <button type="button" id="copyLink">Copier le lien</button>
+          <button type="button" class="ghost" id="shareLink">Envoyer…</button>
+        </div>
+        <p class="warn">Ce lien ne s’affichera plus jamais : copie-le maintenant et envoie-le par une messagerie chiffrée (Signal). Perdu ? Supprime l’orga et recrée-la.</p>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Orgas actives</h2>
+      <ul class="org-list" id="orgaList"></ul>
+      <p class="fine">Supprimer une orga coupe son accès immédiatement. Ses annonces déjà publiées restent jusqu’à expiration ; tu peux les retirer depuis l’appli avec ton lien admin. Les orgas notées « variable » viennent de ORGA_KEYS et se gèrent dans cPanel.</p>
+    </section>
+  </section>
+
+  <section class="panel" id="panelReports" role="tabpanel" aria-labelledby="tabReports" hidden>
+    <section class="card">
+      <h2>Afflux de faux signalements ?</h2>
+      <p class="fine" id="pauseState">—</p>
+      <div class="controls">
+        <button type="button" data-pause="15">Pause 15 min</button>
+        <button type="button" data-pause="60">Pause 1 h</button>
+        <button type="button" class="ghost" data-pause="0">Reprendre</button>
+      </div>
+      <p class="fine">Pendant la pause, la carte reste visible mais personne ne peut signaler. Les orgas peuvent toujours publier des annonces.</p>
+    </section>
+    <section class="card">
+      <h2>Tout effacer</h2>
+      <div class="controls">
+        <button type="button" class="danger" id="purgeReports">Effacer tous les signalements</button>
+        <button type="button" class="danger" id="purgeAll">Effacer signalements + annonces</button>
+      </div>
+      <p class="fine">Partout en France, immédiatement. Les points effacés sont exclus du digest.</p>
+    </section>
+    <section class="card">
+      <h2>Signalements actifs <span id="repCount"></span></h2>
+      <div class="controls"><label for="repFilter" style="flex:1">Filtrer (type ou texte)<input id="repFilter" placeholder="ex. : nasse, gare…"></label><button type="button" class="ghost" id="repReload">Actualiser</button></div>
+      <ul class="org-list" id="repList"></ul>
+    </section>
+  </section>
+
+  <section class="panel" id="panelDigest" role="tabpanel" aria-labelledby="tabDigest" hidden>
+  <form class="controls" id="form">
+    <label for="date">Jour
+      <input id="date" type="date" required>
+    </label>
+    <button type="submit">Afficher</button>
+  </form>
+  <p class="msg" id="msg">Choisis un jour.</p>
+
+  <div id="out" hidden>
+    <div class="kpis" id="kpis"></div>
+    <section class="card"><h2>Par type</h2><div class="bars" id="cats"></div></section>
+    <section class="card"><h2>Par heure (heure de Paris)</h2><div class="hours" id="hours"></div><div class="hour-labels" id="hourLabels"></div></section>
+    <section class="card"><h2>Par ville</h2><div class="bars" id="zones"></div></section>
+    <section class="card">
+      <h2>Résumé à copier</h2>
+      <pre id="summary"></pre>
+      <button type="button" class="ghost" id="copy">Copier le résumé</button>
+    </section>
+    <p class="fine">Données anonymes : catégorie, heure à la minute et position arrondie à environ 100 m. Les précisions écrites et les empreintes de connexion ne sont jamais archivées. Les signalements retirés par « Plus là » sont exclus des totaux. Ce sont des signalements de participant·es, pas des faits vérifiés : à recouper avant publication.</p>
+  </div>
+  </section>
+  </div>
+</main>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const COLORS = { fdo: 'var(--fdo)', danger: 'var(--danger)', soutien: 'var(--soutien)', info: 'var(--info)' };
+const hhmm = t => new Date(t).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
+const longDate = d => new Date(d + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+let KEY = '';
+try { KEY = localStorage.getItem('cortege-admin') || ''; $('#key').value = KEY; } catch {}
+const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Admin-Key': KEY, ...(opts.headers || {}) } })
+  .then(async r => { const b = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(b.error || 'Erreur.'), { status: r.status }); return b; });
+
+async function login() {
+  KEY = $('#key').value;
+  try { await api('/api/admin/orgas').then(renderOrgas); }
+  catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
+  try { localStorage.setItem('cortege-admin', KEY); } catch {}
+  $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false;
+}
+$('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); });
+if (KEY) login();
+
+function showTab(which) {
+  for (const t of ['Orgas', 'Reports', 'Digest']) {
+    $('#tab' + t).setAttribute('aria-selected', String(t === which));
+    $('#panel' + t).hidden = t !== which;
+  }
+}
+$('#tabOrgas').onclick = () => showTab('Orgas');
+$('#tabDigest').onclick = () => showTab('Digest');
+$('#tabReports').onclick = () => { showTab('Reports'); loadReports(); };
+
+// ---- Urgences ----
+let CATS = {};
+fetch('/api/config').then(r => r.json()).then(c => { CATS = Object.fromEntries(c.categories.map(x => [x.id, x])); });
+let repData = { reports: [], paused: 0 };
+function confirmBtn(btn, label, action) {
+  btn.onclick = async () => {
+    if (!btn.dataset.armed) { btn.dataset.armed = '1'; btn.dataset.label = btn.textContent; btn.textContent = label; setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = btn.dataset.label; } }, 4000); return; }
+    delete btn.dataset.armed; btn.textContent = btn.dataset.label;
+    try { await action(); } catch (e) { alertMsg(e.message); }
+  };
+}
+async function loadReports() {
+  try { repData = await api('/api/admin/reports'); } catch (e) { alertMsg(e.message); return; }
+  const p = repData.paused;
+  $('#pauseState').textContent = p ? 'En pause jusqu’à ' + new Date(p).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '.' : 'Signalements ouverts.';
+  renderReports();
+}
+function renderReports() {
+  const q = $('#repFilter').value.trim().toLowerCase();
+  const list = repData.reports.filter(r => !q || (CATS[r.cat]?.label || r.cat).toLowerCase().includes(q) || (r.note || '').toLowerCase().includes(q));
+  $('#repCount').textContent = '(' + repData.reports.length + ')';
+  const ul = $('#repList'); ul.textContent = '';
+  if (!list.length) { const li = document.createElement('li'); li.className = 'meta'; li.textContent = 'Aucun signalement actif.'; ul.append(li); return; }
+  for (const r of list.slice(0, 300)) {
+    const li = document.createElement('li');
+    const info = document.createElement('div');
+    const t = document.createElement('b'); t.textContent = (CATS[r.cat]?.glyph || '') + ' ' + (CATS[r.cat]?.label || r.cat) + (r.ver ? ' ✓' : '');
+    const m = document.createElement('div'); m.className = 'meta';
+    const a = document.createElement('a'); a.href = `https://www.openstreetmap.org/?mlat=${r.lat}&mlon=${r.lng}#map=17/${r.lat}/${r.lng}`; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'voir';
+    a.style.color = 'var(--accent)';
+    m.append(`il y a ${Math.round((Date.now() - r.t) / 60000)} min · +${r.up} / −${r.down}${r.note ? ' · « ' + r.note + ' »' : ''} · `, a);
+    info.append(t, m);
+    const del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Supprimer';
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/reports/' + r.id, { method: 'DELETE' }); loadReports(); });
+    li.append(info, del); ul.append(li);
+  }
+}
+$('#repFilter').addEventListener('input', renderReports);
+$('#repReload').onclick = loadReports;
+document.querySelectorAll('[data-pause]').forEach(b => b.onclick = async () => {
+  try { await api('/api/admin/pause', { method: 'POST', body: JSON.stringify({ minutes: +b.dataset.pause }) }); loadReports(); } catch (e) { alertMsg(e.message); }
+});
+confirmBtn($('#purgeReports'), 'Confirmer : tout effacer', async () => { const r = await api('/api/admin/purge', { method: 'POST', body: '{}' }); alertMsg(r.removed + ' signalement(s) effacé(s).'); loadReports(); });
+confirmBtn($('#purgeAll'), 'Confirmer : tout effacer + annonces', async () => { const r = await api('/api/admin/purge', { method: 'POST', body: JSON.stringify({ announcements: true }) }); alertMsg(r.removed + ' signalement(s) et toutes les annonces effacés.'); loadReports(); });
+if (location.hash === '#digest') showTab('Digest');
+
+function renderOrgas({ orgas }) {
+  const ul = $('#orgaList'); ul.textContent = '';
+  if (!orgas.length) { const li = document.createElement('li'); li.className = 'meta'; li.textContent = 'Aucune orga pour l’instant.'; ul.append(li); return; }
+  for (const o of orgas) {
+    const li = document.createElement('li');
+    const info = document.createElement('div');
+    const name = document.createElement('b'); name.textContent = o.label;
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.textContent = o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    info.append(name, meta);
+    li.append(info);
+    if (o.id) {
+      const del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Supprimer';
+      del.onclick = async () => {
+        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Confirmer'; return; }
+        try { await api('/api/admin/orgas/' + o.id, { method: 'DELETE' }); api('/api/admin/orgas').then(renderOrgas); }
+        catch (e) { alertMsg(e.message); }
+      };
+      li.append(del);
+    }
+    ul.append(li);
+  }
+}
+function alertMsg(m) { $('#loginMsg').textContent = m; }
+$('#orgaForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    const o = await api('/api/admin/orgas', { method: 'POST', body: JSON.stringify({ label: $('#orgaLabel').value }) });
+    const url = location.origin + '/?orga=' + o.key;
+    $('#newLabel').textContent = o.label; $('#newUrl').textContent = url; $('#newLink').hidden = false;
+    $('#shareLink').hidden = !navigator.share;
+    $('#orgaLabel').value = '';
+    api('/api/admin/orgas').then(renderOrgas);
+  } catch (err) { alertMsg(err.message); }
+});
+$('#copyLink').onclick = async () => {
+  try { await navigator.clipboard.writeText($('#newUrl').textContent); $('#copyLink').textContent = 'Copié'; }
+  catch { const r = document.createRange(); r.selectNodeContents($('#newUrl')); getSelection().removeAllRanges(); getSelection().addRange(r); $('#copyLink').textContent = 'Sélectionné'; }
+  setTimeout(() => ($('#copyLink').textContent = 'Copier le lien'), 2000);
+};
+$('#shareLink').onclick = () => navigator.share?.({ title: 'Accès orga Cortège', text: 'Ton lien d’accès orga Cortège (ne le partage pas) :', url: $('#newUrl').textContent }).catch(() => {});
+$('#date').value = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+
+function bar(label, n, max, color, extra) {
+  const row = document.createElement('div'); row.className = 'bar';
+  const l = document.createElement('span'); l.className = 'lbl'; l.textContent = label;
+  const tr = document.createElement('div'); tr.className = 'track';
+  const f = document.createElement('div'); f.className = 'fill'; f.style.width = (max ? (n / max) * 100 : 0) + '%'; f.style.setProperty('--c', color);
+  tr.append(f);
+  const c = document.createElement('span'); c.className = 'n'; c.textContent = n;
+  row.append(l, tr, c);
+  if (extra) { const e = document.createElement('span'); e.className = 'first'; e.textContent = extra; row.append(e); }
+  return row;
+}
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const key = KEY, date = $('#date').value;
+  $('#msg').textContent = 'Chargement… (le nom des villes peut prendre quelques secondes)';
+  let d;
+  try {
+    const res = await fetch('/api/digest?date=' + date, { headers: { 'X-Admin-Key': key } });
+    d = await res.json();
+    if (!res.ok) { $('#msg').textContent = d.error || 'Erreur.'; $('#out').hidden = true; return; }
+  } catch { $('#msg').textContent = 'Pas de réseau.'; return; }
+
+  const cat = Object.fromEntries(d.categories.map(c => [c.id, c]));
+  $('#msg').textContent = d.total ? longDate(d.date) : `Aucun signalement le ${longDate(d.date)}.` + (d.days.length ? ` Jours archivés : ${d.days.slice(0, 8).join(', ')}.` : '');
+  $('#out').hidden = !d.total;
+  if (!d.total) return;
+
+  const fdo = Object.entries(d.byCat).filter(([c]) => cat[c].group === 'fdo').reduce((a, [, n]) => a + n, 0);
+  const gaz = (d.byCat.lacrymo || 0);
+  $('#kpis').innerHTML = '';
+  for (const [n, label] of [[d.total, 'signalements'], [d.zones.length, d.zones.length > 1 ? 'villes' : 'ville'], [gaz, 'lacrymo'], [fdo, 'forces de l’ordre'], [d.confirmed, 'confirmés par d’autres']]) {
+    const k = document.createElement('div'); k.className = 'kpi';
+    const b = document.createElement('b'); b.textContent = n; const s = document.createElement('span'); s.textContent = label;
+    k.append(b, s); $('#kpis').append(k);
+  }
+
+  const cats = Object.entries(d.byCat).sort((a, b) => b[1] - a[1]);
+  const maxC = cats[0][1];
+  $('#cats').innerHTML = '';
+  for (const [c, n] of cats) $('#cats').append(bar(`${cat[c].glyph} ${cat[c].label}`, n, maxC, COLORS[cat[c].group], `Premier signalement à ${hhmm(d.first[c])}`));
+
+  const maxH = Math.max(...d.byHour);
+  $('#hours').innerHTML = ''; $('#hourLabels').innerHTML = '';
+  d.byHour.forEach((n, h) => {
+    const col = document.createElement('div'); col.style.height = (maxH ? (n / maxH) * 100 : 0) + '%'; if (!n) col.className = 'zero';
+    col.title = `${h} h : ${n}`; $('#hours').append(col);
+    const lb = document.createElement('span'); lb.textContent = h; $('#hourLabels').append(lb);
+  });
+
+  const maxZ = d.zones[0] ? d.zones[0].total : 0;
+  $('#zones').innerHTML = '';
+  for (const z of d.zones) {
+    const top = Object.entries(z.byCat).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c, n]) => `${n} ${cat[c].label.toLowerCase()}`).join(', ');
+    $('#zones').append(bar(z.name, z.total, maxZ, 'var(--accent)', top));
+  }
+
+  const peak = d.byHour.indexOf(maxH);
+  const lines = [
+    `Mobilisation du ${longDate(d.date)} — ce que les manifestant·es ont signalé sur Cortège :`,
+    `• ${d.total} signalements dans ${d.zones.length} ${d.zones.length > 1 ? 'villes' : 'ville'}`,
+    ...cats.slice(0, 5).map(([c, n]) => `• ${n} × ${cat[c].label.toLowerCase()} (premier à ${hhmm(d.first[c])})`),
+    `• Pic d’activité entre ${peak} h et ${peak + 1} h`,
+    ...(d.zones.length ? [`• Ville la plus touchée : ${d.zones[0].name} (${d.zones[0].total})`] : []),
+    `Signalements de participant·es, recoupés par ${d.confirmed} confirmations${d.verified ? ` et ${d.verified} vérifications d’orgas` : ''}.`,
+    `Source : Cortège (cortege.neru.tv), par @neru — neru.tv`,
+  ];
+  $('#summary').textContent = lines.join('\n');
+});
+
+$('#copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('#summary').textContent); $('#copy').textContent = 'Copié'; }
+  catch { const r = document.createRange(); r.selectNodeContents($('#summary')); getSelection().removeAllRanges(); getSelection().addRange(r); $('#copy').textContent = 'Sélectionné, fais Copier'; }
+  setTimeout(() => ($('#copy').textContent = 'Copier le résumé'), 2000);
+});
+</script>
+</body>
+</html>

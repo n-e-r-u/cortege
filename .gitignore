@@ -1,0 +1,8 @@
+# Données générées sur le serveur (jamais dans le dépôt)
+live/
+tiles/
+map/
+node_modules/
+*.log
+*.tmp
+.DS_Store
