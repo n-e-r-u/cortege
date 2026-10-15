@@ -85,7 +85,11 @@ const GROUPS = [
 ];
 
 const MIN = 60_000;
-const MAX_REPORTS = Number(process.env.MAX_REPORTS) || 20000; // signalements actifs en même temps, toute la France
+// Plafonds de signalements actifs. Ils sont pensés par zone (~5 km) : une attaque ne peut saturer
+// qu'un secteur, jamais toute la France, et les vrais signalements y entrent quand même.
+const MAX_REPORTS = Number(process.env.MAX_REPORTS) || 200000; // garde-fou technique, toute la France
+const MAX_PER_ZONE = Number(process.env.MAX_PER_ZONE) || 300;  // par zone ; au-delà, les plus anciens non confirmés sortent
+const MAX_PER_NET_ZONE = 25;                                    // par réseau et par zone
 const NOTE_MAX = 120;
 const ANN_MAX = 220;
 // Limites sur 5 min. En 4G/5G, des centaines d'abonnés partagent la même IP : la limite fine est donc
@@ -236,16 +240,19 @@ const setMeta = (k, v) => q('INSERT INTO meta(k,v) VALUES(?,?) ON CONFLICT(k) DO
 const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p > now ? p : 0; };
 
 // Signalements
+// Empreinte du réseau de l'auteur (même HMAC tournant que l'anti-spam), effacée avec le signalement.
+try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
+db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down,
   ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]') });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
   const cell = cellId(r.lat, r.lng);
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET exp=excluded.exp, up=excluded.up, down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)));
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null);
   dirtyCell(cell);
 }
 function dropReport(id, dismissed) {
@@ -1004,9 +1011,18 @@ const server = http.createServer(async (req, res) => {
         const now = Date.now();
         if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
         if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }];
+        const cell = cellId(round(lat), round(lng));
+        if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND ip=? AND exp>?').get(cell, ipH, now).n >= MAX_PER_NET_ZONE)
+          return [429, { error: 'Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent.' }];
+        if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND exp>?').get(cell, now).n >= MAX_PER_ZONE) {
+          // Zone pleine : on fait de la place en retirant le plus ancien point que personne n'a confirmé ni vérifié
+          const old = q('SELECT id FROM reports WHERE cell=? AND exp>? AND ver IS NULL AND up=0 ORDER BY t LIMIT 1').get(cell, now);
+          if (!old) return [503, { error: 'Zone saturée, réessaie dans quelques minutes.' }];
+          dropReport(old.id, true);
+        }
         if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
         const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: round(lat), lng: round(lng), note,
-          t: now, exp: now + cat.ttl * MIN, up: 0, down: 0, voters: [dev], downIps: [] };
+          t: now, exp: now + cat.ttl * MIN, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
         saveReport(r);
         return [201, publicView(r)];
       });
