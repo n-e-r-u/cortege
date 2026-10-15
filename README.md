@@ -7,7 +7,7 @@ Carte collaborative en temps réel pour les manifs : on signale CRS, police, BAC
 ## Lancer
 
 ```bash
-node server.js            # Node 18+ ; ouvre http://localhost:8080
+node server.js            # Node 22.13+ (24 conseillé) ; ouvre http://localhost:8080
 ```
 
 Variables d'environnement :
@@ -27,7 +27,9 @@ Variables d'environnement :
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel |
 | `BRAND_HANDLE` | `neru` | Pseudo affiché (« Cortège par @neru ») |
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/neru/` | Lien du logo et de la carte « Suivre » |
-| `DATA_DIR` | `~/.cortege-data` | Où est gardé l'état partagé (hors du dossier web) |
+| `DATA_DIR` | `~/.cortege-data` | Où est gardée la base `cortege.db` (hors du dossier web) |
+| `MAX_REPORTS` | `20000` | Signalements actifs en même temps, toute la France |
+| `FLUSH_MS` | `1000` | Délai max avant publication d'un signalement dans `live/` |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
@@ -41,13 +43,15 @@ Dépose ton logo en `public/brand/logo.png` (carré, 512×512 conseillé). Il s'
 
 ### Hébergement cPanel (o2switch et similaires)
 
-1. cPanel › **Setup Node.js App** › Create Application : Node 20 ou plus, mode Production, racine `cortege`, URL `cortege.neru.tv`, fichier de démarrage `server.js`.
+1. cPanel › **Setup Node.js App** › Create Application : **Node 24** (22.13 minimum), mode Production, racine `cortege`, URL `cortege.neru.tv`, fichier de démarrage `server.js`.
 2. Envoie le contenu du zip dans `~/cortege` (Gestionnaire de fichiers › Upload › Extraire).
 3. Variables d'environnement dans le même écran (voir tableau), puis **Restart**.
 4. Domaines › active **Forcer la redirection HTTPS** pour le sous-domaine.
 5. Vérifie `https://cortege.neru.tv/api/health` : `storageWritable` et `ipHeaderSeen` doivent valoir `true`.
 
 Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jour des fichiers : bouton **Restart**.
+
+Mise à jour depuis une version d'avant SQLite : l'ancien `state.json` est repris automatiquement au premier démarrage (renommé ensuite `state.json.repris-…`), et `live/` est régénéré.
 
 ### VPS avec Docker
 
@@ -57,10 +61,16 @@ docker build -t cortege . && docker run -d -p 127.0.0.1:8080:8080 -v cortege-dat
 
 ## Charge serveur
 
-- **Lectures** : Node écrit `live/index.json`, `live/c/<case>.json`, `live/all.json`, `live/ann.json` après chaque écriture. Sur cPanel, le dossier de l'appli est la racine web : Apache sert ces fichiers directement, Node n'est jamais réveillé pour lire. Les téléphones lisent l'index toutes les 5 s (réponse 304 vide si rien n'a changé), puis seulement les cases modifiées autour d'eux. En vue nationale : `all.json` toutes les 15 s.
+- **Base de données** : SQLite intégré à Node (`node:sqlite`, mode WAL), fichier `DATA_DIR/cortege.db`. Plusieurs processus Passenger peuvent écrire en même temps sans se marcher dessus. Mesuré : ~1 500 signalements/s sur 2 processus (médiane 9 ms), contre ~50/s avec l'ancien fichier JSON.
+- **Lectures** : Node publie des fichiers statiques que Apache sert sans réveiller Node :
+  - `live/g.json` : empreintes des annonces, de l'agenda et de la pause (quelques octets) ;
+  - `live/r/<région>.json` : empreinte de chaque case dans une région de 1° ;
+  - `live/c/<case>.json` : signalements d'une case de ~5 km ;
+  - `live/all.json` (vue nationale, réécrit au plus toutes les 10 s), `live/ann.json`, `live/events.json` ;
+  - `live/index.json` : ancien format, gardé pour les téléphones pas encore mis à jour.
+  Les écritures sont regroupées : au plus une publication par seconde, seulement pour les cases modifiées.
+- **Rythme des téléphones** : 5 s s'il se passe quelque chose autour (signalement de moins de 15 min ou changement récent), 12 s sinon, 20 s en vue nationale, ×3 en mode économie. Décalage aléatoire de ±15 % pour éviter les pics synchronisés ; espacement jusqu'à 60 s si le réseau sature. Presque toutes les réponses sont des 304 vides.
 - **Tuiles** : chaque tuile téléchargée une fois chez OpenStreetMap est écrite dans `tiles/` ; Apache la sert ensuite. Purge automatique au-delà de 30 jours (`TILE_DAYS`).
-- **Écritures** (signalements, votes, annonces) : seules requêtes traitées par Node.
-- Réseau saturé : les téléphones espacent automatiquement leurs requêtes (jusqu'à 30 s).
 
 ## Anti-abus
 
@@ -103,7 +113,7 @@ Onglet Digest de la page admin : total du jour, par type (avec l'heure du premie
 
 ## Ce que le serveur sait et ne sait pas
 
-- Aucun compte, aucun cookie. Les signalements actifs sont gardés dans un petit fichier (`~/.cortege-data/state.json`, hors du dossier web) et supprimés à expiration.
+- Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base SQLite (`~/.cortege-data/cortege.db`, hors du dossier web) et supprimés à expiration.
 - La position de l'utilisateur ne quitte jamais le téléphone. Seuls les signalements sont envoyés, arrondis à ~11 m.
 - L'anti-spam utilise une empreinte de l'IP (HMAC avec une clé secrète, renouvelée toutes les 6 h), effacée avec le signalement. Sur un hébergement mutualisé, l'hébergeur garde ses propres journaux d'accès : l'appli ne peut rien y faire.
 - Les tuiles passent par le serveur : les IP des manifestant·es ne partent pas chez le fournisseur de carte.
@@ -111,7 +121,7 @@ Onglet Digest de la page admin : total du jour, par type (avec l'heure du premie
 ## Limites à connaître
 
 - **Faux signalements** : n'importe qui peut poster, y compris pour semer la confusion. Les votes limitent la casse, pas plus. Pour une grosse manif, prévoir des modérateurs ou un mode « signalements vérifiés par la legal team ».
-- **Charge** : chaque téléphone interroge le serveur toutes les 5 s (réponse vide si rien n'a changé). Ça tient quelques centaines de personnes sur un mutualisé ; au-delà, passer sur un VPS.
+- **Charge** : les lectures sont des fichiers statiques servis par Apache, les écritures passent par SQLite. Sur un mutualisé, la limite devient le nombre de connexions simultanées que l'hébergeur accepte : au-delà de quelques milliers de téléphones ouverts en même temps, passer sur un VPS.
 - **Tuiles OSM** : le cache disque limite fortement les appels à OpenStreetMap. Si le trafic explose, passer à un fournisseur de tuiles (Stadia, MapTiler). Ne pas extraire de carte complète sur un hébergement mutualisé : l'extraction (≈ 10 Go) sature les ressources du compte.
 - **Réseau saturé** : sans data, plus de temps réel. Pour les échanges entre personnes sans réseau, Briar (Bluetooth/Wi‑Fi) reste l'outil adapté.
 

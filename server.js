@@ -81,12 +81,12 @@ const GROUPS = [
 ];
 
 const MIN = 60_000;
-const MAX_REPORTS = 2000;
+const MAX_REPORTS = Number(process.env.MAX_REPORTS) || 20000; // signalements actifs en même temps, toute la France
 const NOTE_MAX = 120;
 const ANN_MAX = 220;
 // Limites sur 5 min. En 4G/5G, des centaines d'abonnés partagent la même IP : la limite fine est donc
 // par téléphone (identifiant anonyme tiré au hasard sur l'appareil), avec un plafond large par IP.
-const RATE = { windowMs: 5 * MIN, maxReports: 8, maxVotes: 40, ipReports: 60, ipVotes: 400 };
+const RATE = { windowMs: 5 * MIN, maxReports: 8, maxVotes: 40, ipReports: 120, ipVotes: 800 }; // par IP : large, car des milliers de téléphones partagent parfois une IP d’opérateur (CGNAT)
 
 // ---- Stockage partagé entre processus ----
 fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
@@ -100,9 +100,26 @@ const SECRET = process.env.SECRET || (() => {
   const s = crypto.randomBytes(32).toString('hex');
   try { fs.writeFileSync(f, s, { mode: 0o600, flag: 'wx' }); return s; } catch { return fs.readFileSync(f, 'utf8'); }
 })();
+// IP du téléphone, seulement pour l'anti-spam (jamais stockée en clair).
+// - Derrière un CDN : en-tête CF-Connecting-IP (sinon tout le monde aurait l'IP du CDN
+//   et l'anti-spam bloquerait des foules entières).
+// - Sinon : dernière adresse publique de X-Forwarded-For, celle ajoutée par le proxy de l'hébergeur ;
+//   les premières peuvent être inventées par le client pour contourner les limites.
+const PRIVATE_IP = /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|f[cd][0-9a-f]{2}:|fe80:|::ffff:(10\.|127\.|192\.168\.))/i;
+function clientIp(req) {
+  if (TRUST_PROXY) {
+    const cf = String(req.headers['cf-connecting-ip'] || '').trim();
+    if (cf) return cf;
+    const hops = String(req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
+    const pub = hops.filter(h => !PRIVATE_IP.test(h));
+    if (pub.length) return pub[pub.length - 1];
+    if (hops.length) return hops[hops.length - 1];
+    if (req.headers['x-real-ip']) return String(req.headers['x-real-ip']).trim();
+  }
+  return req.socket.remoteAddress || '';
+}
 function clientHash(req) {
-  const fwd = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || '';
-  const ip = (TRUST_PROXY && String(fwd).split(',')[0].trim()) || req.socket.remoteAddress || '';
+  const ip = clientIp(req);
   const bucket = Math.floor(Date.now() / (6 * 60 * MIN));
   return crypto.createHmac('sha256', SECRET).update(bucket + '|' + ip).digest('base64url').slice(0, 16);
 }
@@ -157,53 +174,114 @@ function withLock(fn, lockFile = LOCK_FILE) {
   try { return fn(); } finally { fs.closeSync(fd); try { fs.unlinkSync(lockFile); } catch {} }
 }
 
-let cache = { mtime: -1, state: null };
-function readState() {
-  let st;
-  try { st = fs.statSync(STATE_FILE); } catch { return { v: 0, reports: {}, rate: {}, ann: {}, events: {} }; }
-  if (st.mtimeMs !== cache.mtime || !cache.state) {
-    try { cache = { mtime: st.mtimeMs, state: JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) }; }
-    catch { return cache.state || { v: 0, reports: {}, rate: {} }; }
-  }
-  return cache.state;
+// ---- Base de données : SQLite intégré à Node (22.13 ou plus), en mode WAL ----
+// Chaque action n'écrit que sa propre ligne, et plusieurs processus Passenger écrivent sans se bloquer.
+{
+  const emit = process.emitWarning;
+  process.emitWarning = function (w, ...rest) { if (/sqlite/i.test(String((w && w.message) || w))) return; return emit.call(process, w, ...rest); };
 }
-function mutate(fn) {
-  return withLock(() => {
-    cache.mtime = -1;
-    const s = JSON.parse(JSON.stringify(readState()));
-    const now = Date.now();
-    for (const [id, r] of Object.entries(s.reports)) if (r.exp <= now) { archive(r, false); delete s.reports[id]; }
-    for (const [h, r] of Object.entries(s.rate)) if (now - r.t > RATE.windowMs) delete s.rate[h];
-    s.ann = s.ann || {};
-    s.events = s.events || {};
-    if (s.paused && s.paused <= now) s.paused = 0;
-    for (const [id, a] of Object.entries(s.ann)) if (a.exp <= now) delete s.ann[id];
-    for (const [id, e] of Object.entries(s.events)) if (e.start + EVENT_KEEP <= now) delete s.events[id];
-    const out = fn(s, now);
-    s.v = (s.v || 0) + 1;
-    const tmp = STATE_FILE + '.' + process.pid + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(s), { mode: 0o600 });
-    fs.renameSync(tmp, STATE_FILE);
-    cache.mtime = -1;
-    try { publish(s, now); } catch (e) { console.error('publish', e.message); }
-    return out;
-  });
+let DatabaseSync;
+try { ({ DatabaseSync } = require('node:sqlite')); }
+catch { console.error('Cortège a besoin de Node 22.13 ou plus récent (module node:sqlite) : choisis Node 24 dans cPanel.'); process.exit(1); }
+const DB_FILE = path.join(DATA_DIR, 'cortege.db');
+const db = new DatabaseSync(DB_FILE);
+// Plusieurs processus démarrent parfois en même temps : on attend que la base soit libre (8 s max par opération).
+db.exec('PRAGMA busy_timeout=8000');
+for (let i = 0; ; i++) {
+  try { db.exec('PRAGMA journal_mode=WAL'); break; }
+  catch (e) { if (i > 50 || !/locked|busy/i.test(e.message)) throw e; sleep(100); }
 }
-function bump(s, key, kind, max, now) {
-  let r = s.rate[key];
-  if (!r || now - r.t > RATE.windowMs) r = s.rate[key] = { t: now, reports: 0, votes: 0 };
+db.exec(`PRAGMA synchronous=NORMAL;
+  CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY, cat TEXT NOT NULL, lat REAL, lng REAL, cell TEXT, note TEXT, t INTEGER, exp INTEGER,
+    up INTEGER DEFAULT 0, down INTEGER DEFAULT 0, ver TEXT, voters TEXT DEFAULT '[]', down_ips TEXT DEFAULT '[]');
+  CREATE INDEX IF NOT EXISTS reports_cell ON reports(cell);
+  CREATE INDEX IF NOT EXISTS reports_exp ON reports(exp);
+  CREATE TABLE IF NOT EXISTS ann(id TEXT PRIMARY KEY, exp INTEGER, data TEXT);
+  CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, status TEXT, src TEXT, start INTEGER, dev TEXT, data TEXT);
+  CREATE TABLE IF NOT EXISTS rate(k TEXT PRIMARY KEY, t INTEGER, reports INTEGER DEFAULT 0, votes INTEGER DEFAULT 0);
+  CREATE TABLE IF NOT EXISTS hidden(id TEXT PRIMARY KEY, until INTEGER);
+  CREATE TABLE IF NOT EXISTS cells(cell TEXT PRIMARY KEY, region TEXT, h TEXT);
+  CREATE INDEX IF NOT EXISTS cells_region ON cells(region);
+  CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);`);
+for (const f of [DB_FILE, DB_FILE + '-wal', DB_FILE + '-shm']) try { fs.chmodSync(f, 0o600); } catch {}
+const stmts = new Map();
+const q = sql => { let st = stmts.get(sql); if (!st) stmts.set(sql, (st = db.prepare(sql))); return st; };
+const isBusy = e => e && (e.message === 'busy' || /locked|busy/i.test(e.message || ''));
+function tx(fn) {
+  db.exec('BEGIN IMMEDIATE');
+  try { const out = fn(); db.exec('COMMIT'); return out; }
+  catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
+}
+const getMeta = k => q('SELECT v FROM meta WHERE k=?').get(k)?.v;
+const setMeta = (k, v) => q('INSERT INTO meta(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v').run(k, String(v));
+const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p > now ? p : 0; };
+
+// Signalements
+const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down,
+  ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]') });
+const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
+const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
+function saveReport(r) {
+  const cell = cellId(r.lat, r.lng);
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET exp=excluded.exp, up=excluded.up, down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips`)
+    .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)));
+  dirtyCell(cell);
+}
+function dropReport(id, dismissed) {
+  const r = q('DELETE FROM reports WHERE id=? RETURNING *').get(id);
+  if (r) { archive(r, dismissed); dirtyCell(r.cell); }
+  return !!r;
+}
+// Annonces
+const annActive = now => q('SELECT data FROM ann WHERE exp>? ORDER BY rowid').all(now).map(x => JSON.parse(x.data));
+const getAnn = id => { const x = q('SELECT data FROM ann WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
+function saveAnn(a) { q('INSERT OR REPLACE INTO ann(id,exp,data) VALUES(?,?,?)').run(a.id, a.exp, JSON.stringify(a)); dirty.ann = true; scheduleFlush(); }
+function dropAnn(id) { const n = q('DELETE FROM ann WHERE id=?').run(id).changes; if (n) { dirty.ann = true; scheduleFlush(); } return n > 0; }
+// Agenda
+const getEvent = id => { const x = q('SELECT data FROM events WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
+const listEvents = () => q('SELECT data FROM events ORDER BY start').all().map(x => JSON.parse(x.data));
+function saveEvent(e) {
+  q('INSERT OR REPLACE INTO events(id,status,src,start,dev,data) VALUES(?,?,?,?,?,?)').run(e.id, e.status, e.src || null, e.start, e.dev || null, JSON.stringify(e));
+  dirty.events = true; scheduleFlush();
+}
+function dropEvent(id) { const n = q('DELETE FROM events WHERE id=?').run(id).changes; if (n) { dirty.events = true; scheduleFlush(); } return n > 0; }
+
+// Limites anti-spam, sur 5 min
+function bump(key, kind, max, now) {
+  let r = q('SELECT t, reports, votes FROM rate WHERE k=?').get(key);
+  r = !r || now - r.t > RATE.windowMs ? { t: now, reports: 0, votes: 0 } : { t: r.t, reports: r.reports, votes: r.votes };
   if (r[kind + 's'] >= max) return false;
   r[kind + 's']++;
+  q('INSERT INTO rate(k,t,reports,votes) VALUES(?,?,?,?) ON CONFLICT(k) DO UPDATE SET t=excluded.t, reports=excluded.reports, votes=excluded.votes')
+    .run(key, r.t, r.reports, r.votes);
   return true;
 }
 // Vrai si ce téléphone ET cette IP sont sous leurs limites.
-function allow(s, dev, ip, kind, now) {
-  const rep = kind === 'report', cur = s.rate['ip:' + ip];
+function allow(dev, ip, kind, now) {
+  const rep = kind === 'report', cur = q('SELECT t, reports, votes FROM rate WHERE k=?').get('ip:' + ip);
   if (cur && now - cur.t <= RATE.windowMs && cur[kind + 's'] >= (rep ? RATE.ipReports : RATE.ipVotes)) return false;
-  if (!bump(s, dev, kind, rep ? RATE.maxReports : RATE.maxVotes, now)) return false;
-  bump(s, 'ip:' + ip, kind, Infinity, now);
+  if (!bump(dev, kind, rep ? RATE.maxReports : RATE.maxVotes, now)) return false;
+  bump('ip:' + ip, kind, Infinity, now);
   return true;
 }
+// Ménage toutes les 30 s : signalements, annonces et événements expirés, limites périmées, fin de pause.
+function sweep() {
+  const now = Date.now();
+  try {
+    const expired = tx(() => q('DELETE FROM reports WHERE exp<=? RETURNING *').all(now));
+    for (const r of expired) { archive(r, false); dirtyCell(r.cell); }
+    if (q('DELETE FROM ann WHERE exp<=?').run(now).changes) dirty.ann = true;
+    if (q('DELETE FROM events WHERE start<=?').run(now - EVENT_KEEP).changes) dirty.events = true;
+    q('DELETE FROM rate WHERE t<?').run(now - RATE.windowMs);
+    q('DELETE FROM hidden WHERE until<?').run(now);
+    const p = Number(getMeta('paused') || 0);
+    if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
+    if (expired.length || dirty.ann || dirty.events || dirty.global) scheduleFlush(0);
+  } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
+}
+setInterval(sweep, 30_000).unref();
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp });
@@ -236,12 +314,11 @@ function createAnnouncement(b, by, admin) {
   if (kind === 'info' && text.length < 3) return [400, { error: 'Écris le message de l’annonce.' }];
   if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Numéro de téléphone invalide.' }];
   if (!national && !validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
-  const a = mutate((s, now) => {
-    const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by, link,
-      lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
-      t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
-    s.ann[a.id] = a; return a;
-  });
+  const now = Date.now();
+  const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by, link,
+    lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
+    t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
+  saveAnn(a);
   if (a.level === 'urgent') pushBroadcast(a).catch(e => console.error('push', e.message));
   return [201, annView(a)];
 }
@@ -438,15 +515,14 @@ async function import17() {
       note: 'Annoncé sur la carte participative du 17 octobre.', start, lat: round(p.lat), lng: round(p.lng), route: null, end: false,
       by: '17octobregiletjaune.net', link: IMPORT_BASE + '/carte/', status: 'ok', t: now });
   }
-  const n = mutate(s => {
-    s.importHidden = s.importHidden || {};
-    for (const [id, t] of Object.entries(s.importHidden)) if (t + EVENT_KEEP < now) delete s.importHidden[id];
-    for (const [id, e] of Object.entries(s.events)) if (e.src === '17oct' && !out.has(id)) delete s.events[id];
+  const n = tx(() => {
+    const hidden = new Set(q('SELECT id FROM hidden').all().map(x => x.id));
+    for (const x of q("SELECT id FROM events WHERE src='17oct'").all()) if (!out.has(x.id)) dropEvent(x.id);
     let n = 0;
     for (const [id, e] of out) {
-      if (s.importHidden[id]) continue;
-      const cur = s.events[id];
-      if (!cur || cur.start !== e.start || cur.place !== e.place || cur.lat !== e.lat || cur.lng !== e.lng || cur.title !== e.title) s.events[id] = cur ? { ...e, t: cur.t } : e;
+      if (hidden.has(id)) continue;
+      const cur = getEvent(id);
+      if (!cur || cur.start !== e.start || cur.place !== e.place || cur.lat !== e.lat || cur.lng !== e.lng || cur.title !== e.title) saveEvent(cur ? { ...e, t: cur.t } : e);
       n++;
     }
     return n;
@@ -478,34 +554,38 @@ function createEvent(b, orga, dev, ipH) {
     route = b.route.slice(0, 300).map(p => [Math.round(Number(p[0]) * 1e5) / 1e5, Math.round(Number(p[1]) * 1e5) / 1e5]);
     if (!route.every(([a, o]) => validLatLng(a, o) && distKm(a, o, lat, lng) < 60)) return [400, { error: 'Parcours invalide.' }];
   }
-  return mutate((s, now) => {
+  return tx(() => {
+    const now = Date.now();
     if (!orga) {
-      if (!allow(s, dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
-      const pending = Object.values(s.events).filter(e => e.status === 'pending');
-      if (pending.filter(e => e.dev === dev).length >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
-      if (pending.length >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
+      if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
+      if (q("SELECT COUNT(*) n FROM events WHERE status='pending' AND dev=?").get(dev).n >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
+      if (q("SELECT COUNT(*) n FROM events WHERE status='pending'").get().n >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
     }
     const e = { id: crypto.randomBytes(6).toString('base64url'), type, title, place, note, start, lat: round(lat), lng: round(lng),
       route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', status: orga ? 'ok' : 'pending', t: now };
     if (!orga) e.dev = dev;
-    s.events[e.id] = e;
+    saveEvent(e);
     return [201, evView(e)];
   });
 }
 
 
 // ---- Publication en fichiers statiques ----
-// Après chaque écriture, Node réécrit de petits fichiers JSON dans live/. Sur un hébergement
-// cPanel, ce dossier est dans la racine web : Apache les sert directement aux téléphones,
-// sans réveiller Node. Node ne traite plus que les envois (signalements, votes, annonces).
-//   live/index.json     → version de chaque case active (lu toutes les 5 s, souvent en 304)
-//   live/c/<case>.json  → signalements d'une case de 0,05° (≈ 5 km), relus seulement si modifiés
-//   live/all.json       → tous les signalements (vue nationale, lue rarement)
-//   live/ann.json       → annonces orga actives
+// Node écrit de petits fichiers JSON dans live/ ; sur cPanel, Apache les sert directement aux téléphones.
+// Seuls les morceaux modifiés sont réécrits, au plus une fois par seconde (les changements sont regroupés).
+//   live/g.json         → empreintes des annonces, de l'agenda et état de pause (presque toujours en 304)
+//   live/r/<région>.json → empreinte de chaque case active d'une région de 1° (≈ 100 km)
+//   live/c/<case>.json  → signalements d'une case de 0,05° (≈ 5 km)
+//   live/all.json       → tous les signalements (vue nationale, réécrit au plus toutes les 10 s)
+//   live/ann.json, live/events.json → annonces et agenda
+//   live/index.json     → ancien format (toutes les cases), pour les téléphones qui n'ont pas rechargé l'appli
 const LIVE_DIR = process.env.LIVE_DIR || path.join(__dirname, 'live');
 const CELL = 0.05;
 const cellId = (lat, lng) => `${Math.floor(lat / CELL)}_${Math.floor(lng / CELL)}`;
+// Région = carré de 20 × 20 cases (1°) ; même calcul côté téléphone
+const regionOfCell = c => { const [i, j] = c.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
 fs.mkdirSync(path.join(LIVE_DIR, 'c'), { recursive: true });
+fs.mkdirSync(path.join(LIVE_DIR, 'r'), { recursive: true });
 // En-têtes pour Apache (ignorés ailleurs) : revalidation courte, pas de listing.
 try {
   fs.writeFileSync(path.join(LIVE_DIR, '.htaccess'), [
@@ -519,45 +599,101 @@ try {
     '</IfModule>', ''].join('\n'));
 } catch {}
 const h8 = str => crypto.createHash('sha1').update(str).digest('base64url').slice(0, 10);
+function writeAtomic(file, str) { const tmp = file + '.' + process.pid + '.tmp'; fs.writeFileSync(tmp, str); fs.renameSync(tmp, file); }
 function writeIfChanged(file, str) {
   try { if (fs.readFileSync(file, 'utf8') === str) return; } catch {}
-  const tmp = file + '.' + process.pid + '.tmp';
-  fs.writeFileSync(tmp, str); fs.renameSync(tmp, file);
+  writeAtomic(file, str);
 }
-function publish(s, now) {
-  const active = Object.values(s.reports).filter(r => r.exp > now).map(publicView);
-  const cells = {};
-  for (const r of active) (cells[cellId(r.lat, r.lng)] ||= []).push(r);
-  const index = { v: s.v, t: now, n: active.length, cells: {}, ann: null, paused: s.paused && s.paused > now ? s.paused : 0 };
-  for (const [id, list] of Object.entries(cells)) {
-    const str = JSON.stringify({ r: list });
-    index.cells[id] = h8(str);
-    writeIfChanged(path.join(LIVE_DIR, 'c', id + '.json'), str);
-  }
-  // supprime les cases devenues vides
-  for (const f of fs.readdirSync(path.join(LIVE_DIR, 'c'))) {
-    if (f.endsWith('.json') && !index.cells[f.slice(0, -5)]) try { fs.unlinkSync(path.join(LIVE_DIR, 'c', f)); } catch {}
-  }
-  const allStr = JSON.stringify({ r: active.slice(0, 2000) });
-  writeIfChanged(path.join(LIVE_DIR, 'all.json'), allStr);
-  index.all = h8(allStr);
-  const annStr = JSON.stringify({ a: Object.values(s.ann || {}).filter(a => a.exp > now).map(annView) });
-  writeIfChanged(path.join(LIVE_DIR, 'ann.json'), annStr);
-  index.ann = h8(annStr);
-  const evStr = JSON.stringify({ e: Object.values(s.events || {}).filter(e => e.status === 'ok' && e.start + EVENT_KEEP > now)
-    .sort((a, b) => a.start - b.start).slice(0, 3000).map(evView) });
-  writeIfChanged(path.join(LIVE_DIR, 'events.json'), evStr);
-  index.events = h8(evStr);
-  const tmp = path.join(LIVE_DIR, 'index.json.' + process.pid + '.tmp');
-  fs.writeFileSync(tmp, JSON.stringify(index)); fs.renameSync(tmp, path.join(LIVE_DIR, 'index.json'));
+const FLUSH_MS = Number(process.env.FLUSH_MS) || 1000;
+const ALL_EVERY = 10_000;
+const LIVE_LOCK = path.join(DATA_DIR, 'live.lock');
+const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false };
+let flushTimer = null, lastAll = 0;
+function scheduleFlush(ms = FLUSH_MS) { if (!flushTimer) flushTimer = setTimeout(flush, ms); }
+function dirtyCell(c) { dirty.cells.add(c); dirty.all = true; scheduleFlush(); }
+function writeRegion(rg) {
+  const rows = q('SELECT cell, h FROM cells WHERE region=?').all(rg);
+  const f = path.join(LIVE_DIR, 'r', rg + '.json');
+  if (!rows.length) { try { fs.unlinkSync(f); } catch {} return; }
+  writeIfChanged(f, JSON.stringify({ c: Object.fromEntries(rows.map(x => [x.cell, x.h])) }));
 }
-// Au démarrage, et chaque minute si des signalements ont expiré : republier.
-setTimeout(() => { try { mutate(() => {}); } catch {} }, 200);
-setInterval(() => {
-  const s = readState(), now = Date.now();
-  if (Object.values(s.reports).some(r => r.exp <= now) || Object.values(s.ann || {}).some(a => a.exp <= now)
-    || Object.values(s.events || {}).some(e => e.start + EVENT_KEEP <= now)) try { mutate(() => {}); } catch {}
-}, 60_000).unref();
+function writeGlobal(now) {
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, paused: pausedUntil(now) };
+  writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
+  const cells = q('SELECT cell, h FROM cells').all();
+  writeAtomic(path.join(LIVE_DIR, 'index.json'), JSON.stringify({ v: now, t: now, cells: Object.fromEntries(cells.map(x => [x.cell, x.h])),
+    ann: g.ann, events: g.events, all: getMeta('allh') || null, paused: g.paused }));
+}
+function flush() {
+  flushTimer = null;
+  const now = Date.now();
+  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doAll = dirty.all && now - lastAll >= ALL_EVERY;
+  const doGlobal = cells.length || doAnn || doEv || doAll || dirty.global;
+  dirty.cells.clear(); dirty.ann = dirty.events = dirty.global = false; if (doAll) dirty.all = false;
+  if (doGlobal) try {
+    withLock(() => {
+      const regions = new Set();
+      for (const c of cells) {
+        const rows = q('SELECT * FROM reports WHERE cell=? AND exp>? ORDER BY t').all(c, now).map(publicView);
+        const f = path.join(LIVE_DIR, 'c', c + '.json');
+        if (rows.length) {
+          const str = JSON.stringify({ r: rows });
+          writeAtomic(f, str);
+          q('INSERT OR REPLACE INTO cells(cell,region,h) VALUES(?,?,?)').run(c, regionOfCell(c), h8(str));
+        } else { try { fs.unlinkSync(f); } catch {} q('DELETE FROM cells WHERE cell=?').run(c); }
+        regions.add(regionOfCell(c));
+      }
+      for (const rg of regions) writeRegion(rg);
+      if (doAnn) { const str = JSON.stringify({ a: annActive(now).map(annView) }); writeIfChanged(path.join(LIVE_DIR, 'ann.json'), str); setMeta('annh', h8(str)); }
+      if (doEv) {
+        const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY start LIMIT 3000").all(now - EVENT_KEEP).map(x => evView(JSON.parse(x.data))) });
+        writeIfChanged(path.join(LIVE_DIR, 'events.json'), str); setMeta('evh', h8(str));
+      }
+      if (doAll) { lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); }
+      writeGlobal(now);
+    }, LIVE_LOCK);
+  } catch (e) {
+    // occupé : les changements retournent dans la file, nouvel essai dans une demi-seconde
+    cells.forEach(c => dirty.cells.add(c));
+    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
+    if (!isBusy(e)) console.error('publication', e.message);
+    return scheduleFlush(500);
+  }
+  if (dirty.all && !flushTimer) scheduleFlush(Math.max(FLUSH_MS, ALL_EVERY - (Date.now() - lastAll)));
+}
+// Tout republier (démarrage, purge) : chaque case active, chaque fichier existant, annonces, agenda.
+function rebuildAll() {
+  const now = Date.now();
+  const all = new Set(q('SELECT DISTINCT cell FROM reports WHERE exp>?').all(now).map(x => x.cell));
+  q('SELECT cell FROM cells').all().forEach(x => all.add(x.cell));
+  try { fs.readdirSync(path.join(LIVE_DIR, 'c')).forEach(f => f.endsWith('.json') && all.add(f.slice(0, -5))); } catch {}
+  all.forEach(c => dirty.cells.add(c));
+  dirty.ann = dirty.events = dirty.global = dirty.all = true; lastAll = 0;
+  clearTimeout(flushTimer); flushTimer = null;
+  flush();
+}
+// Reprise des données de l'ancienne version (fichier state.json), une seule fois.
+function migrateJson() {
+  const f = path.join(DATA_DIR, 'state.json');
+  if (!fs.existsSync(f) || getMeta('migrated')) return;
+  let s; try { s = JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return; }
+  const now = Date.now();
+  const done = tx(() => {
+    if (getMeta('migrated')) return false;
+    for (const r of Object.values(s.reports || {})) if (r.exp > now) saveReport(r);
+    for (const a of Object.values(s.ann || {})) if (a.exp > now) q('INSERT OR REPLACE INTO ann(id,exp,data) VALUES(?,?,?)').run(a.id, a.exp, JSON.stringify(a));
+    for (const e of Object.values(s.events || {})) if (e.start + EVENT_KEEP > now) saveEvent(e);
+    for (const [id, t] of Object.entries(s.importHidden || {})) q('INSERT OR REPLACE INTO hidden(id,until) VALUES(?,?)').run(id, t + EVENT_KEEP);
+    if (s.paused > now) setMeta('paused', s.paused);
+    setMeta('migrated', now);
+    return true;
+  });
+  if (done) { try { fs.renameSync(f, f + '.repris-' + now); } catch {} console.log('Données reprises de state.json'); }
+}
+setTimeout(() => {
+  try { migrateJson(); } catch (e) { console.error('reprise state.json', e.message); }
+  try { sweep(); rebuildAll(); } catch (e) { console.error('publication initiale', e.message); }
+}, 200);
 
 // ---- HTTP helpers ----
 function send(res, status, body, headers = {}) {
@@ -677,23 +813,27 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && pathname === '/api/health') {
       let writable = true; try { fs.accessSync(DATA_DIR, fs.constants.W_OK); } catch { writable = false; }
       return send(res, 200, { ok: true, node: process.version, passenger: UNDER_PASSENGER, trustProxy: TRUST_PROXY,
-        ipHeaderSeen: !!(req.headers['x-forwarded-for'] || req.headers['x-real-ip']), storageWritable: writable, pid: process.pid });
+        ipHeaderSeen: !!(req.headers['x-forwarded-for'] || req.headers['x-real-ip']),
+        cdn: !!req.headers['cf-connecting-ip'], ipIsPublic: !PRIVATE_IP.test(clientIp(req)), storageWritable: writable, pid: process.pid,
+        database: 'sqlite', activeReports: q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(Date.now()).n });
     }
 
     if (req.method === 'GET' && pathname === '/api/reports') {
       // Zones demandées : jusqu'à 2 rectangles « s,w,n,e » (zone affichée + zone autour de soi, arrondies côté téléphone).
       const boxes = url.searchParams.getAll('bbox').slice(0, 2).map(b => b.split(',').map(Number))
         .filter(b => b.length === 4 && b.every(Number.isFinite));
-      const s = readState(), now = Date.now();
-      const inBox = r => !boxes.length || boxes.some(([so, w, n, e]) => r.lat >= so && r.lat <= n && r.lng >= w && r.lng <= e);
-      const list = Object.values(s.reports).filter(r => r.exp > now && inBox(r)).slice(0, 1500).map(publicView);
+      const now = Date.now(), seen = new Map();
+      if (boxes.length) for (const [so, w, n, e] of boxes)
+        for (const r of q('SELECT * FROM reports WHERE exp>? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ? LIMIT 1500').all(now, so, n, w, e)) seen.set(r.id, r);
+      else for (const r of activeReports(now, 1500)) seen.set(r.id, r);
+      const list = [...seen.values()].slice(0, 1500).map(publicView);
       // Annonce visible si son cercle touche une des zones demandées
       const annIn = a => a.national || !boxes.length || boxes.some(([so, w, n, e]) => {
         const dLat = a.r / 111, dLng = a.r / (111 * Math.cos(a.lat * Math.PI / 180));
         return a.lat + dLat >= so && a.lat - dLat <= n && a.lng + dLng >= w && a.lng - dLng <= e;
       });
-      const anns = Object.values(s.ann || {}).filter(a => a.exp > now && annIn(a)).map(annView);
-      const etag = '"' + crypto.createHash('sha1').update(`${s.v || 0}|${list.length}|${anns.length}|${boxes.join(';')}`).digest('base64url').slice(0, 16) + '"';
+      const anns = annActive(now).filter(annIn).map(annView);
+      const etag = '"' + h8(JSON.stringify([list, anns])) + '"';
       if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag, 'Cache-Control': 'no-cache' }); return res.end(); }
       return send(res, 200, { now, reports: list, announcements: anns }, { ETag: etag, 'Cache-Control': 'no-cache' });
     }
@@ -733,10 +873,10 @@ const server = http.createServer(async (req, res) => {
       }
       // --- Urgences : liste, suppression, purge, pause ---
       if (req.method === 'GET' && pathname === '/api/admin/reports') {
-        const st = readState(), now = Date.now();
-        return send(res, 200, { paused: st.paused && st.paused > now ? st.paused : 0,
-          reports: Object.values(st.reports).filter(r => r.exp > now).sort((a, b) => b.t - a.t).map(publicView),
-          announcements: Object.values(st.ann || {}).filter(a => a.exp > now).sort((a, b) => b.t - a.t).map(annView),
+        const now = Date.now();
+        return send(res, 200, { paused: pausedUntil(now),
+          reports: activeReports(now).map(publicView),
+          announcements: annActive(now).sort((a, b) => b.t - a.t).map(annView),
           pushSubs: Object.keys(readPush()).length });
       }
       // --- Annonces de l'admin (nationales ou locales) ---
@@ -746,45 +886,48 @@ const server = http.createServer(async (req, res) => {
       }
       const delA = pathname.match(/^\/api\/admin\/announcements\/([\w-]{1,16})$/);
       if (req.method === 'DELETE' && delA) {
-        const ok = mutate(st => { if (!st.ann[delA[1]]) return false; delete st.ann[delA[1]]; return true; });
+        const ok = dropAnn(delA[1]);
         return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Annonce déjà retirée.' });
       }
       // --- Agenda : propositions à valider + événements publiés ---
       if (req.method === 'GET' && pathname === '/api/admin/events') {
-        const st = readState();
-        return send(res, 200, { events: Object.values(st.events || {}).sort((a, b) => a.start - b.start).map(evView) });
+        return send(res, 200, { events: listEvents().map(evView) });
       }
       const evAct = pathname.match(/^\/api\/admin\/events\/([\w-]{1,16})(\/approve)?$/);
       if (evAct && (req.method === 'DELETE' || (req.method === 'POST' && evAct[2]))) {
-        const ok = mutate(st => {
-          const e = st.events[evAct[1]]; if (!e) return false;
+        const ok = tx(() => {
+          const e = getEvent(evAct[1]); if (!e) return false;
           if (req.method === 'DELETE') {
             // un événement importé retiré par l'admin ne revient pas au prochain import
-            if (e.src) { st.importHidden = st.importHidden || {}; st.importHidden[e.id] = e.start; }
-            delete st.events[e.id];
-          } else { e.status = 'ok'; delete e.dev; }
+            if (e.src) q('INSERT OR REPLACE INTO hidden(id,until) VALUES(?,?)').run(e.id, e.start + EVENT_KEEP);
+            dropEvent(e.id);
+          } else { e.status = 'ok'; delete e.dev; saveEvent(e); }
           return true;
         });
         return ok ? send(res, 200, { ok: true }) : send(res, 404, { error: 'Événement introuvable.' });
       }
       const delRep = pathname.match(/^\/api\/admin\/reports\/([\w-]{1,16})$/);
       if (req.method === 'DELETE' && delRep) {
-        const ok = mutate(st => { const r = st.reports[delRep[1]]; if (!r) return false; archive(r, true); delete st.reports[r.id]; return true; });
+        const ok = tx(() => dropReport(delRep[1], true));
         return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Déjà expiré.' });
       }
       if (req.method === 'POST' && pathname === '/api/admin/purge') {
         const b = await readJson(req);
-        const n = mutate(st => {
-          const list = Object.values(st.reports); list.forEach(r => archive(r, true)); st.reports = {};
-          if (b.announcements) st.ann = {};
-          return list.length;
+        const list = tx(() => {
+          const list = q('DELETE FROM reports RETURNING *').all();
+          if (b.announcements) q('DELETE FROM ann').run();
+          return list;
         });
+        list.forEach(r => archive(r, true));
+        rebuildAll();
+        const n = list.length;
         return send(res, 200, { removed: n });
       }
       if (req.method === 'POST' && pathname === '/api/admin/pause') {
         const b = await readJson(req);
         const minutes = Math.min(Math.max(Number(b.minutes) || 0, 0), 24 * 60);
-        const until = mutate((st, now) => (st.paused = minutes ? now + minutes * MIN : 0));
+        const until = minutes ? Date.now() + minutes * MIN : 0;
+        setMeta('paused', until); dirty.global = true; scheduleFlush(0);
         return send(res, 200, { paused: until });
       }
 
@@ -804,11 +947,11 @@ const server = http.createServer(async (req, res) => {
       if (!isAdmin(req)) return send(res, 403, { error: 'Clé incorrecte.' });
       const date = String(url.searchParams.get('date') || parisDay(Date.now()));
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return send(res, 400, { error: 'Date invalide.' });
-      mutate(() => {}); // archive ce qui vient d'expirer
+      sweep(); // archive ce qui vient d'expirer
       let rows = [];
       try { rows = fs.readFileSync(path.join(ARCHIVE_DIR, date + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch {}
       // + les signalements encore actifs de ce jour
-      for (const r of Object.values(readState().reports)) if (parisDay(r.t) === date)
+      for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date)
         rows.push({ c: r.cat, t: r.t, lat: Math.round(r.lat * 1e3) / 1e3, lng: Math.round(r.lng * 1e3) / 1e3, up: r.up, d: 0, active: 1 });
       const kept = rows.filter(r => !r.d);
       const byCat = {}, first = {}, byHour = Array(24).fill(0), zones = new Map();
@@ -838,13 +981,14 @@ const server = http.createServer(async (req, res) => {
       if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return send(res, 400, { error: 'Position invalide.' });
       const note = String(b.note || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, NOTE_MAX);
       const ipH = clientHash(req), dev = deviceHash(req);
-      const result = mutate((s, now) => {
-        if (s.paused && s.paused > now) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
-        if (!allow(s, dev, ipH, 'report', now)) return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }];
-        if (Object.keys(s.reports).length >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
+      const result = tx(() => {
+        const now = Date.now();
+        if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
+        if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }];
+        if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
         const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: round(lat), lng: round(lng), note,
           t: now, exp: now + cat.ttl * MIN, up: 0, down: 0, voters: [dev], downIps: [] };
-        s.reports[r.id] = r;
+        saveReport(r);
         return [201, publicView(r)];
       });
       return send(res, ...result);
@@ -862,11 +1006,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && vote) {
       const b = await readJson(req);
       const ipH = clientHash(req), dev = deviceHash(req);
-      const result = mutate((s, now) => {
-        const r = s.reports[vote[1]];
+      const result = tx(() => {
+        const now = Date.now();
+        const r = getReport(vote[1], now);
         if (!r) return [404, { error: 'Signalement expiré.' }];
         if (r.voters.includes(dev)) return [409, { error: 'Déjà pris en compte.' }];
-        if (!allow(s, dev, ipH, 'vote', now)) return [429, { error: 'Trop de votes, patiente un peu.' }];
+        if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop de votes, patiente un peu.' }];
         r.voters.push(dev);
         if (b.v === 1) {
           r.up++;
@@ -877,8 +1022,9 @@ const server = http.createServer(async (req, res) => {
           (r.downIps ||= []).push(ipH);
           // Retrait : au moins 2 « Plus là » venant de 2 réseaux différents, plus nombreux que les « Toujours là ».
           // Un signalement vérifié par une orga ne peut pas être retiré par les votes.
-          if (!r.ver && r.down >= 2 && new Set(r.downIps).size >= 2 && r.down > r.up) { archive(r, true); delete s.reports[r.id]; return [200, { removed: true }]; }
+          if (!r.ver && r.down >= 2 && new Set(r.downIps).size >= 2 && r.down > r.up) { dropReport(r.id, true); return [200, { removed: true }]; }
         }
+        saveReport(r);
         return [200, publicView(r)];
       });
       return send(res, ...result);
@@ -900,33 +1046,34 @@ const server = http.createServer(async (req, res) => {
 
       const delEv = pathname.match(/^\/api\/events\/([\w-]{1,16})$/);
       if (req.method === 'DELETE' && delEv) {
-        const out = mutate(s => {
-          const e = s.events[delEv[1]];
+        const out = tx(() => {
+          const e = getEvent(delEv[1]);
           if (!e) return [404, { error: 'Événement déjà retiré.' }];
           if (!orga.admin && e.by !== orga.label) return [403, { error: 'Seule l’orga qui l’a publié peut le retirer.' }];
-          delete s.events[e.id]; return [200, { removed: true }];
+          if (e.src) q('INSERT OR REPLACE INTO hidden(id,until) VALUES(?,?)').run(e.id, e.start + EVENT_KEEP);
+          dropEvent(e.id); return [200, { removed: true }];
         });
         return send(res, ...out);
       }
 
       const delAnn = pathname.match(/^\/api\/announcements\/([\w-]{1,16})$/);
       if (req.method === 'DELETE' && delAnn) {
-        const out = mutate(s => {
-          const a = s.ann[delAnn[1]];
+        const out = tx(() => {
+          const a = getAnn(delAnn[1]);
           if (!a) return [404, { error: 'Annonce déjà retirée.' }];
           if (!orga.admin && a.by !== orga.label) return [403, { error: 'Seul·e l’auteur·ice peut retirer cette annonce.' }];
-          delete s.ann[a.id]; return [200, { removed: true }];
+          dropAnn(a.id); return [200, { removed: true }];
         });
         return send(res, ...out);
       }
 
       const act = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/(verify|remove)$/);
       if (req.method === 'POST' && act) {
-        const out = mutate(s => {
-          const r = s.reports[act[1]];
+        const out = tx(() => {
+          const r = getReport(act[1], Date.now());
           if (!r) return [404, { error: 'Signalement expiré.' }];
-          if (act[2] === 'verify') { r.ver = orga.label; return [200, publicView(r)]; }
-          archive(r, true); delete s.reports[r.id]; return [200, { removed: true }];
+          if (act[2] === 'verify') { r.ver = orga.label; saveReport(r); return [200, publicView(r)]; }
+          dropReport(r.id, true); return [200, { removed: true }];
         });
         return send(res, ...out);
       }
@@ -942,12 +1089,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Fichiers live/ : servis par Apache sur cPanel ; Node ne les sert que s'il est seul (VPS, local).
-    const live = pathname.match(/^\/live\/((?:c\/)?[\w-]{1,40}\.json)$/);
+    const live = pathname.match(/^\/live\/((?:[cr]\/)?[\w-]{1,40}\.json)$/);
     if (req.method === 'GET' && live) {
       const f = path.join(LIVE_DIR, live[1]);
-      if (live[1] === 'index.json' && !fs.existsSync(f)) try { mutate(() => {}); } catch {}
+      if ((live[1] === 'index.json' || live[1] === 'g.json') && !fs.existsSync(f)) try { rebuildAll(); } catch {}
       fs.readFile(f, (err, buf) => {
-        if (err) return send(res, 200, live[1].startsWith('c/') ? { r: [] } : {}, { 'Cache-Control': 'no-cache' });
+        if (err) return send(res, 200, live[1].startsWith('c/') ? { r: [] } : live[1].startsWith('r/') ? { c: {} } : {}, { 'Cache-Control': 'no-cache' });
         const etag = '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"';
         if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag, 'Cache-Control': 'no-cache' }); return res.end(); }
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', ETag: etag }); res.end(buf);
@@ -958,7 +1105,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET') return serveStatic(req, res, pathname);
     send(res, 405, 'Method not allowed');
   } catch (e) {
-    send(res, e.message === 'busy' ? 503 : 400, { error: e.message === 'busy' ? 'Serveur occupé, réessaie.' : 'Requête invalide.' });
+    const busy = isBusy(e);
+    if (!busy && !/bad json|too large/.test(e.message)) console.error('requête', req.method, pathname, e.message);
+    send(res, busy ? 503 : 400, { error: busy ? 'Serveur occupé, réessaie.' : 'Requête invalide.' });
   }
 });
 

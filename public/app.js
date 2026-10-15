@@ -185,7 +185,53 @@
     return annCache.a.filter(x => x.exp > Date.now() && (x.national ||
       map.distance(c, [x.lat, x.lng]) < x.r * 1000 + viewR || (me && map.distance(me, [x.lat, x.lng]) < x.r * 1000)));
   }
+  // Format actuel : g.json (annonces, agenda, pause) + un index par région de 1° autour de la zone affichée.
+  // Ces petits fichiers changent rarement : le téléphone reçoit presque toujours un « rien de neuf » (304).
+  let lastActivity = 0, legacy = false;
+  const regionOf = id => { const [i, j] = id.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
+  const getOpt = (url, empty) => getJ(url).catch(e => { if (e.status === 404) return empty; throw e; });
   async function syncLive() {
+    if (legacy) return syncLegacy();
+    let g;
+    try { g = await getJ('/live/g.json'); }
+    catch (e) { if (e.status === 404) { legacy = true; return syncLegacy(); } throw e; }
+    const need = neededCells(), now = Date.now();
+    let list, isFresh;
+    if (need === null) {
+      const all = (await getJ('/live/all.json')).r || [];
+      const sig = all.length + ':' + all.reduce((m, r) => Math.max(m, r.t), 0);
+      if (allCache.h !== sig) { if (allCache.h) lastActivity = now; allCache = { h: sig, r: all }; }
+      const wasAll = mode === 'all';
+      list = allCache.r; isFresh = () => wasAll; mode = 'all';
+    } else {
+      const regions = [...new Set(need.map(regionOf))];
+      const idxs = await Promise.all(regions.map(rg => getOpt('/live/r/' + rg + '.json', { c: {} })));
+      const hashes = Object.assign({}, ...idxs.map(x => x.c || {}));
+      const prev = knownCells; knownCells = new Set(need);
+      await Promise.all(need.map(async id => {
+        const h = hashes[id];
+        const c = cellCache.get(id);
+        if (!h) { if (c && prev.has(id)) lastActivity = now; cellCache.delete(id); return; }
+        if (!c || c.h !== h) {
+          if (prev.has(id)) lastActivity = now;
+          cellCache.set(id, { h, r: (await getOpt('/live/c/' + id + '.json', { r: [] })).r });
+        }
+      }));
+      for (const id of [...cellCache.keys()]) if (!knownCells.has(id)) cellCache.delete(id);
+      list = need.flatMap(id => cellCache.get(id)?.r || []);
+      isFresh = r => mode === 'cells' && prev.has(cellOf(r)); mode = 'cells';
+      // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
+      if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
+    }
+    setPaused(g.paused);
+    if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
+    const annChanged = annCache.h !== g.ann;
+    if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
+    apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
+  }
+
+  // Ancien format (serveur pas encore mis à jour)
+  async function syncLegacy() {
     const idx = await getJ('/live/index.json');
     if (!idx || !idx.cells) throw Object.assign(new Error('index'), { status: 404 });
     const need = neededCells(), now = Date.now();
@@ -257,9 +303,12 @@
     }
     syncing = false;
     if (again) { again = false; return sync(); }
-    // Rythme : 5 s en zone, 15 s en vue nationale, et on espace en cas d'échec (réseau saturé)
-    const base = mode === 'all' ? (eco ? 60000 : 15000) : (eco ? 20000 : POLL_MS);
-    const delay = failures ? Math.min(30000, base * 2 ** Math.min(failures, 3)) : base;
+    // Rythme : 5 s s'il s'est passé quelque chose autour de toi dans les 2 dernières minutes, 12 s sinon,
+    // 20 s en vue nationale (×3 en économie de batterie) ; on espace en cas d'échec, et on décale au hasard
+    // pour que des milliers de téléphones ne demandent pas tous à la même seconde.
+    const active = Date.now() - lastActivity < 120_000;
+    const base = (mode === 'all' ? 20000 : active ? POLL_MS : 12000) * (eco ? 3 : 1);
+    const delay = (failures ? Math.min(60000, base * 2 ** Math.min(failures, 3)) : base) * (0.85 + Math.random() * 0.3);
     if (!document.hidden) pollTimer = setTimeout(sync, delay);
   }
   let moveTimer = null;
@@ -486,6 +535,7 @@
       if (!res.ok) return toast(body.error || 'Envoi impossible. Réessaie.');
       voted.add(body.id);
       closeReport();
+      lastActivity = Date.now();
       sync();
       toast(`${CAT[cat].label} signalé`);
     } catch { toast('Pas de réseau. Le signalement n’est pas parti.'); }

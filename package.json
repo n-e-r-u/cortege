@@ -4,6 +4,6 @@
   "description": "Waze des manifs : carte collaborative temps réel, OpenStreetMap, sans compte ni log.",
   "main": "server.js",
   "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
+  "engines": { "node": ">=22.13" },
   "license": "AGPL-3.0-or-later"
 }
