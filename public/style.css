@@ -318,3 +318,20 @@ details.right b { color: var(--fg); }
 .drawbar-actions .secondary { height: 50px; font-size: 14px; }
 @media (min-width: 640px) { .drawbar { left: 50%; right: auto; width: 560px; transform: translateX(-50%); } }
 body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: none; }
+
+/* ---- Bien se préparer ---- */
+.prep-wide { width: 100%; margin: 0 0 10px; }
+.checklist { list-style: none; padding-left: 0 !important; gap: 0 !important; }
+.checklist li { border-top: 1px solid var(--line); }
+.checklist li:first-child { border-top: 0; }
+.checklist label { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; color: var(--fg); cursor: pointer; line-height: 1.35; }
+.checklist input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--ok); }
+.checklist label:has(input:checked) { color: var(--muted); }
+.link-btn { display: inline; padding: 0; border: 0; background: none; color: var(--accent); font-weight: 700; text-decoration: underline; }
+.prep-note { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.prep-note b { color: var(--fg); }
+.tips-small { margin: 0 0 12px; padding-left: 18px; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.rally-box { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); font-size: 14px; }
+.rally-box .secondary:disabled { opacity: .4; }
+.rally-pin { font-size: 30px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.7)); }
+.ann-link { display: inline-block; margin-top: 4px; color: var(--accent); font-weight: 700; font-size: 13px; }

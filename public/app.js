@@ -342,7 +342,7 @@
     drawHeading();
     if (pushSub) pushSend(pushSub).catch(() => {});
     if (first) { map.setView(me, Math.max(map.getZoom(), 17)); setFollow(true); }
-    else if (follow && $('#sheetReport').hidden && !popupOpen && !drawing) map.panTo(me, { animate: true, duration: 0.6, noMoveStart: true });
+    else if (follow && $('#sheetReport').hidden && !popupOpen && !drawing && !picking) map.panTo(me, { animate: true, duration: 0.6, noMoveStart: true });
     else setFollow(follow);
   }
   function locate() {
@@ -420,7 +420,7 @@
   renderFilters();
 
   // ---- Signaler ----
-  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos'];
+  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -566,15 +566,17 @@
     const box = $('#anns'); box.textContent = '';
     const shown = list.filter(a => a.kind === 'info' && !dismissed.has(a.id))
       .sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
-    for (const a of shown.slice(0, 3)) {
+    const maxBanners = innerHeight < 760 ? 2 : 3; // petits écrans : ne pas masquer les boutons
+    for (const a of shown.slice(0, maxBanners)) {
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer cette annonce' }, '×');
       close.onclick = () => { dismissed.add(a.id); try { localStorage.setItem('cortege-dismissed', JSON.stringify([...dismissed].slice(-200))); } catch {} renderAnns(announcements, false); };
       box.append(el('div', { class: 'ann ' + a.level },
         el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · toute la France' : '') + ' · ' + ago(a.t)),
-        el('div', { class: 'ann-text' }, a.text), close));
+        el('div', { class: 'ann-text' }, a.text),
+        a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '', close));
       if (canAlert && !seenAnns.has(a.id) && a.level === 'urgent') { try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {} }
     }
-    if (shown.length > 3) box.append(el('div', { class: 'ann-more' }, `+ ${shown.length - 3} autre(s) annonce(s)`));
+    if (shown.length > maxBanners) box.append(el('div', { class: 'ann-more' }, `+ ${shown.length - maxBanners} autre(s) annonce(s)`));
     list.forEach(a => seenAnns.add(a.id));
     renderLegal();
     if (!$('#sheetOrga').hidden) renderOrgaList();
@@ -950,6 +952,83 @@
       toast('Notifications désactivées');
     }
   });
+
+  // ---- Bien se préparer : checklist gardée sur le téléphone ----
+  const prepKey = 'cortege-prep';
+  const prepGet = () => { try { return JSON.parse(localStorage.getItem(prepKey) || '{}'); } catch { return {}; } };
+  const prepBoxes = [...document.querySelectorAll('#sheetPrep .checklist input[type=checkbox]')];
+  function prepRender() {
+    const st = prepGet();
+    prepBoxes.forEach(b => (b.checked = !!st[b.dataset.k]));
+    const done = prepBoxes.filter(b => b.checked).length;
+    $('#prepCount').textContent = `${done} / ${prepBoxes.length} prêt${done > 1 ? 's' : ''}`;
+  }
+  prepBoxes.forEach(b => b.addEventListener('change', () => {
+    const st = prepGet(); st[b.dataset.k] = b.checked;
+    try { localStorage.setItem(prepKey, JSON.stringify(st)); } catch {}
+    prepRender();
+  }));
+  function openPrep() { closeReport(); closeSheets(); prepRender(); rallyRender(); $('#sheetPrep').hidden = false; }
+  $('#btnPrep').onclick = openPrep;
+  $('#btnPrepInfo').onclick = openPrep;
+  $('#prClose').onclick = () => closeSheets();
+  $('#prepReset').onclick = () => { try { localStorage.removeItem(prepKey); } catch {} prepRender(); toast('Checklist remise à zéro'); };
+  $('#prepRights').onclick = () => { closeSheets(); renderLegal(); $('#sheetRights').hidden = false; };
+  $('#prepSos').onclick = e => { e.preventDefault(); openSos(); };
+  $('#prepOffline').onclick = e => { e.preventDefault(); closeSheets(); $('#sheetInfo').hidden = false; $('#btnPrefetch').scrollIntoView({ block: 'center' }); $('#btnPrefetch').focus(); };
+
+  // ---- Point de ralliement du groupe (privé : reste sur le téléphone, partagé seulement si on le décide) ----
+  const rallyGet = () => { try { return JSON.parse(localStorage.getItem('cortege-rally') || 'null'); } catch { return null; } };
+  let rallyMarker = null, picking = false;
+  const rallyLink = p => `https://www.openstreetmap.org/?mlat=${p[0].toFixed(5)}&mlon=${p[1].toFixed(5)}#map=18/${p[0].toFixed(5)}/${p[1].toFixed(5)}`;
+  function rallyShare() {
+    const p = rallyGet(); if (!p) return;
+    const text = `Point de ralliement si on se perd en manif : ${rallyLink(p)}`;
+    if (navigator.share) navigator.share({ text }).catch(() => {});
+    else navigator.clipboard?.writeText(text).then(() => toast('Lien copié : colle-le dans ton groupe'), () => toast(text));
+  }
+  function rallyRender() {
+    const p = rallyGet();
+    if (rallyMarker) { map.removeLayer(rallyMarker); rallyMarker = null; }
+    if (p) {
+      rallyMarker = L.marker(p, { icon: L.divIcon({ className: '', iconSize: [36, 36], iconAnchor: [8, 34], html: '<div class="rally-pin">🚩</div>' }), title: 'Point de ralliement', zIndexOffset: 600 })
+        .bindPopup(() => {
+          const root = el('div', {}, el('div', { class: 'pop-title' }, '🚩 Point de ralliement'),
+            el('div', { class: 'pop-meta' }, 'Visible seulement sur ton téléphone' + (me ? ' · ' + fmtDist(dist(me, p)) : '')));
+          const share = el('button', { class: 'yes' }, 'Partager');
+          const rm = el('button', { class: 'danger' }, 'Retirer');
+          share.onclick = rallyShare;
+          rm.onclick = () => { try { localStorage.removeItem('cortege-rally'); } catch {} map.closePopup(); rallyRender(); };
+          root.append(el('div', { class: 'pop-actions' }, share, rm));
+          return root;
+        }).addTo(map);
+    }
+    $('#rallyState').textContent = p ? `Point de ralliement placé${me ? ', à ' + fmtDist(dist(me, p)) + ' de toi' : ''}.` : 'Aucun point de ralliement.';
+    $('#rallyShare').disabled = !p;
+  }
+  function startPick() {
+    closeSheets(); setFollow(false); map.closePopup();
+    picking = true; document.body.classList.add('drawing');
+    const p = rallyGet(); if (p) map.setView(p, Math.max(map.getZoom(), 17));
+    $('#crosshair').style.top = '45%'; $('#crosshair').hidden = false; $('#pickBar').hidden = false;
+  }
+  function endPick(save) {
+    if (save) {
+      const pt = map.containerPointToLatLng([map.getSize().x / 2, map.getSize().y * 0.45]);
+      try { localStorage.setItem('cortege-rally', JSON.stringify([pt.lat, pt.lng])); } catch {}
+      toast('Point de ralliement enregistré');
+    }
+    picking = false; document.body.classList.remove('drawing');
+    $('#crosshair').hidden = true; $('#pickBar').hidden = true;
+    const ck = prepBoxes.find(b => b.dataset.k === 'ralliement');
+    if (save && ck && !ck.checked) { ck.checked = true; ck.dispatchEvent(new Event('change')); }
+    openPrep();
+  }
+  $('#rallySet').onclick = startPick;
+  $('#rallyShare').onclick = rallyShare;
+  $('#pickOk').onclick = () => endPick(true);
+  $('#pickCancel').onclick = () => endPick(false);
+  rallyRender();
 
   // Premier lancement : on montre les réflexes (et la carte @neru) une fois
   try { if (!localStorage.getItem('cortege-seen')) { $('#sheetInfo').hidden = false; localStorage.setItem('cortege-seen', '1'); } } catch {}

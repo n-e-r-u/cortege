@@ -67,6 +67,7 @@
 
 <div class="tools tools-left">
   <button class="round" id="btnAgenda" title="Prochaines mobilisations" aria-label="Prochaines mobilisations">📅</button>
+  <button class="round" id="btnPrep" title="Bien se préparer" aria-label="Bien se préparer">🎒</button>
   <button class="round sos" id="btnSos" title="Interpellation : prévenir un proche" aria-label="Interpellation : prévenir un proche">SOS</button>
 </div>
 
@@ -150,6 +151,7 @@
     <button class="install" id="btnInstall">Installer l’appli sur mon téléphone</button>
     <p class="install-help" id="installHelp" hidden></p>
   </div>
+  <button class="install prep-wide" id="btnPrepInfo">🎒 Bien se préparer : la checklist</button>
   <button class="secondary share-wide" id="btnShare">Faire installer l’appli à quelqu’un (QR code)</button>
   <ul class="tips">
     <li><b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.</li>
@@ -316,6 +318,111 @@
   <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
   <button class="ghost danger-link" id="btnOrgaLogout">Quitter le mode orga sur ce téléphone</button>
 </section>
+
+<!-- Bien se préparer -->
+<section class="sheet" id="sheetPrep" hidden aria-labelledby="prTitle">
+  <div class="sheet-head">
+    <h2 id="prTitle">Bien se préparer</h2>
+    <button class="x" id="prClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="hint">Coche au fur et à mesure : tout reste sur ton téléphone. <b id="prepCount"></b></p>
+
+  <details class="right" open>
+    <summary>1. Ton sac</summary>
+    <ul class="checklist" data-group="sac">
+      <li><label><input type="checkbox" data-k="chaussures"> Chaussures confortables et fermées</label></li>
+      <li><label><input type="checkbox" data-k="vetements"> Vêtements couvrants (bras et jambes)</label></li>
+      <li><label><input type="checkbox" data-k="lunettes"> Lunettes de protection (natation, ski…)</label></li>
+      <li><label><input type="checkbox" data-k="masque"> Masques FFP2 ou FFP3, idéalement deux</label></li>
+      <li><label><input type="checkbox" data-k="serum"> Sérum physiologique en dosettes</label></li>
+      <li><label><input type="checkbox" data-k="eau"> De l’eau et de quoi grignoter</label></li>
+      <li><label><input type="checkbox" data-k="papier"> Sur papier : le numéro d’un proche, d’un·e avocat·e et de la legal team</label></li>
+      <li><label><input type="checkbox" data-k="batterie"> Téléphone chargé, batterie externe si tu en as une</label></li>
+    </ul>
+    <div class="prep-note"><b>Point légal :</b> avoir un masque, du sérum et des lunettes dans son sac n’est pas une infraction. La police peut quand même les confisquer, ou s’en servir pour te prêter l’intention de rejoindre des affrontements : ce sont des protections, dis-le.</div>
+    <ul class="tips-small">
+      <li>Lentilles de contact : préfère tes lunettes, le gaz se coince dessous.</li>
+      <li>Évite le maquillage et les crèmes grasses, qui retiennent le gaz sur la peau.</li>
+      <li>Ne te rase pas juste avant si ça irrite ta peau.</li>
+    </ul>
+  </details>
+
+  <details class="right">
+    <summary>2. Ton téléphone</summary>
+    <ul class="checklist" data-group="tel">
+      <li><label><input type="checkbox" data-k="signal"> Installe <b>Signal</b> et vérifie que ton groupe l’utilise</label></li>
+      <li><label><input type="checkbox" data-k="bluetooth"> Installe une messagerie qui marche sans réseau, en Bluetooth : <b>Bitchat</b> (iPhone et Android) ou <b>Briar</b> (Android). Plus il y a de monde dessus, mieux ça marche.</label></li>
+      <li><label><input type="checkbox" data-k="sauvegarde"> Fais une sauvegarde avant de partir</label></li>
+      <li><label><input type="checkbox" data-k="code"> Déverrouillage par code, pas par empreinte ni visage</label></li>
+      <li><label><input type="checkbox" data-k="hors-ligne"> Garde la carte de ta zone hors ligne <button type="button" class="link-btn" id="prepOffline">le faire maintenant</button></label></li>
+      <li><label><input type="checkbox" data-k="proche"> Préviens une personne de confiance que tu vas en manif <button type="button" class="link-btn" id="prepSos">choisir mon contact SOS</button></label></li>
+    </ul>
+  </details>
+
+  <details class="right">
+    <summary>3. Ton groupe</summary>
+    <ul class="checklist" data-group="groupe">
+      <li><label><input type="checkbox" data-k="binome"> Ne reste jamais seul·e : au minimum en binôme</label></li>
+      <li><label><input type="checkbox" data-k="ralliement"> Fixez un point de ralliement en cas de séparation</label></li>
+      <li><label><input type="checkbox" data-k="partage"> Répartissez l’eau, le sérum et le matériel de soin</label></li>
+    </ul>
+    <div class="rally-box">
+      <div id="rallyState">Aucun point de ralliement.</div>
+      <div class="row2">
+        <button type="button" class="secondary" id="rallySet">Placer sur la carte</button>
+        <button type="button" class="secondary" id="rallyShare" disabled>Partager au groupe</button>
+      </div>
+      <p class="fine">Le point reste sur ton téléphone. « Partager » l’envoie à ton groupe par la messagerie de ton choix.</p>
+    </div>
+  </details>
+
+  <details class="right">
+    <summary>4. Pendant la manif</summary>
+    <ul>
+      <li>Repère les sorties et reste attentif·ve aux mouvements de foule.</li>
+      <li><b>Ne ramasse jamais une grenade</b> ni un projectile.</li>
+      <li>Filmer la police est légal. Évite de filmer les autres manifestant·es, ou floute-les.</li>
+      <li>Si quelqu’un est en difficulté, ne le laisse pas seul : appelle du renfort, un street medic ou le 112.</li>
+      <li>Évite les mouvements de panique. En cas de charge ou de gaz, regarde d’où vient le vent et éloigne-toi en marchant si tu peux : la course crée des chutes.</li>
+      <li>Séparé·e de ton groupe ? Rejoins le point de ralliement.</li>
+      <li>Une info utile ? Signale-la sur la carte pour les autres.</li>
+    </ul>
+  </details>
+
+  <details class="right">
+    <summary>5. Gaz lacrymogène</summary>
+    <ul>
+      <li>Masque FFP2 ou FFP3 et lunettes de protection.</li>
+      <li>Éloigne-toi de la zone dès que possible, dos au vent.</li>
+      <li><b>Ne te frotte pas les yeux.</b> Rince-les à l’eau propre ou au sérum physiologique, sans frotter.</li>
+      <li>Dès que possible, retire les vêtements touchés et lave ta peau à l’eau et au savon.</li>
+      <li>Gêne respiratoire, douleur forte ou qui dure : va voir un street medic ou appelle le 112. Signale les street medics sur la carte.</li>
+    </ul>
+  </details>
+
+  <details class="right">
+    <summary>6. Interpellation : la règle AMIS</summary>
+    <ul>
+      <li><b>A</b>vocat·e : demande-le dès le début. Retiens le nom d’un·e avocat·e qui défend les manifestant·es.</li>
+      <li><b>M</b>édecin : tu peux demander à être examiné·e, même sans blessure apparente.</li>
+      <li><b>I</b>nformer un proche : tu peux faire prévenir quelqu’un.</li>
+      <li><b>S</b>ilence : après avoir donné ton identité, tu peux te taire. Ça ne te sera pas reproché.</li>
+      <li>Ne signe pas un procès-verbal inexact ou que tu n’as pas compris.</li>
+      <li>Refuser photo, empreintes ou ADN est un délit en soi : décide-le avec ton avocat·e.</li>
+    </ul>
+    <button type="button" class="secondary" id="prepRights">Voir tous mes droits</button>
+  </details>
+  <button type="button" class="ghost" id="prepReset">Tout décocher pour la prochaine manif</button>
+  <p class="fine">On se protège, on se soutient, on reste solidaires. Conseils compilés à partir des guides de collectifs militants et de street medics.</p>
+</section>
+
+<div class="drawbar" id="pickBar" hidden>
+  <p class="drawbar-hint">Déplace la carte pour mettre le viseur sur le point de ralliement.</p>
+  <div class="drawbar-actions" style="grid-template-columns:1fr 1.3fr">
+    <button class="secondary" id="pickCancel">Annuler</button>
+    <button class="install" id="pickOk">Valider ce point</button>
+  </div>
+</div>
 
 <!-- Agenda -->
 <section class="sheet" id="sheetAgenda" hidden aria-labelledby="agTitle">

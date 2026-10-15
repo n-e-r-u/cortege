@@ -206,7 +206,7 @@ function allow(s, dev, ip, kind, now) {
 }
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
-  national: !!a.national, permanent: !!a.permanent, t: a.t, exp: a.exp });
+  national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
   route: e.route || null, end: !!e.end, by: e.by, status: e.status, t: e.t });
 const round = n => Math.round(n * 1e4) / 1e4; // ~11 m
@@ -227,6 +227,8 @@ function createAnnouncement(b, by, admin) {
   const national = kind === 'info' && !!b.national && admin;
   const level = kind === 'info' && b.level === 'urgent' ? 'urgent' : 'info';
   const text = clean(b.text, ANN_MAX);
+  // Lien « En savoir plus » : réservé à l'admin (évite les liens piégés)
+  const link = admin && kind === 'info' && /^https:\/\/[^\s"<>]{4,300}$/.test(String(b.link || '').trim()) ? String(b.link).trim() : '';
   const phone = kind === 'legal' ? String(b.phone || '').replace(/[^\d+ .]/g, '').trim().slice(0, 20) : '';
   const lat = Number(b.lat), lng = Number(b.lng);
   const r = national ? 0 : Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), 50);
@@ -235,7 +237,7 @@ function createAnnouncement(b, by, admin) {
   if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Numéro de téléphone invalide.' }];
   if (!national && !validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
   const a = mutate((s, now) => {
-    const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by,
+    const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by, link,
       lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
       t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
     s.ann[a.id] = a; return a;
