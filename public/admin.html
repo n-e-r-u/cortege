@@ -66,6 +66,14 @@ button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a
 .newlink code { font: 14px/1.4 ui-monospace, Menlo, monospace; overflow-wrap: anywhere; color: var(--fg); }
 .newlink .row { display: flex; flex-wrap: wrap; gap: 8px; }
 .warn { color: var(--danger); font-size: 13px; margin: 0; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.stack > label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; resize: vertical; }
+.org-list .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+.tabs { overflow-x: auto; scrollbar-width: none; }
+.tab { flex: none; }
+@media (max-width: 600px) { .org-list li { grid-template-columns: 1fr; } .org-list .acts { justify-content: flex-start; } }
+#pendingBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
 </style>
 </head>
@@ -87,6 +95,8 @@ button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a
   <div id="app" hidden>
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas">Orgas</button>
+    <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns">Annonces</button>
+    <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda">Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports">Urgences</button>
     <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest">Digest</button>
   </nav>
@@ -114,6 +124,44 @@ button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a
       <h2>Orgas actives</h2>
       <ul class="org-list" id="orgaList"></ul>
       <p class="fine">Supprimer une orga coupe son accès immédiatement. Ses annonces déjà publiées restent jusqu’à expiration ; tu peux les retirer depuis l’appli avec ton lien admin. Les orgas notées « variable » viennent de ORGA_KEYS et se gèrent dans cPanel.</p>
+    </section>
+  </section>
+
+  <section class="panel" id="panelAnns" role="tabpanel" aria-labelledby="tabAnns" hidden>
+    <section class="card">
+      <h2>Annonce nationale</h2>
+      <form class="stack" id="natForm">
+        <label for="natText">Message (visible partout en France, en haut de la carte)
+          <textarea id="natText" maxlength="220" rows="3" required placeholder="ex. : Grève nationale jeudi : retrouve ton point de rendez-vous dans l’agenda 📅"></textarea>
+        </label>
+        <div class="controls">
+          <label for="natLevel">Importance
+            <select id="natLevel"><option value="info">Info</option><option value="urgent">Urgent : vibre + notification</option></select>
+          </label>
+          <label for="natMinutes">Durée
+            <select id="natMinutes"><option value="60">1 h</option><option value="180">3 h</option><option value="360">6 h</option><option value="720" selected>12 h</option><option value="1440">24 h</option></select>
+          </label>
+          <button type="submit">Publier partout</button>
+        </div>
+      </form>
+      <p class="fine" id="pushCount"></p>
+    </section>
+    <section class="card">
+      <h2>Annonces actives <span id="annCount"></span></h2>
+      <ul class="org-list" id="annAdminList"></ul>
+      <p class="fine">Les numéros de legal team restent affichés jusqu’à ce qu’ils soient retirés ici ou par leur orga.</p>
+    </section>
+  </section>
+
+  <section class="panel" id="panelAgenda" role="tabpanel" aria-labelledby="tabAgenda" hidden>
+    <section class="card">
+      <h2>Propositions à valider</h2>
+      <ul class="org-list" id="pendingList"></ul>
+      <p class="fine">Proposées par des participant·es (blocus, manifs…). Vérifie la date et le lieu avant de valider : l’événement apparaît alors dans l’agenda de tout le monde.</p>
+    </section>
+    <section class="card">
+      <h2>Événements publiés</h2>
+      <ul class="org-list" id="eventList"></ul>
     </section>
   </section>
 
@@ -180,7 +228,7 @@ const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type':
 
 async function login() {
   KEY = $('#key').value;
-  try { await api('/api/admin/orgas').then(renderOrgas); }
+  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false;
@@ -189,7 +237,7 @@ $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); }
 if (KEY) login();
 
 function showTab(which) {
-  for (const t of ['Orgas', 'Reports', 'Digest']) {
+  for (const t of ['Orgas', 'Anns', 'Agenda', 'Reports', 'Digest']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -197,6 +245,66 @@ function showTab(which) {
 $('#tabOrgas').onclick = () => showTab('Orgas');
 $('#tabDigest').onclick = () => showTab('Digest');
 $('#tabReports').onclick = () => { showTab('Reports'); loadReports(); };
+$('#tabAnns').onclick = () => { showTab('Anns'); loadAnns(); };
+$('#tabAgenda').onclick = () => { showTab('Agenda'); loadAgenda(); };
+
+// ---- Annonces (nationales + toutes les annonces actives) ----
+const li = (title, meta, ...buttons) => {
+  const l = document.createElement('li'), info = document.createElement('div');
+  const b = document.createElement('b'); b.textContent = title;
+  const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta;
+  info.append(b, m);
+  const acts = document.createElement('div'); acts.className = 'acts'; acts.append(...buttons);
+  l.append(info, acts); return l;
+};
+const btn = (label, cls) => { const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; return b; };
+const empty = (ul, txt) => { const l = document.createElement('li'); l.className = 'meta'; l.textContent = txt; ul.append(l); };
+async function loadAnns() {
+  let d; try { d = await api('/api/admin/reports'); } catch (e) { alertMsg(e.message); return; }
+  $('#pushCount').textContent = d.pushSubs + ' téléphone(s) abonné(s) aux notifications. Une annonce urgente nationale leur arrive à tous.';
+  const ul = $('#annAdminList'); ul.textContent = '';
+  $('#annCount').textContent = '(' + d.announcements.length + ')';
+  if (!d.announcements.length) return empty(ul, 'Aucune annonce active.');
+  for (const a of d.announcements) {
+    const del = btn('Retirer', 'danger');
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/announcements/' + a.id, { method: 'DELETE' }); loadAnns(); });
+    const what = a.kind === 'legal' ? '⚖ Legal team ' + a.phone + (a.text ? ' · ' + a.text : '') : (a.level === 'urgent' ? '⚠ ' : '') + a.text;
+    const where = a.national ? 'toute la France' : a.r + ' km autour de ' + a.lat.toFixed(3) + ', ' + a.lng.toFixed(3);
+    ul.append(li(what, `${a.by} · ${where} · ${a.permanent ? 'permanent' : 'jusqu’à ' + hhmm(a.exp)}`, del));
+  }
+}
+$('#natForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await api('/api/admin/announcements', { method: 'POST', body: JSON.stringify({ kind: 'info', national: true, text: $('#natText').value, level: $('#natLevel').value, minutes: +$('#natMinutes').value }) });
+    $('#natText').value = ''; alertMsg('Annonce nationale publiée.'); loadAnns();
+  } catch (err) { alertMsg(err.message); }
+});
+
+// ---- Agenda : validation des propositions ----
+const EVT = {};
+fetch('/api/config').then(r => r.json()).then(c => (c.eventTypes || []).forEach(t => (EVT[t.id] = t)));
+const when = t => new Date(t).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+async function loadAgenda() {
+  let d; try { d = await api('/api/admin/events'); } catch (e) { alertMsg(e.message); return; }
+  const pending = d.events.filter(e => e.status === 'pending'), ok = d.events.filter(e => e.status === 'ok');
+  $('#pendingBadge').textContent = pending.length || '';
+  for (const [ul, list, none] of [[$('#pendingList'), pending, 'Aucune proposition en attente.'], [$('#eventList'), ok, 'Aucun événement à venir.']]) {
+    ul.textContent = '';
+    if (!list.length) { empty(ul, none); continue; }
+    for (const e of list) {
+      const t = EVT[e.type] || { glyph: '📍', label: e.type };
+      const map = document.createElement('a'); map.href = `https://www.openstreetmap.org/?mlat=${e.lat}&mlon=${e.lng}#map=16/${e.lat}/${e.lng}`; map.target = '_blank'; map.rel = 'noopener'; map.textContent = 'voir le lieu';
+      map.style.cssText = 'color:var(--accent);align-self:center;font-size:13px';
+      const del = btn(e.status === 'pending' ? 'Refuser' : 'Retirer', 'danger');
+      confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/events/' + e.id, { method: 'DELETE' }); loadAgenda(); });
+      const buttons = [map];
+      if (e.status === 'pending') { const okb = btn('Valider'); okb.onclick = async () => { try { await api('/api/admin/events/' + e.id + '/approve', { method: 'POST', body: '{}' }); loadAgenda(); } catch (err) { alertMsg(err.message); } }; buttons.push(okb); }
+      buttons.push(del);
+      ul.append(li(`${t.glyph} ${e.title}`, `${t.label} · ${when(e.start)} · ${e.place}${e.route ? ' · parcours tracé' : ''}${e.note ? ' · « ' + e.note + ' »' : ''} · ${e.by}`, ...buttons));
+    }
+  }
+}
 
 // ---- Urgences ----
 let CATS = {};

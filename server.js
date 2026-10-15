@@ -60,7 +60,18 @@ const CATEGORIES = [
   { id: 'eau',            group: 'soutien', label: 'Eau / sérum phy',         glyph: '💧', ttl: 90 },
   { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 15 },
   { id: 'bloque',         group: 'info',    label: 'Rue bloquée',             glyph: '⛔', ttl: 30 },
+  { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
 ];
+// Agenda : types d'événements publiés par les orgas (ou proposés puis validés par l'admin)
+const EVENT_TYPES = [
+  { id: 'manif',         label: 'Manifestation',        glyph: '✊' },
+  { id: 'blocus',        label: 'Blocus (lycée / fac)', glyph: '🚧' },
+  { id: 'rassemblement', label: 'Rassemblement',        glyph: '📍' },
+  { id: 'ag',            label: 'Assemblée générale',   glyph: '🗣️' },
+];
+const EVT = Object.fromEntries(EVENT_TYPES.map(e => [e.id, e]));
+const ADMIN_LABEL = process.env.ADMIN_LABEL || 'Cortège';   // nom affiché sur les annonces de l'admin
+const PUBLIC_URL = process.env.PUBLIC_URL || 'https://cortege.neru.tv';
 const CAT = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 const GROUPS = [
   { id: 'fdo', label: 'Forces de l’ordre' },
@@ -124,7 +135,7 @@ function isAdmin(req) { return !!ADMIN_KEY && keyEq(String(req.headers['x-admin-
 function orgaOf(req) {
   const k = String(req.headers['x-orga-key'] || '');
   if (!k) return null;
-  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { label: 'Admin', admin: true };
+  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { label: ADMIN_LABEL, admin: true };
   const env = ORGAS.find(o => keyEq(k, o.key));
   if (env) return { label: env.label, admin: false };
   const h = sha(k);
@@ -132,24 +143,24 @@ function orgaOf(req) {
   return o ? { label: o.label, admin: false } : null;
 }
 const sleep = ms => { try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch { const e = Date.now() + ms; while (Date.now() < e); } };
-function withLock(fn) {
+function withLock(fn, lockFile = LOCK_FILE) {
   let fd;
   for (let i = 0; ; i++) {
-    try { fd = fs.openSync(LOCK_FILE, 'wx'); break; }
+    try { fd = fs.openSync(lockFile, 'wx'); break; }
     catch (e) {
       if (e.code !== 'EEXIST') throw e;
-      try { if (Date.now() - fs.statSync(LOCK_FILE).mtimeMs > 3000) fs.unlinkSync(LOCK_FILE); } catch {}
+      try { if (Date.now() - fs.statSync(lockFile).mtimeMs > 3000) fs.unlinkSync(lockFile); } catch {}
       if (i > 300) throw new Error('busy');
       sleep(10);
     }
   }
-  try { return fn(); } finally { fs.closeSync(fd); try { fs.unlinkSync(LOCK_FILE); } catch {} }
+  try { return fn(); } finally { fs.closeSync(fd); try { fs.unlinkSync(lockFile); } catch {} }
 }
 
 let cache = { mtime: -1, state: null };
 function readState() {
   let st;
-  try { st = fs.statSync(STATE_FILE); } catch { return { v: 0, reports: {}, rate: {}, ann: {} }; }
+  try { st = fs.statSync(STATE_FILE); } catch { return { v: 0, reports: {}, rate: {}, ann: {}, events: {} }; }
   if (st.mtimeMs !== cache.mtime || !cache.state) {
     try { cache = { mtime: st.mtimeMs, state: JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) }; }
     catch { return cache.state || { v: 0, reports: {}, rate: {} }; }
@@ -164,8 +175,10 @@ function mutate(fn) {
     for (const [id, r] of Object.entries(s.reports)) if (r.exp <= now) { archive(r, false); delete s.reports[id]; }
     for (const [h, r] of Object.entries(s.rate)) if (now - r.t > RATE.windowMs) delete s.rate[h];
     s.ann = s.ann || {};
+    s.events = s.events || {};
     if (s.paused && s.paused <= now) s.paused = 0;
     for (const [id, a] of Object.entries(s.ann)) if (a.exp <= now) delete s.ann[id];
+    for (const [id, e] of Object.entries(s.events)) if (e.start + EVENT_KEEP <= now) delete s.events[id];
     const out = fn(s, now);
     s.v = (s.v || 0) + 1;
     const tmp = STATE_FILE + '.' + process.pid + '.tmp';
@@ -192,8 +205,44 @@ function allow(s, dev, ip, kind, now) {
   return true;
 }
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
-const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r, t: a.t, exp: a.exp });
+const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
+  national: !!a.national, permanent: !!a.permanent, t: a.t, exp: a.exp });
+const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
+  route: e.route || null, end: !!e.end, by: e.by, status: e.status, t: e.t });
 const round = n => Math.round(n * 1e4) / 1e4; // ~11 m
+const EVENT_KEEP = 12 * 60 * MIN;  // un événement reste affiché 12 h après son début
+const clean = (v, max) => String(v || '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+const validLatLng = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+function distKm(aLat, aLng, bLat, bLng) {
+  const r = Math.PI / 180, dLat = (bLat - aLat) * r, dLng = (bLng - aLng) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLng / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
+
+// Création d'annonce, partagée par l'espace orga et la page admin.
+//  - numéro de legal team : permanent, jusqu'à ce que l'orga (ou l'admin) le retire ;
+//  - annonce nationale : réservée à l'admin, visible partout en France.
+function createAnnouncement(b, by, admin) {
+  const kind = b.kind === 'legal' ? 'legal' : 'info';
+  const national = kind === 'info' && !!b.national && admin;
+  const level = kind === 'info' && b.level === 'urgent' ? 'urgent' : 'info';
+  const text = clean(b.text, ANN_MAX);
+  const phone = kind === 'legal' ? String(b.phone || '').replace(/[^\d+ .]/g, '').trim().slice(0, 20) : '';
+  const lat = Number(b.lat), lng = Number(b.lng);
+  const r = national ? 0 : Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), 50);
+  const minutes = Math.min(Math.max(Number(b.minutes) || 60, 10), 24 * 60);
+  if (kind === 'info' && text.length < 3) return [400, { error: 'Écris le message de l’annonce.' }];
+  if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Numéro de téléphone invalide.' }];
+  if (!national && !validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
+  const a = mutate((s, now) => {
+    const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by,
+      lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
+      t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
+    s.ann[a.id] = a; return a;
+  });
+  if (a.level === 'urgent') pushBroadcast(a).catch(e => console.error('push', e.message));
+  return [201, annView(a)];
+}
 
 
 // ---- Archive anonyme pour le digest ----
@@ -240,6 +289,120 @@ function nominatim(pathAndQuery) {
   const p = geoChain.then(run); geoChain = p.catch(() => {}); return p;
 }
 const placeName = a => a && (a.city || a.town || a.village || a.municipality || a.suburb || a.county || a.state) || null;
+
+// ---- Notifications push (Web Push : chiffrement RFC 8291 + VAPID RFC 8292), sans dépendance ----
+// Un téléphone abonné envoie seulement une zone arrondie à 0,1° (≈ 10 km), jamais sa position exacte.
+// Seules les annonces urgentes (et nationales urgentes) déclenchent une notification.
+const PUSH_FILE = path.join(DATA_DIR, 'push.json');
+const PUSH_LOCK = PUSH_FILE + '.lock';
+const PUSH_MAX = 50000;
+// Seuls les services de notification des navigateurs sont contactés (évite qu'on fasse appeler n'importe quelle adresse au serveur)
+const PUSH_HOSTS = /(^|\.)(googleapis\.com|push\.services\.mozilla\.com|push\.apple\.com|notify\.windows\.com)$/;
+const VAPID = (() => {
+  const f = path.join(DATA_DIR, 'vapid.json');
+  try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch {}
+  const { privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+  const jwk = privateKey.export({ format: 'jwk' });
+  const v = { jwk, pub: Buffer.concat([Buffer.from([4]), Buffer.from(jwk.x, 'base64url'), Buffer.from(jwk.y, 'base64url')]).toString('base64url') };
+  try { fs.writeFileSync(f, JSON.stringify(v), { mode: 0o600, flag: 'wx' }); return v; } catch { return JSON.parse(fs.readFileSync(f, 'utf8')); }
+})();
+const VAPID_KEY = crypto.createPrivateKey({ key: VAPID.jwk, format: 'jwk' });
+let pushCache = { mtime: -1, subs: {} };
+function readPush() {
+  try {
+    const st = fs.statSync(PUSH_FILE);
+    if (st.mtimeMs !== pushCache.mtime) pushCache = { mtime: st.mtimeMs, subs: JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8')) };
+  } catch { pushCache = { mtime: -1, subs: {} }; }
+  return pushCache.subs;
+}
+function writePush(subs) {
+  const tmp = PUSH_FILE + '.' + process.pid + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(subs), { mode: 0o600 });
+  fs.renameSync(tmp, PUSH_FILE);
+  pushCache.mtime = -1;
+}
+const hmac = (key, data) => crypto.createHmac('sha256', key).update(data).digest();
+function encryptPush(sub, payload) {
+  const uaPub = Buffer.from(sub.k, 'base64url'), auth = Buffer.from(sub.a, 'base64url');
+  const ecdh = crypto.createECDH('prime256v1');
+  const asPub = ecdh.generateKeys();
+  const ikm = hmac(hmac(auth, ecdh.computeSecret(uaPub)), Buffer.concat([Buffer.from('WebPush: info\0'), uaPub, asPub, Buffer.from([1])]));
+  const salt = crypto.randomBytes(16);
+  const prk = hmac(salt, ikm);
+  const cek = hmac(prk, Buffer.from('Content-Encoding: aes128gcm\0\x01')).subarray(0, 16);
+  const nonce = hmac(prk, Buffer.from('Content-Encoding: nonce\0\x01')).subarray(0, 12);
+  const c = crypto.createCipheriv('aes-128-gcm', cek, nonce);
+  const body = Buffer.concat([c.update(Buffer.concat([Buffer.from(payload, 'utf8'), Buffer.from([2])])), c.final(), c.getAuthTag()]);
+  const head = Buffer.alloc(21); salt.copy(head); head.writeUInt32BE(4096, 16); head[20] = asPub.length;
+  return Buffer.concat([head, asPub, body]);
+}
+const jwtCache = new Map();
+function vapidAuth(endpoint) {
+  const aud = new URL(endpoint).origin;
+  const hit = jwtCache.get(aud);
+  if (hit && hit.exp - Date.now() > 3600_000) return hit.h;
+  const exp = Math.floor(Date.now() / 1000) + 12 * 3600;
+  const enc = o => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const data = enc({ typ: 'JWT', alg: 'ES256' }) + '.' + enc({ aud, exp, sub: CONTACT_EMAIL ? 'mailto:' + CONTACT_EMAIL : PUBLIC_URL });
+  const sig = crypto.sign('sha256', Buffer.from(data), { key: VAPID_KEY, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+  const h = `vapid t=${data}.${sig}, k=${VAPID.pub}`;
+  jwtCache.set(aud, { h, exp: exp * 1000 });
+  return h;
+}
+function pushOne(sub, payload) {
+  return new Promise(resolve => {
+    let body, u;
+    try { body = encryptPush(sub, payload); u = new URL(sub.e); } catch { return resolve(410); }
+    const req = https.request({ method: 'POST', hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, timeout: 10_000,
+      headers: { 'Content-Type': 'application/octet-stream', 'Content-Encoding': 'aes128gcm', 'Content-Length': body.length,
+        TTL: '3600', Urgency: 'high', Authorization: vapidAuth(sub.e) } }, res => { res.resume(); resolve(res.statusCode); });
+    req.on('timeout', () => req.destroy());
+    req.on('error', () => resolve(0));
+    req.end(body);
+  });
+}
+async function pushBroadcast(a) {
+  const targets = Object.entries(readPush()).filter(([, s]) => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8));
+  if (!targets.length) return;
+  const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/' });
+  const dead = [];
+  for (let i = 0; i < targets.length; i += 20) {
+    const batch = targets.slice(i, i + 20);
+    const codes = await Promise.all(batch.map(([, s]) => pushOne(s, payload)));
+    codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(batch[j][0]); });
+  }
+  if (dead.length) withLock(() => { const p = { ...readPush() }; dead.forEach(id => delete p[id]); writePush(p); }, PUSH_LOCK);
+  console.log(`push : ${targets.length} envoi(s), ${dead.length} abonnement(s) expiré(s)`);
+}
+
+// ---- Agenda : création d'événement (orga = publié tout de suite ; participant·e = proposition à valider) ----
+function createEvent(b, orga, dev, ipH) {
+  const type = EVT[b.type] ? b.type : 'manif';
+  const title = clean(b.title, 80), place = clean(b.place, 100), note = clean(b.note, 220);
+  const start = Number(b.start), lat = Number(b.lat), lng = Number(b.lng);
+  if (title.length < 3) return [400, { error: 'Donne un titre (ex. : Blocus lycée Jean-Monnet).' }];
+  if (place.length < 2) return [400, { error: 'Indique le lieu de rendez-vous.' }];
+  if (!(start > Date.now() - 2 * 60 * MIN && start < Date.now() + 90 * 24 * 60 * MIN)) return [400, { error: 'Date invalide (dans les 3 prochains mois).' }];
+  if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
+  let route = null;
+  if (Array.isArray(b.route) && b.route.length >= 2) {
+    route = b.route.slice(0, 300).map(p => [Math.round(Number(p[0]) * 1e5) / 1e5, Math.round(Number(p[1]) * 1e5) / 1e5]);
+    if (!route.every(([a, o]) => validLatLng(a, o) && distKm(a, o, lat, lng) < 60)) return [400, { error: 'Parcours invalide.' }];
+  }
+  return mutate((s, now) => {
+    if (!orga) {
+      if (!allow(s, dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
+      const pending = Object.values(s.events).filter(e => e.status === 'pending');
+      if (pending.filter(e => e.dev === dev).length >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
+      if (pending.length >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
+    }
+    const e = { id: crypto.randomBytes(6).toString('base64url'), type, title, place, note, start, lat: round(lat), lng: round(lng),
+      route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', status: orga ? 'ok' : 'pending', t: now };
+    if (!orga) e.dev = dev;
+    s.events[e.id] = e;
+    return [201, evView(e)];
+  });
+}
 
 
 // ---- Publication en fichiers statiques ----
@@ -292,6 +455,10 @@ function publish(s, now) {
   const annStr = JSON.stringify({ a: Object.values(s.ann || {}).filter(a => a.exp > now).map(annView) });
   writeIfChanged(path.join(LIVE_DIR, 'ann.json'), annStr);
   index.ann = h8(annStr);
+  const evStr = JSON.stringify({ e: Object.values(s.events || {}).filter(e => e.status === 'ok' && e.start + EVENT_KEEP > now)
+    .sort((a, b) => a.start - b.start).slice(0, 1000).map(evView) });
+  writeIfChanged(path.join(LIVE_DIR, 'events.json'), evStr);
+  index.events = h8(evStr);
   const tmp = path.join(LIVE_DIR, 'index.json.' + process.pid + '.tmp');
   fs.writeFileSync(tmp, JSON.stringify(index)); fs.renameSync(tmp, path.join(LIVE_DIR, 'index.json'));
 }
@@ -299,7 +466,8 @@ function publish(s, now) {
 setTimeout(() => { try { mutate(() => {}); } catch {} }, 200);
 setInterval(() => {
   const s = readState(), now = Date.now();
-  if (Object.values(s.reports).some(r => r.exp <= now) || Object.values(s.ann || {}).some(a => a.exp <= now)) try { mutate(() => {}); } catch {}
+  if (Object.values(s.reports).some(r => r.exp <= now) || Object.values(s.ann || {}).some(a => a.exp <= now)
+    || Object.values(s.events || {}).some(e => e.start + EVENT_KEEP <= now)) try { mutate(() => {}); } catch {}
 }, 60_000).unref();
 
 // ---- HTTP helpers ----
@@ -311,10 +479,10 @@ function send(res, status, body, headers = {}) {
   });
   res.end(isObj ? JSON.stringify(body) : body);
 }
-function readJson(req) {
+function readJson(req, max = 2048) {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
-    req.on('data', c => { size += c.length; if (size > 2048) { reject(new Error('too large')); req.destroy(); } else chunks.push(c); });
+    req.on('data', c => { size += c.length; if (size > max) { reject(new Error('too large')); req.destroy(); } else chunks.push(c); });
     req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); } catch { reject(new Error('bad json')); } });
     req.on('error', reject);
   });
@@ -390,7 +558,31 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, groups: GROUPS });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub });
+
+    // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
+    if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
+      const b = await readJson(req, 4096);
+      const sub = b.sub || {};
+      const endpoint = String(sub.endpoint || '');
+      let host = ''; try { const u = new URL(endpoint); if (u.protocol === 'https:') host = u.hostname; } catch {}
+      if (!PUSH_HOSTS.test(host) || endpoint.length > 1000) return send(res, 400, { error: 'Service de notification non pris en charge.' });
+      const id = sha(endpoint).slice(0, 24);
+      if (pathname.endsWith('/unsubscribe')) {
+        withLock(() => { const p = readPush(); if (p[id]) { const n = { ...p }; delete n[id]; writePush(n); } }, PUSH_LOCK);
+        return send(res, 200, { ok: true });
+      }
+      const k = String(sub.keys?.p256dh || '').replace(/=+$/, ''), a = String(sub.keys?.auth || '').replace(/=+$/, '');
+      if (!/^[\w-]{86,88}$/.test(k) || !/^[\w-]{20,24}$/.test(a)) return send(res, 400, { error: 'Abonnement invalide.' });
+      const lat = Number(b.lat), lng = Number(b.lng), hasZone = validLatLng(lat, lng);
+      const out = withLock(() => {
+        const p = readPush();
+        if (!p[id] && Object.keys(p).length >= PUSH_MAX) return false;
+        writePush({ ...p, [id]: { e: endpoint, k, a, lat: hasZone ? Math.round(lat * 10) / 10 : null, lng: hasZone ? Math.round(lng * 10) / 10 : null, t: Date.now() } });
+        return true;
+      }, PUSH_LOCK);
+      return out ? send(res, 200, { ok: true }) : send(res, 503, { error: 'Trop d’abonnements, réessaie plus tard.' });
+    }
 
     // Vérification d'installation : ne renvoie jamais d'IP, seulement si un en-tête a été trouvé.
     if (req.method === 'GET' && pathname === '/api/health') {
@@ -407,7 +599,7 @@ const server = http.createServer(async (req, res) => {
       const inBox = r => !boxes.length || boxes.some(([so, w, n, e]) => r.lat >= so && r.lat <= n && r.lng >= w && r.lng <= e);
       const list = Object.values(s.reports).filter(r => r.exp > now && inBox(r)).slice(0, 1500).map(publicView);
       // Annonce visible si son cercle touche une des zones demandées
-      const annIn = a => !boxes.length || boxes.some(([so, w, n, e]) => {
+      const annIn = a => a.national || !boxes.length || boxes.some(([so, w, n, e]) => {
         const dLat = a.r / 111, dLng = a.r / (111 * Math.cos(a.lat * Math.PI / 180));
         return a.lat + dLat >= so && a.lat - dLat <= n && a.lng + dLng >= w && a.lng - dLng <= e;
       });
@@ -455,7 +647,32 @@ const server = http.createServer(async (req, res) => {
         const st = readState(), now = Date.now();
         return send(res, 200, { paused: st.paused && st.paused > now ? st.paused : 0,
           reports: Object.values(st.reports).filter(r => r.exp > now).sort((a, b) => b.t - a.t).map(publicView),
-          announcements: Object.values(st.ann || {}).filter(a => a.exp > now).map(annView) });
+          announcements: Object.values(st.ann || {}).filter(a => a.exp > now).sort((a, b) => b.t - a.t).map(annView),
+          pushSubs: Object.keys(readPush()).length });
+      }
+      // --- Annonces de l'admin (nationales ou locales) ---
+      if (req.method === 'POST' && pathname === '/api/admin/announcements') {
+        const b = await readJson(req);
+        return send(res, ...createAnnouncement(b, ADMIN_LABEL, true));
+      }
+      const delA = pathname.match(/^\/api\/admin\/announcements\/([\w-]{1,16})$/);
+      if (req.method === 'DELETE' && delA) {
+        const ok = mutate(st => { if (!st.ann[delA[1]]) return false; delete st.ann[delA[1]]; return true; });
+        return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Annonce déjà retirée.' });
+      }
+      // --- Agenda : propositions à valider + événements publiés ---
+      if (req.method === 'GET' && pathname === '/api/admin/events') {
+        const st = readState();
+        return send(res, 200, { events: Object.values(st.events || {}).sort((a, b) => a.start - b.start).map(evView) });
+      }
+      const evAct = pathname.match(/^\/api\/admin\/events\/([\w-]{1,16})(\/approve)?$/);
+      if (evAct && (req.method === 'DELETE' || (req.method === 'POST' && evAct[2]))) {
+        const ok = mutate(st => {
+          const e = st.events[evAct[1]]; if (!e) return false;
+          if (req.method === 'DELETE') delete st.events[e.id]; else { e.status = 'ok'; delete e.dev; }
+          return true;
+        });
+        return ok ? send(res, 200, { ok: true }) : send(res, 404, { error: 'Événement introuvable.' });
       }
       const delRep = pathname.match(/^\/api\/admin\/reports\/([\w-]{1,16})$/);
       if (req.method === 'DELETE' && delRep) {
@@ -540,6 +757,14 @@ const server = http.createServer(async (req, res) => {
       return send(res, ...result);
     }
 
+    // Agenda : une orga publie directement, un·e participant·e propose (validé ensuite par l'admin)
+    if (req.method === 'POST' && pathname === '/api/events') {
+      const b = await readJson(req, 16384);
+      const orga = req.headers['x-orga-key'] ? orgaOf(req) : null;
+      if (req.headers['x-orga-key'] && !orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
+      return send(res, ...createEvent(b, orga, deviceHash(req), clientHash(req)));
+    }
+
     const vote = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/vote$/);
     if (req.method === 'POST' && vote) {
       const b = await readJson(req);
@@ -568,7 +793,8 @@ const server = http.createServer(async (req, res) => {
 
 
     // ---- Espace orga / legal team ----
-    if (pathname.startsWith('/api/orga') || pathname.startsWith('/api/announcements') || /^\/api\/reports\/[\w-]{1,16}\/(verify|remove)$/.test(pathname)) {
+    if (pathname.startsWith('/api/orga') || pathname.startsWith('/api/announcements') || /^\/api\/events\/[\w-]{1,16}$/.test(pathname)
+      || /^\/api\/reports\/[\w-]{1,16}\/(verify|remove)$/.test(pathname)) {
       const orga = orgaOf(req);
       if (!orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
 
@@ -576,22 +802,18 @@ const server = http.createServer(async (req, res) => {
 
       if (req.method === 'POST' && pathname === '/api/announcements') {
         const b = await readJson(req);
-        const kind = b.kind === 'legal' ? 'legal' : 'info';
-        const level = b.level === 'urgent' ? 'urgent' : 'info';
-        const text = String(b.text || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, ANN_MAX);
-        const phone = kind === 'legal' ? String(b.phone || '').replace(/[^\d+ .]/g, '').trim().slice(0, 20) : '';
-        const lat = Number(b.lat), lng = Number(b.lng);
-        const r = Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), 50);
-        const minutes = Math.min(Math.max(Number(b.minutes) || 60, 10), 24 * 60);
-        if (kind === 'info' && text.length < 3) return send(res, 400, { error: 'Écris le message de l’annonce.' });
-        if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return send(res, 400, { error: 'Numéro de téléphone invalide.' });
-        if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return send(res, 400, { error: 'Position invalide.' });
-        const a = mutate((s, now) => {
-          const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level: kind === 'legal' ? 'info' : level, text, phone,
-            by: orga.label, lat: round(lat), lng: round(lng), r, t: now, exp: now + minutes * MIN };
-          s.ann[a.id] = a; return a;
+        return send(res, ...createAnnouncement(b, orga.label, orga.admin));
+      }
+
+      const delEv = pathname.match(/^\/api\/events\/([\w-]{1,16})$/);
+      if (req.method === 'DELETE' && delEv) {
+        const out = mutate(s => {
+          const e = s.events[delEv[1]];
+          if (!e) return [404, { error: 'Événement déjà retiré.' }];
+          if (!orga.admin && e.by !== orga.label) return [403, { error: 'Seule l’orga qui l’a publié peut le retirer.' }];
+          delete s.events[e.id]; return [200, { removed: true }];
         });
-        return send(res, 201, annView(a));
+        return send(res, ...out);
       }
 
       const delAnn = pathname.match(/^\/api\/announcements\/([\w-]{1,16})$/);

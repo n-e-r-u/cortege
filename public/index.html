@@ -62,8 +62,24 @@
   <button class="round" id="btnList" title="Liste des signalements" aria-label="Liste des signalements">☰</button>
   <button class="round orga-tool" id="btnOrga" hidden title="Espace orga" aria-label="Espace orga">📣</button>
   <button class="round" id="btnRights" title="Mes droits" aria-label="Mes droits">⚖</button>
-  <button class="round" id="btnInfo" title="Réflexes" aria-label="Réflexes et infos">?</button>
+  <button class="round" id="btnInfo" title="Réflexes et réglages" aria-label="Réflexes et réglages">?</button>
 </div>
+
+<div class="tools tools-left">
+  <button class="round" id="btnAgenda" title="Prochaines mobilisations" aria-label="Prochaines mobilisations">📅</button>
+  <button class="round sos" id="btnSos" title="Interpellation : prévenir un proche" aria-label="Interpellation : prévenir un proche">SOS</button>
+</div>
+
+<div class="drawbar" id="drawBar" hidden>
+  <p class="drawbar-hint" id="drawHint">Touche la carte : le 1<sup>er</sup> point est le rendez-vous, les suivants tracent le parcours (facultatif). <b id="drawCount">0 point</b></p>
+  <div class="drawbar-actions">
+    <button class="secondary" id="drawUndo">↶ Retirer</button>
+    <button class="secondary" id="drawClear">Effacer</button>
+    <button class="install" id="drawDone">Terminé</button>
+  </div>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
 
 <footer class="bottombar">
   <div class="filters" id="filters" role="group" aria-label="Filtres"></div>
@@ -74,7 +90,7 @@
 <section class="sheet" id="sheetReport" hidden aria-labelledby="srTitle">
   <div class="sheet-head">
     <h2 id="srTitle">Qu’est-ce qui se passe ici ?</h2>
-    <button class="ghost" id="srClose">Annuler</button>
+    <button class="x" id="srClose" aria-label="Fermer">×</button>
   </div>
   <p class="hint" id="srHint">Place le viseur au bon endroit sur la carte, puis choisis.</p>
   <div id="catGrid" class="catgrid"></div>
@@ -87,7 +103,7 @@
 <section class="sheet" id="sheetSearch" hidden aria-labelledby="ssTitle">
   <div class="sheet-head">
     <h2 id="ssTitle">Aller à une ville</h2>
-    <button class="ghost" id="ssClose">Fermer</button>
+    <button class="x" id="ssClose" aria-label="Fermer">×</button>
   </div>
   <form id="searchForm" role="search">
     <label class="note-label" for="searchInput">Ville, quartier ou adresse</label>
@@ -100,7 +116,7 @@
 <section class="sheet" id="sheetList" hidden aria-labelledby="slTitle">
   <div class="sheet-head">
     <h2 id="slTitle">Signalements dans la zone affichée</h2>
-    <button class="ghost" id="slClose">Fermer</button>
+    <button class="x" id="slClose" aria-label="Fermer">×</button>
   </div>
   <ol id="list" class="list"></ol>
   <p class="empty" id="listEmpty">Rien de signalé pour l’instant. Appuie sur « Signaler » pour ajouter le premier point.</p>
@@ -110,7 +126,7 @@
 <section class="sheet" id="sheetInfo" hidden aria-labelledby="siTitle">
   <div class="sheet-head">
     <h2 id="siTitle">Avant de partir</h2>
-    <button class="ghost" id="siClose">Fermer</button>
+    <button class="x" id="siClose" aria-label="Fermer">×</button>
   </div>
   <div class="ig-card" id="igCard">
     <div class="ig-head">
@@ -144,6 +160,15 @@
   </ul>
   <button class="secondary" id="btnPrefetch">Garder la zone hors ligne</button>
   <p class="fine" id="prefetchState"></p>
+  <h3 class="group-title">Réglages</h3>
+  <label class="switch">
+    <input type="checkbox" id="optPush">
+    <span class="switch-txt"><b>Annonces urgentes même appli fermée</b><span id="pushHelp">Une notification quand une orga de ta zone publie une alerte urgente. Ta zone est arrondie à 10 km environ.</span></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="optEco">
+    <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
+  </label>
   <p class="fine"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
 </section>
 
@@ -151,7 +176,7 @@
 <section class="sheet" id="sheetShare" hidden aria-labelledby="shTitle">
   <div class="sheet-head">
     <h2 id="shTitle">Fais scanner ce code</h2>
-    <button class="ghost" id="shClose">Fermer</button>
+    <button class="x" id="shClose" aria-label="Fermer">×</button>
   </div>
   <div class="qr" id="qr" role="img" aria-label="QR code vers l’appli Cortège"></div>
   <p class="qr-url" id="qrUrl"></p>
@@ -170,12 +195,13 @@
 <section class="sheet" id="sheetRights" hidden aria-labelledby="rgTitle">
   <div class="sheet-head">
     <h2 id="rgTitle">Mes droits</h2>
-    <button class="ghost" id="rgClose">Fermer</button>
+    <button class="x" id="rgClose" aria-label="Fermer">×</button>
   </div>
   <a class="violence-btn" id="violenceLink" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">
     <b>Signaler une violence policière</b>
     <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>
   </a>
+  <button class="sos-wide" id="btnSosRights"><b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span></button>
   <div class="legal-box" id="legalBox">
     <div class="legal-title">Legal team de ta zone</div>
     <div id="legalList"></div>
@@ -248,7 +274,7 @@
 <section class="sheet" id="sheetOrga" hidden aria-labelledby="orTitle">
   <div class="sheet-head">
     <h2 id="orTitle">Espace orga</h2>
-    <button class="ghost" id="orClose">Fermer</button>
+    <button class="x" id="orClose" aria-label="Fermer">×</button>
   </div>
   <p class="hint">Tu publies en tant que <b id="orgaName">—</b>. L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier.</p>
   <form id="annForm" class="orga-form">
@@ -263,8 +289,9 @@
       <fieldset class="seg">
         <legend>Importance</legend>
         <label><input type="radio" name="level" value="info" checked> Info</label>
-        <label><input type="radio" name="level" value="urgent"> Urgent (vibre)</label>
+        <label><input type="radio" name="level" value="urgent"> Urgent (vibre + notification)</label>
       </fieldset>
+      <label class="check" id="annNationalWrap" hidden><input type="checkbox" id="annNational"> Annonce nationale (toute la France)</label>
     </div>
     <div id="annLegalFields" hidden>
       <label class="note-label" for="annPhone">Numéro de téléphone</label>
@@ -272,20 +299,103 @@
       <label class="note-label" for="annLegalText">Précision (facultatif)</label>
       <input id="annLegalText" maxlength="120" placeholder="ex. : permanence jusqu’à 22 h">
     </div>
-    <div class="row2">
-      <label class="note-label" for="annRadius">Zone
+    <div class="row2" id="annZoneRow">
+      <label class="note-label" for="annRadius" id="annRadiusWrap">Zone
         <select id="annRadius"><option value="1">1 km</option><option value="3" selected>3 km</option><option value="10">10 km</option><option value="30">30 km</option></select>
       </label>
-      <label class="note-label" for="annMinutes">Durée
+      <label class="note-label" for="annMinutes" id="annMinutesWrap">Durée
         <select id="annMinutes"><option value="30">30 min</option><option value="60">1 h</option><option value="180" selected>3 h</option><option value="360">6 h</option><option value="720">12 h</option></select>
       </label>
     </div>
+    <p class="fine" id="annLegalHint" hidden>Le numéro reste affiché dans « Mes droits » jusqu’à ce que tu le retires.</p>
     <button class="install" type="submit">Publier</button>
   </form>
+  <button class="secondary orga-event-btn" id="btnOrgaEvent">Publier une manif ou un blocus (avec parcours)</button>
   <h3 class="group-title">Annonces actives dans la zone</h3>
   <ol id="annList" class="list"></ol>
   <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
   <button class="ghost danger-link" id="btnOrgaLogout">Quitter le mode orga sur ce téléphone</button>
+</section>
+
+<!-- Agenda -->
+<section class="sheet" id="sheetAgenda" hidden aria-labelledby="agTitle">
+  <div class="sheet-head">
+    <h2 id="agTitle">Prochaines mobilisations</h2>
+    <button class="x" id="agClose" aria-label="Fermer">×</button>
+  </div>
+  <fieldset class="seg" aria-label="Zone">
+    <label><input type="radio" name="agScope" value="near" checked> Près de toi (50 km)</label>
+    <label><input type="radio" name="agScope" value="all"> Toute la France</label>
+  </fieldset>
+  <ol id="agList" class="list ag-list"></ol>
+  <p class="empty" id="agEmpty" hidden></p>
+  <button class="secondary" id="btnPropose">Proposer un blocus ou une manif</button>
+  <p class="fine" id="agFine">Les propositions sont vérifiées avant d’apparaître. Les orgas publient directement depuis leur espace.</p>
+</section>
+
+<!-- Publier / proposer un événement -->
+<section class="sheet" id="sheetEvent" hidden aria-labelledby="evTitle">
+  <div class="sheet-head">
+    <h2 id="evTitle">Publier un événement</h2>
+    <button class="x" id="evClose" aria-label="Fermer">×</button>
+  </div>
+  <form id="evForm" class="orga-form">
+    <fieldset class="seg" id="evTypes"><legend>Type</legend></fieldset>
+    <label class="note-label" for="evTitleIn">Titre
+      <input id="evTitleIn" maxlength="80" required placeholder="ex. : Blocus lycée Jean-Monnet">
+    </label>
+    <div class="row2">
+      <label class="note-label" for="evStart">Date et heure
+        <input id="evStart" type="datetime-local" required>
+      </label>
+      <label class="note-label" for="evPlace">Lieu de rendez-vous
+        <input id="evPlace" maxlength="100" required placeholder="ex. : place de la Comédie">
+      </label>
+    </div>
+    <label class="note-label" for="evNote">Précision (facultatif)
+      <textarea id="evNote" maxlength="220" rows="2" placeholder="ex. : AG à 8 h devant le portail, intersyndicale présente"></textarea>
+    </label>
+    <div class="ev-route">
+      <button type="button" class="secondary" id="btnDraw">Placer le rendez-vous sur la carte</button>
+      <span class="fine" id="evRouteState">Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours.</span>
+    </div>
+    <label class="check"><input type="checkbox" id="evEnd"> Le dernier point du parcours est la dispersion</label>
+    <button class="install" type="submit" id="evSubmit">Publier</button>
+  </form>
+</section>
+
+<!-- Interpellation : prévenir un proche -->
+<section class="sheet" id="sheetSos" hidden aria-labelledby="sosTitle">
+  <div class="sheet-head">
+    <h2 id="sosTitle">Interpellation : prévenir un proche</h2>
+    <button class="x" id="sosClose" aria-label="Fermer">×</button>
+  </div>
+  <div id="sosSetup">
+    <p class="hint">Choisis la personne à prévenir <b>avant la manif</b>. Son numéro reste sur ton téléphone : Cortège ne le voit jamais.</p>
+    <form id="sosForm" class="orga-form">
+      <div class="row2">
+        <label class="note-label" for="sosName">Prénom ou surnom
+          <input id="sosName" maxlength="30" placeholder="ex. : Sam">
+        </label>
+        <label class="note-label" for="sosPhone">Son numéro
+          <input id="sosPhone" type="tel" inputmode="tel" maxlength="20" required placeholder="06 00 00 00 00">
+        </label>
+      </div>
+      <button class="install" type="submit">Enregistrer</button>
+    </form>
+  </div>
+  <div id="sosReady" hidden>
+    <fieldset class="seg" aria-label="Qui est interpellé·e ?">
+      <label><input type="radio" name="sosWho" value="me" checked> C’est moi</label>
+      <label><input type="radio" name="sosWho" value="group"> Quelqu’un de mon groupe</label>
+    </fieldset>
+    <label class="note-label" for="sosMsg">Message (tu peux le modifier)</label>
+    <textarea id="sosMsg" class="sos-msg" rows="5"></textarea>
+    <a class="sos-send" id="sosSms" href="#">Envoyer par SMS à <span id="sosTo"></span></a>
+    <button class="secondary" id="sosShare">Envoyer par une autre appli (Signal…)</button>
+    <p class="fine">Le message part de ton téléphone, avec ton forfait : rien ne passe par Cortège. Après une interpellation, ton téléphone peut t’être retiré : envoie-le dès que tu peux, ou demande à quelqu’un de ton groupe de le faire.</p>
+    <button class="ghost" id="sosEdit">Changer de contact</button>
+  </div>
 </section>
 
 <div class="toast" id="toast" hidden role="status"></div>

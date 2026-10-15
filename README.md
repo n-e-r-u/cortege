@@ -30,6 +30,8 @@ Variables d'environnement :
 | `DATA_DIR` | `~/.cortege-data` | Où est gardé l'état partagé (hors du dossier web) |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
+| `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
+| `PUBLIC_URL` | `https://cortege.neru.tv` | Adresse publique (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 
 ## Logo
 
@@ -85,6 +87,12 @@ Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : ann
 Onglet Digest de la page admin : total du jour, par type (avec l'heure du premier signalement), par heure, par ville, et un résumé prêt à copier. L'archive ne garde que la catégorie, l'heure à la minute et une position arrondie à ~100 m. Les points retirés par « Plus là » sont exclus.
 
 ## Comment ça marche
+
+- **Agenda 📅** : manifs, blocus (lycée / fac), rassemblements, AG. Les orgas publient directement (avec parcours tracé sur la carte et point de dispersion) ; tout le monde peut proposer un événement, qui apparaît après validation dans admin › Agenda. Les événements du moment s’affichent sur la carte avec leur parcours.
+- **SOS** : en cas d’interpellation, un SMS pré-rempli (heure, position, numéro de la legal team de la zone) part vers un proche choisi à l’avance. Le contact reste sur le téléphone, le SMS ne passe pas par le serveur.
+- **Économie de batterie** (réglage dans « ? ») : synchro toutes les 20 s, GPS moins précis, boussole coupée.
+- **Notifications** (réglage dans « ? ») : les annonces urgentes arrivent même appli fermée (Web Push chiffré, clés VAPID générées au premier démarrage dans `DATA_DIR/vapid.json`, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
+- **Annonces nationales** : admin › Annonces, ou case « Annonce nationale » dans l’espace orga avec le lien admin. Les numéros de legal team sont permanents jusqu’à leur retrait.
 
 - **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie, précision facultative de 120 caractères.
 - **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Deux « Plus là » majoritaires suppriment le point.

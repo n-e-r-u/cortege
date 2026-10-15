@@ -6,6 +6,10 @@
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'nasse', 'bac', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
   let announcements = [];
+  // Économie de batterie : rafraîchissement espacé, GPS moins précis, boussole coupée
+  let eco = false; try { eco = localStorage.getItem('cortege-eco') === '1'; } catch {}
+  let pushSub = null;               // abonnement aux notifications (annonces urgentes)
+  let evCache = { h: null, e: [] }; // agenda (événements publiés)
 
   // Identifiant anonyme de ce téléphone (tiré au hasard, jamais lié à une personne) : sert seulement
   // à limiter le spam par appareil, car en 4G des centaines de personnes partagent la même adresse IP.
@@ -178,7 +182,7 @@
   }
   function annsFor() {
     const b = map.getBounds(), c = b.getCenter(), viewR = map.distance(c, b.getNorthEast());
-    return annCache.a.filter(x => x.exp > Date.now() && (
+    return annCache.a.filter(x => x.exp > Date.now() && (x.national ||
       map.distance(c, [x.lat, x.lng]) < x.r * 1000 + viewR || (me && map.distance(me, [x.lat, x.lng]) < x.r * 1000)));
   }
   async function syncLive() {
@@ -203,6 +207,7 @@
       isFresh = r => mode === 'cells' && prev.has(cellOf(r)); mode = 'cells';
     }
     setPaused(idx.paused);
+    if (idx.events && evCache.h !== idx.events) { evCache = { h: idx.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== idx.ann;
     if (annChanged) annCache = { h: idx.ann, a: (await getJ('/live/ann.json')).a };
     apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
@@ -253,7 +258,7 @@
     syncing = false;
     if (again) { again = false; return sync(); }
     // Rythme : 5 s en zone, 15 s en vue nationale, et on espace en cas d'échec (réseau saturé)
-    const base = mode === 'all' ? 15000 : POLL_MS;
+    const base = mode === 'all' ? (eco ? 60000 : 15000) : (eco ? 20000 : POLL_MS);
     const delay = failures ? Math.min(30000, base * 2 ** Math.min(failures, 3)) : base;
     if (!document.hidden) pollTimer = setTimeout(sync, delay);
   }
@@ -316,7 +321,7 @@
     if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; drawHeading(); }); }
   }
   async function enableCompass() {
-    if (compassOn || typeof DeviceOrientationEvent === 'undefined') return;
+    if (eco || compassOn || typeof DeviceOrientationEvent === 'undefined') return;
     if (typeof DeviceOrientationEvent.requestPermission === 'function') { // iPhone : doit venir d'un appui
       try { if (await DeviceOrientationEvent.requestPermission() !== 'granted') return; } catch { return; }
     }
@@ -335,8 +340,9 @@
     if (!accCircle) accCircle = L.circle(me, { radius: acc, interactive: false, className: 'me-acc' }).addTo(map);
     else accCircle.setLatLng(me).setRadius(acc);
     drawHeading();
+    if (pushSub) pushSend(pushSub).catch(() => {});
     if (first) { map.setView(me, Math.max(map.getZoom(), 17)); setFollow(true); }
-    else if (follow && $('#sheetReport').hidden && !popupOpen) map.panTo(me, { animate: true, duration: 0.6, noMoveStart: true });
+    else if (follow && $('#sheetReport').hidden && !popupOpen && !drawing) map.panTo(me, { animate: true, duration: 0.6, noMoveStart: true });
     else setFollow(follow);
   }
   function locate() {
@@ -352,7 +358,7 @@
         toast('Localisation refusée. Tu peux quand même signaler avec le viseur.');
         navigator.geolocation.clearWatch(watchId); watchId = null; setFollow(false);
       } else if (!me && !locate.warned) { locate.warned = true; toast('Recherche de ta position…'); }
-    }, { enableHighAccuracy: true, maximumAge: 5_000, timeout: 30_000 });
+    }, eco ? { enableHighAccuracy: false, maximumAge: 30_000, timeout: 60_000 } : { enableHighAccuracy: true, maximumAge: 5_000, timeout: 30_000 });
     setFollow(false);
   }
   // Déplacer la carte au doigt arrête le suivi ; une fiche de signalement ouverte le met en pause
@@ -414,8 +420,18 @@
   renderFilters();
 
   // ---- Signaler ----
-  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga'];
+  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
+  // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
+  const backdrop = $('#backdrop');
+  const syncBackdrop = () => {
+    backdrop.hidden = !sheets.some(s => s !== '#sheetReport' && !$(s).hidden);
+    if ($('#sheetEvent').hidden && !drawing) drawLayer.clearLayers();
+  };
+  const sheetWatch = new MutationObserver(syncBackdrop);
+  sheets.forEach(s => sheetWatch.observe($(s), { attributes: true, attributeFilter: ['hidden'] }));
+  backdrop.addEventListener('click', () => closeSheets());
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheets(); if (!$('#crosshair').hidden) closeReport(); } });
   function openReport() {
     if (!me && map.getZoom() < 14) {
       toast('Zoome sur l’endroit exact (ou active ta position) avant de signaler.');
@@ -554,7 +570,7 @@
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer cette annonce' }, '×');
       close.onclick = () => { dismissed.add(a.id); try { localStorage.setItem('cortege-dismissed', JSON.stringify([...dismissed].slice(-200))); } catch {} renderAnns(announcements, false); };
       box.append(el('div', { class: 'ann ' + a.level },
-        el('div', { class: 'ann-meta' }, '📣 ' + a.by + ' · ' + ago(a.t)),
+        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · toute la France' : '') + ' · ' + ago(a.t)),
         el('div', { class: 'ann-text' }, a.text), close));
       if (canAlert && !seenAnns.has(a.id) && a.level === 'urgent') { try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {} }
     }
@@ -616,7 +632,10 @@
     orga = o;
     $('#btnOrga').hidden = !o;
     $('#orgaChip').hidden = !o;
-    if (o) { $('#orgaChip').textContent = 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
+    if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
+    $('#annNationalWrap').hidden = !(o && o.admin);
+    $('#btnPropose').textContent = o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif';
+    $('#agFine').hidden = !!o;
   }
   (async () => {
     const params = new URLSearchParams(location.search);
@@ -645,7 +664,7 @@
       del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); } catch (e) { toast(e.message); } };
       ol.append(el('li', { class: 'ann-row' },
         el('div', { class: 't' }, el('div', { class: 'l' }, (a.kind === 'legal' ? '⚖ ' + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
-          el('div', { class: 's' }, `${a.by} · ${a.r} km · expire dans ${left(a.exp)}`)), del));
+          el('div', { class: 's' }, `${a.by} · ${a.national ? 'toute la France' : a.r + ' km'} · ${a.permanent ? 'permanent' : 'expire dans ' + left(a.exp)}`)), del));
     }
   }
   $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); $('#sheetOrga').hidden = false; };
@@ -653,22 +672,284 @@
   document.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', () => {
     const legal = document.querySelector('input[name="kind"]:checked').value === 'legal';
     $('#annInfoFields').hidden = legal; $('#annLegalFields').hidden = !legal;
+    $('#annMinutesWrap').hidden = legal; $('#annLegalHint').hidden = !legal;
+    annZoneUI();
   }));
+  // Annonce nationale (admin) : pas de rayon
+  const annZoneUI = () => { $('#annRadiusWrap').hidden = $('#annNational').checked && !$('#annInfoFields').hidden; };
+  $('#annNational').addEventListener('change', annZoneUI);
   $('#annForm').addEventListener('submit', async e => {
     e.preventDefault();
     const kind = document.querySelector('input[name="kind"]:checked').value;
     const c = map.getCenter();
     const body = { kind, lat: c.lat, lng: c.lng, radiusKm: +$('#annRadius').value, minutes: +$('#annMinutes').value };
     if (kind === 'legal') Object.assign(body, { phone: $('#annPhone').value, text: $('#annLegalText').value });
-    else Object.assign(body, { text: $('#annText').value, level: document.querySelector('input[name="level"]:checked').value });
+    else Object.assign(body, { text: $('#annText').value, level: document.querySelector('input[name="level"]:checked').value,
+      national: !!(orga && orga.admin && $('#annNational').checked) });
     try {
       await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
       toast('Annonce publiée');
-      $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = '';
+      $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annNational').checked = false; annZoneUI();
       etag = null; sync();
     } catch (err) { toast(err.message); }
   });
   $('#btnOrgaLogout').onclick = () => { try { localStorage.removeItem('cortege-orga'); } catch {} setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone'); };
+
+  // ---- Agenda : manifs, blocus, rassemblements, AG ----
+  const EVT = Object.fromEntries((cfg.eventTypes || []).map(t => [t.id, t]));
+  const evLayer = L.layerGroup().addTo(map);
+  const evMarkers = new Map();
+  let selectedEv = null;
+  const fmtWhen = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const fmtHour = t => new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
+  const evOnMap = e => e.id === selectedEv || (e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  function evPopup(e) {
+    const t = EVT[e.type] || { glyph: '📍', label: '' };
+    const root = el('div');
+    root.append(el('div', { class: 'pop-title' }, t.glyph + ' ', e.title));
+    root.append(el('div', { class: 'pop-meta' }, `${t.label} · ${fmtWhen(e.start)}`));
+    root.append(el('div', { class: 'pop-meta' }, '📍 ' + e.place + (me ? ' · ' + fmtDist(dist(me, [e.lat, e.lng])) : '')));
+    if (e.note) root.append(el('p', { class: 'pop-note' }, e.note));
+    root.append(el('div', { class: 'pop-meta' }, 'Publié par ' + e.by));
+    if (orga && (orga.admin || e.by === orga.label)) {
+      const rm = el('button', { class: 'danger' }, 'Retirer cet événement');
+      rm.onclick = async () => {
+        if (!rm.dataset.armed) { rm.dataset.armed = '1'; rm.textContent = 'Confirmer le retrait'; return; }
+        try { await orgaFetch('/api/events/' + e.id, { method: 'DELETE' }); toast('Événement retiré'); map.closePopup(); sync(); } catch (err) { toast(err.message); }
+      };
+      root.append(el('div', { class: 'pop-actions orga', style: 'grid-template-columns:1fr' }, rm));
+    }
+    return root;
+  }
+  function renderEvents() {
+    evLayer.clearLayers(); evMarkers.clear();
+    for (const e of evCache.e.filter(evOnMap)) {
+      const t = EVT[e.type] || { glyph: '📍' };
+      if (e.route) {
+        L.polyline(e.route, { color: '#ec9fa4', weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
+        if (e.end) L.marker(e.route[e.route.length - 1], { icon: L.divIcon({ className: '', iconSize: [30, 30], html: '<div class="ev-end">🏁</div>' }), title: 'Dispersion prévue', keyboard: false })
+          .bindPopup('Dispersion prévue : ' + e.title).addTo(evLayer);
+      }
+      const m = L.marker([e.lat, e.lng], { icon: L.divIcon({ className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -18], html: `<div class="ev-pin">${t.glyph}</div>` }),
+        title: e.title, zIndexOffset: 500 }).bindPopup(() => evPopup(e)).addTo(evLayer);
+      evMarkers.set(e.id, m);
+    }
+    if (!$('#sheetAgenda').hidden) renderAgenda();
+  }
+  function renderAgenda() {
+    const scope = document.querySelector('input[name="agScope"]:checked').value;
+    const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
+    let list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now);
+    if (scope === 'near') list = list.filter(e => dist(ref, [e.lat, e.lng]) <= 50_000);
+    list.sort((a, b) => a.start - b.start);
+    const ol = $('#agList'); ol.textContent = '';
+    $('#agEmpty').hidden = list.length > 0;
+    $('#agEmpty').textContent = scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
+      : me ? 'Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».' : 'Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».';
+    let day = '';
+    for (const e of list.slice(0, 200)) {
+      const d = e.start < now ? 'En cours' : new Date(e.start).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      if (d !== day) { day = d; ol.append(el('li', { class: 'ag-day' }, d)); }
+      const t = EVT[e.type] || { glyph: '📍' };
+      const btn = el('button', { 'aria-label': e.title },
+        el('span', { class: 'g', style: '--c:var(--accent)' }, t.glyph),
+        el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`)),
+        el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
+      btn.onclick = () => showEvent(e);
+      ol.append(el('li', {}, btn));
+    }
+  }
+  function showEvent(e) {
+    closeSheets(); setFollow(false);
+    selectedEv = e.id; renderEvents();
+    if (e.route) map.fitBounds(L.latLngBounds(e.route.concat([[e.lat, e.lng]])), { padding: [40, 40], maxZoom: 16 });
+    else map.setView([e.lat, e.lng], 16);
+    setTimeout(() => evMarkers.get(e.id)?.openPopup(), 350);
+  }
+  $('#btnAgenda').onclick = () => { closeReport(); closeSheets(); renderAgenda(); $('#sheetAgenda').hidden = false; };
+  $('#agClose').onclick = () => closeSheets();
+  document.querySelectorAll('input[name="agScope"]').forEach(r => r.addEventListener('change', renderAgenda));
+
+  // ---- Publier (orga) ou proposer (tout le monde) un événement, avec parcours tracé sur la carte ----
+  const draft = { route: [] };
+  let evAsOrga = false, drawing = false;
+  const drawLayer = L.layerGroup().addTo(map);
+  (function buildEvTypes() {
+    const box = $('#evTypes');
+    (cfg.eventTypes || []).forEach((t, i) => {
+      const input = el('input', { type: 'radio', name: 'evType', value: t.id }); input.checked = i === 0;
+      box.append(el('label', {}, input, ' ' + t.glyph + ' ' + t.label));
+    });
+  })();
+  const localInput = t => { const d = new Date(t); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+  function routeLength(r) { let m = 0; for (let i = 1; i < r.length; i++) m += map.distance(r[i - 1], r[i]); return m; }
+  function redrawDraft() {
+    drawLayer.clearLayers();
+    const r = draft.route, n = r.length;
+    if (n > 1) L.polyline(r, { color: '#ec9fa4', weight: 5, interactive: false }).addTo(drawLayer);
+    r.forEach((p, i) => L.marker(p, { interactive: false, keyboard: false,
+      icon: i === 0 ? L.divIcon({ className: '', iconSize: [38, 38], html: '<div class="ev-pin">📍</div>' }) : L.divIcon({ className: '', iconSize: [14, 14], html: '<div class="draw-pt"></div>' }) }).addTo(drawLayer));
+    $('#drawCount').textContent = !n ? 'Aucun point' : n === 1 ? 'Rendez-vous placé' : `Rendez-vous + ${n - 1} point${n > 2 ? 's' : ''} de parcours`;
+    $('#evRouteState').textContent = !n ? 'Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours.'
+      : n === 1 ? 'Rendez-vous placé, sans parcours.' : `Rendez-vous placé, parcours de ${fmtDist(routeLength(r))}.`;
+    $('#btnDraw').textContent = n ? 'Modifier sur la carte' : 'Placer le rendez-vous sur la carte';
+  }
+  function openEventForm(asOrga) {
+    closeReport(); closeSheets();
+    evAsOrga = asOrga;
+    $('#evTitle').textContent = asOrga ? 'Publier un événement' : 'Proposer une mobilisation';
+    $('#evSubmit').textContent = asOrga ? 'Publier' : 'Envoyer la proposition';
+    if (!$('#evStart').value) { const d = new Date(Date.now() + 60 * MIN); d.setMinutes(0, 0, 0); $('#evStart').value = localInput(d); }
+    redrawDraft();
+    $('#sheetEvent').hidden = false;
+  }
+  function startDraw() {
+    closeSheets(); setFollow(false); map.closePopup();
+    drawing = true; document.body.classList.add('drawing'); $('#drawBar').hidden = false;
+    if (!draft.route.length && me) map.setView(me, Math.max(map.getZoom(), 16));
+    redrawDraft();
+  }
+  function stopDraw() { drawing = false; document.body.classList.remove('drawing'); $('#drawBar').hidden = true; $('#sheetEvent').hidden = false; redrawDraft(); }
+  map.on('click', e => { if (!drawing) return; if (draft.route.length < 300) draft.route.push([e.latlng.lat, e.latlng.lng]); redrawDraft(); });
+  $('#btnDraw').onclick = startDraw;
+  $('#drawUndo').onclick = () => { draft.route.pop(); redrawDraft(); };
+  $('#drawClear').onclick = () => { draft.route = []; redrawDraft(); };
+  $('#drawDone').onclick = stopDraw;
+  $('#evClose').onclick = () => closeSheets();
+  $('#btnPropose').onclick = () => openEventForm(!!orga);
+  $('#btnOrgaEvent').onclick = () => openEventForm(true);
+  $('#evForm').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    if (!draft.route.length) { toast('Place d’abord le rendez-vous sur la carte.'); return; }
+    const start = new Date($('#evStart').value).getTime();
+    if (!start) { toast('Choisis la date et l’heure.'); return; }
+    const [lat, lng] = draft.route[0];
+    const body = { type: document.querySelector('input[name="evType"]:checked').value, title: $('#evTitleIn').value, place: $('#evPlace').value,
+      note: $('#evNote').value, start, lat, lng, route: draft.route.length >= 2 ? draft.route : null, end: $('#evEnd').checked };
+    const headers = { 'Content-Type': 'application/json', 'X-Device': DEVICE };
+    if (evAsOrga) headers['X-Orga-Key'] = orgaKey();
+    try {
+      const res = await fetch('/api/events', { method: 'POST', headers, body: JSON.stringify(body) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(out.error || 'Envoi impossible.');
+      toast(out.status === 'ok' ? 'Événement publié' : 'Proposition envoyée : elle apparaîtra après vérification');
+      $('#evForm').reset(); $('#evStart').value = ''; draft.route = []; drawLayer.clearLayers();
+      document.querySelector('input[name="evType"]').checked = true;
+      closeSheets();
+      if (out.status === 'ok') { selectedEv = out.id; sync(); }
+    } catch { toast('Pas de réseau. Rien n’est parti.'); }
+  });
+
+  // ---- Interpellation : prévenir un proche (le message part du téléphone, rien ne passe par le serveur) ----
+  const sosGet = () => { try { return JSON.parse(localStorage.getItem('cortege-sos') || 'null'); } catch { return null; } };
+  function sosMessage() {
+    const who = document.querySelector('input[name="sosWho"]:checked').value;
+    const hour = fmtHour(Date.now()).replace(':', ' h ');
+    let s = who === 'me' ? `Je viens d’être interpellé·e (${hour})` : `Quelqu’un de mon groupe vient d’être interpellé·e (${hour})`;
+    if (me) { const la = me[0].toFixed(4), lo = me[1].toFixed(4); s += ` ici : https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=17/${la}/${lo}`; }
+    const legal = announcements.find(a => a.kind === 'legal');
+    s += legal ? `. Préviens la legal team : ${legal.phone} (${legal.by}).` : '. Préviens la legal team de la manif.';
+    s += ' Message envoyé avec Cortège.';
+    return s;
+  }
+  function sosLink() {
+    const c = sosGet(); if (!c) return;
+    const num = c.phone.replace(/[^\d+]/g, '');
+    $('#sosSms').href = `sms:${num}${isIOS ? '&' : '?'}body=${encodeURIComponent($('#sosMsg').value)}`;
+  }
+  function openSos() {
+    closeReport(); closeSheets();
+    const c = sosGet();
+    $('#sosSetup').hidden = !!c; $('#sosReady').hidden = !c;
+    if (c) { $('#sosTo').textContent = c.name || c.phone; $('#sosMsg').value = sosMessage(); sosLink(); }
+    else { $('#sosName').value = ''; $('#sosPhone').value = ''; }
+    $('#sheetSos').hidden = false;
+  }
+  $('#btnSos').onclick = openSos;
+  $('#btnSosRights').onclick = openSos;
+  $('#sosClose').onclick = () => closeSheets();
+  $('#sosForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const phone = $('#sosPhone').value.trim();
+    if (phone.replace(/\D/g, '').length < 6) return toast('Numéro invalide.');
+    try { localStorage.setItem('cortege-sos', JSON.stringify({ name: $('#sosName').value.trim().slice(0, 30), phone })); } catch { return toast('Impossible d’enregistrer sur ce téléphone.'); }
+    toast('Contact enregistré sur ce téléphone'); openSos();
+  });
+  $('#sosEdit').onclick = () => { const c = sosGet() || {}; $('#sosSetup').hidden = false; $('#sosReady').hidden = true; $('#sosName').value = c.name || ''; $('#sosPhone').value = c.phone || ''; };
+  $('#sosMsg').addEventListener('input', sosLink);
+  document.querySelectorAll('input[name="sosWho"]').forEach(r => r.addEventListener('change', () => { $('#sosMsg').value = sosMessage(); sosLink(); }));
+  $('#sosShare').onclick = () => {
+    const text = $('#sosMsg').value;
+    if (navigator.share) navigator.share({ text }).catch(() => {});
+    else navigator.clipboard?.writeText(text).then(() => toast('Message copié : colle-le dans ta messagerie'), () => toast(text));
+  };
+
+  // ---- Économie de batterie ----
+  const ecoBadge = el('span', { class: 'eco', title: 'Économie de batterie', 'aria-label': 'Économie de batterie' }, '🔋');
+  $('#status').append(ecoBadge);
+  function applyEco() {
+    ecoBadge.hidden = !eco;
+    $('#optEco').checked = eco;
+    if (eco && compassOn) {
+      window.removeEventListener('deviceorientationabsolute', onOrient, true); window.removeEventListener('deviceorientation', onOrient, true);
+      compassOn = false; heading = null; rawHeading = null; drawHeading();
+    }
+    // relance le GPS avec les nouveaux réglages
+    if (watchId != null) { const f = follow; navigator.geolocation.clearWatch(watchId); watchId = null; locate(); setFollow(f); }
+  }
+  $('#optEco').addEventListener('change', e => {
+    eco = e.target.checked;
+    try { localStorage.setItem('cortege-eco', eco ? '1' : '0'); } catch {}
+    applyEco(); sync();
+    toast(eco ? 'Économie de batterie activée' : 'Économie de batterie désactivée');
+  });
+  ecoBadge.hidden = !eco; $('#optEco').checked = eco;
+  try {
+    navigator.getBattery?.().then(b => {
+      const check = () => { if (!eco && !b.charging && b.level <= 0.2 && !check.done) { check.done = true; toast('Batterie faible : active l’économie de batterie dans « ? »'); } };
+      check(); b.addEventListener('levelchange', check);
+    }).catch(() => {});
+  } catch {}
+
+  // ---- Notifications : annonces urgentes même appli fermée ----
+  const pushOK = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!cfg.pushKey;
+  const b64u = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+  let pushZone = null; try { pushZone = localStorage.getItem('cortege-push-zone'); } catch {}
+  // Le serveur ne reçoit qu'une zone arrondie à 0,1° (≈ 10 km), mise à jour quand tu changes de zone
+  async function pushSend(sub, force) {
+    const c = map.getCenter(), ref = me || [c.lat, c.lng];
+    const z = ref.map(x => Math.round(x * 10) / 10), key = z.join(',');
+    if (!force && key === pushZone) return;
+    pushZone = key;
+    const res = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1] }) });
+    if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || 'Abonnement impossible.'); }
+    try { localStorage.setItem('cortege-push-zone', key); } catch {}
+  }
+  if (isIOS && !standalone) $('#pushHelp').textContent += ' Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active ce réglage depuis l’appli installée.';
+  if (pushOK) navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
+    if (sub && Notification.permission === 'granted') { pushSub = sub; $('#optPush').checked = true; pushSend(sub).catch(() => {}); }
+  }).catch(() => {});
+  $('#optPush').addEventListener('change', async e => {
+    const box = e.target;
+    if (box.checked) {
+      if (!pushOK) { box.checked = false; return toast(isIOS && !standalone ? 'Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.' : 'Notifications non prises en charge par ce navigateur.'); }
+      try {
+        if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications refusées : autorise-les dans les réglages du téléphone.');
+        const reg = await navigator.serviceWorker.ready;
+        pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
+        await pushSend(pushSub, true);
+        toast('Annonces urgentes activées');
+      } catch (err) { box.checked = false; pushSub = null; toast(err.message || 'Activation impossible.'); }
+    } else {
+      const sub = pushSub; pushSub = null; pushZone = null;
+      try { localStorage.removeItem('cortege-push-zone'); } catch {}
+      try {
+        if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
+      } catch {}
+      toast('Notifications désactivées');
+    }
+  });
 
   // Premier lancement : on montre les réflexes (et la carte @neru) une fois
   try { if (!localStorage.getItem('cortege-seen')) { $('#sheetInfo').hidden = false; localStorage.setItem('cortege-seen', '1'); } } catch {}
