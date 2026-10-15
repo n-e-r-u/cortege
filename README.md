@@ -17,7 +17,7 @@ Variables d'environnement :
 | `PORT` | `8080` | Port d'écoute |
 | `EVENT_NAME` | `Carte des mobilisations` | Texte sous le logo (ex. « Mobilisation du 17 octobre ») |
 | `CENTER` / `ZOOM` | `46.6,2.4` / `6` | Vue d'ouverture quand la position n'est pas partagée (France entière) |
-| `ADMIN_KEY` | vide | Clé d'accès au digest (`/digest.html`). Vide = digest désactivé |
+| `ADMIN_KEY` | vide | Clé d'accès à l'administration, aléatoire, 12 caractères minimum (32 conseillés). Vide = administration désactivée |
 | `ORGA_KEYS` | vide | Accès orga / legal team : `Nom affiché:clé,Autre nom:clé2` (clés de 12 caractères minimum) |
 | `CONTACT_EMAIL` | vide | Adresse de contact affichée dans les mentions légales (obligatoire avant lancement) |
 | `HOST_INFO` | vide | Coordonnées complètes de l'hébergeur pour les mentions légales |
@@ -27,9 +27,7 @@ Variables d'environnement :
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel |
 | `BRAND_HANDLE` | `neru` | Pseudo affiché (« Cortège par @neru ») |
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/neru/` | Lien du logo et de la carte « Suivre » |
-| `DATA_DIR` | `~/.cortege-data` | Où est gardée la base `cortege.db` (hors du dossier web) |
-| `MAX_REPORTS` | `20000` | Signalements actifs en même temps, toute la France |
-| `FLUSH_MS` | `1000` | Délai max avant publication d'un signalement dans `live/` |
+| `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
@@ -51,7 +49,7 @@ Dépose ton logo en `public/brand/logo.png` (carré, 512×512 conseillé). Il s'
 
 Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jour des fichiers : bouton **Restart**.
 
-Mise à jour depuis une version d'avant SQLite : l'ancien `state.json` est repris automatiquement au premier démarrage (renommé ensuite `state.json.repris-…`), et `live/` est régénéré.
+Mise à jour depuis une version d'avant SQLite : les données sont reprises automatiquement au premier démarrage.
 
 ### VPS avec Docker
 
@@ -61,50 +59,44 @@ docker build -t cortege . && docker run -d -p 127.0.0.1:8080:8080 -v cortege-dat
 
 ## Charge serveur
 
-- **Base de données** : SQLite intégré à Node (`node:sqlite`, mode WAL), fichier `DATA_DIR/cortege.db`. Plusieurs processus Passenger peuvent écrire en même temps sans se marcher dessus. Mesuré : ~1 500 signalements/s sur 2 processus (médiane 9 ms), contre ~50/s avec l'ancien fichier JSON.
-- **Lectures** : Node publie des fichiers statiques que Apache sert sans réveiller Node :
-  - `live/g.json` : empreintes des annonces, de l'agenda et de la pause (quelques octets) ;
-  - `live/r/<région>.json` : empreinte de chaque case dans une région de 1° ;
-  - `live/c/<case>.json` : signalements d'une case de ~5 km ;
-  - `live/all.json` (vue nationale, réécrit au plus toutes les 10 s), `live/ann.json`, `live/events.json` ;
-  - `live/index.json` : ancien format, gardé pour les téléphones pas encore mis à jour.
-  Les écritures sont regroupées : au plus une publication par seconde, seulement pour les cases modifiées.
+- **Base de données** : SQLite intégré à Node (`node:sqlite`, mode WAL), dans `DATA_DIR`. Plusieurs processus Passenger peuvent écrire en même temps sans se marcher dessus.
+- **Lectures** : Node publie dans `live/` des fichiers statiques (par zone de ~5 km) qu'Apache sert sans réveiller Node. Ils ne contiennent que ce que la carte affiche publiquement. Les publications sont regroupées et ne touchent que les zones modifiées.
 - **Rythme des téléphones** : 5 s s'il se passe quelque chose autour (signalement de moins de 15 min ou changement récent), 12 s sinon, 20 s en vue nationale, ×3 en mode économie. Décalage aléatoire de ±15 % pour éviter les pics synchronisés ; espacement jusqu'à 60 s si le réseau sature. Presque toutes les réponses sont des 304 vides.
 - **Tuiles** : chaque tuile téléchargée une fois chez OpenStreetMap est écrite dans `tiles/` ; Apache la sert ensuite. Purge automatique au-delà de 30 jours (`TILE_DAYS`).
 
 ## Anti-abus
 
-- Limites par téléphone (identifiant aléatoire, jamais stocké en clair) : 8 signalements et 40 votes / 5 min. Plafond large par IP (60 / 400) car en 4G des centaines d'abonnés partagent la même adresse.
-- Un point est retiré par 2 « Plus là » venant de 2 réseaux différents (et plus nombreux que les « Toujours là ») ; jamais s'il est vérifié par une orga.
-- Admin › Urgences : pause des signalements (15 min / 1 h), suppression d'un point, purge totale.
+- Limites de fréquence par téléphone (identifiant aléatoire, jamais stocké en clair) et par réseau.
+- Un point peut être retiré par les votes « Plus là » de plusieurs personnes ; jamais s'il est vérifié par une orga.
+- Administration : pause des signalements, suppression d'un point, purge totale.
 
 ## Carte nationale
 
 Une seule carte pour toute la France. Le téléphone s'ouvre sur la position de l'utilisateur (si déjà autorisée), sinon sur la France avec une recherche de ville. Il ne charge que les signalements de la zone affichée et des environs de l'utilisateur ; le serveur reçoit seulement des carrés arrondis (≈ 5 km), jamais la position exacte. En dézoomant, les points se regroupent en bulles numérotées.
 
-## Administration : `cortege.neru.tv/admin.html`
+## Administration
 
 Avec la clé `ADMIN_KEY` :
-- **Orgas** : ajouter une orga (nom affiché sur ses annonces) → un lien d'accès unique `https://cortege.neru.tv/?orga=…` s'affiche une seule fois, à copier et envoyer par Signal. Supprimer une orga coupe son accès immédiatement. Seule l'empreinte des clés est stockée (`~/.cortege-data/orgas.json`).
+- **Orgas** : ajouter une orga (nom affiché sur ses annonces) → un lien d'accès unique s'affiche une seule fois, à transmettre par messagerie chiffrée. Supprimer une orga coupe son accès immédiatement. Seule l'empreinte des clés est stockée.
 - **Digest** : bilan anonyme par jour.
 
-Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : annonces localisées (info ou urgente, 1 à 30 km, 30 min à 12 h), numéro de legal team (affiché dans « Mes droits » pour la zone), et sur chaque signalement « Vérifier » ou « Retirer (faux) ». Ton lien `?orga=ADMIN_KEY` peut tout retirer.
+Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : annonces localisées (info ou urgente, 1 à 30 km, 30 min à 12 h), numéro de legal team (affiché dans « Mes droits » pour la zone), et sur chaque signalement « Vérifier » ou « Retirer (faux) ».
 
 `ORGA_KEYS` (variable) reste possible mais n'est plus nécessaire.
 
 ## Digest
 
-Onglet Digest de la page admin : total du jour, par type (avec l'heure du premier signalement), par heure, par ville, et un résumé prêt à copier. L'archive ne garde que la catégorie, l'heure à la minute et une position arrondie à ~100 m. Les points retirés par « Plus là » sont exclus.
+Onglet Digest de l'administration : total du jour, par type (avec l'heure du premier signalement), par heure, par ville, et un résumé prêt à copier. L'archive ne garde que la catégorie, l'heure à la minute et une position arrondie à ~100 m. Les points retirés par « Plus là » sont exclus.
 
 ## Comment ça marche
 
-- **Agenda 📅** : manifs, blocus (lycée / fac), rassemblements, AG. Les orgas publient directement (avec parcours tracé sur la carte et point de dispersion) ; tout le monde peut proposer un événement, qui apparaît après validation dans admin › Agenda. Les événements du moment s’affichent sur la carte avec leur parcours.
+- **Agenda 📅** : manifs, blocus (lycée / fac), rassemblements, AG. Les orgas publient directement (avec parcours tracé sur la carte et point de dispersion) ; tout le monde peut proposer un événement, qui apparaît après validation. Les événements du moment s’affichent sur la carte avec leur parcours.
 - **Bien se préparer 🎒** : checklist (sac, téléphone, groupe), conseils pendant la manif, gaz lacrymogène, règle AMIS en cas d’interpellation, et point de ralliement du groupe placé sur la carte (reste sur le téléphone, partageable par messagerie).
-- **Import du 17 octobre** : toutes les 15 min, le serveur importe dans l’agenda les manifestations et rassemblements annoncés sur la carte participative 17octobregiletjaune.net (réutilisation autorisée). Les blocages de stations, raffineries, péages ne sont pas importés. Un événement importé retiré dans admin › Agenda ne revient pas. Variables : `IMPORT_17OCT=0` pour couper, `IMPORT_17OCT_UNTIL` (défaut `2026-11-01`).
+- **Import du 17 octobre** : toutes les 15 min, le serveur importe dans l’agenda les manifestations et rassemblements annoncés sur la carte participative 17octobregiletjaune.net (réutilisation autorisée). Les blocages de stations, raffineries, péages ne sont pas importés. Un événement importé retiré par l'administration ne revient pas. Variables : `IMPORT_17OCT=0` pour couper, `IMPORT_17OCT_UNTIL` (défaut `2026-11-01`).
 - **SOS** : en cas d’interpellation, un SMS pré-rempli (heure, position, numéro de la legal team de la zone) part vers un proche choisi à l’avance. Le contact reste sur le téléphone, le SMS ne passe pas par le serveur.
 - **Économie de batterie** (réglage dans « ? ») : synchro toutes les 20 s, GPS moins précis, boussole coupée.
-- **Notifications** (réglage dans « ? ») : les annonces urgentes arrivent même appli fermée (Web Push chiffré, clés VAPID générées au premier démarrage dans `DATA_DIR/vapid.json`, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
-- **Annonces nationales** : admin › Annonces, ou case « Annonce nationale » dans l’espace orga avec le lien admin. Les numéros de legal team sont permanents jusqu’à leur retrait.
+- **Notifications** (réglage dans « ? ») : les annonces urgentes arrivent même appli fermée (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
+- **Annonces nationales** : réservées à l’administration. Les numéros de legal team sont permanents jusqu’à leur retrait.
 
 - **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie, précision facultative de 120 caractères.
 - **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Deux « Plus là » majoritaires suppriment le point.
@@ -113,7 +105,7 @@ Onglet Digest de la page admin : total du jour, par type (avec l'heure du premie
 
 ## Ce que le serveur sait et ne sait pas
 
-- Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base SQLite (`~/.cortege-data/cortege.db`, hors du dossier web) et supprimés à expiration.
+- Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base hors du dossier web et supprimés à expiration.
 - La position de l'utilisateur ne quitte jamais le téléphone. Seuls les signalements sont envoyés, arrondis à ~11 m.
 - L'anti-spam utilise une empreinte de l'IP (HMAC avec une clé secrète, renouvelée toutes les 6 h), effacée avec le signalement. Sur un hébergement mutualisé, l'hébergeur garde ses propres journaux d'accès : l'appli ne peut rien y faire.
 - Les tuiles passent par le serveur : les IP des manifestant·es ne partent pas chez le fournisseur de carte.

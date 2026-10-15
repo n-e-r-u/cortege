@@ -16,7 +16,11 @@ const PORT = Number(process.env.PORT) || 8080;
 const EVENT_NAME = process.env.EVENT_NAME || 'Carte des mobilisations';
 const CENTER = (process.env.CENTER || '46.6,2.4').split(',').map(Number); // France entière par défaut
 const ZOOM = Number(process.env.ZOOM) || 6;
-const ADMIN_KEY = process.env.ADMIN_KEY || '';          // accès au digest ; vide = digest désactivé
+// Accès admin ; vide = admin désactivé. Une clé trop courte est refusée (elle se devinerait).
+const ADMIN_KEY = (k => {
+  if (k && k.length < 12) { console.error('ADMIN_KEY trop courte (12 caractères minimum) : administration désactivée.'); return ''; }
+  return k;
+})(process.env.ADMIN_KEY || '');
 const ARCHIVE_DAYS = Number(process.env.ARCHIVE_DAYS) || 60;
 // Clés orga / legal team : « Nom affiché:clé » séparés par des virgules.
 // ex. ORGA_KEYS="Legal Team Montpellier:k7f…,Intersyndicale Lyon:p2x…"
@@ -148,16 +152,31 @@ function writeOrgas(list) {
   fs.renameSync(tmp, ORGA_FILE());
   orgaCache.mtime = -1;
 }
-function isAdmin(req) { return !!ADMIN_KEY && keyEq(String(req.headers['x-admin-key'] || ''), ADMIN_KEY); }
+// Clés admin / orga : au-delà de 10 essais ratés en 5 min depuis un même réseau, tout est refusé,
+// même la bonne clé (empêche de deviner une clé en essayant en boucle).
+const KEY_TRIES = 10;
+const keySlot = req => 'key:' + clientHash(req);
+function keyLocked(req) {
+  try { const r = q('SELECT t, reports FROM rate WHERE k=?').get(keySlot(req)); return !!r && Date.now() - r.t <= RATE.windowMs && r.reports >= KEY_TRIES; }
+  catch { return false; }
+}
+function keyFailed(req) { try { bump(keySlot(req), 'report', Infinity, Date.now()); } catch {} }
+function isAdmin(req) {
+  const k = String(req.headers['x-admin-key'] || '');
+  if (!ADMIN_KEY || !k || keyLocked(req)) return false;
+  if (keyEq(k, ADMIN_KEY)) return true;
+  keyFailed(req); return false;
+}
 function orgaOf(req) {
   const k = String(req.headers['x-orga-key'] || '');
-  if (!k) return null;
+  if (!k || keyLocked(req)) return null;
   if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { label: ADMIN_LABEL, admin: true };
   const env = ORGAS.find(o => keyEq(k, o.key));
   if (env) return { label: env.label, admin: false };
   const h = sha(k);
   const o = readOrgas().find(o => keyEq(h, o.hash));
-  return o ? { label: o.label, admin: false } : null;
+  if (o) return { label: o.label, admin: false };
+  keyFailed(req); return null;
 }
 const sleep = ms => { try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch { const e = Date.now() + ms; while (Date.now() < e); } };
 function withLock(fn, lockFile = LOCK_FILE) {
@@ -812,9 +831,9 @@ const server = http.createServer(async (req, res) => {
     // Vérification d'installation : ne renvoie jamais d'IP, seulement si un en-tête a été trouvé.
     if (req.method === 'GET' && pathname === '/api/health') {
       let writable = true; try { fs.accessSync(DATA_DIR, fs.constants.W_OK); } catch { writable = false; }
-      return send(res, 200, { ok: true, node: process.version, passenger: UNDER_PASSENGER, trustProxy: TRUST_PROXY,
+      return send(res, 200, { ok: true, nodeOk: !!DatabaseSync, passenger: UNDER_PASSENGER, trustProxy: TRUST_PROXY,
         ipHeaderSeen: !!(req.headers['x-forwarded-for'] || req.headers['x-real-ip']),
-        cdn: !!req.headers['cf-connecting-ip'], ipIsPublic: !PRIVATE_IP.test(clientIp(req)), storageWritable: writable, pid: process.pid,
+        cdn: !!req.headers['cf-connecting-ip'], ipIsPublic: !PRIVATE_IP.test(clientIp(req)), storageWritable: writable,
         database: 'sqlite', activeReports: q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(Date.now()).n });
     }
 
