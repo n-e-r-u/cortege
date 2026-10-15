@@ -325,46 +325,44 @@
     <h2 id="prTitle">Bien se préparer</h2>
     <button class="x" id="prClose" aria-label="Fermer">×</button>
   </div>
-  <p class="hint">Coche au fur et à mesure : tout reste sur ton téléphone. <b id="prepCount"></b></p>
+  <p class="hint">Checklist gardée sur ton téléphone. <b id="prepCount"></b></p>
 
   <details class="right" open>
-    <summary>1. Ton sac</summary>
+    <summary>1. Le sac</summary>
     <ul class="checklist" data-group="sac">
-      <li><label><input type="checkbox" data-k="chaussures"> Chaussures confortables et fermées</label></li>
-      <li><label><input type="checkbox" data-k="vetements"> Vêtements couvrants (bras et jambes)</label></li>
-      <li><label><input type="checkbox" data-k="lunettes"> Lunettes de protection (natation, ski…)</label></li>
-      <li><label><input type="checkbox" data-k="masque"> Masques FFP2 ou FFP3, idéalement deux</label></li>
+      <li><label><input type="checkbox" data-k="chaussures"> Chaussures fermées</label></li>
+      <li><label><input type="checkbox" data-k="vetements"> Vêtements couvrants</label></li>
+      <li><label><input type="checkbox" data-k="lunettes"> Lunettes de protection</label></li>
+      <li><label><input type="checkbox" data-k="masque"> Masques FFP2 ou FFP3</label></li>
       <li><label><input type="checkbox" data-k="serum"> Sérum physiologique en dosettes</label></li>
-      <li><label><input type="checkbox" data-k="eau"> De l’eau et de quoi grignoter</label></li>
-      <li><label><input type="checkbox" data-k="papier"> Sur papier : le numéro d’un proche, d’un·e avocat·e et de la legal team</label></li>
-      <li><label><input type="checkbox" data-k="batterie"> Téléphone chargé, batterie externe si tu en as une</label></li>
+      <li><label><input type="checkbox" data-k="eau"> Eau et de quoi manger</label></li>
+      <li><label><input type="checkbox" data-k="papier"> Numéros notés sur papier : proche, avocat·e, legal team</label></li>
+      <li><label><input type="checkbox" data-k="batterie"> Batterie externe</label></li>
     </ul>
-    <div class="prep-note"><b>Point légal :</b> avoir un masque, du sérum et des lunettes dans son sac n’est pas une infraction. La police peut quand même les confisquer, ou s’en servir pour te prêter l’intention de rejoindre des affrontements : ce sont des protections, dis-le.</div>
+    <div class="prep-note"><b>Point légal :</b> masque, sérum et lunettes dans le sac ne sont pas une infraction. Ils peuvent quand même être confisqués.</div>
     <ul class="tips-small">
-      <li>Lentilles de contact : préfère tes lunettes, le gaz se coince dessous.</li>
-      <li>Évite le maquillage et les crèmes grasses, qui retiennent le gaz sur la peau.</li>
-      <li>Ne te rase pas juste avant si ça irrite ta peau.</li>
+      <li>Lunettes plutôt que lentilles, pas de crème grasse : le gaz s’y accroche.</li>
     </ul>
   </details>
 
   <details class="right">
-    <summary>2. Ton téléphone</summary>
+    <summary>2. Le téléphone</summary>
     <ul class="checklist" data-group="tel">
-      <li><label><input type="checkbox" data-k="signal"> Installe <b>Signal</b> et vérifie que ton groupe l’utilise</label></li>
-      <li><label><input type="checkbox" data-k="bluetooth"> Installe une messagerie qui marche sans réseau, en Bluetooth : <b>Bitchat</b> (iPhone et Android) ou <b>Briar</b> (Android). Plus il y a de monde dessus, mieux ça marche.</label></li>
-      <li><label><input type="checkbox" data-k="sauvegarde"> Fais une sauvegarde avant de partir</label></li>
+      <li><label><input type="checkbox" data-k="signal"> Signal installé</label></li>
+      <li><label><input type="checkbox" data-k="bluetooth"> <span><b>Bitchat</b> installé : messagerie en Bluetooth, sans réseau</span></label></li>
+      <li><label><input type="checkbox" data-k="sauvegarde"> Sauvegarde faite</label></li>
       <li><label><input type="checkbox" data-k="code"> Déverrouillage par code, pas par empreinte ni visage</label></li>
-      <li><label><input type="checkbox" data-k="hors-ligne"> Garde la carte de ta zone hors ligne <button type="button" class="link-btn" id="prepOffline">le faire maintenant</button></label></li>
-      <li><label><input type="checkbox" data-k="proche"> Préviens une personne de confiance que tu vas en manif <button type="button" class="link-btn" id="prepSos">choisir mon contact SOS</button></label></li>
+      <li><label><input type="checkbox" data-k="hors-ligne"> <span>Carte de la zone gardée hors ligne · <button type="button" class="link-btn" id="prepOffline">le faire</button></span></label></li>
+      <li><label><input type="checkbox" data-k="proche"> <span>Un proche prévenu · <button type="button" class="link-btn" id="prepSos">contact SOS</button></span></label></li>
     </ul>
   </details>
 
   <details class="right">
-    <summary>3. Ton groupe</summary>
+    <summary>3. Le groupe</summary>
     <ul class="checklist" data-group="groupe">
-      <li><label><input type="checkbox" data-k="binome"> Ne reste jamais seul·e : au minimum en binôme</label></li>
-      <li><label><input type="checkbox" data-k="ralliement"> Fixez un point de ralliement en cas de séparation</label></li>
-      <li><label><input type="checkbox" data-k="partage"> Répartissez l’eau, le sérum et le matériel de soin</label></li>
+      <li><label><input type="checkbox" data-k="binome"> En binôme au minimum</label></li>
+      <li><label><input type="checkbox" data-k="ralliement"> Point de ralliement fixé</label></li>
+      <li><label><input type="checkbox" data-k="partage"> Eau, sérum et soins répartis</label></li>
     </ul>
     <div class="rally-box">
       <div id="rallyState">Aucun point de ralliement.</div>
@@ -372,48 +370,41 @@
         <button type="button" class="secondary" id="rallySet">Placer sur la carte</button>
         <button type="button" class="secondary" id="rallyShare" disabled>Partager au groupe</button>
       </div>
-      <p class="fine">Le point reste sur ton téléphone. « Partager » l’envoie à ton groupe par la messagerie de ton choix.</p>
+      <p class="fine">Le point reste sur ton téléphone, sauf si tu le partages.</p>
     </div>
   </details>
 
   <details class="right">
-    <summary>4. Pendant la manif</summary>
+    <summary>4. Sur place</summary>
     <ul>
-      <li>Repère les sorties et reste attentif·ve aux mouvements de foule.</li>
-      <li><b>Ne ramasse jamais une grenade</b> ni un projectile.</li>
-      <li>Filmer la police est légal. Évite de filmer les autres manifestant·es, ou floute-les.</li>
-      <li>Si quelqu’un est en difficulté, ne le laisse pas seul : appelle du renfort, un street medic ou le 112.</li>
-      <li>Évite les mouvements de panique. En cas de charge ou de gaz, regarde d’où vient le vent et éloigne-toi en marchant si tu peux : la course crée des chutes.</li>
-      <li>Séparé·e de ton groupe ? Rejoins le point de ralliement.</li>
-      <li>Une info utile ? Signale-la sur la carte pour les autres.</li>
+      <li>Ne ramasse jamais une grenade ni un projectile.</li>
+      <li>Filmer la police est légal. Floute les manifestant·es avant de publier.</li>
+      <li>Blessé·e : street medic ou 112.</li>
     </ul>
   </details>
 
   <details class="right">
     <summary>5. Gaz lacrymogène</summary>
     <ul>
-      <li>Masque FFP2 ou FFP3 et lunettes de protection.</li>
-      <li>Éloigne-toi de la zone dès que possible, dos au vent.</li>
-      <li><b>Ne te frotte pas les yeux.</b> Rince-les à l’eau propre ou au sérum physiologique, sans frotter.</li>
-      <li>Dès que possible, retire les vêtements touchés et lave ta peau à l’eau et au savon.</li>
-      <li>Gêne respiratoire, douleur forte ou qui dure : va voir un street medic ou appelle le 112. Signale les street medics sur la carte.</li>
+      <li>Rince les yeux à l’eau ou au sérum, sans frotter.</li>
+      <li>Retire les vêtements touchés, lave la peau à l’eau et au savon.</li>
+      <li>Gêne qui dure : street medic ou 112.</li>
     </ul>
   </details>
 
   <details class="right">
-    <summary>6. Interpellation : la règle AMIS</summary>
+    <summary>6. Interpellation : AMIS</summary>
     <ul>
-      <li><b>A</b>vocat·e : demande-le dès le début. Retiens le nom d’un·e avocat·e qui défend les manifestant·es.</li>
-      <li><b>M</b>édecin : tu peux demander à être examiné·e, même sans blessure apparente.</li>
-      <li><b>I</b>nformer un proche : tu peux faire prévenir quelqu’un.</li>
-      <li><b>S</b>ilence : après avoir donné ton identité, tu peux te taire. Ça ne te sera pas reproché.</li>
-      <li>Ne signe pas un procès-verbal inexact ou que tu n’as pas compris.</li>
-      <li>Refuser photo, empreintes ou ADN est un délit en soi : décide-le avec ton avocat·e.</li>
+      <li><b>A</b>vocat·e dès le début.</li>
+      <li><b>M</b>édecin : examen sur demande.</li>
+      <li><b>I</b>nformer un proche.</li>
+      <li><b>S</b>ilence, après avoir donné ton identité.</li>
+      <li>Aucune signature d’un procès-verbal inexact.</li>
+      <li>Refuser photo, empreintes ou ADN est un délit en soi.</li>
     </ul>
-    <button type="button" class="secondary" id="prepRights">Voir tous mes droits</button>
+    <button type="button" class="secondary" id="prepRights">Tous mes droits</button>
   </details>
   <button type="button" class="ghost" id="prepReset">Tout décocher pour la prochaine manif</button>
-  <p class="fine">On se protège, on se soutient, on reste solidaires. Conseils compilés à partir des guides de collectifs militants et de street medics.</p>
 </section>
 
 <div class="drawbar" id="pickBar" hidden>

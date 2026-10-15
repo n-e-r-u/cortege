@@ -705,7 +705,8 @@
   const fmtWhen = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const fmtHour = t => new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
-  const evOnMap = e => e.id === selectedEv || (e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  const evOnMap = e => e.id === selectedEv || (map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  map.on('zoomend', () => { const z = map.getZoom() >= 9; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
   function evPopup(e) {
     const t = EVT[e.type] || { glyph: '📍', label: '' };
     const root = el('div');
@@ -714,6 +715,7 @@
     root.append(el('div', { class: 'pop-meta' }, '📍 ' + e.place + (me ? ' · ' + fmtDist(dist(me, [e.lat, e.lng])) : '')));
     if (e.note) root.append(el('p', { class: 'pop-note' }, e.note));
     root.append(el('div', { class: 'pop-meta' }, 'Publié par ' + e.by));
+    if (e.link) root.append(el('a', { class: 'ann-link', href: e.link, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la carte d’origine →'));
     if (orga && (orga.admin || e.by === orga.label)) {
       const rm = el('button', { class: 'danger' }, 'Retirer cet événement');
       rm.onclick = async () => {
@@ -750,6 +752,7 @@
     $('#agEmpty').textContent = scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
       : me ? 'Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».' : 'Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».';
     let day = '';
+    if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, `${list.length} événements : les 200 premiers`));
     for (const e of list.slice(0, 200)) {
       const d = e.start < now ? 'En cours' : new Date(e.start).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
       if (d !== day) { day = d; ol.append(el('li', { class: 'ag-day' }, d)); }
