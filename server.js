@@ -77,6 +77,28 @@ const EVT = Object.fromEntries(EVENT_TYPES.map(e => [e.id, e]));
 const ADMIN_LABEL = process.env.ADMIN_LABEL || 'Cortège';   // nom affiché sur les annonces de l'admin
 const PUBLIC_URL = process.env.PUBLIC_URL || 'https://cortege.neru.tv';
 const CAT = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+// Fusion : un signalement du même type dans ce rayon (m) confirme le point existant au lieu d'en créer un.
+// « move » : le point glisse vers le signalement le plus récent (unités qui se déplacent).
+const MERGE = {
+  crs: { r: 100, move: true }, police: { r: 100, move: true }, bac: { r: 100, move: true }, canon: { r: 100, move: true },
+  nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
+  medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
+  cortege: { r: 200, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
+};
+// Un danger signalé près d'une « zone calme » la retire aussitôt : en cas de doute, le danger l'emporte.
+const CALM_KILL_M = 100;
+const isDanger = cat => CAT[cat] && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
+const distM = (a, b) => {
+  const k = Math.PI / 180, x = (b.lng - a.lng) * k * Math.cos((a.lat + b.lat) / 2 * k), y = (b.lat - a.lat) * k;
+  return Math.sqrt(x * x + y * y) * 6371000;
+};
+// Points actifs d'une catégorie autour d'une position (pré-filtre par carré, puis distance réelle)
+function nearby(cat, lat, lng, m, now) {
+  const dLat = m / 111000, dLng = m / (111000 * Math.max(0.2, Math.cos(lat * Math.PI / 180)));
+  return q('SELECT * FROM reports WHERE cat=? AND exp>? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?')
+    .all(cat, now, lat - dLat, lat + dLat, lng - dLng, lng + dLng)
+    .map(r => ({ r, d: distM({ lat, lng }, r) })).filter(x => x.d <= m).sort((a, b) => a.d - b.d);
+}
 const GROUPS = [
   { id: 'fdo', label: 'Forces de l’ordre' },
   { id: 'danger', label: 'Danger' },
@@ -242,17 +264,22 @@ const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p 
 // Signalements
 // Empreinte du réseau de l'auteur (même HMAC tournant que l'anti-spam), effacée avec le signalement.
 try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
+// Heure de la dernière confirmation ou du dernier signalement fusionné
+try { db.exec('ALTER TABLE reports ADD COLUMN last INTEGER'); } catch {}
 db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
+db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down,
-  ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]') });
+  ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
   const cell = cellId(r.lat, r.lng);
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-     ON CONFLICT(id) DO UPDATE SET exp=excluded.exp, up=excluded.up, down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips`)
+  if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, exp=excluded.exp, up=excluded.up,
+       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null);
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t);
   dirtyCell(cell);
 }
 function dropReport(id, dismissed) {
@@ -308,7 +335,7 @@ function sweep() {
   } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
 }
 setInterval(sweep, 30_000).unref();
-const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
+const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
@@ -809,7 +836,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub });
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1008,10 +1035,36 @@ const server = http.createServer(async (req, res) => {
       const note = String(b.note || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, NOTE_MAX);
       const ipH = clientHash(req), dev = deviceHash(req);
       const result = tx(() => {
-        const now = Date.now();
+        const now = Date.now(), ttl = cat.ttl * MIN;
+        // Heure où le signalement a été fait (file d'attente hors ligne). Jamais dans le futur ;
+        // mentir dessus ne peut que raccourcir la vie du point.
+        const t0 = Math.min(now, Number(b.t) || now);
+        if (t0 + ttl <= now) return [410, { error: 'Signalement trop ancien, il n’a pas été publié.', stale: true }];
         if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
         if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }];
-        const cell = cellId(round(lat), round(lng));
+        const pos = { lat: round(lat), lng: round(lng) };
+        const killCalm = () => { if (isDanger(cat.id)) for (const x of nearby('calme', pos.lat, pos.lng, CALM_KILL_M, now)) dropReport(x.r.id, true); };
+
+        if (cat.id === 'calme' && CATEGORIES.some(c => isDanger(c.id) && nearby(c.id, pos.lat, pos.lng, CALM_KILL_M, now).length))
+          return [409, { error: 'Un danger est signalé à moins de 100 m : la zone ne peut pas être marquée calme.' }];
+        // Même type tout près : on confirme le point existant au lieu d'en créer un deuxième
+        const m = MERGE[cat.id] || { r: 50 };
+        const hit = nearby(cat.id, pos.lat, pos.lng, m.r, now)[0];
+        if (hit) {
+          const r = toReport(hit.r), self = r.voters.includes(dev);
+          if (!self) { r.voters.push(dev); r.up++; }
+          // Preuve plus fraîche que les « Plus là » : on les efface
+          if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; }
+          if (m.move && t0 >= (r.last || r.t)) { r.lat = pos.lat; r.lng = pos.lng; }
+          if (note && !r.note) r.note = note;
+          r.last = Math.max(r.last || r.t, t0);
+          r.exp = Math.max(r.exp, t0 + ttl);
+          saveReport(r);
+          killCalm();
+          return [200, { ...publicView(r), merged: true, self }];
+        }
+
+        const cell = cellId(pos.lat, pos.lng);
         if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND ip=? AND exp>?').get(cell, ipH, now).n >= MAX_PER_NET_ZONE)
           return [429, { error: 'Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent.' }];
         if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND exp>?').get(cell, now).n >= MAX_PER_ZONE) {
@@ -1021,9 +1074,10 @@ const server = http.createServer(async (req, res) => {
           dropReport(old.id, true);
         }
         if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
-        const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: round(lat), lng: round(lng), note,
-          t: now, exp: now + cat.ttl * MIN, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
+        const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note,
+          t: t0, last: t0, exp: t0 + ttl, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
         saveReport(r);
+        killCalm();
         return [201, publicView(r)];
       });
       return send(res, ...result);
@@ -1049,7 +1103,7 @@ const server = http.createServer(async (req, res) => {
         if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop de votes, patiente un peu.' }];
         r.voters.push(dev);
         if (b.v === 1) {
-          r.up++;
+          r.up++; r.last = now;
           const ttl = CAT[r.cat].ttl * MIN;
           r.exp = Math.min(Math.max(r.exp, now + ttl), r.t + 4 * ttl); // prolonge, plafonné à 4× la durée de base
         } else {

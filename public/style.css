@@ -335,3 +335,18 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .rally-box .secondary:disabled { opacity: .4; }
 .rally-pin { font-size: 30px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.7)); }
 .ann-link { display: inline-block; margin-top: 4px; color: var(--accent); font-weight: 700; font-size: 13px; }
+
+/* Fusion : point déjà signalé sous le viseur, nombre de personnes */
+.cat .sub { font-size: 10.5px; font-weight: 700; color: var(--c); min-height: 0; }
+.cat .sub:empty { display: none; }
+.cat.exists { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface-2)); }
+.pop-count { font-size: 12.5px; font-weight: 700; margin-top: 4px; color: var(--fg); }
+/* Piles : plusieurs types au même endroit */
+.pin.stack { width: auto; min-width: 40px; padding: 0 7px; border-radius: 22px; display: flex; gap: 2px; align-items: center; justify-content: center; font-size: 18px; }
+.pin.stack b { font-size: 12px; font-weight: 800; margin-left: 2px; }
+.pop-stack hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
+/* File d'attente hors ligne */
+.queue-chip { font-size: 12px; font-weight: 700; color: var(--fdo); background: var(--surface); border: 1px solid var(--fdo); padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
+#queueList li { grid-template-columns: 36px 1fr auto; }
+.q-cancel { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 10px; padding: 8px 10px; font-size: 12.5px; }
+#btnQueueRetry { margin-top: 14px; }

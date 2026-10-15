@@ -40,6 +40,7 @@
   </a>
   <div class="top-right">
     <span class="orga-chip" id="orgaChip" hidden></span>
+    <button class="queue-chip" id="queueChip" hidden>⏳ 0</button>
     <div class="status" id="status" data-state="connecting"><span class="dot"></span><span class="txt">Connexion…</span></div>
     <button class="share-btn" id="btnShareTop" title="Partager l’appli" aria-label="Partager l’appli (QR code)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"></path></svg>
@@ -98,6 +99,18 @@
   <label class="note-label" for="srNote">Précision (facultatif)</label>
   <input id="srNote" maxlength="120" placeholder="ex. : remontent le boulevard vers la gare" autocomplete="off">
   <p class="fine">Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class="inline-link" href="/legal.html#regles">Règles</a></p>
+</section>
+
+<!-- File d'attente hors ligne -->
+<section class="sheet" id="sheetQueue" hidden aria-labelledby="sqTitle">
+  <div class="sheet-head">
+    <h2 id="sqTitle">En attente de réseau</h2>
+    <button class="x" id="sqClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="hint">Ces signalements partent dès que ton téléphone capte. S’ils ont dépassé leur durée de vie entre-temps, ils ne sont pas publiés.</p>
+  <ol id="queueList" class="list"></ol>
+  <p class="empty" id="queueEmpty" hidden>Tout est parti.</p>
+  <button class="secondary" id="btnQueueRetry">Réessayer maintenant</button>
 </section>
 
 <!-- Recherche -->

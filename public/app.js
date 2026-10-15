@@ -24,6 +24,8 @@
   })();
   const cfg = await fetch('/api/config').then(r => r.json());
   const CAT = Object.fromEntries(cfg.categories.map(c => [c.id, c]));
+  const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
+  const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
   const GROUP_COLOR = { fdo: 'var(--fdo)', danger: 'var(--danger)', soutien: 'var(--soutien)', info: 'var(--info)' };
   $('#eventName').textContent = cfg.event;
   if (cfg.violenceUrl) document.querySelectorAll('#violenceLink, .violence-inline').forEach(a => (a.href = cfg.violenceUrl));
@@ -36,6 +38,8 @@
   }
 
   // ---- Carte ----
+  // Les popups ne doivent pas finir sous l'en-tête ni sous le bouton « Signaler »
+  L.Popup.mergeOptions({ autoPanPaddingTopLeft: L.point(12, 120), autoPanPaddingBottomRight: L.point(12, 150) });
   const map = L.map('map', { zoomControl: false, attributionControl: true, maxZoom: 19 }).setView(cfg.center, cfg.zoom || 6);
   // Regroupement des points quand on dézoome (bulle = nombre de signalements, couleur = le plus grave)
   const SEVERITY = ['fdo', 'danger', 'info', 'soutien'];
@@ -79,7 +83,7 @@
   // ---- Marqueurs ----
   function icon(r, fresh) {
     const c = CAT[r.cat];
-    const age = Date.now() - r.t, ttl = c.ttl * MIN;
+    const age = Date.now() - (r.last || r.t), ttl = c.ttl * MIN;
     const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
       html: `<div class="${cls}${r.ver ? ' ver' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
@@ -88,8 +92,10 @@
     const c = CAT[r.cat];
     const root = el('div');
     root.append(el('div', { class: 'pop-title' }, c.glyph + ' ', c.label));
-    const meta = `${ago(r.t)} · expire dans ${left(r.exp)}` + (r.up ? ` · confirmé ${r.up}×` : '') + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
+    const revu = r.last && r.last - r.t >= MIN ? ` · revu ${ago(r.last)}` : '';
+    const meta = `${ago(r.t)}${revu} · expire dans ${left(r.exp)}` + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
     root.append(el('div', { class: 'pop-meta' }, meta));
+    if (r.up > 0) root.append(el('div', { class: 'pop-count' }, `Signalé par ${r.up + 1} personnes`));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ Vérifié par ' + r.ver));
     if (r.note) root.append(el('p', { class: 'pop-note' }, r.note));
     const yes = el('button', { class: 'yes' }, 'Toujours là');
@@ -111,23 +117,85 @@
   function upsert(r, fresh = false) {
     const cur = reports.get(r.id);
     if (cur) {
+      const moved = cur.data.lat !== r.lat || cur.data.lng !== r.lng;
       cur.data = r;
+      if (moved) cur.marker.setLatLng([r.lat, r.lng]); // point de forces de l'ordre qui s'est déplacé
       cur.marker.setIcon(icon(r, false));
       if (cur.marker.isPopupOpen()) cur.marker.setPopupContent(popup(r));
     } else {
       const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat });
       marker.bindPopup(() => popup(reports.get(r.id).data));
-      reports.set(r.id, { data: r, marker });
-      if (!hidden.has(CAT[r.cat].group)) layer.addLayer(marker);
+      reports.set(r.id, { data: r, marker }); // affiché par regroup()
     }
   }
   function drop(id) {
     const cur = reports.get(id);
     if (cur) { layer.removeLayer(cur.marker); reports.delete(id); }
   }
+
+  // ---- Piles : des types différents à moins de 30 m s'affichent en une seule pastille ----
+  // Les données restent séparées (chaque type garde ses votes et sa durée), seul l'affichage est regroupé.
+  const STACK_M = 30;
+  const stacks = new Map();   // clé -> { marker, ids, sig }
+  const stackOf = new Map();  // id -> clé de sa pile
+  const sev = r => SEVERITY.indexOf(CAT[r.cat].group);
+  const markerOf = id => { const k = stackOf.get(id); return k ? stacks.get(k)?.marker : reports.get(id)?.marker; };
+  function stackIcon(g) {
+    const glyphs = g.slice(0, 3).map(r => `<span>${CAT[r.cat].glyph}</span>`).join('') + (g.length > 3 ? `<b>+${g.length - 3}</b>` : '');
+    const fresh = g.some(r => Date.now() - (r.last || r.t) < CAT[r.cat].ttl * MIN * 0.6);
+    return L.divIcon({ className: '', iconSize: [30 + 20 * Math.min(g.length, 3), 40], iconAnchor: [15 + 10 * Math.min(g.length, 3), 20], popupAnchor: [0, -18],
+      html: `<div class="pin stack${fresh ? '' : ' old'}${g.some(r => r.ver) ? ' ver' : ''}" style="--c:${GROUP_COLOR[CAT[g[0].cat].group]}">${glyphs}</div>` });
+  }
+  function stackPopup(ids) {
+    const root = el('div', { class: 'pop-stack' });
+    ids.map(id => reports.get(id)?.data).filter(Boolean).forEach((r, i) => { if (i) root.append(el('hr')); root.append(popup(r)); });
+    return root;
+  }
+  function regroup() {
+    const vis = [...reports.values()].map(x => x.data).filter(r => !hidden.has(CAT[r.cat].group));
+    // Seaux de ~30 m pour ne comparer que les voisins (rapide même avec des milliers de points)
+    const B = 0.0003, bk = (i, j) => i + '_' + j, buckets = new Map();
+    const bi = r => Math.floor(r.lat / B), bj = r => Math.floor(r.lng / (B * 1.4));
+    for (const r of vis) { const k = bk(bi(r), bj(r)); if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(r); }
+    vis.sort((a, b) => sev(a) - sev(b) || (b.last || b.t) - (a.last || a.t));
+    const taken = new Set(), want = new Map();
+    for (const r of vis) {
+      if (taken.has(r.id)) continue;
+      taken.add(r.id);
+      const g = [r];
+      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++)
+        for (const o of buckets.get(bk(bi(r) + di, bj(r) + dj)) || [])
+          if (!taken.has(o.id) && dist([r.lat, r.lng], [o.lat, o.lng]) <= STACK_M) { g.push(o); taken.add(o.id); }
+      if (g.length > 1) { g.sort((a, b) => sev(a) - sev(b)); want.set(g.map(x => x.id).sort().join('|'), g); }
+    }
+    for (const [k, st] of stacks) if (!want.has(k)) { layer.removeLayer(st.marker); stacks.delete(k); }
+    stackOf.clear();
+    for (const [k, g] of want) {
+      const sig = g.map(r => `${r.id}:${r.up}:${r.ver || ''}:${r.lat}:${r.lng}`).join(',');
+      let st = stacks.get(k);
+      if (!st) {
+        const m = L.marker([g[0].lat, g[0].lng], { icon: stackIcon(g), keyboard: true, title: g.map(r => CAT[r.cat].label).join(', '), cat: g[0].cat });
+        m.bindPopup(() => stackPopup(stacks.get(k)?.ids || []), { maxHeight: Math.round(innerHeight * 0.55) });
+        st = { marker: m, ids: g.map(r => r.id), sig };
+        stacks.set(k, st); layer.addLayer(m);
+      } else if (st.sig !== sig) {
+        st.sig = sig; st.ids = g.map(r => r.id);
+        st.marker.setLatLng([g[0].lat, g[0].lng]); st.marker.setIcon(stackIcon(g));
+        if (st.marker.isPopupOpen()) st.marker.setPopupContent(stackPopup(st.ids));
+      }
+      for (const r of g) stackOf.set(r.id, k);
+    }
+    for (const [id, { data, marker }] of reports) {
+      const show = !hidden.has(CAT[data.cat].group) && !stackOf.has(id), on = layer.hasLayer(marker);
+      if (show && !on) layer.addLayer(marker); else if (!show && on) layer.removeLayer(marker);
+    }
+  }
   function refreshUI() { renderFilters(); if (!$('#sheetList').hidden) renderList(); }
   // Rafraîchit l'opacité des points vieillissants
-  setInterval(() => { for (const { data, marker } of reports.values()) if (!marker.isPopupOpen()) marker.setIcon(icon(data, false)); }, 60_000);
+  setInterval(() => {
+    for (const { data, marker } of reports.values()) if (!marker.isPopupOpen()) marker.setIcon(icon(data, false));
+    for (const st of stacks.values()) st.sig = ''; regroup();
+  }, 60_000);
 
   // ---- Synchro : interrogation régulière du serveur (robuste sur hébergement mutualisé) ----
   const POLL_MS = 5000;
@@ -159,6 +227,7 @@
       if (fresh) proximity(r);
     }
     firstSync = false;
+    regroup();
     refreshUI();
   }
 
@@ -297,6 +366,7 @@
       }
       failures = 0; lastOk = Date.now();
       setStatus('live', 'En direct');
+      if (!$('#queueChip').hidden) setTimeout(() => flushQueue(), 0);
     } catch {
       failures++;
       setStatus('offline', Date.now() - lastOk > 15000 ? 'Hors ligne — nouvel essai…' : 'Connexion instable…');
@@ -328,7 +398,7 @@
     box.textContent = somm ? `${c.glyph} Sommations à ${fmtDist(d)} : rester devient un délit. Éloigne-toi par une rue dégagée.` : `${c.glyph} ${c.label} à ${fmtDist(d)} de toi`;
     if (somm) { try { navigator.vibrate?.([500, 150, 500, 150, 500]); } catch {} }
     box.hidden = false;
-    box.onclick = () => { box.hidden = true; const m = reports.get(r.id)?.marker; if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
+    box.onclick = () => { box.hidden = true; const m = markerOf(r.id); if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
     try { navigator.vibrate?.([200, 100, 200]); } catch {}
     clearTimeout(proximity.t); proximity.t = setTimeout(() => (box.hidden = true), 9000);
   }
@@ -457,10 +527,7 @@
       const b = el('button', { class: 'chip', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, ' ', el('span', { class: 'n' }, String(n)));
       b.onclick = () => {
         hidden.has(g.id) ? hidden.delete(g.id) : hidden.add(g.id);
-        for (const { data, marker } of reports.values()) {
-          if (CAT[data.cat].group !== g.id) continue;
-          hidden.has(g.id) ? layer.removeLayer(marker) : layer.addLayer(marker);
-        }
+        regroup();
         refreshUI();
       };
       box.append(b);
@@ -469,7 +536,7 @@
   renderFilters();
 
   // ---- Signaler ----
-  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep'];
+  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -480,7 +547,7 @@
   const sheetWatch = new MutationObserver(syncBackdrop);
   sheets.forEach(s => sheetWatch.observe($(s), { attributes: true, attributeFilter: ['hidden'] }));
   backdrop.addEventListener('click', () => closeSheets());
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheets(); if (!$('#crosshair').hidden) closeReport(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { map.closePopup(); closeSheets(); if (!$('#crosshair').hidden) closeReport(); } });
   function openReport() {
     if (!me && map.getZoom() < 14) {
       toast('Zoome sur l’endroit exact (ou active ta position) avant de signaler.');
@@ -498,7 +565,21 @@
     const y = aimY();
     $('#crosshair').style.top = y + 'px';
     if (me) { map.setView(me, Math.max(map.getZoom(), 17), { animate: false }); map.panBy([0, map.getSize().y / 2 - y], { animate: false }); }
+    catHints();
   }
+  // Sous le viseur, un point du même type existe déjà : le bouton l'indique, et l'envoyer le confirmera
+  function catHints() {
+    if ($('#crosshair').hidden) return;
+    const p = target(), list = [...reports.values()].map(x => x.data);
+    document.querySelectorAll('#catGrid .cat').forEach(b => {
+      const cat = b.dataset.cat, R = mergeR(cat);
+      const hit = list.filter(r => r.cat === cat && r.exp > Date.now()).map(r => ({ r, d: dist(p, [r.lat, r.lng]) })).filter(x => x.d <= R).sort((a, b) => a.d - b.d)[0];
+      b.classList.toggle('exists', !!hit);
+      b.querySelector('.sub').textContent = hit ? `déjà là · ${ago(hit.r.last || hit.r.t).replace('il y a ', '')} · confirmer` : '';
+      b.setAttribute('aria-label', CAT[cat].label + (hit ? ', déjà signalé, appuyer pour confirmer' : ''));
+    });
+  }
+  map.on('move', () => { if (!$('#crosshair').hidden) { cancelAnimationFrame(catHints.f); catHints.f = requestAnimationFrame(catHints); } });
   function aimY() {
     const top = 60, sheetTop = $('#sheetReport').getBoundingClientRect().top - map.getContainer().getBoundingClientRect().top;
     return Math.round(top + (Math.min(sheetTop, map.getSize().y) - top) / 2);
@@ -516,7 +597,7 @@
       grid.append(el('div', { class: 'group-title' }, g.label));
       const row = el('div', { class: 'row' });
       for (const c of cfg.categories.filter(c => c.group === g.id)) {
-        const b = el('button', { class: 'cat', style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label);
+        const b = el('button', { class: 'cat', 'data-cat': c.id, style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
         b.onclick = () => submit(c.id);
         row.append(b);
       }
@@ -526,20 +607,111 @@
 
   // Point visé = position du viseur à l'écran
   const target = () => map.containerPointToLatLng([map.getSize().x / 2, aimY()]);
+  // ---- File d'attente hors ligne ----
+  // Un signalement fait sans réseau est gardé sur le téléphone avec son heure, puis envoyé dès que ça capte.
+  // Le serveur le fusionne s'il existe déjà, et le refuse s'il a dépassé sa durée de vie.
+  const queue = (() => {
+    let mem = [], dbp = null;
+    const open = () => dbp ||= new Promise((res, rej) => {
+      const o = indexedDB.open('cortege', 1);
+      o.onupgradeneeded = () => o.result.createObjectStore('queue', { keyPath: 'k' });
+      o.onsuccess = () => res(o.result); o.onerror = () => rej(o.error);
+    });
+    const run = (mode, fn) => open().then(db => new Promise((res, rej) => {
+      const t = db.transaction('queue', mode), r = fn(t.objectStore('queue'));
+      t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error);
+    }));
+    return {
+      all: () => run('readonly', st => st.getAll()).then(x => x || []).catch(() => mem.slice()),
+      add: it => run('readwrite', st => st.put(it)).catch(() => { mem.push(it); }),
+      del: k => run('readwrite', st => st.delete(k)).catch(() => { mem = mem.filter(x => x.k !== k); }),
+    };
+  })();
+  const rid = () => { const b = new Uint8Array(9); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, '0')).join(''); };
+  // Réponse inexploitable (pas de réseau, serveur hôte saturé sans message) : on garde pour plus tard
+  async function postReport(it) {
+    const res = await fetch('/api/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE },
+      body: JSON.stringify({ cat: it.cat, lat: it.lat, lng: it.lng, note: it.note, t: it.t }) });
+    const body = await res.json().catch(() => null);
+    if (!body && res.status >= 500) throw new Error('indisponible');
+    return { status: res.status, body: body || {} };
+  }
+  function resultText(it, { status, body }) {
+    const label = CAT[it.cat].label;
+    if (status === 201) return `${label} signalé`;
+    if (status === 200 && body.merged) return body.self ? 'Tu l’avais déjà signalé : point mis à jour' : `Déjà signalé : ta confirmation est ajoutée (${body.up + 1} personnes)`;
+    return body.error || 'Envoi impossible. Réessaie.';
+  }
+  async function updateQueueChip() {
+    const n = (await queue.all()).length, chip = $('#queueChip');
+    chip.hidden = !n; chip.textContent = `⏳ ${n}`;
+    chip.setAttribute('aria-label', `${n} signalement${n > 1 ? 's' : ''} en attente de réseau`);
+    if (!$('#sheetQueue').hidden) renderQueue();
+    return n;
+  }
+  async function renderQueue() {
+    const ol = $('#queueList'); ol.textContent = '';
+    const items = (await queue.all()).sort((a, b) => a.t - b.t);
+    $('#queueEmpty').hidden = items.length > 0;
+    for (const it of items) {
+      const c = CAT[it.cat], expired = it.t + c.ttl * MIN <= Date.now();
+      const cancel = el('button', { class: 'q-cancel', 'aria-label': 'Annuler ce signalement' }, 'Annuler');
+      cancel.onclick = async () => { await queue.del(it.k); updateQueueChip(); };
+      ol.append(el('li', {}, el('span', { class: 'g', style: `--c:${GROUP_COLOR[c.group]}` }, c.glyph),
+        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, expired ? 'Trop ancien, ne sera pas publié' : `fait ${ago(it.t)}`)), cancel));
+    }
+  }
+  let flushing = false;
+  async function flushQueue(manual = false) {
+    if (flushing) return;
+    flushing = true;
+    let sent = 0, stale = 0, msg = '';
+    try {
+      for (const it of (await queue.all()).sort((a, b) => a.t - b.t)) {
+        if (it.t + CAT[it.cat].ttl * MIN <= Date.now()) { await queue.del(it.k); stale++; continue; }
+        let out;
+        try { out = await postReport(it); } catch { if (manual) msg = 'Toujours pas de réseau.'; break; }
+        await queue.del(it.k);
+        if (out.status === 410) stale++;
+        else if (out.status < 300) { sent++; voted.add(out.body.id); }
+        else msg = out.body.error || '';
+      }
+    } finally { flushing = false; }
+    const n = await updateQueueChip();
+    const parts = [];
+    if (sent) parts.push(sent > 1 ? `${sent} signalements en attente envoyés` : 'Signalement en attente envoyé');
+    if (stale) parts.push(stale > 1 ? `${stale} trop anciens, pas publiés` : '1 trop ancien, pas publié');
+    if (parts.length || msg) toast(parts.join(' · ') || msg);
+    if (sent) { lastActivity = Date.now(); sync(); }
+    return n;
+  }
   async function submit(cat) {
     const p = target();
-    try {
-      const res = await fetch('/api/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE },
-        body: JSON.stringify({ cat, lat: p.lat, lng: p.lng, note: $('#srNote').value }) });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) return toast(body.error || 'Envoi impossible. Réessaie.');
-      voted.add(body.id);
+    const it = { k: rid(), cat, lat: p.lat, lng: p.lng, note: $('#srNote').value, t: Date.now(), dev: DEVICE, ttl: CAT[cat].ttl * MIN };
+    let out;
+    try { out = await postReport(it); }
+    catch {
+      await queue.add(it);
       closeReport();
-      lastActivity = Date.now();
-      sync();
-      toast(`${CAT[cat].label} signalé`);
-    } catch { toast('Pas de réseau. Le signalement n’est pas parti.'); }
+      updateQueueChip();
+      // Android : le téléphone l'enverra même appli fermée ; ailleurs, au retour du réseau ou à la réouverture
+      try { (await navigator.serviceWorker?.ready)?.sync?.register('cortege-queue').catch(() => {}); } catch {}
+      return toast('Pas de réseau : signalement gardé, il partira dès que ça capte.');
+    }
+    if (out.status >= 300) return toast(resultText(it, out));
+    voted.add(out.body.id);
+    closeReport();
+    lastActivity = Date.now();
+    sync();
+    toast(resultText(it, out));
   }
+  $('#queueChip').onclick = () => { closeReport(); closeSheets(); renderQueue(); $('#sheetQueue').hidden = false; };
+  $('#sqClose').onclick = () => closeSheets();
+  $('#btnQueueRetry').onclick = () => flushQueue(true);
+  addEventListener('online', () => flushQueue());
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) flushQueue(); });
+  navigator.serviceWorker?.addEventListener?.('message', e => { if (e.data && e.data.type === 'queue-flushed') { updateQueueChip(); sync(); } });
+  updateQueueChip().then(n => { if (n) flushQueue(); });
 
   async function vote(id, v) {
     voted.add(id);
@@ -564,9 +736,9 @@
       const c = CAT[r.cat];
       const btn = el('button', { 'aria-label': c.label },
         el('span', { class: 'g', style: `--c:${GROUP_COLOR[c.group]}` }, c.glyph),
-        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, r.note || ago(r.t))),
-        el('span', { class: 'd' }, me ? fmtDist(dist(me, [r.lat, r.lng])) : ago(r.t).replace('il y a ', '')));
-      btn.onclick = () => { closeSheets(); const m = reports.get(r.id)?.marker; if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
+        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, r.note || (r.up ? `${ago(r.last || r.t)} · ${r.up + 1} personnes` : ago(r.t)))),
+        el('span', { class: 'd' }, me ? fmtDist(dist(me, [r.lat, r.lng])) : ago(r.last || r.t).replace('il y a ', '')));
+      btn.onclick = () => { closeSheets(); const m = markerOf(r.id); if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
       ol.append(el('li', {}, btn));
     }
   }

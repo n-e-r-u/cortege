@@ -1,5 +1,5 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v14', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v15', TILES = 'cortege-tiles-v1';
 const ASSETS = ['/', '/style.css', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/favicon.png', '/brand/logo.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
@@ -46,3 +46,28 @@ self.addEventListener('notificationclick', e => {
     return self.clients.openWindow(e.notification.data?.url || '/');
   })());
 });
+
+// File d'attente hors ligne : les signalements faits sans réseau partent dès que ça capte,
+// même appli fermée sur Android (Background Sync). Sur iPhone, l'appli s'en charge à l'ouverture.
+// Envoyer deux fois le même signalement est sans risque : le serveur le fusionne.
+function queueStore(mode, fn) {
+  return new Promise((res, rej) => {
+    const o = indexedDB.open('cortege', 1);
+    o.onupgradeneeded = () => o.result.createObjectStore('queue', { keyPath: 'k' });
+    o.onerror = () => rej(o.error);
+    o.onsuccess = () => { const t = o.result.transaction('queue', mode); const r = fn(t.objectStore('queue')); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); };
+  });
+}
+async function flushQueue() {
+  const items = (await queueStore('readonly', s => s.getAll())) || [];
+  for (const it of items.sort((a, b) => a.t - b.t)) {
+    if (it.t + it.ttl <= Date.now()) { await queueStore('readwrite', s => s.delete(it.k)); continue; }
+    const res = await fetch('/api/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': it.dev },
+      body: JSON.stringify({ cat: it.cat, lat: it.lat, lng: it.lng, note: it.note, t: it.t }) }); // erreur réseau : le navigateur réessaiera
+    const json = (res.headers.get('content-type') || '').includes('json');
+    if (res.status >= 500 && !json) throw new Error('serveur indisponible');
+    await queueStore('readwrite', s => s.delete(it.k));
+  }
+  for (const c of await self.clients.matchAll({ type: 'window' })) c.postMessage({ type: 'queue-flushed' });
+}
+self.addEventListener('sync', e => { if (e.tag === 'cortege-queue') e.waitUntil(flushQueue()); });

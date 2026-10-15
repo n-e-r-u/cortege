@@ -99,6 +99,10 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **Annonces nationales** : réservées à l’administration. Les numéros de legal team sont permanents jusqu’à leur retrait.
 
 - **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie, précision facultative de 120 caractères.
+- **Fusion** : un signalement du même type tout près d'un point existant le confirme au lieu d'en créer un deuxième (rayon adapté à chaque type ; les forces de l'ordre et la tête de cortège suivent la position la plus récente). Sous le viseur, le bouton indique « déjà là · confirmer ». Chaque point affiche le nombre de personnes qui l'ont signalé.
+- **Piles** : des types différents au même endroit s'affichent en une seule pastille ; un appui ouvre la liste, chaque type garde ses votes et sa durée.
+- **Danger contre zone calme** : un danger signalé près d'une zone calme la retire, et on ne peut pas marquer calme une zone où un danger est signalé.
+- **File d'attente hors ligne** : sans réseau, le signalement est gardé sur le téléphone avec son heure et part dès que ça capte (en arrière-plan sur Android, à la réouverture sur iPhone). S'il a dépassé sa durée de vie entre-temps, il n'est pas publié.
 - **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Deux « Plus là » majoritaires suppriment le point.
 - **Alerte de proximité** : vibration + bandeau si lacrymo, charge, nasse, canon à eau ou forces de l'ordre sont signalés à moins de 300 m.
 - **Hors ligne** : l'interface est mise en cache, et « Garder la zone hors ligne » télécharge les tuiles du parcours avant le départ, pour quand le réseau sature.
