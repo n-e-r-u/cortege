@@ -350,3 +350,10 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 #queueList li { grid-template-columns: 36px 1fr auto; }
 .q-cancel { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 10px; padding: 8px 10px; font-size: 12.5px; }
 #btnQueueRetry { margin-top: 14px; }
+
+/* Soutien Ko-fi et demande d'accès orga */
+.support-card, .orga-card { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); }
+.support-card p, .orga-card p { margin: 0; font-size: 13.5px; line-height: 1.4; color: color-mix(in srgb, var(--fg) 85%, transparent); }
+.card-title { font-size: 15px; }
+.support-card a.install, .orga-card a.secondary { display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 4px; }
+.orga-card .fine { font-size: 12px; color: var(--muted); }

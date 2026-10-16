@@ -33,8 +33,26 @@
     document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
     document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => (a.href = cfg.brand.instagram));
     $('#brandLink').href = cfg.brand.instagram;
+    if (cfg.brand.kofi) $('#kofiLink').href = cfg.brand.kofi; else $('#kofiLink').parentElement.hidden = true;
     const siteLabel = cfg.brand.site.replace(/^https?:\/\//, '').replace(/\/$/, '');
     document.querySelectorAll('a[href="https://neru.tv"]').forEach(a => { a.href = cfg.brand.site; if (!a.querySelector('svg')) a.textContent = siteLabel; });
+  }
+
+  // Logo absent : on le masque (fait ici et pas dans le HTML, que la politique de sécurité interdit)
+  document.querySelectorAll('img[src="/brand/logo.png"]').forEach(img => {
+    const fail = () => { img.hidden = true; if (img.classList.contains('logo-img') && img.nextElementSibling) img.nextElementSibling.hidden = false; };
+    if (img.complete && !img.naturalWidth) fail(); else img.addEventListener('error', fail);
+  });
+
+  // Demande d'accès orga : un e-mail prérempli avec ce qu'il faut pour vérifier le collectif
+  if (cfg.contact) {
+    const body = ['Bonjour,', '', 'Je souhaite un accès orga certifiée sur Cortège.', '',
+      'Collectif ou organisation :', 'Ville ou secteur :', 'Rôle (legal team, street medics, orga de manif, syndicat, autre) :',
+      'Site ou compte public du collectif (lien) :', 'Depuis quand le collectif existe :',
+      'Canal officiel du collectif où te confirmer la demande (adresse ou compte publié par le collectif, pas un contact personnel) :',
+      'Organisation déjà connue qui peut se porter garante (facultatif) :', '', 'Merci !'].join('\n');
+    $('#orgaRequest').href = `mailto:${cfg.contact}?subject=${encodeURIComponent('Demande orga')}&body=${encodeURIComponent(body)}`;
+    $('#orgaRequestCard').hidden = false;
   }
 
   // ---- Carte ----

@@ -43,6 +43,7 @@ const BRAND = {
   handle: process.env.BRAND_HANDLE || 'neru',
   instagram: process.env.BRAND_INSTAGRAM || 'https://www.instagram.com/neru/',
   site: process.env.BRAND_SITE || 'https://neru.tv',
+  kofi: process.env.BRAND_KOFI || 'https://ko-fi.com/neru', // soutien : faire durer l'appli, renforcer le serveur
 };
 
 // ---- Catégories (source unique, envoyée au client) — ttl en minutes ----

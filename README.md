@@ -19,7 +19,7 @@ Variables d'environnement :
 | `CENTER` / `ZOOM` | `46.6,2.4` / `6` | Vue d'ouverture quand la position n'est pas partagée (France entière) |
 | `ADMIN_KEY` | vide | Clé d'accès à l'administration, aléatoire, 12 caractères minimum (32 conseillés). Vide = administration désactivée |
 | `ORGA_KEYS` | vide | Accès orga / legal team : `Nom affiché:clé,Autre nom:clé2` (clés de 12 caractères minimum) |
-| `CONTACT_EMAIL` | vide | Adresse de contact affichée dans les mentions légales (obligatoire avant lancement) |
+| `CONTACT_EMAIL` | vide | Adresse de contact (mentions légales, bouton « Demander un accès orga »). Obligatoire avant lancement |
 | `HOST_INFO` | vide | Coordonnées complètes de l'hébergeur pour les mentions légales |
 | `SOURCE_URL` | vide | Lien du dépôt GitHub (affiché dans les mentions légales) |
 | `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » |
@@ -27,6 +27,7 @@ Variables d'environnement :
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel |
 | `BRAND_HANDLE` | `neru` | Pseudo affiché (« Cortège par @neru ») |
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/neru/` | Lien du logo et de la carte « Suivre » |
+| `BRAND_KOFI` | `https://ko-fi.com/neru` | Bouton « Soutenir Cortège » (vide = masqué) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
