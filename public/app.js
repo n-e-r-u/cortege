@@ -104,11 +104,47 @@
     return n;
   }
 
+  // ---- Zones calmes suspendues ----
+  // Un danger actif (forces de l'ordre ou danger, non contesté) à moins de 100 m suspend la zone calme au lieu de l'effacer :
+  // - danger isolé (personne d'autre ne l'a confirmé) : zone barrée avec un avertissement ('sus')
+  // - danger confirmé ou vérifié : zone masquée ('hid')
+  // Une zone vérifiée par une orga résiste mieux : simple avertissement ('warn') pour un danger isolé, barrée sinon.
+  const CALM_M = 100;
+  const calmSt = new Map();   // id de la zone calme -> { lvl, near: danger le plus proche, d: distance, ids: dangers voisins }
+  const isDangerCat = cat => CAT[cat] && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
+  function computeCalm(list) {
+    calmSt.clear();
+    const now = Date.now();
+    const dangers = list.filter(r => isDangerCat(r.cat) && !r.c && r.exp > now);
+    for (const c of list) {
+      if (c.cat !== 'calme') continue;
+      let near = null, d = Infinity, strong = false; const ids = [];
+      for (const x of dangers) {
+        const dx = dist([c.lat, c.lng], [x.lat, x.lng]);
+        if (dx > CALM_M) continue;
+        ids.push(x.id); if (x.up > 0 || x.ver) strong = true;
+        if (dx < d) { d = dx; near = x; }
+      }
+      if (!near) continue;
+      const lvl = c.ver ? (strong ? 'sus' : 'warn') : (strong ? 'hid' : 'sus');
+      calmSt.set(c.id, { lvl, near, d, ids });
+    }
+  }
+  const calmHidden = r => calmSt.get(r.id)?.lvl === 'hid';
+  // « C'est calme ici » : compte comme un « Plus là » fait sur place pour chaque danger voisin
+  async function calmHere(st) {
+    const todo = st.ids.filter(id => !voted.has(id));
+    for (const id of todo) await vote(id, -1, true, true);
+    toast('Merci : le danger voisin est signalé comme parti');
+    map.closePopup(); sync();
+  }
+
   // ---- Marqueurs ----
   function icon(r, fresh) {
     const c = CAT[r.cat];
     const age = Date.now() - (r.last || r.t), ttl = c.ttl * MIN;
-    const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : ''].join(' ');
+    const cs = calmSt.get(r.id);
+    const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : '', cs ? 'calm-' + cs.lvl : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
       html: `<div class="${cls}${r.ver ? ' ver' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
   }
@@ -121,6 +157,15 @@
     root.append(el('div', { class: 'pop-meta' }, meta));
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, `Signalé par ${r.up + 1} personnes`));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ Vérifié par ' + r.ver));
+    const cs = calmSt.get(r.id);
+    if (cs) {
+      root.append(el('div', { class: 'pop-calm-warn' }, `⚠ ${CAT[cs.near.cat].glyph} ${CAT[cs.near.cat].label} à ${fmtDist(cs.d)}` + (cs.lvl === 'warn' ? ' (pas encore confirmé)' : '') + ' : zone pas sûre pour l’instant.'));
+      if (onSite(r) === 'here' && cs.ids.some(id => !voted.has(id))) {
+        const b = el('button', { class: 'calm-here' }, '🕊️ C’est calme ici');
+        b.onclick = () => { b.disabled = true; calmHere(cs); };
+        root.append(b);
+      }
+    }
     if (r.c) root.append(el('div', { class: 'pop-contested' }, `Contesté : ${r.down} personne${r.down > 1 ? 's disent' : ' dit'} que c’est parti. Confirme si c’est toujours là.`));
     const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
     for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
@@ -193,7 +238,7 @@
     return root;
   }
   function regroup() {
-    const vis = [...reports.values()].map(x => x.data).filter(r => !hidden.has(CAT[r.cat].group));
+    const vis = [...reports.values()].map(x => x.data).filter(r => !hidden.has(CAT[r.cat].group) && !calmHidden(r));
     // Seaux de ~30 m pour ne comparer que les voisins (rapide même avec des milliers de points)
     const B = 0.0003, bk = (i, j) => i + '_' + j, buckets = new Map();
     const bi = r => Math.floor(r.lat / B), bj = r => Math.floor(r.lng / (B * 1.4));
@@ -212,7 +257,7 @@
     for (const [k, st] of stacks) if (!want.has(k)) { layer.removeLayer(st.marker); stacks.delete(k); }
     stackOf.clear();
     for (const [k, g] of want) {
-      const sig = g.map(r => `${r.id}:${r.up}:${r.ver || ''}:${r.lat}:${r.lng}`).join(',');
+      const sig = g.map(r => `${r.id}:${r.up}:${r.ver || ''}:${r.lat}:${r.lng}:${r.c || ''}:${calmSt.get(r.id)?.lvl || ''}`).join(',');
       let st = stacks.get(k);
       if (!st) {
         const m = L.marker([g[0].lat, g[0].lng], { icon: stackIcon(g), keyboard: true, title: g.map(r => CAT[r.cat].label).join(', '), cat: g[0].cat });
@@ -227,13 +272,14 @@
       for (const r of g) stackOf.set(r.id, k);
     }
     for (const [id, { data, marker }] of reports) {
-      const show = !hidden.has(CAT[data.cat].group) && !stackOf.has(id), on = layer.hasLayer(marker);
+      const show = !hidden.has(CAT[data.cat].group) && !stackOf.has(id) && !calmHidden(data), on = layer.hasLayer(marker);
       if (show && !on) layer.addLayer(marker); else if (!show && on) layer.removeLayer(marker);
     }
   }
   function refreshUI() { renderFilters(); renderNational(); if (!$('#sheetList').hidden) renderList(); }
   // Rafraîchit l'opacité des points vieillissants
   setInterval(() => {
+    computeCalm([...reports.values()].map(x => x.data));
     for (const { data, marker } of reports.values()) if (!marker.isPopupOpen()) marker.setIcon(icon(data, false));
     for (const st of stacks.values()) st.sig = ''; regroup();
   }, 60_000);
@@ -262,6 +308,7 @@
     renderAnns(anns, canAlertAnns);
     const ids = new Set(list.map(r => r.id));
     for (const id of [...reports.keys()]) if (!ids.has(id)) drop(id);
+    computeCalm(list);
     for (const r of list) {
       const fresh = !reports.has(r.id) && !firstSync && isFresh(r);
       upsert(r, fresh);
@@ -631,7 +678,7 @@
   function renderFilters() {
     const box = $('#filters'); box.textContent = '';
     for (const g of cfg.groups) {
-      const n = mode === 'nat' ? natCache.r.reduce((s, z) => s + (z.g[g.id] || 0), 0) : [...reports.values()].filter(x => CAT[x.data.cat].group === g.id).length;
+      const n = mode === 'nat' ? natCache.r.reduce((s, z) => s + (z.g[g.id] || 0), 0) : [...reports.values()].filter(x => CAT[x.data.cat].group === g.id && !calmHidden(x.data)).length;
       const b = el('button', { class: 'chip', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, ' ', el('span', { class: 'n' }, String(n)));
       b.onclick = () => {
         hidden.has(g.id) ? hidden.delete(g.id) : hidden.add(g.id);
@@ -855,23 +902,24 @@
     if (d - acc > NEAR_M) return 'far';
     return d <= NEAR_M && meAcc <= 300 ? 'here' : null;
   }
-  async function vote(id, v, here = false) {
+  async function vote(id, v, here = false, quiet = false) {
     voted.add(id);
     try {
       const res = await fetch(`/api/reports/${id}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify(v === 1 ? { v } : { v, here }) });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok && res.status !== 409) { voted.delete(id); return toast(body.error || 'Vote impossible.'); }
+      if (!res.ok && res.status !== 409) { voted.delete(id); return quiet || toast(body.error || 'Vote impossible.'); }
+      if (quiet) return;
       toast(v === 1 ? 'Merci, signalement prolongé' : 'Merci, c’est noté');
       map.closePopup();
       sync();
-    } catch { voted.delete(id); toast('Pas de réseau.'); }
+    } catch { voted.delete(id); if (!quiet) toast('Pas de réseau.'); }
   }
 
   // ---- Liste ----
   function renderList() {
     const ol = $('#list'); ol.textContent = '';
     const view = map.getBounds();
-    const items = [...reports.values()].map(x => x.data).filter(r => !hidden.has(CAT[r.cat].group) && view.contains([r.lat, r.lng]));
+    const items = [...reports.values()].map(x => x.data).filter(r => !hidden.has(CAT[r.cat].group) && !calmHidden(r) && view.contains([r.lat, r.lng]));
     items.sort(me ? (a, b) => dist(me, [a.lat, a.lng]) - dist(me, [b.lat, b.lng]) : (a, b) => b.t - a.t);
     $('#listEmpty').hidden = items.length > 0;
     for (const r of items) {

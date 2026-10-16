@@ -86,7 +86,7 @@ const MERGE = {
   medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
   cortege: { r: 200, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
 };
-// Un danger signalé près d'une « zone calme » la retire aussitôt : en cas de doute, le danger l'emporte.
+// Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;
 const isDanger = cat => Object.hasOwn(CAT, cat) && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
 const distM = (a, b) => {
@@ -1317,9 +1317,10 @@ const server = http.createServer(async (req, res) => {
         if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
         if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }];
         const pos = { lat: round(lat), lng: round(lng) };
-        const killCalm = () => { if (isDanger(cat.id)) for (const x of nearby('calme', pos.lat, pos.lng, CALM_KILL_M, now)) dropReport(x.r.id, true); };
+        // Un danger n'efface plus une zone calme voisine : le téléphone l'affiche « suspendue » tant que le danger est actif
+        // (un faux danger ne peut donc plus faire disparaître une zone calme).
 
-        if (cat.id === 'calme' && CATEGORIES.some(c => isDanger(c.id) && nearby(c.id, pos.lat, pos.lng, CALM_KILL_M, now).length))
+        if (cat.id === 'calme' && CATEGORIES.some(c => isDanger(c.id) && nearby(c.id, pos.lat, pos.lng, CALM_KILL_M, now).some(x => !x.r.ct)))
           return [409, { error: 'Un danger est signalé à moins de 100 m : la zone ne peut pas être marquée calme.' }];
         // Même type tout près : on confirme le point existant au lieu d'en créer un deuxième
         const m = MERGE[cat.id] || { r: 50 };
@@ -1334,7 +1335,6 @@ const server = http.createServer(async (req, res) => {
           r.last = Math.max(r.last || r.t, t0);
           r.exp = Math.max(r.exp, t0 + ttl);
           saveReport(r);
-          killCalm();
           return [200, { ...publicView(r), merged: true, self }];
         }
 
@@ -1351,7 +1351,6 @@ const server = http.createServer(async (req, res) => {
         const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note, notes: note ? [{ x: note, t: t0, d: dev }] : [],
           t: t0, last: t0, exp: t0 + ttl, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
         saveReport(r);
-        killCalm();
         return [201, publicView(r)];
       });
       return send(res, ...result);

@@ -390,3 +390,10 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .pin.contested { opacity: .5; border-style: dashed; filter: grayscale(.7); }
 .pop-contested { margin-top: 6px; font-size: 13px; color: #ffcf7a; }
 .pop-hint { margin: 8px 0 0; font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Zone calme près d'un danger actif : barrée (suspendue) ou simple avertissement (zone vérifiée) */
+.pin.calm-sus { border-color: #f5a524; background: repeating-linear-gradient(135deg, var(--surface) 0 6px, rgba(245,165,36,.28) 6px 9px); opacity: .85; }
+.pin.calm-sus::after, .pin.calm-warn::after { content: '⚠'; position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #f5a524; color: #1a1a1d; font-size: 11px; display: grid; place-items: center; }
+.pin.calm-sus, .pin.calm-warn { position: relative; }
+.pop-calm-warn { margin-top: 6px; font-size: 13px; color: #ffcf7a; font-weight: 600; }
+.calm-here { margin-top: 10px; width: 100%; height: 40px; border-radius: 10px; border: 1px solid var(--soutien); background: var(--surface-2); color: #7ee2b0; font-weight: 600; font-size: 13px; }
