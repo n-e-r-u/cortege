@@ -738,15 +738,19 @@ function writeNational(now) {
   const r3 = x => Math.round(x * 1000) / 1000;
   writeIfChanged(path.join(LIVE_DIR, 'n.json'), JSON.stringify({ r: [...agg.values()].map(a => ({ k: a.k, lat: r3(a.la / a.n), lng: r3(a.lo / a.n), g: a.g, t: a.t })) }));
 }
+// Empreinte de la version servie, calculée au démarrage : après une mise à jour (fichiers + Restart),
+// elle change et les téléphones se rechargent d'eux-mêmes.
+let BUILD = null;
+const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)));
 function writeGlobal(now) {
-  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, paused: pausedUntil(now) };
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, paused: pausedUntil(now), build: buildId() };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
   // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
   if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
   writeGlobal.last = now;
   const cells = q('SELECT cell, h FROM cells').all();
   writeAtomic(path.join(LIVE_DIR, 'index.json'), JSON.stringify({ v: now, t: now, cells: Object.fromEntries(cells.map(x => [x.cell, x.h])),
-    ann: g.ann, events: g.events, all: getMeta('allh') || null, paused: g.paused }));
+    ann: g.ann, events: g.events, all: getMeta('allh') || null, paused: g.paused, build: g.build }));
 }
 function flush() {
   flushTimer = null;

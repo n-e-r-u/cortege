@@ -48,7 +48,7 @@ Dépose ton logo en `public/brand/logo.png` (carré, 512×512 conseillé). Il s'
 4. Domaines › active **Forcer la redirection HTTPS** pour le sous-domaine.
 5. Vérifie `https://cortege.neru.tv/api/health` : `storageWritable` et `ipHeaderSeen` doivent valoir `true`.
 
-Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jour des fichiers : bouton **Restart**.
+Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jour des fichiers : bouton **Restart**. Les téléphones qui ont l'appli ouverte détectent la nouvelle version dans les secondes qui suivent et se rechargent tout seuls, au même endroit de la carte. Si quelqu'un est en train de signaler ou d'écrire, un bandeau s'affiche et la mise à jour attend qu'il ait fini.
 
 Mise à jour depuis une version d'avant SQLite : les données sont reprises automatiquement au premier démarrage.
 

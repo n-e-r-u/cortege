@@ -381,3 +381,7 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .x.small { width: 32px; height: 32px; font-size: 18px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .pop-open .tools { opacity: .12; pointer-events: none; transition: opacity .15s; }
+.update-bar { position: fixed; left: 12px; right: 12px; top: calc(78px + env(safe-area-inset-top)); z-index: 1300; max-width: 520px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--surface);
+  border: 1px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,.5); font-weight: 700; font-size: 14px; }
+.update-bar button { height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--brand-grad); color: var(--accent-fg); font-weight: 800; }

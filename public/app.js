@@ -58,7 +58,10 @@
   // ---- Carte ----
   // Les popups ne doivent pas finir sous l'en-tête ni sous le bouton « Signaler »
   L.Popup.mergeOptions({ autoPanPaddingTopLeft: L.point(12, 120), autoPanPaddingBottomRight: L.point(12, 150) });
-  const map = L.map('map', { zoomControl: false, attributionControl: true, maxZoom: 19 }).setView(cfg.center, cfg.zoom || 6);
+  // Après une mise à jour automatique, on revient exactement là où on était
+  let savedView = null; try { savedView = JSON.parse(sessionStorage.getItem('cortege-view') || 'null'); sessionStorage.removeItem('cortege-view'); } catch {}
+  const map = L.map('map', { zoomControl: false, attributionControl: true, maxZoom: 19 })
+    .setView(savedView ? savedView.c : cfg.center, savedView ? savedView.z : (cfg.zoom || 6));
   // Regroupement des points quand on dézoome (bulle = nombre de signalements, couleur = le plus grave)
   const SEVERITY = ['fdo', 'danger', 'info', 'soutien'];
   const layer = L.markerClusterGroup({
@@ -365,7 +368,7 @@
       // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
       if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
     }
-    setPaused(g.paused);
+    setPaused(g.paused); checkBuild(g.build);
     if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
@@ -394,7 +397,7 @@
       list = need.flatMap(id => cellCache.get(id)?.r || []);
       isFresh = r => mode === 'cells' && prev.has(cellOf(r)); mode = 'cells';
     }
-    setPaused(idx.paused);
+    setPaused(idx.paused); checkBuild(idx.build);
     if (idx.events && evCache.h !== idx.events) { evCache = { h: idx.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== idx.ann;
     if (annChanged) annCache = { h: idx.ann, a: (await getJ('/live/ann.json')).a };
@@ -413,6 +416,32 @@
     const { reports: list, announcements: anns = [] } = await res.json();
     lastZoneKey = key;
     apply(list, anns, () => sameZone, sameZone);
+  }
+
+  // ---- Mise à jour automatique : nouvelle version publiée (fichiers + Restart) ----
+  // Si la personne est en train de signaler ou d'écrire, on ne l'interrompt pas : bandeau, puis mise à jour dès qu'elle a fini.
+  let buildSeen = null, updating = false;
+  function busyNow() {
+    const a = document.activeElement;
+    return !$('#crosshair').hidden || !$('#noteCard').hidden || typingInPopup() || !!(a && a.matches && a.matches('input, textarea, select'))
+      || sheets.some(s => s !== '#sheetInfo' && !$(s).hidden);
+  }
+  function reloadForUpdate() {
+    try { const c = map.getCenter(); sessionStorage.setItem('cortege-view', JSON.stringify({ c: [c.lat, c.lng], z: map.getZoom() })); } catch {}
+    location.reload();
+  }
+  function checkBuild(b) {
+    if (!b) return;
+    if (!buildSeen) { buildSeen = b; return; }
+    if (b === buildSeen || updating) return;
+    updating = true;
+    navigator.serviceWorker?.getRegistration?.().then(r => r && r.update()).catch(() => {});
+    const bar = el('div', { class: 'update-bar', role: 'status' }, 'Nouvelle version de Cortège');
+    const btn = el('button', {}, 'Mettre à jour');
+    btn.onclick = reloadForUpdate; bar.append(btn); document.body.append(bar);
+    // Dès que la personne ne fait rien de particulier (ou passe l'appli en arrière-plan), on met à jour
+    const tryNow = () => { if (document.hidden || !busyNow()) { bar.textContent = 'Mise à jour de Cortège…'; setTimeout(reloadForUpdate, 1200); return true; } return false; };
+    if (!tryNow()) { const t = setInterval(() => { if (tryNow()) clearInterval(t); }, 4000); document.addEventListener('visibilitychange', () => { if (document.hidden) reloadForUpdate(); }); }
   }
 
   // Pause décidée par l'admin (afflux de faux signalements) : on le dit et on bloque le bouton
