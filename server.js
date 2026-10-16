@@ -270,6 +270,12 @@ try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN last INTEGER'); } catch {}
 // Précisions écrites (les 3 plus récentes, une par téléphone) : [{ x: texte, t: heure, d: empreinte du téléphone }]
 try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch {}
+// « Plus là » pondérés (dw) et heure à laquelle le point est devenu contesté (ct)
+try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
+// Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 48 h après sa dernière action.
+// Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
+db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
 db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
 db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
 // ---- Journal des actions d'orgas (60 jours) et corbeille des retraits (1 h) ----
@@ -302,7 +308,7 @@ function orgaStats(oid) {
 }
 const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
-  ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
+  dw: r.dw || 0, ct: r.ct || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
@@ -310,11 +316,11 @@ function saveReport(r) {
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
-       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last`)
+       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes));
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0);
   dirtyCell(cell);
 }
 function dropReport(id, dismissed) {
@@ -355,17 +361,38 @@ function allow(dev, ip, kind, now) {
   bump('ip:' + ip, kind, Infinity, now);
   return true;
 }
+// ---- « Plus là » : un point n'est jamais effacé par des votes, il devient « contesté » ----
+// Contesté = grisé, et il ne lui reste que quelques minutes ; une confirmation le remet en état normal.
+// Poids d'un « Plus là » : ×2 si le téléphone dit être sur place (calcul fait sur le téléphone, la position
+// ne part jamais), ×2 si l'identifiant n'est pas tout neuf. Il en faut davantage pour chaque confirmation.
+const CONTEST = { near: 2, aged: 2, need: 8, perUp: 4, more: 8, soft: 10 * MIN, short: 2 * MIN, newDev: 10 * MIN,
+  devKeep: 48 * 60 * MIN, devBurst: 6, netBurst: 60 };
+const VOTES = { id: 'votes', label: 'Votes « Plus là »' };
+// Âge de l'identifiant du téléphone (0 si inconnu ou sans identifiant), et note qu'il vient d'agir
+function deviceAge(dev, now) {
+  if (!dev.startsWith('d:')) return 0;
+  const row = q('SELECT first FROM devices WHERE h=?').get(dev);
+  q('INSERT INTO devices(h,first,seen) VALUES(?,?,?) ON CONFLICT(h) DO UPDATE SET seen=excluded.seen').run(dev, now, now);
+  return row ? now - row.first : 0;
+}
+const contestNeed = r => CONTEST.need + CONTEST.perUp * (r.up || 0);
+// Copie du point tel qu'il était avant d'être contesté : l'admin peut le remettre pendant 1 h
+function snapshotContested(r, now) {
+  q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, VOTES.id, VOTES.label, JSON.stringify({ ...r, left: r.exp - now }));
+}
+
 // Ménage toutes les 30 s : signalements, annonces et événements expirés, limites périmées, fin de pause.
 function sweep() {
   const now = Date.now();
   try {
     const expired = tx(() => q('DELETE FROM reports WHERE exp<=? RETURNING *').all(now));
-    for (const r of expired) { archive(r, false); dirtyCell(r.cell); }
+    for (const r of expired) { archive(r, !!r.ct); dirtyCell(r.cell); }
     if (q('DELETE FROM ann WHERE exp<=?').run(now).changes) dirty.ann = true;
     if (q('DELETE FROM events WHERE start<=?').run(now - EVENT_KEEP).changes) dirty.events = true;
     q('DELETE FROM rate WHERE t<?').run(now - RATE.windowMs);
     q('DELETE FROM hidden WHERE until<?').run(now);
     q('DELETE FROM trash WHERE t<?').run(now - TRASH_MS);
+    q('DELETE FROM devices WHERE seen<?').run(now - CONTEST.devKeep);
     q('DELETE FROM orga_log WHERE t<?').run(now - ARCHIVE_DAYS * 24 * 60 * MIN);
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
@@ -380,7 +407,7 @@ function addNote(r, text, dev, t) {
   r.notes = [{ x: text, t, d: dev }, ...notes].slice(0, NOTES_KEEP);
 }
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
-  notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
+  notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}) });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
@@ -1214,6 +1241,7 @@ const server = http.createServer(async (req, res) => {
           const r = JSON.parse(x.data), now = Date.now();
           r.exp = now + Math.max(5 * MIN, r.left || 0); // il retrouve le temps qu'il lui restait
           delete r.left; delete r.cell;
+          if (x.oid === VOTES.id) { r.down = 0; r.dw = 0; r.ct = 0; r.downIps = []; } // contestation annulée
           saveReport(r); q('DELETE FROM trash WHERE id=?').run(x.id);
           orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'restauré', { r, detail: 'retiré par ' + x.orga });
           return [200, publicView(r)];
@@ -1281,6 +1309,7 @@ const server = http.createServer(async (req, res) => {
       const ipH = clientHash(req), dev = deviceHash(req);
       const result = tx(() => {
         const now = Date.now(), ttl = cat.ttl * MIN;
+        deviceAge(dev, now);
         // Heure où le signalement a été fait (file d'attente hors ligne). Jamais dans le futur ;
         // mentir dessus ne peut que raccourcir la vie du point.
         const t0 = Math.min(now, Number(b.t) || now);
@@ -1299,7 +1328,7 @@ const server = http.createServer(async (req, res) => {
           const r = toReport(hit.r), self = r.voters.includes(dev);
           if (!self) { r.voters.push(dev); r.up++; }
           // Preuve plus fraîche que les « Plus là » : on les efface
-          if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; }
+          if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; r.dw = 0; r.ct = 0; }
           if (m.move && t0 >= (r.last || r.t)) { r.lat = pos.lat; r.lng = pos.lng; }
           if (note) addNote(r, note, dev, t0);
           r.last = Math.max(r.last || r.t, t0);
@@ -1366,17 +1395,27 @@ const server = http.createServer(async (req, res) => {
         if (!r) return [404, { error: 'Signalement expiré.' }];
         if (r.voters.includes(dev)) return [409, { error: 'Déjà pris en compte.' }];
         if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop de votes, patiente un peu.' }];
+        const age = deviceAge(dev, now);
         r.voters.push(dev);
         if (b.v === 1) {
           r.up++; r.last = now;
           const ttl = CAT[r.cat].ttl * MIN;
           r.exp = Math.min(Math.max(r.exp, now + ttl), r.t + 4 * ttl); // prolonge, plafonné à 4× la durée de base
+          if (r.ct && (r.dw || 0) < contestNeed(r)) r.ct = 0; // confirmé : plus contesté
         } else {
+          // Un téléphone ou un réseau qui conteste beaucoup de points d'affilée n'est plus compté. On ne le lui dit pas.
+          const devOk = bump('dn:' + dev, 'vote', CONTEST.devBurst, now), netOk = bump('dnn:' + ipH, 'vote', CONTEST.netBurst, now);
+          if (!devOk || !netOk) { saveReport(r); return [200, { ...publicView(r), down: r.down + 1 }]; }
+          const before = { ...r, voters: r.voters.slice(0, -1) };
           r.down++;
+          r.dw = (r.dw || 0) + (b.here === true ? CONTEST.near : 1) * (age >= CONTEST.newDev ? CONTEST.aged : 1);
           (r.downIps ||= []).push(ipH);
-          // Retrait : au moins 2 « Plus là » venant de 2 réseaux différents, plus nombreux que les « Toujours là ».
-          // Un signalement vérifié par une orga ne peut pas être retiré par les votes.
-          if (!r.ver && r.down >= 2 && new Set(r.downIps).size >= 2 && r.down > r.up) { dropReport(r.id, true); return [200, { removed: true }]; }
+          // Un signalement vérifié par une orga ne peut pas être contesté par les votes.
+          const nets = new Set(r.downIps).size, need = contestNeed(r);
+          if (!r.ver && r.dw >= need && nets >= 2) {
+            if (!r.ct) { r.ct = now; snapshotContested(before, now); orgaLog(VOTES, 'contesté', { r, detail: nets + ' réseaux' }); }
+            r.exp = Math.min(r.exp, now + (r.dw >= need + CONTEST.more && nets >= 3 ? CONTEST.short : CONTEST.soft));
+          }
         }
         saveReport(r);
         return [200, publicView(r)];

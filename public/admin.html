@@ -203,7 +203,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <section class="card">
       <h2>Corbeille <span id="trashCount"></span></h2>
       <ul class="org-list" id="trashList"></ul>
-      <p class="fine">Les points retirés par une orga (ou par toi) restent ici une heure. « Restaurer » les remet sur la carte avec le temps qu’il leur restait.</p>
+      <p class="fine">Les points retirés par une orga (ou par toi), ou contestés par des « Plus là », restent ici une heure. « Restaurer » les remet sur la carte avec le temps qu’il leur restait (et annule la contestation).</p>
     </section>
     <section class="card">
       <h2>Journal des actions</h2>
@@ -286,7 +286,7 @@ async function loadJournal() {
     const c = JCATS[x.cat] || { glyph: '•', label: x.cat };
     const b = btn('Restaurer');
     b.onclick = async () => { try { await api('/api/admin/trash/' + x.id + '/restore', { method: 'POST', body: '{}' }); alertMsg('Point restauré.'); loadJournal(); } catch (e) { alertMsg(e.message); } };
-    tl.append(li(c.glyph + ' ' + c.label + (x.note ? ' · ' + x.note : ''), `retiré par ${x.orga} à ${hhmm(x.t)} · ${x.lat.toFixed(4)}, ${x.lng.toFixed(4)}${x.up ? ' · confirmé ' + x.up + '×' : ''}`, b));
+    tl.append(li(c.glyph + ' ' + c.label + (x.note ? ' · ' + x.note : ''), `${x.orga.startsWith('Votes') ? 'contesté par les votes' : 'retiré par ' + x.orga} à ${hhmm(x.t)} · ${x.lat.toFixed(4)}, ${x.lng.toFixed(4)}${x.up ? ' · confirmé ' + x.up + '×' : ''}`, b));
   }
   // Filtre par orga
   const sel = $('#journalOrga'), cur = sel.value;
@@ -296,6 +296,9 @@ async function loadJournal() {
   // À vérifier : rafales bloquées et validations en attente (24 h)
   const since = Date.now() - 24 * 3600e3;
   const alerts = journal.log.filter(x => x.t > since && ALERT_ACTIONS.has(x.action));
+  // Vague de « Plus là » : beaucoup de points contestés en 30 min
+  const recent = journal.log.filter(x => x.action === 'contesté' && x.t > Date.now() - 30 * 60e3);
+  if (recent.length >= 10) alerts.unshift({ orga: 'Votes', action: recent.length + ' points contestés en 30 min', t: recent[0].t, detail: 'vérifie la corbeille' });
   $('#journalAlerts').hidden = !alerts.length;
   const al = $('#journalAlertList'); al.textContent = '';
   for (const x of alerts.slice(0, 30)) al.append(li(x.orga + ' : ' + x.action, hhmm(x.t) + (x.detail ? ' · ' + x.detail : '')));

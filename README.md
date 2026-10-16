@@ -68,7 +68,7 @@ docker build -t cortege . && docker run -d -p 127.0.0.1:8080:8080 -v cortege-dat
 ## Anti-abus
 
 - Limites de fréquence par téléphone (identifiant aléatoire, jamais stocké en clair) et par réseau.
-- Un point peut être retiré par les votes « Plus là » de plusieurs personnes ; jamais s'il est vérifié par une orga.
+- Les votes « Plus là » n'effacent jamais un point d'un coup : quand plusieurs personnes, sur des réseaux différents, disent que c'est parti, le point devient « contesté » (grisé) et s'éteint au bout de quelques minutes, sauf si quelqu'un le confirme. Le bouton n'est proposé qu'aux personnes proches du point (calculé sur le téléphone), les votes faits sur place pèsent plus, ceux d'un identifiant tout neuf moins, et les votes en rafale ne comptent pas. Jamais de contestation sur un point vérifié par une orga ; les points contestés passent par la corbeille de l'admin.
 - Administration : pause des signalements, suppression d'un point, purge totale.
 
 ## Carte nationale
@@ -89,7 +89,7 @@ Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : ann
 
 ## Digest
 
-Onglet Digest de l'administration : total du jour, par type (avec l'heure du premier signalement), par heure, par ville, et un résumé prêt à copier. L'archive ne garde que la catégorie, l'heure à la minute et une position arrondie à ~100 m. Les points retirés par « Plus là » sont exclus.
+Onglet Digest de l'administration : total du jour, par type (avec l'heure du premier signalement), par heure, par ville, et un résumé prêt à copier. L'archive ne garde que la catégorie, l'heure à la minute et une position arrondie à ~100 m. Les points retirés ou contestés par « Plus là » sont exclus.
 
 ## Comment ça marche
 
@@ -107,7 +107,7 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **Piles** : des types différents au même endroit s'affichent en une seule pastille ; un appui ouvre la liste, chaque type garde ses votes et sa durée.
 - **Danger contre zone calme** : un danger signalé près d'une zone calme la retire, et on ne peut pas marquer calme une zone où un danger est signalé.
 - **File d'attente hors ligne** : sans réseau, le signalement est gardé sur le téléphone avec son heure et part dès que ça capte (en arrière-plan sur Android, à la réouverture sur iPhone). S'il a dépassé sa durée de vie entre-temps, il n'est pas publié.
-- **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Deux « Plus là » majoritaires suppriment le point.
+- **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Des « Plus là » en nombre suffisant le rendent « contesté » : il ne lui reste alors que quelques minutes, sauf nouvelle confirmation.
 - **Alerte de proximité** : vibration + bandeau si lacrymo, charge, nasse, canon à eau ou forces de l'ordre sont signalés à moins de 300 m.
 - **Hors ligne** : l'interface est mise en cache, et les morceaux de carte déjà affichés restent sur le téléphone. Le préchargement d'une zone (« Garder la zone hors ligne ») est désactivé tant que les tuiles viennent d'OpenStreetMap, dont la politique l'interdit ; `TILE_PREFETCH=1` le réactive avec un fournisseur qui l'autorise.
 - **Vue nationale** : dézoomé, la carte affiche une bulle par région (nombre de signalements par famille) au lieu de tous les points ; les vrais points autour de toi restent chargés pour les alertes de proximité.

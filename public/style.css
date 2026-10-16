@@ -385,3 +385,8 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
   display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--surface);
   border: 1px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,.5); font-weight: 700; font-size: 14px; }
 .update-bar button { height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--brand-grad); color: var(--accent-fg); font-weight: 800; }
+
+/* Point contesté par des « Plus là » : grisé, bord en pointillés, en attendant une confirmation */
+.pin.contested { opacity: .5; border-style: dashed; filter: grayscale(.7); }
+.pop-contested { margin-top: 6px; font-size: 13px; color: #ffcf7a; }
+.pop-hint { margin: 8px 0 0; font-size: 12px; color: var(--muted); line-height: 1.35; }

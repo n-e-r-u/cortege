@@ -86,7 +86,7 @@
   const reports = new Map();   // id -> {data, marker}
   const voted = new Set();     // en mémoire seulement
   const hidden = new Set();    // groupes masqués
-  let me = null, meMarker = null, watchId = null;
+  let me = null, meMarker = null, watchId = null, meAcc = Infinity, meAt = 0;
 
   // ---- Utilitaires ----
   const ago = t => { const m = Math.round((Date.now() - t) / MIN); return m < 1 ? 'à l’instant' : `il y a ${m} min`; };
@@ -108,7 +108,7 @@
   function icon(r, fresh) {
     const c = CAT[r.cat];
     const age = Date.now() - (r.last || r.t), ttl = c.ttl * MIN;
-    const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : ''].join(' ');
+    const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
       html: `<div class="${cls}${r.ver ? ' ver' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
   }
@@ -121,6 +121,7 @@
     root.append(el('div', { class: 'pop-meta' }, meta));
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, `Signalé par ${r.up + 1} personnes`));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ Vérifié par ' + r.ver));
+    if (r.c) root.append(el('div', { class: 'pop-contested' }, `Contesté : ${r.down} personne${r.down > 1 ? 's disent' : ' dit'} que c’est parti. Confirme si c’est toujours là.`));
     const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
     for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
     // Ajouter une précision à un point déjà signalé
@@ -132,11 +133,16 @@
     form.onsubmit = e => { e.preventDefault(); sendNote(r.id, input.value); };
     root.append(addBtn, form);
     const yes = el('button', { class: 'yes' }, 'Toujours là');
-    const no = el('button', { class: 'no' }, 'Plus là');
+    // « Plus là » : seulement pour qui est sur place (calculé sur le téléphone, la position ne part pas)
+    const where = onSite(r);
+    const no = where === 'far' ? el('button', { class: 'no', disabled: '', title: 'Seulement sur place' }, 'Pas sur place') : el('button', { class: 'no' }, 'Plus là');
     if (voted.has(r.id)) yes.disabled = no.disabled = true;
     yes.onclick = () => vote(r.id, 1);
-    no.onclick = () => vote(r.id, -1);
+    if (where !== 'far') no.onclick = () => vote(r.id, -1, where === 'here');
     root.append(el('div', { class: 'pop-actions' }, yes, no));
+    root.append(el('p', { class: 'pop-hint' }, where === 'far'
+      ? `Tu es à ${fmtDist(dist(me, [r.lat, r.lng]))} : seules les personnes sur place peuvent dire que c’est parti.`
+      : 'Tu es sur place et tu ne vois plus rien\u00a0? Appuie sur «\u00a0Plus\u00a0là\u00a0».'));
     if (orga) {
       const ok = el('button', { class: 'yes' }, r.ver ? '✓ Vérifié' : '✓ Vérifier (orga)');
       const rm = el('button', { class: 'danger' }, 'Retirer (faux)');
@@ -552,7 +558,7 @@
   }
   function onPosition(p) {
     const first = !me;
-    me = [p.coords.latitude, p.coords.longitude];
+    me = [p.coords.latitude, p.coords.longitude]; meAcc = Number.isFinite(p.coords.accuracy) ? p.coords.accuracy : Infinity; meAt = Date.now();
     // Cap GPS quand on marche (secours si pas de boussole)
     gpsHeading = p.coords.speed > 0.8 && p.coords.heading != null && !isNaN(p.coords.heading) ? p.coords.heading : gpsHeading;
     if (!meMarker) meMarker = L.marker(me, { icon: meIcon(), interactive: false, zIndexOffset: 1000, keyboard: false }).addTo(map);
@@ -841,10 +847,18 @@
   navigator.serviceWorker?.addEventListener?.('message', e => { if (e.data && e.data.type === 'queue-flushed') { updateQueueChip(); sync(); } });
   updateQueueChip().then(n => { if (n) flushQueue(); });
 
-  async function vote(id, v) {
+  // Sur place ? 'here' (position récente et précise, à moins de 400 m), 'far' (nettement plus loin), sinon null (on ne sait pas)
+  const NEAR_M = 400;
+  function onSite(r) {
+    if (!me || Date.now() - meAt > 5 * MIN) return null;
+    const d = dist(me, [r.lat, r.lng]), acc = Math.min(meAcc, 300);
+    if (d - acc > NEAR_M) return 'far';
+    return d <= NEAR_M && meAcc <= 300 ? 'here' : null;
+  }
+  async function vote(id, v, here = false) {
     voted.add(id);
     try {
-      const res = await fetch(`/api/reports/${id}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ v }) });
+      const res = await fetch(`/api/reports/${id}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify(v === 1 ? { v } : { v, here }) });
       const body = await res.json().catch(() => ({}));
       if (!res.ok && res.status !== 409) { voted.delete(id); return toast(body.error || 'Vote impossible.'); }
       toast(v === 1 ? 'Merci, signalement prolongé' : 'Merci, c’est noté');
