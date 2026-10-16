@@ -357,3 +357,5 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .card-title { font-size: 15px; }
 .support-card a.install, .orga-card a.secondary { display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 4px; }
 .orga-card .fine { font-size: 12px; color: var(--muted); }
+.round.kofi-tool { text-decoration: none; border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.round[hidden] { display: none; }

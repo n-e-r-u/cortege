@@ -33,7 +33,7 @@
     document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
     document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => (a.href = cfg.brand.instagram));
     $('#brandLink').href = cfg.brand.instagram;
-    if (cfg.brand.kofi) $('#kofiLink').href = cfg.brand.kofi; else $('#kofiLink').parentElement.hidden = true;
+    if (cfg.brand.kofi) $('#kofiLink').href = $('#btnKofi').href = cfg.brand.kofi; else { $('#kofiLink').parentElement.hidden = true; $('#btnKofi').hidden = true; }
     const siteLabel = cfg.brand.site.replace(/^https?:\/\//, '').replace(/\/$/, '');
     document.querySelectorAll('a[href="https://neru.tv"]').forEach(a => { a.href = cfg.brand.site; if (!a.querySelector('svg')) a.textContent = siteLabel; });
   }
