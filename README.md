@@ -108,6 +108,11 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **Alerte de proximité** : vibration + bandeau si lacrymo, charge, nasse, canon à eau ou forces de l'ordre sont signalés à moins de 300 m.
 - **Hors ligne** : l'interface est mise en cache, et « Garder la zone hors ligne » télécharge les tuiles du parcours avant le départ, pour quand le réseau sature.
 
+## Sécurité et vérification
+
+- Signaler une faille, ce que l'appli protège et ne protège pas : voir [`SECURITY.md`](SECURITY.md).
+- Vérifier que l'appli en ligne est identique à ce dépôt : `node verifier.js https://cortege.neru.tv` (depuis une copie du dépôt). Version et empreintes déclarées : `/api/version`. Si tu remplaces le logo (`public/brand/logo.png`), ce fichier apparaîtra logiquement comme différent.
+
 ## Ce que le serveur sait et ne sait pas
 
 - Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base hors du dossier web et supprimés à expiration.
