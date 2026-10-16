@@ -88,7 +88,7 @@ const MERGE = {
 };
 // Un danger signalé près d'une « zone calme » la retire aussitôt : en cas de doute, le danger l'emporte.
 const CALM_KILL_M = 100;
-const isDanger = cat => CAT[cat] && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
+const isDanger = cat => Object.hasOwn(CAT, cat) && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
 const distM = (a, b) => {
   const k = Math.PI / 180, x = (b.lng - a.lng) * k * Math.cos((a.lat + b.lat) / 2 * k), y = (b.lat - a.lat) * k;
   return Math.sqrt(x * x + y * y) * 6371000;
@@ -402,24 +402,30 @@ pruneArchive(); setInterval(pruneArchive, 6 * 60 * MIN).unref();
 // ---- Recherche de lieux (OpenStreetMap Nominatim, via le serveur : rien ne part du téléphone) ----
 const geoCache = new Map();
 let geoChain = Promise.resolve(), geoLast = 0;
+let geoPending = 0;
+const GEO_QUEUE_MAX = 20; // au-delà, on répond « réessaie » plutôt que d'empiler (1 requête/s chez Nominatim)
 function nominatim(pathAndQuery) {
   if (geoCache.has(pathAndQuery)) return Promise.resolve(geoCache.get(pathAndQuery));
+  if (geoPending >= GEO_QUEUE_MAX) return Promise.resolve(null);
+  geoPending++;
   // Politique Nominatim : 1 requête par seconde maximum
   const run = () => new Promise(resolve => {
     const wait = Math.max(0, geoLast + 1100 - Date.now());
     setTimeout(() => {
       geoLast = Date.now();
-      https.get('https://nominatim.openstreetmap.org' + pathAndQuery, { headers: { 'User-Agent': TILE_UA, 'Accept-Language': 'fr' } }, up => {
+      const rq = https.get('https://nominatim.openstreetmap.org' + pathAndQuery, { headers: { 'User-Agent': TILE_UA, 'Accept-Language': 'fr' }, timeout: 8000 }, up => {
         const chunks = []; up.on('data', c => chunks.push(c));
         up.on('end', () => {
           let data = null; try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch {}
           if (up.statusCode === 200 && data) { geoCache.set(pathAndQuery, data); if (geoCache.size > 3000) geoCache.delete(geoCache.keys().next().value); }
           resolve(data);
         });
-      }).on('error', () => resolve(null));
+      });
+      rq.on('timeout', () => rq.destroy(new Error('timeout')));
+      rq.on('error', () => resolve(null));
     }, wait);
   });
-  const p = geoChain.then(run); geoChain = p.catch(() => {}); return p;
+  const p = geoChain.then(run).finally(() => { geoPending--; }); geoChain = p.catch(() => {}); return p;
 }
 const placeName = a => a && (a.city || a.town || a.village || a.municipality || a.suburb || a.county || a.state) || null;
 
@@ -427,7 +433,6 @@ const placeName = a => a && (a.city || a.town || a.village || a.municipality || 
 // Un téléphone abonné envoie seulement une zone arrondie à 0,1° (≈ 10 km), jamais sa position exacte.
 // Seules les annonces urgentes (et nationales urgentes) déclenchent une notification.
 const PUSH_FILE = path.join(DATA_DIR, 'push.json');
-const PUSH_LOCK = PUSH_FILE + '.lock';
 const PUSH_MAX = 50000;
 // Seuls les services de notification des navigateurs sont contactés (évite qu'on fasse appeler n'importe quelle adresse au serveur)
 const PUSH_HOSTS = /(^|\.)(googleapis\.com|push\.services\.mozilla\.com|push\.apple\.com|notify\.windows\.com)$/;
@@ -440,20 +445,17 @@ const VAPID = (() => {
   try { fs.writeFileSync(f, JSON.stringify(v), { mode: 0o600, flag: 'wx' }); return v; } catch { return JSON.parse(fs.readFileSync(f, 'utf8')); }
 })();
 const VAPID_KEY = crypto.createPrivateKey({ key: VAPID.jwk, format: 'jwk' });
-let pushCache = { mtime: -1, subs: {} };
-function readPush() {
-  try {
-    const st = fs.statSync(PUSH_FILE);
-    if (st.mtimeMs !== pushCache.mtime) pushCache = { mtime: st.mtimeMs, subs: JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8')) };
-  } catch { pushCache = { mtime: -1, subs: {} }; }
-  return pushCache.subs;
-}
-function writePush(subs) {
-  const tmp = PUSH_FILE + '.' + process.pid + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(subs), { mode: 0o600 });
-  fs.renameSync(tmp, PUSH_FILE);
-  pushCache.mtime = -1;
-}
+// Abonnements dans la base (avant : un fichier réécrit en entier à chaque abonnement, de plus en plus lent)
+db.exec('CREATE TABLE IF NOT EXISTS push(id TEXT PRIMARY KEY, e TEXT NOT NULL, k TEXT, a TEXT, lat REAL, lng REAL, t INTEGER)');
+try { // reprise de l'ancien fichier push.json, une seule fois
+  if (fs.existsSync(PUSH_FILE)) {
+    const old = JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8'));
+    tx(() => { for (const [id, x] of Object.entries(old)) q('INSERT OR IGNORE INTO push(id,e,k,a,lat,lng,t) VALUES(?,?,?,?,?,?,?)').run(id, x.e, x.k, x.a, x.lat ?? null, x.lng ?? null, x.t || Date.now()); });
+    fs.renameSync(PUSH_FILE, PUSH_FILE + '.repris-' + Date.now());
+  }
+} catch (e) { if (!/ENOENT/.test(e.message)) console.error('reprise push.json', e.message); }
+const pushCount = () => q('SELECT COUNT(*) n FROM push').get().n;
+const pushAll = () => q('SELECT * FROM push').all();
 const hmac = (key, data) => crypto.createHmac('sha256', key).update(data).digest();
 function encryptPush(sub, payload) {
   const uaPub = Buffer.from(sub.k, 'base64url'), auth = Buffer.from(sub.a, 'base64url');
@@ -495,7 +497,7 @@ function pushOne(sub, payload) {
   });
 }
 async function pushBroadcast(a) {
-  const targets = Object.entries(readPush()).filter(([, s]) => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8));
+  const targets = pushAll().filter(s => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8)).map(s => [s.id, s]);
   if (!targets.length) return;
   const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/' });
   const dead = [];
@@ -504,7 +506,7 @@ async function pushBroadcast(a) {
     const codes = await Promise.all(batch.map(([, s]) => pushOne(s, payload)));
     codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(batch[j][0]); });
   }
-  if (dead.length) withLock(() => { const p = { ...readPush() }; dead.forEach(id => delete p[id]); writePush(p); }, PUSH_LOCK);
+  if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
   console.log(`push : ${targets.length} envoi(s), ${dead.length} abonnement(s) expiré(s)`);
 }
 
@@ -596,7 +598,7 @@ setInterval(maybeImport17, 60_000).unref();
 
 // ---- Agenda : création d'événement (orga = publié tout de suite ; participant·e = proposition à valider) ----
 function createEvent(b, orga, dev, ipH) {
-  const type = EVT[b.type] ? b.type : 'manif';
+  const type = Object.hasOwn(EVT, String(b.type)) ? b.type : 'manif';
   const title = clean(b.title, 80), place = clean(b.place, 100), note = clean(b.note, 220);
   const start = Number(b.start), lat = Number(b.lat), lng = Number(b.lng);
   if (title.length < 3) return [400, { error: 'Donne un titre (ex. : Blocus lycée Jean-Monnet).' }];
@@ -663,17 +665,27 @@ const ALL_EVERY = 10_000;
 const LIVE_LOCK = path.join(DATA_DIR, 'live.lock');
 const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false };
 let flushTimer = null, lastAll = 0;
-function scheduleFlush(ms = FLUSH_MS) { if (!flushTimer) flushTimer = setTimeout(flush, ms); }
+// Publication planifiée. Une demande plus urgente avance le minuteur : un nouveau signalement n'attend
+// jamais les publications espacées (vue nationale toutes les 10 s, ancien index toutes les 5 s).
+let flushDue = 0;
+function scheduleFlush(ms = FLUSH_MS) {
+  const due = Date.now() + ms;
+  if (flushTimer && due >= flushDue) return;
+  clearTimeout(flushTimer); flushDue = due; flushTimer = setTimeout(flush, ms);
+}
 function dirtyCell(c) { dirty.cells.add(c); dirty.all = true; scheduleFlush(); }
 function writeRegion(rg) {
   const rows = q('SELECT cell, h FROM cells WHERE region=?').all(rg);
   const f = path.join(LIVE_DIR, 'r', rg + '.json');
-  if (!rows.length) { try { fs.unlinkSync(f); } catch {} return; }
+  // Une région vide reste publiée (fichier vide) : sinon Apache ne trouve rien et chaque téléphone de la zone réveille Node.
   writeIfChanged(f, JSON.stringify({ c: Object.fromEntries(rows.map(x => [x.cell, x.h])) }));
 }
 function writeGlobal(now) {
   const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, paused: pausedUntil(now) };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
+  // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
+  if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
+  writeGlobal.last = now;
   const cells = q('SELECT cell, h FROM cells').all();
   writeAtomic(path.join(LIVE_DIR, 'index.json'), JSON.stringify({ v: now, t: now, cells: Object.fromEntries(cells.map(x => [x.cell, x.h])),
     ann: g.ann, events: g.events, all: getMeta('allh') || null, paused: g.paused }));
@@ -725,6 +737,19 @@ function rebuildAll() {
   dirty.ann = dirty.events = dirty.global = dirty.all = true; lastAll = 0;
   clearTimeout(flushTimer); flushTimer = null;
   flush();
+  ensureRegions();
+}
+// Fichiers de région publiés d'avance (vides) pour la France et l'outre-mer : un téléphone dans une zone
+// sans aucun signalement reçoit un fichier statique d'Apache, sans réveiller Node.
+function ensureRegions() {
+  try {
+    for (const [la1, la2, lo1, lo2] of TILE_ZONES)
+      for (let i = Math.floor(la1); i <= Math.floor(la2); i++)
+        for (let j = Math.floor(lo1); j <= Math.floor(lo2); j++) {
+          const f = path.join(LIVE_DIR, 'r', `${i}_${j}.json`);
+          if (!fs.existsSync(f)) writeAtomic(f, '{"c":{}}');
+        }
+  } catch (e) { console.error('régions', e.message); }
 }
 // Reprise des données de l'ancienne version (fichier state.json), une seule fois.
 function migrateJson() {
@@ -785,16 +810,30 @@ function cspFor(buf) {
   }
   return cspCache.get(key);
 }
+// Fichiers de l'appli gardés en mémoire avec une empreinte : un téléphone qui a déjà la bonne version
+// reçoit une réponse vide « pas modifié » (304) au lieu de tout retélécharger.
+const staticCache = new Map();
 function serveStatic(req, res, pathname) {
   const file = path.normalize(path.join(PUBLIC, pathname === '/' ? 'index.html' : pathname));
   if (!file.startsWith(PUBLIC + path.sep)) return send(res, 403, 'Forbidden');
-  fs.readFile(file, (err, buf) => {
-    if (err) return send(res, 404, 'Not found');
-    const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream',
-      'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
-    if (file.endsWith('.html')) { headers['Content-Security-Policy'] = cspFor(buf); headers['X-Frame-Options'] = 'DENY'; }
-    res.writeHead(200, headers);
-    res.end(buf);
+  fs.stat(file, (err, st) => {
+    if (err || !st.isFile()) return send(res, 404, 'Not found');
+    let c = staticCache.get(file);
+    const reply = () => {
+      const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: c.etag,
+        'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
+      if (file.endsWith('.html')) { headers['Content-Security-Policy'] = cspFor(c.buf); headers['X-Frame-Options'] = 'DENY'; }
+      if (req.headers['if-none-match'] === c.etag) { res.writeHead(304, headers); return res.end(); }
+      res.writeHead(200, headers); res.end(c.buf);
+    };
+    if (c && c.mtime === st.mtimeMs && c.size === st.size) return reply();
+    fs.readFile(file, (err2, buf) => {
+      if (err2) return send(res, 404, 'Not found');
+      c = { buf, mtime: st.mtimeMs, size: st.size, etag: '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"' };
+      if (staticCache.size > 200) staticCache.clear();
+      staticCache.set(file, c);
+      reply();
+    });
   });
 }
 
@@ -818,30 +857,71 @@ function pruneTiles() { // supprime les tuiles de plus de TILE_DAYS jours (la ca
   try { walk(TILE_DIR); } catch {}
 }
 if (TILE_DISK) setInterval(pruneTiles, 24 * 60 * MIN).unref();
-function serveTile(res, z, x, y) {
+// Protection du proxy de tuiles : sans elle, n'importe qui pourrait faire télécharger des millions de tuiles
+// par le serveur, remplir le disque et faire bannir le serveur par OpenStreetMap (la carte tomberait pour tous).
+//  - zone : France métropolitaine, Corse et outre-mer à partir du zoom 8 (en dessous, le monde entier tient en peu de tuiles) ;
+//  - budget par réseau de tuiles NOUVELLES (les tuiles déjà en cache ne comptent pas) ;
+//  - plafond de téléchargements simultanés, et une même tuile demandée par mille personnes n'est téléchargée qu'une fois.
+const TILE_ZONES = [[41, 51.6, -5.8, 10], [15.8, 16.6, -61.9, -60.9], [14.3, 14.95, -61.3, -60.75], [2, 6, -54.7, -51.5],
+  [-21.45, -20.85, 55.1, 55.9], [-13.05, -12.6, 44.95, 45.35], [46.7, 47.2, -56.5, -56.05]]; // métropole+Corse, Guadeloupe, Martinique, Guyane, Réunion, Mayotte, St-Pierre
+const TILE_NET_BUDGET = Number(process.env.TILE_NET_BUDGET) || 600;   // nouvelles tuiles par réseau et par 10 min
+const TILE_UPSTREAM_MAX = 12;                                          // téléchargements simultanés vers le fournisseur
+const tileBudget = new Map(), tileInflight = new Map();
+let tileUpstream = 0;
+const tile2lat = (y, z) => { const n = Math.PI - 2 * Math.PI * y / 2 ** z; return 180 / Math.PI * Math.atan(Math.sinh(n)); };
+function tileInZone(z, x, y) {
+  if (z < 8) return true;
+  const w = x / 2 ** z * 360 - 180, e = (x + 1) / 2 ** z * 360 - 180, n = tile2lat(y, z), so = tile2lat(y + 1, z);
+  return TILE_ZONES.some(([la1, la2, lo1, lo2]) => so <= la2 && n >= la1 && w <= lo2 && e >= lo1);
+}
+function tileBudgetOk(ip) {
+  const now = Date.now(), b = tileBudget.get(ip);
+  if (!b || now - b.t > 10 * MIN) { tileBudget.set(ip, { t: now, n: 1 }); if (tileBudget.size > 20000) tileBudget.clear(); return true; }
+  return ++b.n <= TILE_NET_BUDGET;
+}
+function fetchTile(z, x, y) {
+  const key = `${z}/${x}/${y}`;
+  if (tileInflight.has(key)) return tileInflight.get(key);
+  const p = new Promise((resolve, reject) => {
+    tileUpstream++;
+    const done = () => { tileUpstream--; tileInflight.delete(key); };
+    const rq = (TILE_URL.startsWith('http:') ? http : https).get(TILE_URL.replace('{z}', z).replace('{x}', x).replace('{y}', y), { headers: { 'User-Agent': TILE_UA }, timeout: 10_000 }, up => {
+      if (up.statusCode !== 200) { up.resume(); done(); return reject(new Error('upstream ' + up.statusCode)); }
+      const chunks = []; let size = 0;
+      up.on('data', c => { size += c.length; if (size > 2_000_000) rq.destroy(); else chunks.push(c); });
+      up.on('end', () => {
+        const buf = Buffer.concat(chunks); done();
+        tileCache.set(key, buf);
+        if (tileCache.size > TILE_CACHE_MAX) tileCache.delete(tileCache.keys().next().value);
+        if (TILE_DISK) {
+          const dir = path.join(TILE_DIR, String(z), String(x));
+          fs.mkdir(dir, { recursive: true }, () => {
+            const tmp = path.join(dir, y + '.png.' + process.pid + '.tmp');
+            fs.writeFile(tmp, buf, err => { if (!err) fs.rename(tmp, path.join(dir, y + '.png'), () => {}); });
+          });
+        }
+        resolve(buf);
+      });
+      up.on('error', e => { done(); reject(e); });
+    });
+    rq.on('timeout', () => rq.destroy(new Error('timeout')));
+    rq.on('error', e => { if (tileInflight.get(key) === p) done(); reject(e); });
+  });
+  tileInflight.set(key, p);
+  return p;
+}
+function serveTile(req, res, z, x, y) {
   z = +z; x = +x; y = +y;
   if (!(z >= 0 && z <= 19 && x >= 0 && y >= 0 && x < 2 ** z && y < 2 ** z)) return send(res, 400, 'bad tile');
-  const key = `${z}/${x}/${y}`;
-  const out = buf => { res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' }); res.end(buf); };
-  const hit = tileCache.get(key);
+  const out = buf => { res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=604800' }); res.end(buf); };
+  const key = `${z}/${x}/${y}`, hit = tileCache.get(key);
   if (hit) { tileCache.delete(key); tileCache.set(key, hit); return out(hit); }
-  https.get(TILE_URL.replace('{z}', z).replace('{x}', x).replace('{y}', y), { headers: { 'User-Agent': TILE_UA } }, up => {
-    if (up.statusCode !== 200) { up.resume(); return send(res, 502, 'tile upstream'); }
-    const chunks = []; up.on('data', c => chunks.push(c));
-    up.on('end', () => {
-      const buf = Buffer.concat(chunks);
-      tileCache.set(key, buf);
-      if (TILE_DISK) {
-        const dir = path.join(TILE_DIR, String(z), String(x));
-        fs.mkdir(dir, { recursive: true }, () => {
-          const tmp = path.join(dir, y + '.png.' + process.pid + '.tmp');
-          fs.writeFile(tmp, buf, err => { if (!err) fs.rename(tmp, path.join(dir, y + '.png'), () => {}); });
-        });
-      }
-      if (tileCache.size > TILE_CACHE_MAX) tileCache.delete(tileCache.keys().next().value);
-      out(buf);
-    });
-  }).on('error', () => send(res, 502, 'tile upstream'));
+  if (!tileInZone(z, x, y)) return send(res, 404, 'hors zone');
+  if (!tileInflight.has(key)) {
+    if (!tileBudgetOk(clientHash(req))) return send(res, 429, 'trop de tuiles');
+    if (tileUpstream >= TILE_UPSTREAM_MAX) return send(res, 503, 'occupé', { 'Retry-After': '2' });
+  }
+  fetchTile(z, x, y).then(out, () => { if (!res.headersSent) send(res, 502, 'tile upstream'); });
 }
 
 // ---- Routes ----
@@ -850,6 +930,16 @@ const server = http.createServer(async (req, res) => {
   const { pathname } = url;
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Strict-Transport-Security', 'max-age=15552000');
+  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  // Écritures acceptées seulement depuis l'appli elle-même : un autre site ne peut pas faire poster
+  // de faux signalements par les navigateurs de ses visiteurs (CSRF).
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    const site = req.headers['sec-fetch-site'];
+    if (site && site !== 'same-origin' && site !== 'none') return send(res, 403, { error: 'Requête refusée.' });
+    if (!/^application\/json\b/i.test(String(req.headers['content-type'] || ''))) return send(res, 415, { error: 'Format refusé.' });
+  }
 
   try {
     if (req.method === 'GET' && pathname === '/api/config')
@@ -864,18 +954,21 @@ const server = http.createServer(async (req, res) => {
       if (!PUSH_HOSTS.test(host) || endpoint.length > 1000) return send(res, 400, { error: 'Service de notification non pris en charge.' });
       const id = sha(endpoint).slice(0, 24);
       if (pathname.endsWith('/unsubscribe')) {
-        withLock(() => { const p = readPush(); if (p[id]) { const n = { ...p }; delete n[id]; writePush(n); } }, PUSH_LOCK);
+        q('DELETE FROM push WHERE id=?').run(id);
         return send(res, 200, { ok: true });
       }
       const k = String(sub.keys?.p256dh || '').replace(/=+$/, ''), a = String(sub.keys?.auth || '').replace(/=+$/, '');
       if (!/^[\w-]{86,88}$/.test(k) || !/^[\w-]{20,24}$/.test(a)) return send(res, 400, { error: 'Abonnement invalide.' });
       const lat = Number(b.lat), lng = Number(b.lng), hasZone = validLatLng(lat, lng);
-      const out = withLock(() => {
-        const p = readPush();
-        if (!p[id] && Object.keys(p).length >= PUSH_MAX) return false;
-        writePush({ ...p, [id]: { e: endpoint, k, a, lat: hasZone ? Math.round(lat * 10) / 10 : null, lng: hasZone ? Math.round(lng * 10) / 10 : null, t: Date.now() } });
+      const out = tx(() => {
+        // limite par réseau : empêche de remplir la liste avec de faux abonnements
+        if (!bump('push:' + clientHash(req), 'vote', 10, Date.now())) return 'rate';
+        if (!q('SELECT 1 FROM push WHERE id=?').get(id) && pushCount() >= PUSH_MAX) return false;
+        q('INSERT OR REPLACE INTO push(id,e,k,a,lat,lng,t) VALUES(?,?,?,?,?,?,?)').run(id, endpoint, k, a,
+          hasZone ? Math.round(lat * 10) / 10 : null, hasZone ? Math.round(lng * 10) / 10 : null, Date.now());
         return true;
-      }, PUSH_LOCK);
+      });
+      if (out === 'rate') return send(res, 429, { error: 'Trop de demandes, réessaie plus tard.' });
       return out ? send(res, 200, { ok: true }) : send(res, 503, { error: 'Trop d’abonnements, réessaie plus tard.' });
     }
 
@@ -911,6 +1004,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && pathname === '/api/geocode') {
       const q = String(url.searchParams.get('q') || '').trim().slice(0, 80);
       if (q.length < 2) return send(res, 400, { error: 'Tape au moins 2 lettres.' });
+      const gk = 'geo:' + clientHash(req);
+      if (!geoCache.has('/search?format=jsonv2&addressdetails=1&limit=6&countrycodes=fr&q=' + encodeURIComponent(q)) && !tx(() => bump(gk, 'vote', 30, Date.now())))
+        return send(res, 429, { error: 'Trop de recherches, patiente un peu.' });
       const data = await nominatim('/search?format=jsonv2&addressdetails=1&limit=6&countrycodes=fr&q=' + encodeURIComponent(q));
       if (!data) return send(res, 502, { error: 'Recherche indisponible pour l’instant.' });
       return send(res, 200, data.map(d => ({ name: d.display_name.split(',').slice(0, 2).join(','), place: placeName(d.address),
@@ -947,7 +1043,7 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { paused: pausedUntil(now),
           reports: activeReports(now).map(publicView),
           announcements: annActive(now).sort((a, b) => b.t - a.t).map(annView),
-          pushSubs: Object.keys(readPush()).length });
+          pushSubs: pushCount() });
       }
       // --- Annonces de l'admin (nationales ou locales) ---
       if (req.method === 'POST' && pathname === '/api/admin/announcements') {
@@ -1045,7 +1141,7 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'POST' && pathname === '/api/reports') {
       const b = await readJson(req);
-      const cat = CAT[b.cat];
+      const cat = Object.hasOwn(CAT, String(b.cat)) ? CAT[b.cat] : null;
       const lat = Number(b.lat), lng = Number(b.lng);
       if (!cat) return send(res, 400, { error: 'Catégorie inconnue.' });
       if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return send(res, 400, { error: 'Position invalide.' });
@@ -1191,7 +1287,7 @@ const server = http.createServer(async (req, res) => {
       // Hors cPanel (pas d'Apache devant), Node sert lui-même la tuile déjà sur disque
       const f = path.join(TILE_DIR, tile[1], tile[2], tile[3] + '.png');
       if (TILE_DISK) try { const buf = fs.readFileSync(f); res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=604800' }); return res.end(buf); } catch {}
-      return serveTile(res, tile[1], tile[2], tile[3]);
+      return serveTile(req, res, tile[1], tile[2], tile[3]);
     }
 
     // Fichiers live/ : servis par Apache sur cPanel ; Node ne les sert que s'il est seul (VPS, local).
@@ -1217,4 +1313,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+// Connexions lentes ou abandonnées : on ne les garde pas indéfiniment
+server.headersTimeout = 20_000;
+server.requestTimeout = 30_000;
 server.listen(PORT, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));
