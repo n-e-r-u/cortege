@@ -77,6 +77,9 @@
     L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
   }
 
+  // Popup ouvert : les boutons latéraux s'effacent pour ne pas le recouvrir
+  map.on('popupopen', () => document.body.classList.add('pop-open'));
+  map.on('popupclose', () => document.body.classList.remove('pop-open'));
   const reports = new Map();   // id -> {data, marker}
   const voted = new Set();     // en mémoire seulement
   const hidden = new Set();    // groupes masqués
@@ -115,7 +118,16 @@
     root.append(el('div', { class: 'pop-meta' }, meta));
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, `Signalé par ${r.up + 1} personnes`));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ Vérifié par ' + r.ver));
-    if (r.note) root.append(el('p', { class: 'pop-note' }, r.note));
+    const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
+    for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
+    // Ajouter une précision à un point déjà signalé
+    const addBtn = el('button', { class: 'link-btn pop-add' }, '＋ Ajouter une précision');
+    const form = el('form', { class: 'pop-note-form', hidden: '' });
+    const input = el('input', { maxlength: '120', placeholder: notePlaceholder(r.cat), 'aria-label': 'Précision' });
+    form.append(input, el('button', { type: 'submit' }, 'Ajouter'));
+    addBtn.onclick = () => { addBtn.hidden = true; form.hidden = false; input.focus(); };
+    form.onsubmit = e => { e.preventDefault(); sendNote(r.id, input.value); };
+    root.append(addBtn, form);
     const yes = el('button', { class: 'yes' }, 'Toujours là');
     const no = el('button', { class: 'no' }, 'Plus là');
     if (voted.has(r.id)) yes.disabled = no.disabled = true;
@@ -132,6 +144,8 @@
     }
     return root;
   }
+  // Quelqu'un écrit une précision dans un popup : on ne le redessine pas (le texte serait perdu)
+  const typingInPopup = () => { const f = document.querySelector('.leaflet-popup .pop-note-form:not([hidden])'); return !!(f && (f.contains(document.activeElement) || f.querySelector('input').value)); };
   function upsert(r, fresh = false) {
     const cur = reports.get(r.id);
     if (cur) {
@@ -139,7 +153,7 @@
       cur.data = r;
       if (moved) cur.marker.setLatLng([r.lat, r.lng]); // point de forces de l'ordre qui s'est déplacé
       cur.marker.setIcon(icon(r, false));
-      if (cur.marker.isPopupOpen()) cur.marker.setPopupContent(popup(r));
+      if (cur.marker.isPopupOpen() && !typingInPopup()) cur.marker.setPopupContent(popup(r));
     } else {
       const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat });
       marker.bindPopup(() => popup(reports.get(r.id).data));
@@ -199,7 +213,7 @@
       } else if (st.sig !== sig) {
         st.sig = sig; st.ids = g.map(r => r.id);
         st.marker.setLatLng([g[0].lat, g[0].lng]); st.marker.setIcon(stackIcon(g));
-        if (st.marker.isPopupOpen()) st.marker.setPopupContent(stackPopup(st.ids));
+        if (st.marker.isPopupOpen() && !typingInPopup()) st.marker.setPopupContent(stackPopup(st.ids));
       }
       for (const r of g) stackOf.set(r.id, k);
     }
@@ -619,7 +633,6 @@
     $('#btnReport').textContent = 'Annuler';
     $('#srHint').textContent = me ? 'Le viseur est sur ta position. Déplace la carte si c’est ailleurs.' : 'Place le viseur au bon endroit sur la carte, puis choisis.';
     $('#sheetReport').hidden = false;
-    $('#srNote').value = '';
     // Le viseur se place au milieu de la zone de carte encore visible au-dessus de la feuille
     const y = aimY();
     $('#crosshair').style.top = y + 'px';
@@ -746,7 +759,7 @@
   }
   async function submit(cat) {
     const p = target();
-    const it = { k: rid(), cat, lat: p.lat, lng: p.lng, note: $('#srNote').value, t: Date.now(), dev: DEVICE, ttl: CAT[cat].ttl * MIN };
+    const it = { k: rid(), cat, lat: p.lat, lng: p.lng, note: '', t: Date.now(), dev: DEVICE, ttl: CAT[cat].ttl * MIN };
     let out;
     try { out = await postReport(it); }
     catch {
@@ -762,8 +775,35 @@
     closeReport();
     lastActivity = Date.now();
     sync();
-    toast(resultText(it, out));
+    openNoteCard(out.body.id, cat, resultText(it, out));
   }
+  // ---- Précisions ----
+  const NOTE_HINTS = { fdo: 'ex. : une vingtaine, remontent vers la gare', danger: 'ex. : le nuage s’étend vers la place',
+    soutien: 'ex. : sous l’abribus, côté nord', info: 'ex. : barrières, passage par la rue d’à côté' };
+  function notePlaceholder(cat) { return NOTE_HINTS[CAT[cat]?.group] || 'Ajouter une précision'; }
+  async function sendNote(id, text) {
+    text = String(text || '').trim();
+    if (text.length < 2) return toast('Écris une précision.');
+    try {
+      const res = await fetch(`/api/reports/${id}/note`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ note: text }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(body.error || 'Envoi impossible.');
+      toast('Précision ajoutée'); map.closePopup(); closeNoteCard(); sync();
+    } catch { toast('Pas de réseau.'); }
+  }
+  // Carte « Ajouter une précision ? » juste après un signalement : l'envoi n'attend pas qu'on écrive
+  let noteFor = null;
+  function openNoteCard(id, cat, title) {
+    noteFor = id;
+    $('#noteTitle').textContent = '✓ ' + title;
+    $('#noteInput').value = ''; $('#noteInput').placeholder = notePlaceholder(cat);
+    $('#noteCard').hidden = false;
+    clearTimeout(openNoteCard.t);
+    openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);
+  }
+  function closeNoteCard() { $('#noteCard').hidden = true; noteFor = null; clearTimeout(openNoteCard.t); }
+  $('#noteClose').onclick = closeNoteCard;
+  $('#noteCard').addEventListener('submit', e => { e.preventDefault(); if (noteFor) sendNote(noteFor, $('#noteInput').value); });
   $('#queueChip').onclick = () => { closeReport(); closeSheets(); renderQueue(); $('#sheetQueue').hidden = false; };
   $('#sqClose').onclick = () => closeSheets();
   $('#btnQueueRetry').onclick = () => flushQueue(true);

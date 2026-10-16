@@ -101,7 +101,8 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **Notifications** (réglage dans « ? ») : les annonces urgentes arrivent même appli fermée (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
 - **Annonces nationales** : réservées à l’administration. Les numéros de legal team sont permanents jusqu’à leur retrait.
 
-- **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie, précision facultative de 120 caractères.
+- **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie : c'est envoyé tout de suite. Une petite carte propose ensuite d'ajouter une précision (120 caractères).
+- **Précisions** : n'importe qui peut ajouter une précision à un point déjà signalé (« ＋ Ajouter une précision » dans sa fiche). Les 3 plus récentes sont affichées, une par téléphone (la sienne peut être corrigée).
 - **Fusion** : un signalement du même type tout près d'un point existant le confirme au lieu d'en créer un deuxième (rayon adapté à chaque type ; les forces de l'ordre et la tête de cortège suivent la position la plus récente). Sous le viseur, le bouton indique « déjà là · confirmer ». Chaque point affiche le nombre de personnes qui l'ont signalé.
 - **Piles** : des types différents au même endroit s'affichent en une seule pastille ; un appui ouvre la liste, chaque type garde ses votes et sa durée.
 - **Danger contre zone calme** : un danger signalé près d'une zone calme la retire, et on ne peut pas marquer calme une zone où un danger est signalé.

@@ -268,6 +268,8 @@ const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p 
 try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
 // Heure de la dernière confirmation ou du dernier signalement fusionné
 try { db.exec('ALTER TABLE reports ADD COLUMN last INTEGER'); } catch {}
+// Précisions écrites (les 3 plus récentes, une par téléphone) : [{ x: texte, t: heure, d: empreinte du téléphone }]
+try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch {}
 db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
 db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
 // ---- Journal des actions d'orgas (60 jours) et corbeille des retraits (1 h) ----
@@ -298,18 +300,21 @@ function orgaStats(oid) {
   return { day: { verified: by['vérifié'] || 0, removed: (by['retiré'] || 0) + (by['retrait (essai)'] || 0), blocked: by['retrait bloqué (rafale)'] || 0,
     announcements: (by['annonce'] || 0) + (by['legal team (en attente)'] || 0) }, lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null };
 }
-const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down,
+const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
+const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
   ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
   const cell = cellId(r.lat, r.lng);
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-     ON CONFLICT(id) DO UPDATE SET lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, exp=excluded.exp, up=excluded.up,
+  const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
+  r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
        down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t);
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes));
   dirtyCell(cell);
 }
 function dropReport(id, dismissed) {
@@ -368,7 +373,14 @@ function sweep() {
   } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
 }
 setInterval(sweep, 30_000).unref();
-const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
+const NOTES_KEEP = 3;
+// Ajoute (ou remplace) la précision d'un téléphone sur un point ; les plus récentes d'abord
+function addNote(r, text, dev, t) {
+  const notes = (r.notes || []).filter(n => n.d !== dev && n.x.toLowerCase() !== text.toLowerCase());
+  r.notes = [{ x: text, t, d: dev }, ...notes].slice(0, NOTES_KEEP);
+}
+const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
+  notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
@@ -1285,7 +1297,7 @@ const server = http.createServer(async (req, res) => {
           // Preuve plus fraîche que les « Plus là » : on les efface
           if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; }
           if (m.move && t0 >= (r.last || r.t)) { r.lat = pos.lat; r.lng = pos.lng; }
-          if (note && !r.note) r.note = note;
+          if (note) addNote(r, note, dev, t0);
           r.last = Math.max(r.last || r.t, t0);
           r.exp = Math.max(r.exp, t0 + ttl);
           saveReport(r);
@@ -1303,7 +1315,7 @@ const server = http.createServer(async (req, res) => {
           dropReport(old.id, true);
         }
         if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
-        const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note,
+        const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note, notes: note ? [{ x: note, t: t0, d: dev }] : [],
           t: t0, last: t0, exp: t0 + ttl, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
         saveReport(r);
         killCalm();
@@ -1320,6 +1332,24 @@ const server = http.createServer(async (req, res) => {
       const out = createEvent(b, orga, deviceHash(req), clientHash(req));
       if (orga && out[0] < 300) orgaLog(orga, out[1].status === 'pending' ? 'événement (en attente)' : 'événement', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id, detail: out[1].title });
       return send(res, ...out);
+    }
+
+    // Ajouter une précision à un point existant (une par téléphone, la sienne peut être corrigée)
+    const noteRoute = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/note$/);
+    if (req.method === 'POST' && noteRoute) {
+      const b = await readJson(req);
+      const text = String(b.note || '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX);
+      if (text.length < 2) return send(res, 400, { error: 'Écris une précision.' });
+      const ipH = clientHash(req), dev = deviceHash(req);
+      const result = tx(() => {
+        const now = Date.now(), r = getReport(noteRoute[1], now);
+        if (!r) return [404, { error: 'Signalement expiré.' }];
+        if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop d’envois, patiente un peu.' }];
+        addNote(r, text, dev, now);
+        saveReport(r);
+        return [200, publicView(r)];
+      });
+      return send(res, ...result);
     }
 
     const vote = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/vote$/);

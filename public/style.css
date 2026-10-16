@@ -361,3 +361,23 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .round[hidden] { display: none; }
 .cluster.nat { cursor: pointer; box-shadow: 0 0 0 6px color-mix(in srgb, var(--c) 25%, transparent), 0 4px 14px rgba(0,0,0,.5); }
 .trial-note { border-left: 3px solid var(--info); padding-left: 10px; }
+
+/* Précisions */
+.pop-note { margin: 6px 0 0; font-size: 13.5px; }
+.pop-note-t { color: var(--muted); font-size: 12px; }
+.pop-add { margin-top: 6px; font-size: 13px; }
+.pop-note-form { display: flex; gap: 6px; margin-top: 6px; }
+.pop-note-form[hidden] { display: none; }
+.pop-note-form input { flex: 1; min-width: 0; height: 38px; }
+.pop-note-form button { height: 38px; padding: 0 12px; border-radius: 10px; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+.note-card { position: fixed; left: 12px; right: 12px; bottom: calc(150px + env(safe-area-inset-bottom)); z-index: 1200; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.5); max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.note-card[hidden] { display: none; }
+.note-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.note-row { display: flex; gap: 8px; }
+.note-row input { flex: 1; min-width: 0; height: 44px; }
+.note-row button { height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--brand-grad); color: var(--accent-fg); font-weight: 800; }
+.note-card .fine { margin: 0; }
+.x.small { width: 32px; height: 32px; font-size: 18px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pop-open .tools { opacity: .12; pointer-events: none; transition: opacity .15s; }

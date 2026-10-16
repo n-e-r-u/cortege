@@ -98,8 +98,6 @@
   </div>
   <p class="hint" id="srHint">Place le viseur au bon endroit sur la carte, puis choisis.</p>
   <div id="catGrid" class="catgrid"></div>
-  <label class="note-label" for="srNote">Précision (facultatif)</label>
-  <input id="srNote" maxlength="120" placeholder="ex. : remontent le boulevard vers la gare" autocomplete="off">
   <p class="fine">Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class="inline-link" href="/legal.html#regles">Règles</a></p>
 </section>
 
@@ -525,6 +523,13 @@
 </section>
 
 <div class="toast" id="toast" hidden role="status"></div>
+<!-- Juste après un signalement : ajouter une précision sans ralentir l'envoi -->
+<form class="note-card" id="noteCard" hidden autocomplete="off">
+  <div class="note-head"><b id="noteTitle">Signalé</b><button type="button" class="x small" id="noteClose" aria-label="Fermer">×</button></div>
+  <label class="sr-only" for="noteInput">Ajouter une précision</label>
+  <div class="note-row"><input id="noteInput" maxlength="120" placeholder="Ajouter une précision (facultatif)"><button type="submit" id="noteSend">Ajouter</button></div>
+  <p class="fine">Pas de nom, pas de description physique, pas de matricule.</p>
+</form>
 
 <script src="/vendor/leaflet.js"></script>
 <script src="/vendor/leaflet.markercluster.js"></script>
