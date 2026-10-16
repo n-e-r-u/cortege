@@ -86,6 +86,9 @@
   const reports = new Map();   // id -> {data, marker}
   const voted = new Set();     // en mémoire seulement
   const hidden = new Set();    // groupes masqués
+  // Événements de l'agenda masqués sur la carte (choix gardé sur ce téléphone)
+  let evHidden = false; try { evHidden = localStorage.getItem('cortege-ev-hidden') === '1'; } catch {}
+  let evCount = () => 0;       // nombre d'événements affichables, défini avec l'agenda
   let me = null, meMarker = null, watchId = null, meAcc = Infinity, meAt = 0;
 
   // ---- Utilitaires ----
@@ -687,6 +690,16 @@
       };
       box.append(b);
     }
+    // Agenda : manifs, blocus, AG… affichés sur la carte
+    const ev = el('button', { class: 'chip chip-ev', style: '--c:var(--accent)', 'aria-pressed': String(!evHidden), title: 'Afficher ou masquer les événements de l’agenda sur la carte' },
+      '📅 Agenda ', el('span', { class: 'n' }, String(evCount())));
+    ev.onclick = () => {
+      evHidden = !evHidden;
+      try { localStorage.setItem('cortege-ev-hidden', evHidden ? '1' : '0'); } catch {}
+      renderEvents(); renderFilters();
+      toast(evHidden ? 'Événements de l’agenda masqués sur la carte' : 'Événements de l’agenda affichés');
+    };
+    box.append(ev);
   }
   renderFilters();
 
@@ -1118,7 +1131,9 @@
   const fmtWhen = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const fmtHour = t => new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
-  const evOnMap = e => e.id === selectedEv || (map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda
+  const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  evCount = () => evCache.e.filter(e => map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now()).length;
   map.on('zoomend', () => { const z = map.getZoom() >= 9; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
   function evPopup(e) {
     const t = EVT[e.type] || { glyph: '📍', label: '' };
@@ -1153,6 +1168,7 @@
       evMarkers.set(e.id, m);
     }
     if (!$('#sheetAgenda').hidden) renderAgenda();
+    renderFilters();
   }
   function renderAgenda() {
     const scope = document.querySelector('input[name="agScope"]:checked').value;
