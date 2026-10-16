@@ -770,13 +770,29 @@ function readJson(req, max = 2048) {
 const PUBLIC = path.join(__dirname, 'public');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json' };
+// Politique de sécurité des pages : le navigateur n'exécute que nos propres scripts. Même si du code
+// était un jour injecté dans une note ou un titre, il ne pourrait pas s'exécuter. Les scripts intégrés
+// aux pages (admin, mentions légales) sont autorisés par leur empreinte exacte.
+const cspCache = new Map();
+function cspFor(buf) {
+  const key = h8(buf.toString('latin1'));
+  if (!cspCache.has(key)) {
+    const hashes = [...buf.toString('utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)]
+      .map(m => `'sha256-${crypto.createHash('sha256').update(m[1], 'utf8').digest('base64')}'`);
+    cspCache.set(key, `default-src 'self'; script-src 'self' ${hashes.join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; `
+      + `connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`);
+  }
+  return cspCache.get(key);
+}
 function serveStatic(req, res, pathname) {
   const file = path.normalize(path.join(PUBLIC, pathname === '/' ? 'index.html' : pathname));
   if (!file.startsWith(PUBLIC + path.sep)) return send(res, 403, 'Forbidden');
   fs.readFile(file, (err, buf) => {
     if (err) return send(res, 404, 'Not found');
-    res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream',
-      'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' });
+    const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream',
+      'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
+    if (file.endsWith('.html')) { headers['Content-Security-Policy'] = cspFor(buf); headers['X-Frame-Options'] = 'DENY'; }
+    res.writeHead(200, headers);
     res.end(buf);
   });
 }

@@ -955,7 +955,7 @@
       if (e.route) {
         L.polyline(e.route, { color: '#ec9fa4', weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
         if (e.end) L.marker(e.route[e.route.length - 1], { icon: L.divIcon({ className: '', iconSize: [30, 30], html: '<div class="ev-end">🏁</div>' }), title: 'Dispersion prévue', keyboard: false })
-          .bindPopup('Dispersion prévue : ' + e.title).addTo(evLayer);
+          .bindPopup(() => el('div', {}, 'Dispersion prévue : ' + e.title)).addTo(evLayer);
       }
       const m = L.marker([e.lat, e.lng], { icon: L.divIcon({ className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -18], html: `<div class="ev-pin">${t.glyph}</div>` }),
         title: e.title, zIndexOffset: 500 }).bindPopup(() => evPopup(e)).addTo(evLayer);
