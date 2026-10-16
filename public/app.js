@@ -208,7 +208,7 @@
       if (show && !on) layer.addLayer(marker); else if (!show && on) layer.removeLayer(marker);
     }
   }
-  function refreshUI() { renderFilters(); if (!$('#sheetList').hidden) renderList(); }
+  function refreshUI() { renderFilters(); renderNational(); if (!$('#sheetList').hidden) renderList(); }
   // Rafraîchit l'opacité des points vieillissants
   setInterval(() => {
     for (const { data, marker } of reports.values()) if (!marker.isPopupOpen()) marker.setIcon(icon(data, false));
@@ -277,6 +277,51 @@
   let lastActivity = 0, legacy = false;
   const regionOf = id => { const [i, j] = id.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
   const getOpt = (url, empty) => getJ(url).catch(e => { if (e.status === 404) return empty; throw e; });
+  // Charge les cases demandées (index de région, puis seulement les cases modifiées)
+  async function loadCells(need, now) {
+    const regions = [...new Set(need.map(regionOf))];
+    const idxs = await Promise.all(regions.map(rg => getOpt('/live/r/' + rg + '.json', { c: {} })));
+    const hashes = Object.assign({}, ...idxs.map(x => x.c || {}));
+    const prev = knownCells; knownCells = new Set(need);
+    await Promise.all(need.map(async id => {
+      const h = hashes[id];
+      const c = cellCache.get(id);
+      if (!h) { if (c && prev.has(id)) lastActivity = now; cellCache.delete(id); return; }
+      if (!c || c.h !== h) {
+        if (prev.has(id)) lastActivity = now;
+        cellCache.set(id, { h, r: (await getOpt('/live/c/' + id + '.json', { r: [] })).r });
+      }
+    }));
+    for (const id of [...cellCache.keys()]) if (!knownCells.has(id)) cellCache.delete(id);
+    return { list: need.flatMap(id => cellCache.get(id)?.r || []), prev };
+  }
+  // Cases autour de soi (≈ 4 km) : toujours chargées, même dézoomé
+  function meCells() {
+    if (!me) return [];
+    const ids = [];
+    for (let i = Math.floor((me[0] - 0.02) / CELL); i <= Math.floor((me[0] + 0.02) / CELL); i++)
+      for (let j = Math.floor((me[1] - 0.03) / CELL); j <= Math.floor((me[1] + 0.03) / CELL); j++) ids.push(i + '_' + j);
+    return ids;
+  }
+  // Bulles de la vue nationale : une par région d'environ 100 km
+  let natCache = { r: [] };
+  const natLayer = L.layerGroup().addTo(map);
+  function renderNational() {
+    natLayer.clearLayers();
+    if (mode !== 'nat') return;
+    for (const z of natCache.r) {
+      const groups = SEVERITY.filter(g => !hidden.has(g) && z.g[g]);
+      const n = groups.reduce((s, g) => s + z.g[g], 0);
+      if (!n) continue;
+      const size = n < 10 ? 40 : n < 100 ? 50 : 60;
+      const label = groups.map(g => `${z.g[g]} ${cfg.groups.find(x => x.id === g)?.label.toLowerCase() || g}`).join(' · ');
+      const m = L.marker([z.lat, z.lng], { title: label, keyboard: true, zIndexOffset: 200,
+        icon: L.divIcon({ className: '', iconSize: [size, size], html: `<div class="cluster nat" style="--c:${GROUP_COLOR[groups[0]]};width:${size}px;height:${size}px">${n}</div>` }) });
+      // Zoom sur le cœur de l'activité de la région, assez près pour afficher les vrais points
+      m.on('click', () => map.setView([z.lat, z.lng], 12));
+      natLayer.addLayer(m);
+    }
+  }
   async function syncLive() {
     if (legacy) return syncLegacy();
     let g;
@@ -284,29 +329,25 @@
     catch (e) { if (e.status === 404) { legacy = true; return syncLegacy(); } throw e; }
     const need = neededCells(), now = Date.now();
     let list, isFresh;
-    if (need === null) {
+    // Vue nationale : des compteurs par région (n.json, quelques Ko) au lieu de tous les points,
+    // plus les vrais points autour de toi pour que les alertes de proximité continuent de marcher.
+    const nat = need === null ? await getOpt('/live/n.json', null) : null;
+    if (need === null && nat && Array.isArray(nat.r)) {
+      natCache = nat;
+      const wasNat = mode === 'nat';
+      const out = await loadCells(meCells(), now);
+      list = out.list; isFresh = r => wasNat && out.prev.has(cellOf(r)); mode = 'nat';
+    } else if (need === null) {
+      // ancien serveur : tous les points
       const all = (await getJ('/live/all.json')).r || [];
       const sig = all.length + ':' + all.reduce((m, r) => Math.max(m, r.t), 0);
       if (allCache.h !== sig) { if (allCache.h) lastActivity = now; allCache = { h: sig, r: all }; }
       const wasAll = mode === 'all';
       list = allCache.r; isFresh = () => wasAll; mode = 'all';
     } else {
-      const regions = [...new Set(need.map(regionOf))];
-      const idxs = await Promise.all(regions.map(rg => getOpt('/live/r/' + rg + '.json', { c: {} })));
-      const hashes = Object.assign({}, ...idxs.map(x => x.c || {}));
-      const prev = knownCells; knownCells = new Set(need);
-      await Promise.all(need.map(async id => {
-        const h = hashes[id];
-        const c = cellCache.get(id);
-        if (!h) { if (c && prev.has(id)) lastActivity = now; cellCache.delete(id); return; }
-        if (!c || c.h !== h) {
-          if (prev.has(id)) lastActivity = now;
-          cellCache.set(id, { h, r: (await getOpt('/live/c/' + id + '.json', { r: [] })).r });
-        }
-      }));
-      for (const id of [...cellCache.keys()]) if (!knownCells.has(id)) cellCache.delete(id);
-      list = need.flatMap(id => cellCache.get(id)?.r || []);
-      isFresh = r => mode === 'cells' && prev.has(cellOf(r)); mode = 'cells';
+      const wasCells = mode === 'cells';
+      const out = await loadCells(need, now);
+      list = out.list; isFresh = r => wasCells && out.prev.has(cellOf(r)); mode = 'cells';
       // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
       if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
     }
@@ -395,7 +436,7 @@
     // 20 s en vue nationale (×3 en économie de batterie) ; on espace en cas d'échec, et on décale au hasard
     // pour que des milliers de téléphones ne demandent pas tous à la même seconde.
     const active = Date.now() - lastActivity < 120_000;
-    const base = (mode === 'all' ? 20000 : active ? POLL_MS : 12000) * (eco ? 3 : 1);
+    const base = (mode === 'all' || mode === 'nat' ? 20000 : active ? POLL_MS : 12000) * (eco ? 3 : 1);
     const delay = (failures ? Math.min(60000, base * 2 ** Math.min(failures, 3)) : base) * (0.85 + Math.random() * 0.3);
     if (!document.hidden) pollTimer = setTimeout(sync, delay);
   }
@@ -541,7 +582,7 @@
   function renderFilters() {
     const box = $('#filters'); box.textContent = '';
     for (const g of cfg.groups) {
-      const n = [...reports.values()].filter(x => CAT[x.data.cat].group === g.id).length;
+      const n = mode === 'nat' ? natCache.r.reduce((s, z) => s + (z.g[g.id] || 0), 0) : [...reports.values()].filter(x => CAT[x.data.cat].group === g.id).length;
       const b = el('button', { class: 'chip', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, ' ', el('span', { class: 'n' }, String(n)));
       b.onclick = () => {
         hidden.has(g.id) ? hidden.delete(g.id) : hidden.add(g.id);
@@ -874,7 +915,8 @@
     orga = o;
     $('#btnOrga').hidden = !o;
     $('#orgaChip').hidden = !o;
-    if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
+    if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : o.trial ? 'ORGA · essai' : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
+    $('#orgaTrial').hidden = !(o && o.trial);
     $('#annNationalWrap').hidden = !(o && o.admin);
     $('#btnPropose').textContent = o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif';
     $('#agFine').hidden = !!o;
@@ -891,8 +933,8 @@
   })();
   async function orgaAction(id, action) {
     try {
-      await orgaFetch(`/api/reports/${id}/${action}`, { method: 'POST', body: '{}' });
-      toast(action === 'verify' ? 'Signalement marqué vérifié' : 'Signalement retiré');
+      const out = await orgaFetch(`/api/reports/${id}/${action}`, { method: 'POST', body: '{}' });
+      toast(action === 'verify' ? 'Signalement marqué vérifié' : out && out.removed ? 'Signalement retiré' : 'Pris en compte : vaut deux « Plus là » (période d’essai)');
       map.closePopup(); etag = null; sync();
     } catch (e) { toast(e.message); }
   }
@@ -929,8 +971,8 @@
     else Object.assign(body, { text: $('#annText').value, level: document.querySelector('input[name="level"]:checked').value,
       national: !!(orga && orga.admin && $('#annNational').checked) });
     try {
-      await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
-      toast('Annonce publiée');
+      const out = await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
+      toast(out && out.pending ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce publiée');
       $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annNational').checked = false; annZoneUI();
       etag = null; sync();
     } catch (err) { toast(err.message); }
@@ -1278,6 +1320,13 @@
 
   // ---- Hors ligne : PWA + pré-chargement des tuiles de la zone ----
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  // Préchargement désactivé tant que les tuiles viennent d'OpenStreetMap (leur politique l'interdit)
+  if (!cfg.offlineTiles) {
+    ['#btnPrefetch', '#prefetchState', '.tip-prefetch'].forEach(s => { const n = $(s); if (n) n.hidden = true; });
+    const tip = $('.tip-browse'); if (tip) tip.hidden = false;
+    $('#prepOffline')?.closest('li')?.remove();
+    prepRender();
+  }
   $('#btnPrefetch').onclick = async () => {
     const state = $('#prefetchState');
     const b = map.getBounds(), z0 = Math.max(13, map.getZoom() - 1), z1 = Math.min(18, z0 + 3);

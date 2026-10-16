@@ -359,3 +359,5 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .orga-card .fine { font-size: 12px; color: var(--muted); }
 .round.kofi-tool { text-decoration: none; border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
 .round[hidden] { display: none; }
+.cluster.nat { cursor: pointer; box-shadow: 0 0 0 6px color-mix(in srgb, var(--c) 25%, transparent), 0 4px 14px rgba(0,0,0,.5); }
+.trial-note { border-left: 3px solid var(--info); padding-left: 10px; }

@@ -79,6 +79,8 @@ Une seule carte pour toute la France. Le téléphone s'ouvre sur la position de 
 
 Avec la clé `ADMIN_KEY` :
 - **Orgas** : ajouter une orga (nom affiché sur ses annonces) → un lien d'accès unique s'affiche une seule fois, à transmettre par messagerie chiffrée. Supprimer une orga coupe son accès immédiatement. Seule l'empreinte des clés est stockée.
+- **Période d'essai** : une nouvelle orga peut vérifier des signalements et publier des annonces d'info. « Retirer » y compte comme deux « Plus là », ses numéros de legal team et ses événements attendent ta validation, et les annonces urgentes sont réservées aux orgas confirmées. Bouton « Confirmer » dans l'onglet Orgas.
+- **Journal** : chaque action d'orga (vérification, retrait, annonce, événement) est enregistrée 60 jours, sans IP. Les points retirés restent une heure dans une corbeille, restaurables d'un clic. Des retraits en rafale bloquent temporairement le retrait pour l'orga concernée et apparaissent dans « À vérifier ».
 - **Digest** : bilan anonyme par jour.
 
 Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : annonces localisées (info ou urgente, 1 à 30 km, 30 min à 12 h), numéro de legal team (affiché dans « Mes droits » pour la zone), et sur chaque signalement « Vérifier » ou « Retirer (faux) ».
@@ -106,7 +108,8 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **File d'attente hors ligne** : sans réseau, le signalement est gardé sur le téléphone avec son heure et part dès que ça capte (en arrière-plan sur Android, à la réouverture sur iPhone). S'il a dépassé sa durée de vie entre-temps, il n'est pas publié.
 - **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Deux « Plus là » majoritaires suppriment le point.
 - **Alerte de proximité** : vibration + bandeau si lacrymo, charge, nasse, canon à eau ou forces de l'ordre sont signalés à moins de 300 m.
-- **Hors ligne** : l'interface est mise en cache, et « Garder la zone hors ligne » télécharge les tuiles du parcours avant le départ, pour quand le réseau sature.
+- **Hors ligne** : l'interface est mise en cache, et les morceaux de carte déjà affichés restent sur le téléphone. Le préchargement d'une zone (« Garder la zone hors ligne ») est désactivé tant que les tuiles viennent d'OpenStreetMap, dont la politique l'interdit ; `TILE_PREFETCH=1` le réactive avec un fournisseur qui l'autorise.
+- **Vue nationale** : dézoomé, la carte affiche une bulle par région (nombre de signalements par famille) au lieu de tous les points ; les vrais points autour de toi restent chargés pour les alertes de proximité.
 
 ## Sécurité et vérification
 

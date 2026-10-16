@@ -98,6 +98,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns">Annonces</button>
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda">Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports">Urgences</button>
+    <button class="tab" role="tab" id="tabJournal" aria-selected="false" aria-controls="panelJournal">Journal <span id="journalBadge"></span></button>
     <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest">Digest</button>
   </nav>
 
@@ -194,6 +195,24 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     </section>
   </section>
 
+  <section class="panel" id="panelJournal" role="tabpanel" aria-labelledby="tabJournal" hidden>
+    <section class="card" id="journalAlerts" hidden>
+      <h2>À vérifier</h2>
+      <ul class="org-list" id="journalAlertList"></ul>
+    </section>
+    <section class="card">
+      <h2>Corbeille <span id="trashCount"></span></h2>
+      <ul class="org-list" id="trashList"></ul>
+      <p class="fine">Les points retirés par une orga (ou par toi) restent ici une heure. « Restaurer » les remet sur la carte avec le temps qu’il leur restait.</p>
+    </section>
+    <section class="card">
+      <h2>Journal des actions</h2>
+      <div class="controls"><label for="journalOrga">Orga <select id="journalOrga"><option value="">Toutes</option></select></label></div>
+      <ul class="org-list" id="journalList"></ul>
+      <p class="fine">Gardé 60 jours : heure, orga, action, type de signalement et position arrondie à environ 100 m. Aucune adresse IP.</p>
+    </section>
+  </section>
+
   <section class="panel" id="panelDigest" role="tabpanel" aria-labelledby="tabDigest" hidden>
   <form class="controls" id="form">
     <label for="date">Jour
@@ -240,7 +259,7 @@ $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); }
 if (KEY) login();
 
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Agenda', 'Reports', 'Digest']) {
+  for (const t of ['Orgas', 'Anns', 'Agenda', 'Reports', 'Journal', 'Digest']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -250,6 +269,50 @@ $('#tabDigest').onclick = () => showTab('Digest');
 $('#tabReports').onclick = () => { showTab('Reports'); loadReports(); };
 $('#tabAnns').onclick = () => { showTab('Anns'); loadAnns(); };
 $('#tabAgenda').onclick = () => { showTab('Agenda'); loadAgenda(); };
+$('#tabJournal').onclick = () => { showTab('Journal'); loadJournal(); };
+
+// ---- Journal des orgas et corbeille ----
+const JCATS = {};
+fetch('/api/config').then(r => r.json()).then(c => (c.categories || []).forEach(x => (JCATS[x.id] = x)));
+const ALERT_ACTIONS = new Set(['retrait bloqué (rafale)', 'legal team (en attente)', 'événement (en attente)']);
+let journal = { log: [], trash: [] };
+async function loadJournal() {
+  try { journal = await api('/api/admin/journal'); } catch (e) { alertMsg(e.message); return; }
+  // Corbeille
+  const tl = $('#trashList'); tl.textContent = '';
+  $('#trashCount').textContent = '(' + journal.trash.length + ')';
+  if (!journal.trash.length) empty(tl, 'Corbeille vide.');
+  for (const x of journal.trash) {
+    const c = JCATS[x.cat] || { glyph: '•', label: x.cat };
+    const b = btn('Restaurer');
+    b.onclick = async () => { try { await api('/api/admin/trash/' + x.id + '/restore', { method: 'POST', body: '{}' }); alertMsg('Point restauré.'); loadJournal(); } catch (e) { alertMsg(e.message); } };
+    tl.append(li(c.glyph + ' ' + c.label + (x.note ? ' · ' + x.note : ''), `retiré par ${x.orga} à ${hhmm(x.t)} · ${x.lat.toFixed(4)}, ${x.lng.toFixed(4)}${x.up ? ' · confirmé ' + x.up + '×' : ''}`, b));
+  }
+  // Filtre par orga
+  const sel = $('#journalOrga'), cur = sel.value;
+  const orgas = [...new Set(journal.log.map(x => x.orga))].sort();
+  sel.textContent = ''; sel.append(new Option('Toutes', ''), ...orgas.map(o => new Option(o, o))); sel.value = orgas.includes(cur) ? cur : '';
+  renderJournal();
+  // À vérifier : rafales bloquées et validations en attente (24 h)
+  const since = Date.now() - 24 * 3600e3;
+  const alerts = journal.log.filter(x => x.t > since && ALERT_ACTIONS.has(x.action));
+  $('#journalAlerts').hidden = !alerts.length;
+  const al = $('#journalAlertList'); al.textContent = '';
+  for (const x of alerts.slice(0, 30)) al.append(li(x.orga + ' : ' + x.action, hhmm(x.t) + (x.detail ? ' · ' + x.detail : '')));
+  $('#journalBadge').textContent = alerts.length ? '(' + alerts.length + ')' : '';
+}
+function renderJournal() {
+  const ul = $('#journalList'); ul.textContent = '';
+  const f = $('#journalOrga').value, rows = journal.log.filter(x => !f || x.orga === f);
+  if (!rows.length) return empty(ul, 'Aucune action enregistrée.');
+  for (const x of rows.slice(0, 200)) {
+    const c = x.cat ? (JCATS[x.cat] || { glyph: '•', label: x.cat }) : null;
+    const where = x.lat != null ? ` · ${x.lat.toFixed(3)}, ${x.lng.toFixed(3)}` : '';
+    const day = new Date(x.t).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: 'numeric', month: 'short' });
+    ul.append(li(`${x.orga} : ${x.action}${c ? ' ' + c.glyph + ' ' + c.label : ''}`, `${day} ${hhmm(x.t)}${where}${x.detail ? ' · ' + x.detail : ''}`));
+  }
+}
+$('#journalOrga').onchange = renderJournal;
 
 // ---- Annonces (nationales + toutes les annonces actives) ----
 const li = (title, meta, ...buttons) => {
@@ -271,9 +334,11 @@ async function loadAnns() {
   for (const a of d.announcements) {
     const del = btn('Retirer', 'danger');
     confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/announcements/' + a.id, { method: 'DELETE' }); loadAnns(); });
-    const what = a.kind === 'legal' ? '⚖ Legal team ' + a.phone + (a.text ? ' · ' + a.text : '') : (a.level === 'urgent' ? '⚠ ' : '') + a.text;
+    const what = (a.pending ? '⏳ À VALIDER · ' : '') + (a.kind === 'legal' ? '⚖ Legal team ' + a.phone + (a.text ? ' · ' + a.text : '') : (a.level === 'urgent' ? '⚠ ' : '') + a.text);
     const where = a.national ? 'toute la France' : a.r + ' km autour de ' + a.lat.toFixed(3) + ', ' + a.lng.toFixed(3);
-    ul.append(li(what, `${a.by} · ${where} · ${a.permanent ? 'permanent' : 'jusqu’à ' + hhmm(a.exp)}`, del));
+    const buttons = [del];
+    if (a.pending) { const ok = btn('Valider'); ok.onclick = async () => { try { await api('/api/admin/announcements/' + a.id + '/approve', { method: 'POST', body: '{}' }); loadAnns(); } catch (e) { alertMsg(e.message); } }; buttons.unshift(ok); }
+    ul.append(li(what, `${a.by} · ${where} · ${a.permanent ? 'permanent' : 'jusqu’à ' + hhmm(a.exp)}${a.pending ? ' · vérifie le numéro auprès du collectif avant de valider' : ''}`, ...buttons));
   }
 }
 $('#natForm').addEventListener('submit', async e => {
@@ -363,10 +428,17 @@ function renderOrgas({ orgas }) {
     const info = document.createElement('div');
     const name = document.createElement('b'); name.textContent = o.label;
     const meta = document.createElement('div'); meta.className = 'meta';
-    meta.textContent = o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    info.append(name, meta);
+    meta.textContent = (o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }))
+      + (o.trial ? ' · EN PÉRIODE D’ESSAI' : ' · confirmée');
+    const stats = document.createElement('div'); stats.className = 'meta';
+    const d = o.day || {};
+    stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '');
+    info.append(name, meta, stats);
     li.append(info);
     if (o.id) {
+      const tr = document.createElement('button'); tr.className = o.trial ? '' : 'ghost'; tr.textContent = o.trial ? 'Confirmer' : 'Repasser en essai';
+      tr.onclick = async () => { try { await api('/api/admin/orgas/' + o.id + '/trial', { method: 'POST', body: JSON.stringify({ trial: !o.trial }) }); api('/api/admin/orgas').then(renderOrgas); } catch (e) { alertMsg(e.message); } };
+      li.append(tr);
       const del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Supprimer';
       del.onclick = async () => {
         if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Confirmer'; return; }

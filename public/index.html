@@ -183,7 +183,8 @@
     <li><b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.</li>
     <li><b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor.</li>
     <li><b>Un point disparaît</b> à l’expiration, ou quand deux personnes disent « Plus là ». « Toujours là » le prolonge.</li>
-    <li><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Garder la zone » pour que la carte s’affiche hors ligne.</li>
+    <li class="tip-prefetch"><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Garder la zone » pour que la carte s’affiche hors ligne.</li>
+    <li class="tip-browse" hidden><b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone.</li>
     <li><b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.</li>
   </ul>
   <button class="secondary" id="btnPrefetch">Garder la zone hors ligne</button>
@@ -305,6 +306,7 @@
     <button class="x" id="orClose" aria-label="Fermer">×</button>
   </div>
   <p class="hint">Tu publies en tant que <b id="orgaName">—</b>. L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier.</p>
+  <p class="hint trial-note" id="orgaTrial" hidden>Période d’essai : tu peux vérifier des signalements et publier des annonces d’info. « Retirer » compte comme deux « Plus là », et les numéros de legal team et événements sont affichés après validation par l’admin. Les annonces urgentes viendront une fois l’orga confirmée.</p>
   <form id="annForm" class="orga-form">
     <fieldset class="seg">
       <legend>Type</legend>

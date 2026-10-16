@@ -197,12 +197,13 @@ function isAdmin(req) {
 function orgaOf(req) {
   const k = String(req.headers['x-orga-key'] || '');
   if (!k || keyLocked(req)) return null;
-  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { label: ADMIN_LABEL, admin: true };
+  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { id: 'admin', label: ADMIN_LABEL, admin: true, trial: false };
   const env = ORGAS.find(o => keyEq(k, o.key));
-  if (env) return { label: env.label, admin: false };
+  if (env) return { id: 'env:' + env.label, label: env.label, admin: false, trial: false };
   const h = sha(k);
   const o = readOrgas().find(o => keyEq(h, o.hash));
-  if (o) return { label: o.label, admin: false };
+  // Période d'essai : seules les orgas créées depuis cette version la commencent (trial: true)
+  if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true };
   keyFailed(req); return null;
 }
 const sleep = ms => { try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch { const e = Date.now() + ms; while (Date.now() < e); } };
@@ -269,6 +270,34 @@ try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN last INTEGER'); } catch {}
 db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
 db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
+// ---- Journal des actions d'orgas (60 jours) et corbeille des retraits (1 h) ----
+// Journal : heure, orga, action, type de signalement, position arrondie à ~100 m. Jamais d'IP.
+db.exec(`CREATE TABLE IF NOT EXISTS orga_log(id INTEGER PRIMARY KEY, t INTEGER, oid TEXT, orga TEXT, action TEXT, cat TEXT, lat REAL, lng REAL, ref TEXT, detail TEXT);
+  CREATE INDEX IF NOT EXISTS orga_log_t ON orga_log(t);
+  CREATE INDEX IF NOT EXISTS orga_log_oid ON orga_log(oid, t);
+  CREATE TABLE IF NOT EXISTS trash(id TEXT PRIMARY KEY, t INTEGER, oid TEXT, orga TEXT, data TEXT);`);
+const TRASH_MS = 60 * 60_000;
+const ORGA_REMOVE_MAX = Number(process.env.ORGA_REMOVE_MAX) || 15; // retraits par orga et par 5 min
+function orgaLog(orga, action, { r, lat, lng, ref, detail } = {}) {
+  const r3 = x => (x == null ? null : Math.round(x * 1000) / 1000);
+  try {
+    q('INSERT INTO orga_log(t,oid,orga,action,cat,lat,lng,ref,detail) VALUES(?,?,?,?,?,?,?,?,?)')
+      .run(Date.now(), orga.id || null, orga.label, action, r ? r.cat : null, r3(r ? r.lat : lat), r3(r ? r.lng : lng), ref || (r ? r.id : null), detail ? String(detail).slice(0, 200) : null);
+  } catch (e) { console.error('journal', e.message); }
+}
+// Un point retiré par une orga reste restaurable une heure par l'admin
+function trashReport(r, orga) {
+  const now = Date.now();
+  q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, orga.id || null, orga.label, JSON.stringify({ ...r, left: r.exp - now }));
+  dropReport(r.id, true);
+}
+function orgaStats(oid) {
+  const since = Date.now() - 24 * 60 * MIN;
+  const rows = q('SELECT action, COUNT(*) n, MAX(t) last FROM orga_log WHERE oid=? AND t>? GROUP BY action').all(oid, since);
+  const by = Object.fromEntries(rows.map(x => [x.action, x.n]));
+  return { day: { verified: by['vérifié'] || 0, removed: (by['retiré'] || 0) + (by['retrait (essai)'] || 0), blocked: by['retrait bloqué (rafale)'] || 0,
+    announcements: (by['annonce'] || 0) + (by['legal team (en attente)'] || 0) }, lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null };
+}
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, exp: r.exp, up: r.up, down: r.down,
   ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
@@ -289,7 +318,8 @@ function dropReport(id, dismissed) {
   return !!r;
 }
 // Annonces
-const annActive = now => q('SELECT data FROM ann WHERE exp>? ORDER BY rowid').all(now).map(x => JSON.parse(x.data));
+const annAll = now => q('SELECT data FROM ann WHERE exp>? ORDER BY rowid').all(now).map(x => JSON.parse(x.data));
+const annActive = now => annAll(now).filter(a => !a.pending);
 const getAnn = id => { const x = q('SELECT data FROM ann WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
 function saveAnn(a) { q('INSERT OR REPLACE INTO ann(id,exp,data) VALUES(?,?,?)').run(a.id, a.exp, JSON.stringify(a)); dirty.ann = true; scheduleFlush(); }
 function dropAnn(id) { const n = q('DELETE FROM ann WHERE id=?').run(id).changes; if (n) { dirty.ann = true; scheduleFlush(); } return n > 0; }
@@ -330,6 +360,8 @@ function sweep() {
     if (q('DELETE FROM events WHERE start<=?').run(now - EVENT_KEEP).changes) dirty.events = true;
     q('DELETE FROM rate WHERE t<?').run(now - RATE.windowMs);
     q('DELETE FROM hidden WHERE until<?').run(now);
+    q('DELETE FROM trash WHERE t<?').run(now - TRASH_MS);
+    q('DELETE FROM orga_log WHERE t<?').run(now - ARCHIVE_DAYS * 24 * 60 * MIN);
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
     if (expired.length || dirty.ann || dirty.events || dirty.global) scheduleFlush(0);
@@ -338,7 +370,7 @@ function sweep() {
 setInterval(sweep, 30_000).unref();
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
-  national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp });
+  national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
   route: e.route || null, end: !!e.end, by: e.by, status: e.status, link: e.link || null, src: e.src || null, t: e.t });
 const round = n => Math.round(n * 1e4) / 1e4; // ~11 m
@@ -354,7 +386,7 @@ function distKm(aLat, aLng, bLat, bLng) {
 // Création d'annonce, partagée par l'espace orga et la page admin.
 //  - numéro de legal team : permanent, jusqu'à ce que l'orga (ou l'admin) le retire ;
 //  - annonce nationale : réservée à l'admin, visible partout en France.
-function createAnnouncement(b, by, admin) {
+function createAnnouncement(b, by, admin, pending = false) {
   const kind = b.kind === 'legal' ? 'legal' : 'info';
   const national = kind === 'info' && !!b.national && admin;
   const level = kind === 'info' && b.level === 'urgent' ? 'urgent' : 'info';
@@ -372,8 +404,9 @@ function createAnnouncement(b, by, admin) {
   const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by, link,
     lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
     t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
+  if (pending) a.pending = true; // numéro de legal team d'une orga en essai : affiché après validation par l'admin
   saveAnn(a);
-  if (a.level === 'urgent') pushBroadcast(a).catch(e => console.error('push', e.message));
+  if (a.level === 'urgent' && !a.pending) pushBroadcast(a).catch(e => console.error('push', e.message));
   return [201, annView(a)];
 }
 
@@ -618,7 +651,7 @@ function createEvent(b, orga, dev, ipH) {
       if (q("SELECT COUNT(*) n FROM events WHERE status='pending'").get().n >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
     }
     const e = { id: crypto.randomBytes(6).toString('base64url'), type, title, place, note, start, lat: round(lat), lng: round(lng),
-      route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', status: orga ? 'ok' : 'pending', t: now };
+      route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', status: orga && !orga.trial ? 'ok' : 'pending', t: now };
     if (!orga) e.dev = dev;
     saveEvent(e);
     return [201, evView(e)];
@@ -680,6 +713,19 @@ function writeRegion(rg) {
   // Une région vide reste publiée (fichier vide) : sinon Apache ne trouve rien et chaque téléphone de la zone réveille Node.
   writeIfChanged(f, JSON.stringify({ c: Object.fromEntries(rows.map(x => [x.cell, x.h])) }));
 }
+// Vue nationale : par région d'environ 100 km, le nombre de signalements par famille et leur position moyenne
+function writeNational(now) {
+  const agg = new Map();
+  for (const r of q('SELECT cat, lat, lng, t, last FROM reports WHERE exp>?').all(now)) {
+    const k = `${Math.floor(r.lat)}_${Math.floor(r.lng)}`;
+    let a = agg.get(k);
+    if (!a) agg.set(k, (a = { k, la: 0, lo: 0, n: 0, g: {}, t: 0 }));
+    const grp = Object.hasOwn(CAT, r.cat) ? CAT[r.cat].group : 'info';
+    a.la += r.lat; a.lo += r.lng; a.n++; a.g[grp] = (a.g[grp] || 0) + 1; a.t = Math.max(a.t, r.last || r.t);
+  }
+  const r3 = x => Math.round(x * 1000) / 1000;
+  writeIfChanged(path.join(LIVE_DIR, 'n.json'), JSON.stringify({ r: [...agg.values()].map(a => ({ k: a.k, lat: r3(a.la / a.n), lng: r3(a.lo / a.n), g: a.g, t: a.t })) }));
+}
 function writeGlobal(now) {
   const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, paused: pausedUntil(now) };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
@@ -715,7 +761,7 @@ function flush() {
         const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY start LIMIT 3000").all(now - EVENT_KEEP).map(x => evView(JSON.parse(x.data))) });
         writeIfChanged(path.join(LIVE_DIR, 'events.json'), str); setMeta('evh', h8(str));
       }
-      if (doAll) { lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); }
+      if (doAll) { lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); writeNational(now); }
       writeGlobal(now);
     }, LIVE_LOCK);
   } catch (e) {
@@ -887,6 +933,9 @@ if (TILE_DISK) setInterval(pruneTiles, 24 * 60 * MIN).unref();
 //  - plafond de téléchargements simultanés, et une même tuile demandée par mille personnes n'est téléchargée qu'une fois.
 const TILE_ZONES = [[41, 51.6, -5.8, 10], [15.8, 16.6, -61.9, -60.9], [14.3, 14.95, -61.3, -60.75], [2, 6, -54.7, -51.5],
   [-21.45, -20.85, 55.1, 55.9], [-13.05, -12.6, 44.95, 45.35], [46.7, 47.2, -56.5, -56.05]]; // métropole+Corse, Guadeloupe, Martinique, Guyane, Réunion, Mayotte, St-Pierre
+// Préchargement de zone (« Garder la zone hors ligne ») : interdit par la politique d'OpenStreetMap,
+// désactivé tant que les tuiles viennent de chez eux. TILE_PREFETCH=1 pour un fournisseur qui l'autorise.
+const TILE_PREFETCH = process.env.TILE_PREFETCH === '1';
 const TILE_NET_BUDGET = Number(process.env.TILE_NET_BUDGET) || 600;   // nouvelles tuiles par réseau et par 10 min
 const TILE_UPSTREAM_MAX = 12;                                          // téléchargements simultanés vers le fournisseur
 const tileBudget = new Map(), tileInflight = new Map();
@@ -908,7 +957,7 @@ function fetchTile(z, x, y) {
   const p = new Promise((resolve, reject) => {
     tileUpstream++;
     const done = () => { tileUpstream--; tileInflight.delete(key); };
-    const rq = (TILE_URL.startsWith('http:') ? http : https).get(TILE_URL.replace('{z}', z).replace('{x}', x).replace('{y}', y), { headers: { 'User-Agent': TILE_UA }, timeout: 10_000 }, up => {
+    const rq = (TILE_URL.startsWith('http:') ? http : https).get(TILE_URL.replace('{z}', z).replace('{x}', x).replace('{y}', y), { headers: { 'User-Agent': TILE_UA, Referer: PUBLIC_URL + '/' }, timeout: 10_000 }, up => {
       if (up.statusCode !== 200) { up.resume(); done(); return reject(new Error('upstream ' + up.statusCode)); }
       const chunks = []; let size = 0;
       up.on('data', c => { size += c.length; if (size > 2_000_000) rq.destroy(); else chunks.push(c); });
@@ -966,7 +1015,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub });
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1044,8 +1093,8 @@ const server = http.createServer(async (req, res) => {
       if (!isAdmin(req)) return send(res, 403, { error: 'Clé incorrecte.' });
       if (req.method === 'GET' && pathname === '/api/admin/orgas') {
         return send(res, 200, {
-          orgas: readOrgas().map(({ id, label, created }) => ({ id, label, created, source: 'page' }))
-            .concat(ORGAS.map(o => ({ id: null, label: o.label, created: null, source: 'variable' }))),
+          orgas: readOrgas().map(({ id, label, created, trial }) => ({ id, label, created, trial: trial === true, source: 'page', ...orgaStats(id) }))
+            .concat(ORGAS.map(o => ({ id: null, label: o.label, created: null, trial: false, source: 'variable', ...orgaStats('env:' + o.label) }))),
         });
       }
       if (req.method === 'POST' && pathname === '/api/admin/orgas') {
@@ -1056,7 +1105,7 @@ const server = http.createServer(async (req, res) => {
         const out = withLock(() => {
           const list = readOrgas().slice();
           if (list.some(o => o.label.toLowerCase() === label.toLowerCase())) return null;
-          const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: sha(key), created: Date.now() };
+          const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: sha(key), created: Date.now(), trial: true };
           list.push(o); writeOrgas(list); return o;
         });
         if (!out) return send(res, 409, { error: 'Une orga porte déjà ce nom.' });
@@ -1067,7 +1116,7 @@ const server = http.createServer(async (req, res) => {
         const now = Date.now();
         return send(res, 200, { paused: pausedUntil(now),
           reports: activeReports(now).map(publicView),
-          announcements: annActive(now).sort((a, b) => b.t - a.t).map(annView),
+          announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
           pushSubs: pushCount() });
       }
       // --- Annonces de l'admin (nationales ou locales) ---
@@ -1099,7 +1148,8 @@ const server = http.createServer(async (req, res) => {
       }
       const delRep = pathname.match(/^\/api\/admin\/reports\/([\w-]{1,16})$/);
       if (req.method === 'DELETE' && delRep) {
-        const ok = tx(() => dropReport(delRep[1], true));
+        const ok = tx(() => { const r = getReport(delRep[1], Date.now()); if (!r) return false;
+          const admin = { id: 'admin', label: ADMIN_LABEL }; trashReport(r, admin); orgaLog(admin, 'retiré', { r }); return true; });
         return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Déjà expiré.' });
       }
       if (req.method === 'POST' && pathname === '/api/admin/purge') {
@@ -1120,6 +1170,47 @@ const server = http.createServer(async (req, res) => {
         const until = minutes ? Date.now() + minutes * MIN : 0;
         setMeta('paused', until); dirty.global = true; scheduleFlush(0);
         return send(res, 200, { paused: until });
+      }
+
+      const promo = pathname.match(/^\/api\/admin\/orgas\/([\w-]{1,16})\/trial$/);
+      if (req.method === 'POST' && promo) {
+        const b = await readJson(req);
+        const o = withLock(() => {
+          const list = readOrgas().slice(); const i = list.findIndex(x => x.id === promo[1]);
+          if (i < 0) return null; list[i] = { ...list[i], trial: !!b.trial }; writeOrgas(list); return list[i];
+        });
+        if (!o) return send(res, 404, { error: 'Orga introuvable.' });
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, o.trial ? 'essai' : 'confirmée', { ref: o.id, detail: o.label });
+        return send(res, 200, { id: o.id, trial: o.trial });
+      }
+      // --- Journal des orgas et corbeille ---
+      if (req.method === 'GET' && pathname === '/api/admin/journal') {
+        const rows = q('SELECT * FROM orga_log ORDER BY t DESC LIMIT 300').all();
+        const trash = q('SELECT id, t, orga, data FROM trash WHERE t>? ORDER BY t DESC').all(Date.now() - TRASH_MS)
+          .map(x => { const r = JSON.parse(x.data); return { id: x.id, t: x.t, orga: x.orga, cat: r.cat, lat: r.lat, lng: r.lng, up: r.up, note: r.note }; });
+        return send(res, 200, { log: rows, trash });
+      }
+      const rest = pathname.match(/^\/api\/admin\/trash\/([\w-]{1,16})\/restore$/);
+      if (req.method === 'POST' && rest) {
+        const out = tx(() => {
+          const x = q('SELECT * FROM trash WHERE id=?').get(rest[1]);
+          if (!x) return [404, { error: 'Plus dans la corbeille.' }];
+          const r = JSON.parse(x.data), now = Date.now();
+          r.exp = now + Math.max(5 * MIN, r.left || 0); // il retrouve le temps qu'il lui restait
+          delete r.left; delete r.cell;
+          saveReport(r); q('DELETE FROM trash WHERE id=?').run(x.id);
+          orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'restauré', { r, detail: 'retiré par ' + x.orga });
+          return [200, publicView(r)];
+        });
+        return send(res, ...out);
+      }
+      const annOk = pathname.match(/^\/api\/admin\/announcements\/([\w-]{1,16})\/approve$/);
+      if (req.method === 'POST' && annOk) {
+        const a = getAnn(annOk[1]);
+        if (!a) return send(res, 404, { error: 'Annonce introuvable.' });
+        delete a.pending; saveAnn(a);
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'annonce validée', { ref: a.id, detail: a.by + ' · ' + (a.phone || a.text) });
+        return send(res, 200, annView(a));
       }
 
       const del = pathname.match(/^\/api\/admin\/orgas\/([\w-]{1,16})$/);
@@ -1226,7 +1317,9 @@ const server = http.createServer(async (req, res) => {
       const b = await readJson(req, 16384);
       const orga = req.headers['x-orga-key'] ? orgaOf(req) : null;
       if (req.headers['x-orga-key'] && !orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
-      return send(res, ...createEvent(b, orga, deviceHash(req), clientHash(req)));
+      const out = createEvent(b, orga, deviceHash(req), clientHash(req));
+      if (orga && out[0] < 300) orgaLog(orga, out[1].status === 'pending' ? 'événement (en attente)' : 'événement', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id, detail: out[1].title });
+      return send(res, ...out);
     }
 
     const vote = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/vote$/);
@@ -1264,11 +1357,17 @@ const server = http.createServer(async (req, res) => {
       const orga = orgaOf(req);
       if (!orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
 
-      if (req.method === 'GET' && pathname === '/api/orga/me') return send(res, 200, { label: orga.label, admin: orga.admin });
+      if (req.method === 'GET' && pathname === '/api/orga/me') return send(res, 200, { label: orga.label, admin: orga.admin, trial: orga.trial });
 
       if (req.method === 'POST' && pathname === '/api/announcements') {
         const b = await readJson(req);
-        return send(res, ...createAnnouncement(b, orga.label, orga.admin));
+        // Période d'essai : pas d'annonce urgente (notification à toute la zone), numéro de legal team validé par l'admin
+        if (orga.trial && b.kind !== 'legal' && b.level === 'urgent')
+          return send(res, 400, { error: 'Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info ».' });
+        const out = createAnnouncement(b, orga.label, orga.admin, orga.trial && b.kind === 'legal');
+        if (out[0] === 201) orgaLog(orga, out[1].pending ? 'legal team (en attente)' : 'annonce', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id,
+          detail: (out[1].kind === 'legal' ? out[1].phone + ' ' : '') + (out[1].level === 'urgent' ? '[urgent] ' : '') + (out[1].national ? '[nationale] ' : '') + (out[1].text || '') });
+        return send(res, ...out);
       }
 
       const delEv = pathname.match(/^\/api\/events\/([\w-]{1,16})$/);
@@ -1278,7 +1377,7 @@ const server = http.createServer(async (req, res) => {
           if (!e) return [404, { error: 'Événement déjà retiré.' }];
           if (!orga.admin && e.by !== orga.label) return [403, { error: 'Seule l’orga qui l’a publié peut le retirer.' }];
           if (e.src) q('INSERT OR REPLACE INTO hidden(id,until) VALUES(?,?)').run(e.id, e.start + EVENT_KEEP);
-          dropEvent(e.id); return [200, { removed: true }];
+          dropEvent(e.id); orgaLog(orga, 'événement retiré', { lat: e.lat, lng: e.lng, ref: e.id, detail: e.title }); return [200, { removed: true }];
         });
         return send(res, ...out);
       }
@@ -1289,7 +1388,7 @@ const server = http.createServer(async (req, res) => {
           const a = getAnn(delAnn[1]);
           if (!a) return [404, { error: 'Annonce déjà retirée.' }];
           if (!orga.admin && a.by !== orga.label) return [403, { error: 'Seul·e l’auteur·ice peut retirer cette annonce.' }];
-          dropAnn(a.id); return [200, { removed: true }];
+          dropAnn(a.id); orgaLog(orga, 'annonce retirée', { lat: a.lat, lng: a.lng, ref: a.id, detail: a.phone || a.text }); return [200, { removed: true }];
         });
         return send(res, ...out);
       }
@@ -1299,8 +1398,20 @@ const server = http.createServer(async (req, res) => {
         const out = tx(() => {
           const r = getReport(act[1], Date.now());
           if (!r) return [404, { error: 'Signalement expiré.' }];
-          if (act[2] === 'verify') { r.ver = orga.label; saveReport(r); return [200, publicView(r)]; }
-          dropReport(r.id, true); return [200, { removed: true }];
+          if (act[2] === 'verify') { r.ver = orga.label; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
+          // Période d'essai : « Retirer » compte comme deux « Plus là », sans retrait direct
+          if (orga.trial) {
+            r.down += 2; (r.downIps ||= []).push('o1:' + orga.id, 'o2:' + orga.id);
+            orgaLog(orga, 'retrait (essai)', { r });
+            if (!r.ver && r.down > r.up) { trashReport(r, orga); return [200, { removed: true }]; }
+            saveReport(r); return [200, { ...publicView(r), trial: true }];
+          }
+          // Garde-fou : des retraits en rafale bloquent le retrait pour cette orga quelques minutes
+          if (!orga.admin && !bump('orm:' + orga.id, 'report', ORGA_REMOVE_MAX, Date.now())) {
+            orgaLog(orga, 'retrait bloqué (rafale)', { r });
+            return [429, { error: 'Trop de retraits d’un coup : le retrait est suspendu quelques minutes. L’admin est prévenu·e.' }];
+          }
+          trashReport(r, orga); orgaLog(orga, 'retiré', { r }); return [200, { removed: true }];
         });
         return send(res, ...out);
       }
