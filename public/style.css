@@ -401,3 +401,12 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 /* Logo Ko-fi (bouton rond et carte de soutien) */
 .kofi-ico { width: 30px; height: auto; display: block; }
 .kofi-ico.sm { width: 22px; display: inline-block; vertical-align: -4px; margin-right: 4px; }
+
+/* Alertes et notifications */
+.round.bell[data-on="0"] { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.vibes { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.vibes li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); font-size: 14px; }
+.vibes li span { flex: 1; }
+.vibes li small { color: var(--muted); display: block; font-size: 12px; }
+.vibes button { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: inherit; font-size: 12px; font-weight: 600; }
+.pop-fiable { margin-top: 6px; font-size: 12px; color: #7ee2b0; }

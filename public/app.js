@@ -60,6 +60,9 @@
   L.Popup.mergeOptions({ autoPanPaddingTopLeft: L.point(12, 120), autoPanPaddingBottomRight: L.point(12, 150) });
   // Après une mise à jour automatique, on revient exactement là où on était
   let savedView = null; try { savedView = JSON.parse(sessionStorage.getItem('cortege-view') || 'null'); sessionStorage.removeItem('cortege-view'); } catch {}
+  // Ouverture depuis une notification « danger près de toi » : /?at=lat,lng
+  const atParam = s => { const m = /[?&]at=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(s || ''); return m && Math.abs(+m[1]) <= 90 && Math.abs(+m[2]) <= 180 ? [+m[1], +m[2]] : null; };
+  { const at = atParam(location.search); if (at) { savedView = { c: at, z: 17 }; history.replaceState(null, '', location.pathname); } }
   const map = L.map('map', { zoomControl: false, attributionControl: true, maxZoom: 19 })
     .setView(savedView ? savedView.c : cfg.center, savedView ? savedView.z : (cfg.zoom || 6));
   // Regroupement des points quand on dézoome (bulle = nombre de signalements, couleur = le plus grave)
@@ -118,14 +121,14 @@
   function computeCalm(list) {
     calmSt.clear();
     const now = Date.now();
-    const dangers = list.filter(r => isDangerCat(r.cat) && !r.c && r.exp > now);
+    const dangers = list.filter(r => isDangerCat(r.cat) && !r.c && !r.nf && r.exp > now);
     for (const c of list) {
       if (c.cat !== 'calme') continue;
       let near = null, d = Infinity, strong = false; const ids = [];
       for (const x of dangers) {
         const dx = dist([c.lat, c.lng], [x.lat, x.lng]);
         if (dx > CALM_M) continue;
-        ids.push(x.id); if (x.up > 0 || x.ver) strong = true;
+        ids.push(x.id); if (x.up > 0 || x.ver || x.f) strong = true;
         if (dx < d) { d = dx; near = x; }
       }
       if (!near) continue;
@@ -160,6 +163,8 @@
     root.append(el('div', { class: 'pop-meta' }, meta));
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, `Signalé par ${r.up + 1} personnes`));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ Vérifié par ' + r.ver));
+    else if (r.f) root.append(el('div', { class: 'pop-fiable' }, '★ Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)'));
+    if (r.nf) root.append(el('div', { class: 'pop-contested' }, 'Non confirmé : signalé depuis un téléphone suspect. Confirme si tu le vois.'));
     const cs = calmSt.get(r.id);
     if (cs) {
       root.append(el('div', { class: 'pop-calm-warn' }, `⚠ ${CAT[cs.near.cat].glyph} ${CAT[cs.near.cat].label} à ${fmtDist(cs.d)}` + (cs.lvl === 'warn' ? ' (pas encore confirmé)' : '') + ' : zone pas sûre pour l’instant.'));
@@ -554,10 +559,10 @@
     const box = $('#alert');
     box.className = 'alert' + (c.group === 'fdo' || somm ? ' fdo' : '');
     box.textContent = somm ? `${c.glyph} Sommations à ${fmtDist(d)} : rester devient un délit. Éloigne-toi par une rue dégagée.` : `${c.glyph} ${c.label} à ${fmtDist(d)} de toi`;
-    if (somm) { try { navigator.vibrate?.([500, 150, 500, 150, 500]); } catch {} }
     box.hidden = false;
     box.onclick = () => { box.hidden = true; const m = markerOf(r.id); if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
-    try { navigator.vibrate?.([200, 100, 200]); } catch {}
+    // Chaque danger a sa vibration (même motif que dans les notifications)
+    try { navigator.vibrate?.((cfg.vibes && cfg.vibes[r.cat]) || [200, 100, 200]); } catch {}
     clearTimeout(proximity.t); proximity.t = setTimeout(() => (box.hidden = true), 9000);
   }
 
@@ -704,7 +709,7 @@
   renderFilters();
 
   // ---- Signaler ----
-  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue'];
+  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -904,7 +909,10 @@
   $('#btnQueueRetry').onclick = () => flushQueue(true);
   addEventListener('online', () => flushQueue());
   document.addEventListener('visibilitychange', () => { if (!document.hidden) flushQueue(); });
-  navigator.serviceWorker?.addEventListener?.('message', e => { if (e.data && e.data.type === 'queue-flushed') { updateQueueChip(); sync(); } });
+  navigator.serviceWorker?.addEventListener?.('message', e => {
+    if (e.data && e.data.type === 'queue-flushed') { updateQueueChip(); sync(); }
+    if (e.data && e.data.type === 'goto') { const at = atParam(e.data.url); if (at) { setFollow(false); map.setView(at, 17); sync(); } }
+  });
   updateQueueChip().then(n => { if (n) flushQueue(); });
 
   // Sur place ? 'here' (position récente et précise, à moins de 400 m), 'far' (nettement plus loin), sinon null (on ne sait pas)
@@ -1070,6 +1078,17 @@
     if (params.has('orga')) {
       try { localStorage.setItem('cortege-orga', params.get('orga')); } catch {}
       history.replaceState(null, '', location.pathname);
+    }
+    // Invitation par QR code : échangée une seule fois contre une clé, créée et gardée sur ce téléphone
+    if (params.has('invite')) {
+      const token = params.get('invite');
+      history.replaceState(null, '', location.pathname);
+      try {
+        const res = await fetch('/api/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) { toast(body.error || 'Invitation impossible.'); }
+        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast('Bienvenue ' + body.label + ' : ton accès orga est activé sur ce téléphone'); }
+      } catch { toast('Pas de réseau : rouvre l’invitation quand ça capte.'); }
     }
     if (!orgaKey()) return;
     try { const who = await orgaFetch('/api/orga/me'); setOrga(who); toast('Mode orga : ' + who.label); }
@@ -1346,44 +1365,78 @@
     }).catch(() => {});
   } catch {}
 
-  // ---- Notifications : annonces urgentes même appli fermée ----
+  // ---- Notifications : annonces urgentes et dangers près de toi, même appli fermée ----
   const pushOK = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!cfg.pushKey;
   const b64u = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
   let pushZone = null; try { pushZone = localStorage.getItem('cortege-push-zone'); } catch {}
+  // Réglages : annonces urgentes (oui par défaut, comme avant) et dangers près de toi
+  let pushOpts = { urgent: true, near: false }; try { pushOpts = { ...pushOpts, ...JSON.parse(localStorage.getItem('cortege-push-opts') || '{}') }; } catch {}
+  const savePushOpts = () => { try { localStorage.setItem('cortege-push-opts', JSON.stringify(pushOpts)); } catch {} };
+  function bellState() { const on = !!pushSub; $('#btnNotif').dataset.on = on ? '1' : '0'; $('#btnNotif').textContent = on ? '🔔' : '🔕'; }
   // Le serveur ne reçoit qu'une zone arrondie à 0,1° (≈ 10 km), mise à jour quand tu changes de zone
   async function pushSend(sub, force) {
     const c = map.getCenter(), ref = me || [c.lat, c.lng];
-    const z = ref.map(x => Math.round(x * 10) / 10), key = z.join(',');
+    const z = ref.map(x => Math.round(x * 10) / 10), key = z.join(',') + (pushOpts.urgent ? 'u' : '') + (pushOpts.near ? 'n' : '');
     if (!force && key === pushZone) return;
     pushZone = key;
-    const res = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1] }) });
+    const res = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1], urgent: pushOpts.urgent, near: pushOpts.near }) });
     if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || 'Abonnement impossible.'); }
     try { localStorage.setItem('cortege-push-zone', key); } catch {}
   }
-  if (isIOS && !standalone) $('#pushHelp').textContent += ' Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active ce réglage depuis l’appli installée.';
+  if (isIOS && !standalone) $('#pushHelp').textContent += ' Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.';
+  function syncSwitches() { $('#optPush').checked = !!pushSub && pushOpts.urgent; $('#optNear').checked = !!pushSub && pushOpts.near; bellState(); }
   if (pushOK) navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
-    if (sub && Notification.permission === 'granted') { pushSub = sub; $('#optPush').checked = true; pushSend(sub).catch(() => {}); }
-  }).catch(() => {});
-  $('#optPush').addEventListener('change', async e => {
-    const box = e.target;
-    if (box.checked) {
-      if (!pushOK) { box.checked = false; return toast(isIOS && !standalone ? 'Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.' : 'Notifications non prises en charge par ce navigateur.'); }
-      try {
-        if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications refusées : autorise-les dans les réglages du téléphone.');
-        const reg = await navigator.serviceWorker.ready;
-        pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
-        await pushSend(pushSub, true);
-        toast('Annonces urgentes activées');
-      } catch (err) { box.checked = false; pushSub = null; toast(err.message || 'Activation impossible.'); }
-    } else {
-      const sub = pushSub; pushSub = null; pushZone = null;
-      try { localStorage.removeItem('cortege-push-zone'); } catch {}
-      try {
-        if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
-      } catch {}
-      toast('Notifications désactivées');
+    if (sub && Notification.permission === 'granted') {
+      pushSub = sub; syncSwitches();
+      // Réinscription au plus deux fois par jour (le serveur a pu tout effacer entre-temps)
+      let at = 0; try { at = +localStorage.getItem('cortege-push-at') || 0; } catch {}
+      pushSend(sub, Date.now() - at > 12 * 3600e3).then(() => { try { localStorage.setItem('cortege-push-at', String(Date.now())); } catch {} }).catch(() => {});
     }
-  });
+  }).catch(() => {});
+  async function pushEnable() {
+    if (!pushOK) throw new Error(isIOS && !standalone ? 'Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.' : 'Notifications non prises en charge par ce navigateur.');
+    if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications refusées : autorise-les dans les réglages du téléphone.');
+    const reg = await navigator.serviceWorker.ready;
+    pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
+    await pushSend(pushSub, true);
+  }
+  async function pushDisable() {
+    const sub = pushSub; pushSub = null; pushZone = null;
+    try { localStorage.removeItem('cortege-push-zone'); } catch {}
+    try {
+      if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
+    } catch {}
+  }
+  async function pushToggle(which, on) {
+    const before = { ...pushOpts };
+    if (!pushSub) pushOpts = { urgent: false, near: false }; // première activation : seulement ce qui a été choisi
+    pushOpts[which] = on;
+    try {
+      if (!pushOpts.urgent && !pushOpts.near) { await pushDisable(); toast('Notifications désactivées'); }
+      else if (!pushSub) { await pushEnable(); toast(which === 'near' ? 'Alertes « danger près de toi » activées' : 'Annonces urgentes activées'); }
+      else { await pushSend(pushSub, true); toast(on ? 'Activé' : 'Désactivé'); }
+      savePushOpts();
+    } catch (err) { pushOpts = before; toast(err.message || 'Activation impossible.'); }
+    syncSwitches();
+  }
+  $('#optPush').addEventListener('change', e => pushToggle('urgent', e.target.checked));
+  $('#optNear').addEventListener('change', e => pushToggle('near', e.target.checked));
+  // Légende des vibrations, avec un bouton pour les essayer
+  const VIBE_TXT = { charge: 'rafale de petites vibrations', nasse: 'deux longues', sommations: 'trois longues', lacrymo: 'deux moyennes',
+    canon: 'trois moyennes', bac: 'deux courtes puis une longue', crs: 'deux courtes', interpellation: 'trois courtes' };
+  for (const id of Object.keys(VIBE_TXT)) {
+    if (!CAT[id]) continue;
+    const b = el('button', { type: 'button' }, 'Essayer');
+    b.onclick = () => { try { navigator.vibrate?.(cfg.vibes?.[id] || [200]); } catch {} };
+    $('#vibeList').append(el('li', {}, el('span', {}, CAT[id].glyph + ' ' + CAT[id].label, el('small', {}, VIBE_TXT[id])), ...(navigator.vibrate ? [b] : [])));
+  }
+  if (!navigator.vibrate) $('#vibeNote').textContent = 'Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications.';
+  function openNotif() { closeReport(); closeSheets(); syncSwitches(); $('#sheetNotif').hidden = false; }
+  $('#btnNotif').onclick = openNotif;
+  $('#btnNotifInfo').onclick = openNotif;
+  $('#ntClose').onclick = () => closeSheets();
+  bellState();
 
   // ---- Bien se préparer : checklist gardée sur le téléphone ----
   const prepKey = 'cortege-prep';

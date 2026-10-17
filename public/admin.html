@@ -62,6 +62,9 @@ pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line
 .org-list .meta { font-size: 13px; color: var(--muted); }
 .org-list button { height: 36px; font-size: 13px; }
 button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a9d; }
+.danger-card { border-color: #e5484d; }
+.qr-invite { width: 220px; max-width: 70%; background: #fff; border-radius: 10px; padding: 6px; align-self: center; }
+.qr-invite svg { width: 100%; height: auto; display: block; }
 .newlink { background: var(--bg); border: 1px solid var(--accent); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .newlink code { font: 14px/1.4 ui-monospace, Menlo, monospace; overflow-wrap: anywhere; color: var(--fg); }
 .newlink .row { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -99,6 +102,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda">Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports">Urgences</button>
     <button class="tab" role="tab" id="tabJournal" aria-selected="false" aria-controls="panelJournal">Journal <span id="journalBadge"></span></button>
+    <button class="tab" role="tab" id="tabAbuse" aria-selected="false" aria-controls="panelAbuse">Abus</button>
     <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest">Digest</button>
   </nav>
 
@@ -109,16 +113,17 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
         <label for="orgaLabel" style="flex:1;min-width:220px">Nom affiché sur ses annonces
           <input id="orgaLabel" maxlength="60" placeholder="ex. : Legal Team Montpellier" required>
         </label>
-        <button type="submit">Créer le lien</button>
+        <button type="submit">Créer l’invitation</button>
       </form>
       <div class="newlink" id="newLink" hidden>
-        <div><b id="newLabel"></b> : voici son lien d’accès.</div>
+        <div><b id="newLabel"></b> : invitation à usage unique, valable jusqu’au <span id="newExp"></span>.</div>
+        <div class="qr-invite" id="newQr"></div>
         <code id="newUrl"></code>
         <div class="row">
           <button type="button" id="copyLink">Copier le lien</button>
           <button type="button" class="ghost" id="shareLink">Envoyer…</button>
         </div>
-        <p class="warn">Ce lien ne s’affichera plus jamais : copie-le maintenant et envoie-le par une messagerie chiffrée (Signal). Perdu ? Supprime l’orga et recrée-la.</p>
+        <p class="warn">L’orga scanne ce QR code avec l’appareil photo de son téléphone (ou ouvre le lien) : sa clé est créée à ce moment-là, sur son téléphone, et l’invitation ne sert plus. Si quelqu’un d’autre l’utilise avant elle, tu le verras (« activée » alors qu’elle n’a rien reçu) : crée une nouvelle invitation, l’accès précédent est coupé.</p>
       </div>
     </section>
     <section class="card">
@@ -181,17 +186,49 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <p class="fine">Pendant la pause, la carte reste visible mais personne ne peut signaler. Les orgas peuvent toujours publier des annonces.</p>
     </section>
     <section class="card">
-      <h2>Tout effacer</h2>
+      <h2>Effacer les signalements</h2>
       <div class="controls">
         <button type="button" class="danger" id="purgeReports">Effacer tous les signalements</button>
         <button type="button" class="danger" id="purgeAll">Effacer signalements + annonces</button>
       </div>
       <p class="fine">Partout en France, immédiatement. Les points effacés sont exclus du digest.</p>
     </section>
+    <section class="card danger-card">
+      <h2>Effacement d’urgence : toutes les traces</h2>
+      <p class="fine">À utiliser si une saisie du serveur se profile. Efface d’un coup : signalements, annonces, journal des orgas, corbeille, empreintes anti-abus, tableau des abus, abonnements aux notifications et archive du digest. Une nouvelle clé de hachage est créée : les anciennes empreintes deviennent inutilisables. Les orgas et l’agenda public sont gardés.</p>
+      <form class="controls" id="wipeForm">
+        <label for="wipeConfirm" style="flex:1;min-width:200px">Tape EFFACER pour confirmer<input id="wipeConfirm" autocomplete="off" placeholder="EFFACER"></label>
+        <button type="submit" class="danger">Tout effacer maintenant</button>
+      </form>
+    </section>
     <section class="card">
       <h2>Signalements actifs <span id="repCount"></span></h2>
       <div class="controls"><label for="repFilter" style="flex:1">Filtrer (type ou texte)<input id="repFilter" placeholder="ex. : nasse, gare…"></label><button type="button" class="ghost" id="repReload">Actualiser</button></div>
       <ul class="org-list" id="repList"></ul>
+    </section>
+  </section>
+
+  <section class="panel" id="panelAbuse" role="tabpanel" aria-labelledby="tabAbuse" hidden>
+    <section class="card">
+      <h2>Mode manif renforcé</h2>
+      <p class="fine" id="strictState">—</p>
+      <div class="controls">
+        <button type="button" data-strict="60">1 h</button>
+        <button type="button" data-strict="180">3 h</button>
+        <button type="button" data-strict="360">6 h</button>
+        <button type="button" class="ghost" data-strict="0">Arrêter</button>
+      </div>
+      <p class="fine">Pour une grosse journée ou une attaque en cours, sans couper les signalements : moitié moins de signalements autorisés par téléphone et par réseau, rafales de « Plus là » coupées plus tôt, et les téléphones apparus il y a moins de 10 minutes ne pèsent plus (leurs dangers ne suspendent pas les zones calmes et ne déclenchent pas de notification, leurs « Plus là » ne comptent pas). Les téléphones fiables ne sont pas touchés.</p>
+    </section>
+    <section class="card">
+      <h2>Dernières 24 h <button type="button" class="ghost" id="abuseReload" style="float:right;height:30px;font-size:12px">Actualiser</button></h2>
+      <p class="fine" id="abuseSummary">—</p>
+      <ul class="org-list" id="abuseKinds"></ul>
+    </section>
+    <section class="card">
+      <h2>Zones concernées</h2>
+      <ul class="org-list" id="abuseZones"></ul>
+      <p class="fine">Positions arrondies à environ 5 km. Le tableau ne garde rien plus de 48 h, et les empreintes des téléphones y sont effacées au bout d’une heure.</p>
     </section>
   </section>
 
@@ -209,7 +246,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <h2>Journal des actions</h2>
       <div class="controls"><label for="journalOrga">Orga <select id="journalOrga"><option value="">Toutes</option></select></label></div>
       <ul class="org-list" id="journalList"></ul>
-      <p class="fine">Gardé 60 jours : heure, orga, action, type de signalement et position arrondie à environ 100 m. Aucune adresse IP.</p>
+      <p class="fine">Gardé 30 jours : heure, orga, action, type de signalement et position arrondie à environ 100 m. Aucune adresse IP.</p>
     </section>
   </section>
 
@@ -237,6 +274,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   </section>
   </div>
 </main>
+<script src="/vendor/qrcode.js"></script>
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
@@ -259,7 +297,7 @@ $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); }
 if (KEY) login();
 
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Agenda', 'Reports', 'Journal', 'Digest']) {
+  for (const t of ['Orgas', 'Anns', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -421,6 +459,48 @@ document.querySelectorAll('[data-pause]').forEach(b => b.onclick = async () => {
 });
 confirmBtn($('#purgeReports'), 'Confirmer : tout effacer', async () => { const r = await api('/api/admin/purge', { method: 'POST', body: '{}' }); alertMsg(r.removed + ' signalement(s) effacé(s).'); loadReports(); });
 confirmBtn($('#purgeAll'), 'Confirmer : tout effacer + annonces', async () => { const r = await api('/api/admin/purge', { method: 'POST', body: JSON.stringify({ announcements: true }) }); alertMsg(r.removed + ' signalement(s) et toutes les annonces effacés.'); loadReports(); });
+$('#wipeForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if ($('#wipeConfirm').value.trim() !== 'EFFACER') return alertMsg('Tape EFFACER pour confirmer.');
+  try {
+    const r = await api('/api/admin/wipe', { method: 'POST', body: JSON.stringify({ confirm: 'EFFACER' }) });
+    $('#wipeConfirm').value = '';
+    alertMsg(`Effacement terminé : ${r.removed} signalement(s) et toutes les traces effacés.` + (r.rotated ? ' Nouvelle clé de hachage créée.' : ' La clé vient de la variable SECRET : change-la dans cPanel puis redémarre.'));
+    loadReports();
+  } catch (err) { alertMsg(err.message); }
+});
+// ---- Abus ----
+const ABUSE_HELP = {
+  'point contesté': 'points devenus « contestés » par des « Plus là »',
+  '« Plus là » en rafale': 'téléphones dont les « Plus là » ont été ignorés (trop d’un coup)',
+  'signalements en rafale': 'téléphones bloqués : trop de signalements d’un coup',
+  'danger près zone calme': 'dangers signalés à moins de 100 m d’une zone calme (souvent légitime)',
+  'série de dangers près des zones calmes': 'téléphones repérés : dangers près de plusieurs zones calmes à la suite (marqués non fiables)',
+};
+function bars(arr) { const max = Math.max(1, ...arr); return arr.slice().reverse().map(n => '▁▂▃▄▅▆▇█'[Math.min(7, Math.round(n / max * 7))]).join(''); }
+async function loadAbuse() {
+  let d; try { d = await api('/api/admin/abuse'); } catch (e) { alertMsg(e.message); return; }
+  $('#strictState').textContent = d.strict ? 'Actif jusqu’à ' + new Date(d.strict).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '.' : 'Désactivé.';
+  $('#abuseSummary').textContent = `${d.trusted} téléphone(s) fiable(s) aujourd’hui · ${d.unreliable} signalement(s) non fiable(s) en ce moment` + (d.paused ? ' · signalements en pause' : '');
+  const ul = $('#abuseKinds'); ul.textContent = '';
+  const kinds = Object.entries(d.kinds).sort((a, b) => b[1] - a[1]);
+  if (!kinds.length) empty(ul, 'Rien à signaler sur les dernières 24 h.');
+  for (const [k, n] of kinds) {
+    const l = li(`${n} · ${k}`, (ABUSE_HELP[k] || '') + ' · ' + bars(d.hours[k] || []) + ' (24 h → maintenant)');
+    ul.append(l);
+  }
+  const zl = $('#abuseZones'); zl.textContent = '';
+  if (!d.zones.length) empty(zl, 'Aucune zone.');
+  for (const z of d.zones) {
+    const a = document.createElement('a'); a.href = `https://www.openstreetmap.org/?mlat=${z.lat}&mlon=${z.lng}#map=12/${z.lat}/${z.lng}`; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'voir'; a.style.color = 'var(--accent)';
+    zl.append(li(`${z.name || z.lat + ', ' + z.lng} · ${z.n}`, Object.entries(z.kinds).map(([k, n]) => n + ' ' + k).join(' · '), a));
+  }
+}
+$('#tabAbuse').onclick = () => { showTab('Abuse'); loadAbuse(); };
+$('#abuseReload').onclick = loadAbuse;
+document.querySelectorAll('[data-strict]').forEach(b => b.onclick = async () => {
+  try { await api('/api/admin/strict', { method: 'POST', body: JSON.stringify({ minutes: +b.dataset.strict }) }); loadAbuse(); } catch (e) { alertMsg(e.message); }
+});
 if (location.hash === '#digest') showTab('Digest');
 
 function renderOrgas({ orgas }) {
@@ -432,7 +512,8 @@ function renderOrgas({ orgas }) {
     const name = document.createElement('b'); name.textContent = o.label;
     const meta = document.createElement('div'); meta.className = 'meta';
     meta.textContent = (o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }))
-      + (o.trial ? ' · EN PÉRIODE D’ESSAI' : ' · confirmée');
+      + (o.trial ? ' · EN PÉRIODE D’ESSAI' : ' · confirmée')
+      + (o.source === 'page' ? (o.active ? ' · activée' : o.invite ? ' · invitation en attente' : ' · invitation expirée') : '');
     const stats = document.createElement('div'); stats.className = 'meta';
     const d = o.day || {};
     stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '');
@@ -442,6 +523,10 @@ function renderOrgas({ orgas }) {
       const tr = document.createElement('button'); tr.className = o.trial ? '' : 'ghost'; tr.textContent = o.trial ? 'Confirmer' : 'Repasser en essai';
       tr.onclick = async () => { try { await api('/api/admin/orgas/' + o.id + '/trial', { method: 'POST', body: JSON.stringify({ trial: !o.trial }) }); api('/api/admin/orgas').then(renderOrgas); } catch (e) { alertMsg(e.message); } };
       li.append(tr);
+      const inv = document.createElement('button'); inv.className = 'ghost'; inv.textContent = 'Nouvelle invitation';
+      inv.title = 'Crée un nouveau QR code et coupe l’accès actuel de cette orga';
+      confirmBtn(inv, 'Confirmer (coupe l’accès actuel)', async () => { const r = await api('/api/admin/orgas/' + o.id + '/invite', { method: 'POST', body: '{}' }); showInvite(r); api('/api/admin/orgas').then(renderOrgas); });
+      li.append(inv);
       const del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Supprimer';
       del.onclick = async () => {
         if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Confirmer'; return; }
@@ -454,13 +539,21 @@ function renderOrgas({ orgas }) {
   }
 }
 function alertMsg(m) { $('#loginMsg').textContent = m; }
+// Invitation : QR code dessiné ici même (rien ne part chez un service extérieur)
+function showInvite(o) {
+  const url = location.origin + '/?invite=' + o.invite;
+  $('#newLabel').textContent = o.label; $('#newUrl').textContent = url;
+  $('#newExp').textContent = new Date(o.exp).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  $('#newQr').textContent = '';
+  if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#newQr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
+  $('#newLink').hidden = false; $('#shareLink').hidden = !navigator.share;
+  $('#newLink').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 $('#orgaForm').addEventListener('submit', async e => {
   e.preventDefault();
   try {
     const o = await api('/api/admin/orgas', { method: 'POST', body: JSON.stringify({ label: $('#orgaLabel').value }) });
-    const url = location.origin + '/?orga=' + o.key;
-    $('#newLabel').textContent = o.label; $('#newUrl').textContent = url; $('#newLink').hidden = false;
-    $('#shareLink').hidden = !navigator.share;
+    showInvite(o);
     $('#orgaLabel').value = '';
     api('/api/admin/orgas').then(renderOrgas);
   } catch (err) { alertMsg(err.message); }
@@ -470,7 +563,7 @@ $('#copyLink').onclick = async () => {
   catch { const r = document.createRange(); r.selectNodeContents($('#newUrl')); getSelection().removeAllRanges(); getSelection().addRange(r); $('#copyLink').textContent = 'Sélectionné'; }
   setTimeout(() => ($('#copyLink').textContent = 'Copier le lien'), 2000);
 };
-$('#shareLink').onclick = () => navigator.share?.({ title: 'Accès orga Cortège', text: 'Ton lien d’accès orga Cortège (ne le partage pas) :', url: $('#newUrl').textContent }).catch(() => {});
+$('#shareLink').onclick = () => navigator.share?.({ title: 'Invitation orga Cortège', text: 'Ton invitation orga Cortège (usage unique, ne la transfère pas) :', url: $('#newUrl').textContent }).catch(() => {});
 $('#date').value = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
 
 function bar(label, n, max, color, extra) {

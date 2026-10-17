@@ -1,5 +1,5 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v25', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v26', TILES = 'cortege-tiles-v1';
 const ASSETS = ['/', '/style.css', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/favicon.png', '/brand/logo.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
@@ -35,14 +35,16 @@ self.addEventListener('push', e => {
   try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
   e.waitUntil(self.registration.showNotification(d.title || 'Cortège', {
     body: d.body || 'Nouvelle annonce urgente', tag: d.tag || 'cortege', renotify: true,
-    icon: '/icon-192.png', badge: '/favicon.png', vibrate: [300, 100, 300, 100, 300], data: { url: d.url || '/' },
+    icon: '/icon-192.png', badge: '/favicon.png', vibrate: Array.isArray(d.vibrate) ? d.vibrate.slice(0, 12) : [300, 100, 300, 100, 300], data: { url: d.url || '/' },
   }));
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil((async () => {
     const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const c of list) if ('focus' in c) return c.focus();
+    const url = e.notification.data?.url || '/';
+    // Appli déjà ouverte : on la ramène au premier plan et on lui dit où regarder
+    for (const c of list) if ('focus' in c) { c.postMessage({ type: 'goto', url }); return c.focus(); }
     return self.clients.openWindow(e.notification.data?.url || '/');
   })());
 });

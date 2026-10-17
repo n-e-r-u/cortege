@@ -21,7 +21,7 @@ const ADMIN_KEY = (k => {
   if (k && k.length < 12) { console.error('ADMIN_KEY trop courte (12 caractères minimum) : administration désactivée.'); return ''; }
   return k;
 })(process.env.ADMIN_KEY || '');
-const ARCHIVE_DAYS = Number(process.env.ARCHIVE_DAYS) || 60;
+const ARCHIVE_DAYS = Number(process.env.ARCHIVE_DAYS) || 30; // archive du digest et journal des orgas
 // Clés orga / legal team : « Nom affiché:clé » séparés par des virgules.
 // ex. ORGA_KEYS="Legal Team Montpellier:k7f…,Intersyndicale Lyon:p2x…"
 const ORGAS = (process.env.ORGA_KEYS || '').split(',').map(x => x.trim()).filter(Boolean).map(x => {
@@ -88,6 +88,19 @@ const MERGE = {
 };
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;
+// Dangers qui déclenchent une alerte de proximité (dans l'appli et en notification)
+const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'nasse', 'bac', 'crs', 'interpellation']);
+// Vibrations par type : on reconnaît le danger sans sortir le téléphone
+const VIBES = {
+  charge: [100, 60, 100, 60, 100, 60, 100, 60, 100],   // rafale courte : ça arrive vite
+  nasse: [900, 200, 900],                              // deux longues : risque d'être bloqué·e
+  sommations: [500, 150, 500, 150, 500],               // trois longues : partir
+  lacrymo: [400, 150, 400],                            // deux moyennes
+  canon: [250, 100, 250, 100, 250],                    // trois moyennes
+  bac: [150, 80, 150, 80, 600],                        // deux courtes, une longue
+  crs: [200, 100, 200],                                // deux courtes
+  interpellation: [200, 100, 200, 100, 200],           // trois courtes
+};
 const isDanger = cat => Object.hasOwn(CAT, cat) && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
 const distM = (a, b) => {
   const k = Math.PI / 180, x = (b.lng - a.lng) * k * Math.cos((a.lat + b.lat) / 2 * k), y = (b.lat - a.lat) * k;
@@ -125,12 +138,32 @@ const STATE_FILE = path.join(DATA_DIR, 'state.json');
 const LOCK_FILE = STATE_FILE + '.lock';
 
 // Clé de hachage des IP : jamais dans le dossier web, et renouvelée toutes les 6 h.
-const SECRET = process.env.SECRET || (() => {
-  const f = path.join(DATA_DIR, 'secret');
-  try { return fs.readFileSync(f, 'utf8'); } catch {}
-  const s = crypto.randomBytes(32).toString('hex');
-  try { fs.writeFileSync(f, s, { mode: 0o600, flag: 'wx' }); return s; } catch { return fs.readFileSync(f, 'utf8'); }
-})();
+// La clé peut être remplacée par « Tout effacer » (admin) : chaque processus relit le fichier s'il a changé.
+const SECRET_FILE = path.join(DATA_DIR, 'secret');
+let secretCache = { t: 0, mtime: -1, v: null };
+function secret() {
+  if (process.env.SECRET) return process.env.SECRET;
+  const now = Date.now();
+  if (secretCache.v && now - secretCache.t < 5000) return secretCache.v;
+  secretCache.t = now;
+  try {
+    const st = fs.statSync(SECRET_FILE);
+    if (st.mtimeMs !== secretCache.mtime) secretCache = { t: now, mtime: st.mtimeMs, v: fs.readFileSync(SECRET_FILE, 'utf8') };
+    return secretCache.v;
+  } catch {}
+  const v = crypto.randomBytes(32).toString('hex');
+  try { fs.writeFileSync(SECRET_FILE, v, { mode: 0o600, flag: 'wx' }); } catch { return secret(); }
+  secretCache = { t: now, mtime: fs.statSync(SECRET_FILE).mtimeMs, v };
+  return v;
+}
+function rotateSecret() {
+  if (process.env.SECRET) return false;
+  const tmp = SECRET_FILE + '.' + process.pid + '.tmp';
+  fs.writeFileSync(tmp, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
+  fs.renameSync(tmp, SECRET_FILE);
+  secretCache = { t: 0, mtime: -1, v: null };
+  return true;
+}
 // IP du téléphone, seulement pour l'anti-spam (jamais stockée en clair).
 // - Derrière un CDN : en-tête CF-Connecting-IP (sinon tout le monde aurait l'IP du CDN
 //   et l'anti-spam bloquerait des foules entières).
@@ -152,18 +185,21 @@ function clientIp(req) {
 function clientHash(req) {
   const ip = clientIp(req);
   const bucket = Math.floor(Date.now() / (6 * 60 * MIN));
-  return crypto.createHmac('sha256', SECRET).update(bucket + '|' + ip).digest('base64url').slice(0, 16);
+  return crypto.createHmac('sha256', secret()).update(bucket + '|' + ip).digest('base64url').slice(0, 16);
 }
 // Empreinte du téléphone : l'identifiant brut n'est jamais stocké, seulement son HMAC.
+// Elle change chaque jour à 4 h (heure de Paris en été) : impossible de relier deux journées entre elles.
+const dayBucket = (now = Date.now()) => Math.floor((now - 2 * 60 * MIN) / (24 * 60 * MIN));
 function deviceHash(req) {
   const d = String(req.headers['x-device'] || '');
   if (!/^[\w-]{16,64}$/.test(d)) return 'ip:' + clientHash(req);
-  return 'd:' + crypto.createHmac('sha256', SECRET).update('dev|' + d).digest('base64url').slice(0, 16);
+  return 'd:' + crypto.createHmac('sha256', secret()).update('dev|' + dayBucket() + '|' + d).digest('base64url').slice(0, 16);
 }
 
 function keyEq(a, b) { a = Buffer.from(String(a)); b = Buffer.from(String(b)); return a.length === b.length && crypto.timingSafeEqual(a, b); }
 // Orgas créées depuis la page admin : seule l'empreinte (hash) de leur clé est stockée.
 const ORGA_FILE = () => path.join(DATA_DIR, 'orgas.json');
+const INVITE_MS = 24 * 60 * 60_000; // durée de validité d'une invitation d'orga
 const sha = k => crypto.createHash('sha256').update(String(k)).digest('hex');
 let orgaCache = { mtime: -1, list: [] };
 function readOrgas() {
@@ -273,12 +309,21 @@ try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch
 // « Plus là » pondérés (dw) et heure à laquelle le point est devenu contesté (ct)
 try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
-// Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 48 h après sa dernière action.
+// Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
 // Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
+// Fiabilité du jour : signalements confirmés par d'autres (good) ou contestés (bad). Repart de zéro chaque jour (empreinte quotidienne).
+try { db.exec('ALTER TABLE devices ADD COLUMN good INTEGER DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE devices ADD COLUMN bad INTEGER DEFAULT 0'); } catch {}
+// Fiabilité du signalement à sa création : 1 = téléphone fiable, -1 = non fiable (série suspecte, mode renforcé)
+try { db.exec('ALTER TABLE reports ADD COLUMN fl INTEGER DEFAULT 0'); } catch {}
+// Tableau des abus : 48 h, position arrondie à ~1 km ; les empreintes (dev, net) sont effacées au bout d'une heure
+db.exec(`CREATE TABLE IF NOT EXISTS abuse(id INTEGER PRIMARY KEY, t INTEGER, kind TEXT, lat REAL, lng REAL, dev TEXT, net TEXT, ref TEXT);
+  CREATE INDEX IF NOT EXISTS abuse_t ON abuse(t);
+  CREATE INDEX IF NOT EXISTS abuse_kind_dev ON abuse(kind, dev, t);`);
 db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
 db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
-// ---- Journal des actions d'orgas (60 jours) et corbeille des retraits (1 h) ----
+// ---- Journal des actions d'orgas (30 jours) et corbeille des retraits (1 h) ----
 // Journal : heure, orga, action, type de signalement, position arrondie à ~100 m. Jamais d'IP.
 db.exec(`CREATE TABLE IF NOT EXISTS orga_log(id INTEGER PRIMARY KEY, t INTEGER, oid TEXT, orga TEXT, action TEXT, cat TEXT, lat REAL, lng REAL, ref TEXT, detail TEXT);
   CREATE INDEX IF NOT EXISTS orga_log_t ON orga_log(t);
@@ -308,7 +353,7 @@ function orgaStats(oid) {
 }
 const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
-  dw: r.dw || 0, ct: r.ct || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
+  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
@@ -316,11 +361,11 @@ function saveReport(r) {
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
-       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct`)
+       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0);
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0);
   dirtyCell(cell);
 }
 function dropReport(id, dismissed) {
@@ -357,7 +402,8 @@ function bump(key, kind, max, now) {
 function allow(dev, ip, kind, now) {
   const rep = kind === 'report', cur = q('SELECT t, reports, votes FROM rate WHERE k=?').get('ip:' + ip);
   if (cur && now - cur.t <= RATE.windowMs && cur[kind + 's'] >= (rep ? RATE.ipReports : RATE.ipVotes)) return false;
-  if (!bump(dev, kind, rep ? RATE.maxReports : RATE.maxVotes, now)) return false;
+  const strict = strictUntil(now) > 0;
+  if (!bump(dev, kind, rep ? (strict ? Math.ceil(RATE.maxReports / 2) : RATE.maxReports) : RATE.maxVotes, now)) return false;
   bump('ip:' + ip, kind, Infinity, now);
   return true;
 }
@@ -366,7 +412,7 @@ function allow(dev, ip, kind, now) {
 // Poids d'un « Plus là » : ×2 si le téléphone dit être sur place (calcul fait sur le téléphone, la position
 // ne part jamais), ×2 si l'identifiant n'est pas tout neuf. Il en faut davantage pour chaque confirmation.
 const CONTEST = { near: 2, aged: 2, need: 8, perUp: 4, more: 8, soft: 10 * MIN, short: 2 * MIN, newDev: 10 * MIN,
-  devKeep: 48 * 60 * MIN, devBurst: 6, netBurst: 60 };
+  devKeep: 26 * 60 * MIN, devBurst: 6, netBurst: 60 };
 const VOTES = { id: 'votes', label: 'Votes « Plus là »' };
 // Âge de l'identifiant du téléphone (0 si inconnu ou sans identifiant), et note qu'il vient d'agir
 function deviceAge(dev, now) {
@@ -375,7 +421,37 @@ function deviceAge(dev, now) {
   q('INSERT INTO devices(h,first,seen) VALUES(?,?,?) ON CONFLICT(h) DO UPDATE SET seen=excluded.seen').run(dev, now, now);
   return row ? now - row.first : 0;
 }
-const contestNeed = r => CONTEST.need + CONTEST.perUp * (r.up || 0);
+// Un signalement d'un téléphone fiable demande une personne de plus pour être contesté
+const contestNeed = r => CONTEST.need + CONTEST.perUp * (r.up || 0) + (r.fl === 1 ? CONTEST.perUp : 0);
+// ---- Fiabilité du jour ----
+const TRUST = 2; // fiable : (confirmés par d'autres) − 2 × (contestés) ≥ 2
+function devRep(dev) { const x = dev.startsWith('d:') && q('SELECT good, bad FROM devices WHERE h=?').get(dev); return x ? (x.good || 0) - 2 * (x.bad || 0) : 0; }
+function repAdd(dev, field, n = 1) {
+  if (!dev || !dev.startsWith('d:') || (field !== 'good' && field !== 'bad')) return;
+  q(`UPDATE devices SET ${field}=COALESCE(${field},0)+? WHERE h=?`).run(n, dev);
+}
+// Première confirmation par quelqu'un d'autre : l'auteur gagne en fiabilité, le point n'est plus « non fiable »
+function firstConfirm(r) { if (r.up === 1) { repAdd(r.voters[0], 'good'); if (r.fl === -1) r.fl = 0; } }
+// ---- Mode manif renforcé (réglage admin, avec une durée) ----
+const strictUntil = now => { const p = Number(getMeta('strict') || 0); return p > now ? p : 0; };
+// ---- Tableau des abus ----
+const ABUSE_KEEP = 48 * 60 * MIN;
+const r2 = x => (x == null ? null : Math.round(x * 100) / 100);
+function abuseLog(kind, { lat, lng, dev, net, ref } = {}) {
+  try { q('INSERT INTO abuse(t,kind,lat,lng,dev,net,ref) VALUES(?,?,?,?,?,?,?)').run(Date.now(), kind, r2(lat), r2(lng), dev || null, net || null, ref || null); } catch {}
+}
+// Une seule ligne par téléphone et par fenêtre (sinon une rafale remplirait le tableau)
+function abuseOnce(kind, dev, windowMs, extra = {}) {
+  if (q('SELECT 1 FROM abuse WHERE kind=? AND dev=? AND t>?').get(kind, dev, Date.now() - windowMs)) return;
+  abuseLog(kind, { ...extra, dev });
+}
+// Faux dangers en série : un même téléphone (ou réseau) qui signale des dangers près de plusieurs zones calmes différentes
+const SERIES = { win: 30 * MIN, dev: 3, net: 6 };
+function calmSeries(dev, net, now) {
+  const d = q("SELECT COUNT(DISTINCT ref) n FROM abuse WHERE kind='danger près zone calme' AND dev=? AND t>?").get(dev, now - SERIES.win).n;
+  const n = q("SELECT COUNT(DISTINCT ref) n FROM abuse WHERE kind='danger près zone calme' AND net=? AND t>?").get(net, now - SERIES.win).n;
+  return d >= SERIES.dev || n >= SERIES.net;
+}
 // Copie du point tel qu'il était avant d'être contesté : l'admin peut le remettre pendant 1 h
 function snapshotContested(r, now) {
   q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, VOTES.id, VOTES.label, JSON.stringify({ ...r, left: r.exp - now }));
@@ -393,6 +469,8 @@ function sweep() {
     q('DELETE FROM hidden WHERE until<?').run(now);
     q('DELETE FROM trash WHERE t<?').run(now - TRASH_MS);
     q('DELETE FROM devices WHERE seen<?').run(now - CONTEST.devKeep);
+    q('DELETE FROM abuse WHERE t<?').run(now - ABUSE_KEEP);
+    q('UPDATE abuse SET dev=NULL, net=NULL WHERE t<? AND (dev IS NOT NULL OR net IS NOT NULL)').run(now - 60 * MIN);
     q('DELETE FROM orga_log WHERE t<?').run(now - ARCHIVE_DAYS * 24 * 60 * MIN);
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
@@ -407,7 +485,7 @@ function addNote(r, text, dev, t) {
   r.notes = [{ x: text, t, d: dev }, ...notes].slice(0, NOTES_KEEP);
 }
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
-  notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}) });
+  notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}), ...(r.fl === 1 ? { f: 1 } : r.fl === -1 && !r.up ? { nf: 1 } : {}) });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
@@ -519,6 +597,10 @@ const VAPID = (() => {
 const VAPID_KEY = crypto.createPrivateKey({ key: VAPID.jwk, format: 'jwk' });
 // Abonnements dans la base (avant : un fichier réécrit en entier à chaque abonnement, de plus en plus lent)
 db.exec('CREATE TABLE IF NOT EXISTS push(id TEXT PRIMARY KEY, e TEXT NOT NULL, k TEXT, a TEXT, lat REAL, lng REAL, t INTEGER)');
+// urg : annonces urgentes ; near : dangers signalés dans la zone ; last : dernier envoi « danger » (anti-avalanche)
+try { db.exec('ALTER TABLE push ADD COLUMN urg INTEGER DEFAULT 1'); } catch {}
+try { db.exec('ALTER TABLE push ADD COLUMN near INTEGER DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE push ADD COLUMN last INTEGER'); } catch {}
 try { // reprise de l'ancien fichier push.json, une seule fois
   if (fs.existsSync(PUSH_FILE)) {
     const old = JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8'));
@@ -568,18 +650,37 @@ function pushOne(sub, payload) {
     req.end(body);
   });
 }
-async function pushBroadcast(a) {
-  const targets = pushAll().filter(s => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8)).map(s => [s.id, s]);
-  if (!targets.length) return;
-  const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/' });
+async function pushSendAll(targets, payload) {
   const dead = [];
   for (let i = 0; i < targets.length; i += 20) {
     const batch = targets.slice(i, i + 20);
-    const codes = await Promise.all(batch.map(([, s]) => pushOne(s, payload)));
-    codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(batch[j][0]); });
+    const codes = await Promise.all(batch.map(s => pushOne(s, payload)));
+    codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(batch[j].id); });
   }
   if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
-  console.log(`push : ${targets.length} envoi(s), ${dead.length} abonnement(s) expiré(s)`);
+  return dead.length;
+}
+// « Danger près de toi » : abonné·es dont la zone (arrondie à ~10 km) est à moins de 10 km, au plus un envoi toutes les 3 min
+const NEAR_KM = 10, NEAR_GAP = 3 * MIN;
+async function pushNear(r) {
+  const now = Date.now(), c = CAT[r.cat], d = NEAR_KM / 111;
+  const cand = q('SELECT * FROM push WHERE near=1 AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?').all(r.lat - d, r.lat + d, r.lng - d * 1.5, r.lng + d * 1.5)
+    .filter(s => distKm(s.lat, s.lng, r.lat, r.lng) <= NEAR_KM);
+  // On réserve l'envoi (plusieurs processus peuvent tourner en même temps)
+  const targets = tx(() => cand.filter(s => q('UPDATE push SET last=? WHERE id=? AND (last IS NULL OR last<?)').run(now, s.id, now - NEAR_GAP).changes));
+  if (!targets.length) return;
+  const payload = JSON.stringify({ title: `${c.glyph} ${c.label} près de ta zone`, body: 'Signalé à l’instant. Ouvre Cortège pour voir où exactement.',
+    tag: 'near-' + r.cat, url: `/?at=${r.lat},${r.lng}`, vibrate: VIBES[r.cat] || [200, 100, 200] });
+  const dead = await pushSendAll(targets, payload);
+  console.log(`push danger : ${targets.length} envoi(s), ${dead} expiré(s)`);
+}
+const pushNearLater = r => setImmediate(() => pushNear(r).catch(e => console.error('push danger', e.message)));
+async function pushBroadcast(a) {
+  const targets = pushAll().filter(s => s.urg !== 0).filter(s => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8)).map(s => [s.id, s]);
+  if (!targets.length) return;
+  const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/', vibrate: [300, 100, 300, 100, 300] });
+  const dead = await pushSendAll(targets.map(([, s]) => s), payload);
+  console.log(`push : ${targets.length} envoi(s), ${dead} abonnement(s) expiré(s)`);
 }
 
 // ---- Import : manifestations de la carte participative du 17 octobre (réutilisation autorisée) ----
@@ -1058,7 +1159,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS] });
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1079,8 +1180,10 @@ const server = http.createServer(async (req, res) => {
         // limite par réseau : empêche de remplir la liste avec de faux abonnements
         if (!bump('push:' + clientHash(req), 'vote', 10, Date.now())) return 'rate';
         if (!q('SELECT 1 FROM push WHERE id=?').get(id) && pushCount() >= PUSH_MAX) return false;
-        q('INSERT OR REPLACE INTO push(id,e,k,a,lat,lng,t) VALUES(?,?,?,?,?,?,?)').run(id, endpoint, k, a,
-          hasZone ? Math.round(lat * 10) / 10 : null, hasZone ? Math.round(lng * 10) / 10 : null, Date.now());
+        const urg = b.urgent === false ? 0 : 1, near = b.near === true && hasZone ? 1 : 0;
+        q(`INSERT INTO push(id,e,k,a,lat,lng,t,urg,near) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET e=excluded.e, k=excluded.k, a=excluded.a,
+           lat=excluded.lat, lng=excluded.lng, t=excluded.t, urg=excluded.urg, near=excluded.near`).run(id, endpoint, k, a,
+          hasZone ? Math.round(lat * 10) / 10 : null, hasZone ? Math.round(lng * 10) / 10 : null, Date.now(), urg, near);
         return true;
       });
       if (out === 'rate') return send(res, 429, { error: 'Trop de demandes, réessaie plus tard.' });
@@ -1136,7 +1239,8 @@ const server = http.createServer(async (req, res) => {
       if (!isAdmin(req)) return send(res, 403, { error: 'Clé incorrecte.' });
       if (req.method === 'GET' && pathname === '/api/admin/orgas') {
         return send(res, 200, {
-          orgas: readOrgas().map(({ id, label, created, trial }) => ({ id, label, created, trial: trial === true, source: 'page', ...orgaStats(id) }))
+          orgas: readOrgas().map(({ id, label, created, trial, hash, invite }) => ({ id, label, created, trial: trial === true, source: 'page',
+            active: !!hash, invite: invite && invite.exp > Date.now() ? invite.exp : null, ...orgaStats(id) }))
             .concat(ORGAS.map(o => ({ id: null, label: o.label, created: null, trial: false, source: 'variable', ...orgaStats('env:' + o.label) }))),
         });
       }
@@ -1144,15 +1248,30 @@ const server = http.createServer(async (req, res) => {
         const b = await readJson(req);
         const label = String(b.label || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 60);
         if (label.length < 2) return send(res, 400, { error: 'Donne un nom à l’orga (il sera affiché sur ses annonces).' });
-        const key = crypto.randomBytes(18).toString('base64url');
+        // Invitation à usage unique (24 h) : la clé n'est créée que sur le téléphone de l'orga, au moment où elle scanne le QR code.
+        const token = crypto.randomBytes(18).toString('base64url');
         const out = withLock(() => {
           const list = readOrgas().slice();
           if (list.some(o => o.label.toLowerCase() === label.toLowerCase())) return null;
-          const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: sha(key), created: Date.now(), trial: true };
+          const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: null, created: Date.now(), trial: true, invite: { h: sha(token), exp: Date.now() + INVITE_MS } };
           list.push(o); writeOrgas(list); return o;
         });
         if (!out) return send(res, 409, { error: 'Une orga porte déjà ce nom.' });
-        return send(res, 201, { id: out.id, label: out.label, created: out.created, key });
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'invitation', { ref: out.id, detail: out.label });
+        return send(res, 201, { id: out.id, label: out.label, created: out.created, invite: token, exp: out.invite.exp });
+      }
+      // Nouvelle invitation pour une orga existante : l'ancienne clé est révoquée immédiatement
+      const reinv = pathname.match(/^\/api\/admin\/orgas\/([\w-]{1,16})\/invite$/);
+      if (req.method === 'POST' && reinv) {
+        const token = crypto.randomBytes(18).toString('base64url');
+        const o = withLock(() => {
+          const list = readOrgas().slice(), i = list.findIndex(x => x.id === reinv[1]);
+          if (i < 0) return null;
+          list[i] = { ...list[i], hash: null, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; writeOrgas(list); return list[i];
+        });
+        if (!o) return send(res, 404, { error: 'Orga introuvable.' });
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'nouvelle invitation (ancienne clé révoquée)', { ref: o.id, detail: o.label });
+        return send(res, 200, { id: o.id, label: o.label, invite: token, exp: o.invite.exp });
       }
       // --- Urgences : liste, suppression, purge, pause ---
       if (req.method === 'GET' && pathname === '/api/admin/reports') {
@@ -1206,6 +1325,55 @@ const server = http.createServer(async (req, res) => {
         rebuildAll();
         const n = list.length;
         return send(res, 200, { removed: n });
+      }
+      // Effacement d'urgence : toutes les traces liées aux personnes, d'un coup (signalements, journal, corbeille,
+      // empreintes, abonnements aux notifications, archive du digest), et nouvelle clé de hachage.
+      // On garde : les orgas, l'agenda public (sans empreinte), les réglages.
+      if (req.method === 'POST' && pathname === '/api/admin/wipe') {
+        const b = await readJson(req);
+        if (b.confirm !== 'EFFACER') return send(res, 400, { error: 'Tape EFFACER pour confirmer.' });
+        const n = tx(() => {
+          const n = q('DELETE FROM reports').run().changes;
+          for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'hidden', 'push', 'abuse']) q('DELETE FROM ' + t).run();
+          for (const e of listEvents()) if (e.dev) { delete e.dev; saveEvent(e); }
+          q("UPDATE events SET dev=NULL").run();
+          return n;
+        });
+        try { for (const f of fs.readdirSync(ARCHIVE_DIR)) fs.unlinkSync(path.join(ARCHIVE_DIR, f)); } catch {}
+        const rotated = (() => { try { return rotateSecret(); } catch { return false; } })();
+        try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.exec('VACUUM'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
+        rebuildAll();
+        console.log('effacement d’urgence effectué');
+        return send(res, 200, { removed: n, rotated });
+      }
+      // --- Tableau des abus (24 h) et mode manif renforcé ---
+      if (req.method === 'GET' && pathname === '/api/admin/abuse') {
+        const now = Date.now(), since = now - 24 * 60 * MIN;
+        const rows = q('SELECT t, kind, lat, lng FROM abuse WHERE t>? ORDER BY t').all(since);
+        const kinds = {}, hours = {}, zones = new Map();
+        for (const x of rows) {
+          kinds[x.kind] = (kinds[x.kind] || 0) + 1;
+          const h = Math.floor((now - x.t) / (60 * MIN)); // 0 = dernière heure
+          (hours[x.kind] ||= Array(24).fill(0))[Math.min(23, h)]++;
+          if (x.lat != null) {
+            const k = (Math.round(x.lat * 20) / 20).toFixed(2) + ',' + (Math.round(x.lng * 20) / 20).toFixed(2); // ≈ 5 km
+            const z = zones.get(k) || { lat: +k.split(',')[0], lng: +k.split(',')[1], n: 0, kinds: {} };
+            z.n++; z.kinds[x.kind] = (z.kinds[x.kind] || 0) + 1; zones.set(k, z);
+          }
+        }
+        const top = [...zones.values()].sort((a, b) => b.n - a.n).slice(0, 10);
+        for (const z of top.slice(0, 5)) { const d = await nominatim(`/reverse?format=jsonv2&zoom=10&lat=${z.lat}&lon=${z.lng}`); z.name = placeName(d && d.address) || null; }
+        return send(res, 200, { kinds, hours, zones: top, strict: strictUntil(now), paused: pausedUntil(now),
+          trusted: q('SELECT COUNT(*) n FROM devices WHERE COALESCE(good,0) - 2 * COALESCE(bad,0) >= ?').get(TRUST).n,
+          unreliable: q('SELECT COUNT(*) n FROM reports WHERE fl=-1 AND up=0 AND exp>?').get(now).n });
+      }
+      if (req.method === 'POST' && pathname === '/api/admin/strict') {
+        const b = await readJson(req);
+        const minutes = Math.min(Math.max(Number(b.minutes) || 0, 0), 24 * 60);
+        const until = minutes ? Date.now() + minutes * MIN : 0;
+        setMeta('strict', until);
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, until ? 'mode manif renforcé' : 'fin du mode renforcé', { detail: until ? minutes + ' min' : null });
+        return send(res, 200, { strict: until });
       }
       if (req.method === 'POST' && pathname === '/api/admin/pause') {
         const b = await readJson(req);
@@ -1309,13 +1477,13 @@ const server = http.createServer(async (req, res) => {
       const ipH = clientHash(req), dev = deviceHash(req);
       const result = tx(() => {
         const now = Date.now(), ttl = cat.ttl * MIN;
-        deviceAge(dev, now);
+        const age = deviceAge(dev, now), strict = strictUntil(now) > 0;
         // Heure où le signalement a été fait (file d'attente hors ligne). Jamais dans le futur ;
         // mentir dessus ne peut que raccourcir la vie du point.
         const t0 = Math.min(now, Number(b.t) || now);
         if (t0 + ttl <= now) return [410, { error: 'Signalement trop ancien, il n’a pas été publié.', stale: true }];
         if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
-        if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }];
+        if (!allow(dev, ipH, 'report', now)) { abuseOnce('signalements en rafale', dev, RATE.windowMs, { lat, lng }); return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }]; }
         const pos = { lat: round(lat), lng: round(lng) };
         // Un danger n'efface plus une zone calme voisine : le téléphone l'affiche « suspendue » tant que le danger est actif
         // (un faux danger ne peut donc plus faire disparaître une zone calme).
@@ -1327,7 +1495,7 @@ const server = http.createServer(async (req, res) => {
         const hit = nearby(cat.id, pos.lat, pos.lng, m.r, now)[0];
         if (hit) {
           const r = toReport(hit.r), self = r.voters.includes(dev);
-          if (!self) { r.voters.push(dev); r.up++; }
+          if (!self) { r.voters.push(dev); r.up++; firstConfirm(r); }
           // Preuve plus fraîche que les « Plus là » : on les efface
           if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; r.dw = 0; r.ct = 0; }
           if (m.move && t0 >= (r.last || r.t)) { r.lat = pos.lat; r.lng = pos.lng; }
@@ -1339,7 +1507,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         const cell = cellId(pos.lat, pos.lng);
-        if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND ip=? AND exp>?').get(cell, ipH, now).n >= MAX_PER_NET_ZONE)
+        if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND ip=? AND exp>?').get(cell, ipH, now).n >= (strict ? Math.ceil(MAX_PER_NET_ZONE / 2) : MAX_PER_NET_ZONE))
           return [429, { error: 'Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent.' }];
         if (q('SELECT COUNT(*) n FROM reports WHERE cell=? AND exp>?').get(cell, now).n >= MAX_PER_ZONE) {
           // Zone pleine : on fait de la place en retirant le plus ancien point que personne n'a confirmé ni vérifié
@@ -1350,7 +1518,18 @@ const server = http.createServer(async (req, res) => {
         if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
         const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note, notes: note ? [{ x: note, t: t0, d: dev }] : [],
           t: t0, last: t0, exp: t0 + ttl, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
+        // Fiabilité : téléphone fiable aujourd'hui, ou au contraire série suspecte près des zones calmes / téléphone neuf en mode renforcé
+        const trusted = devRep(dev) >= TRUST;
+        if (isDanger(cat.id)) {
+          const calms = nearby('calme', pos.lat, pos.lng, CALM_KILL_M, now).filter(x => !x.r.ct);
+          for (const x of calms) abuseLog('danger près zone calme', { lat: pos.lat, lng: pos.lng, dev, net: ipH, ref: x.r.id });
+          if (calms.length && !trusted && calmSeries(dev, ipH, now)) { r.fl = -1; abuseOnce('série de dangers près des zones calmes', dev, SERIES.win, { lat: pos.lat, lng: pos.lng }); }
+        }
+        if (!r.fl && strict && !trusted && age < CONTEST.newDev) r.fl = -1;
+        if (!r.fl && trusted) r.fl = 1;
         saveReport(r);
+        // Notification « danger près de toi » : seulement pour un téléphone qui n'est pas tout neuf (ou fiable), jamais pour un signalement non fiable
+        if (ALERT_CATS.has(cat.id) && r.fl !== -1 && (age >= CONTEST.newDev || trusted)) pushNearLater(r);
         return [201, publicView(r)];
       });
       return send(res, ...result);
@@ -1394,25 +1573,30 @@ const server = http.createServer(async (req, res) => {
         if (!r) return [404, { error: 'Signalement expiré.' }];
         if (r.voters.includes(dev)) return [409, { error: 'Déjà pris en compte.' }];
         if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop de votes, patiente un peu.' }];
-        const age = deviceAge(dev, now);
+        const age = deviceAge(dev, now), strict = strictUntil(now) > 0, trusted = devRep(dev) >= TRUST;
         r.voters.push(dev);
         if (b.v === 1) {
-          r.up++; r.last = now;
+          r.up++; r.last = now; firstConfirm(r);
           const ttl = CAT[r.cat].ttl * MIN;
           r.exp = Math.min(Math.max(r.exp, now + ttl), r.t + 4 * ttl); // prolonge, plafonné à 4× la durée de base
           if (r.ct && (r.dw || 0) < contestNeed(r)) r.ct = 0; // confirmé : plus contesté
         } else {
           // Un téléphone ou un réseau qui conteste beaucoup de points d'affilée n'est plus compté. On ne le lui dit pas.
-          const devOk = bump('dn:' + dev, 'vote', CONTEST.devBurst, now), netOk = bump('dnn:' + ipH, 'vote', CONTEST.netBurst, now);
-          if (!devOk || !netOk) { saveReport(r); return [200, { ...publicView(r), down: r.down + 1 }]; }
+          const k = strict ? 2 / 3 : 1;
+          const devOk = bump('dn:' + dev, 'vote', Math.ceil(CONTEST.devBurst * k), now), netOk = bump('dnn:' + ipH, 'vote', Math.ceil(CONTEST.netBurst * k), now);
+          if (!devOk || !netOk) { abuseOnce('« Plus là » en rafale', dev, RATE.windowMs, { lat: r.lat, lng: r.lng }); saveReport(r); return [200, { ...publicView(r), down: r.down + 1 }]; }
           const before = { ...r, voters: r.voters.slice(0, -1) };
           r.down++;
-          r.dw = (r.dw || 0) + (b.here === true ? CONTEST.near : 1) * (age >= CONTEST.newDev ? CONTEST.aged : 1);
+          const aged = age >= CONTEST.newDev;
+          // Poids : sur place ×2, identifiant pas tout neuf ×2, téléphone fiable +2 ; en mode renforcé un identifiant neuf ne compte pas
+          let w = (b.here === true ? CONTEST.near : 1) * (aged ? CONTEST.aged : 1) + (trusted ? 2 : 0);
+          if (strict && !aged && !trusted) w = 0;
+          r.dw = (r.dw || 0) + w;
           (r.downIps ||= []).push(ipH);
           // Un signalement vérifié par une orga ne peut pas être contesté par les votes.
           const nets = new Set(r.downIps).size, need = contestNeed(r);
           if (!r.ver && r.dw >= need && nets >= 2) {
-            if (!r.ct) { r.ct = now; snapshotContested(before, now); orgaLog(VOTES, 'contesté', { r, detail: nets + ' réseaux' }); }
+            if (!r.ct) { r.ct = now; snapshotContested(before, now); orgaLog(VOTES, 'contesté', { r, detail: nets + ' réseaux' }); repAdd(r.voters[0], 'bad'); abuseLog('point contesté', { lat: r.lat, lng: r.lng, ref: r.id }); }
             r.exp = Math.min(r.exp, now + (r.dw >= need + CONTEST.more && nets >= 3 ? CONTEST.short : CONTEST.soft));
           }
         }
@@ -1422,6 +1606,24 @@ const server = http.createServer(async (req, res) => {
       return send(res, ...result);
     }
 
+
+    // ---- Invitation d'orga : le jeton du QR code est échangé une seule fois contre une clé ----
+    if (req.method === 'POST' && pathname === '/api/invite') {
+      if (keyLocked(req)) return send(res, 429, { error: 'Trop d’essais, réessaie dans quelques minutes.' });
+      const b = await readJson(req);
+      const token = String(b.token || '');
+      if (!/^[\w-]{20,40}$/.test(token)) { keyFailed(req); return send(res, 400, { error: 'Invitation invalide.' }); }
+      const key = crypto.randomBytes(18).toString('base64url'), h = sha(token);
+      const o = withLock(() => {
+        const list = readOrgas().slice(), i = list.findIndex(x => x.invite && keyEq(x.invite.h, h) && x.invite.exp > Date.now());
+        if (i < 0) return null;
+        const { invite, ...rest } = list[i];
+        list[i] = { ...rest, hash: sha(key), activated: Date.now() }; writeOrgas(list); return list[i];
+      });
+      if (!o) { keyFailed(req); return send(res, 404, { error: 'Invitation expirée ou déjà utilisée. Demande-en une nouvelle.' }); }
+      orgaLog({ id: o.id, label: o.label }, 'invitation utilisée');
+      return send(res, 200, { key, label: o.label });
+    }
 
     // ---- Espace orga / legal team ----
     if (pathname.startsWith('/api/orga') || pathname.startsWith('/api/announcements') || /^\/api\/events\/[\w-]{1,16}$/.test(pathname)
@@ -1470,7 +1672,7 @@ const server = http.createServer(async (req, res) => {
         const out = tx(() => {
           const r = getReport(act[1], Date.now());
           if (!r) return [404, { error: 'Signalement expiré.' }];
-          if (act[2] === 'verify') { r.ver = orga.label; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
+          if (act[2] === 'verify') { if (!r.ver) repAdd(r.voters[0], 'good', 2); r.ver = orga.label; if (r.fl === -1) r.fl = 0; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
           // Période d'essai : « Retirer » compte comme deux « Plus là », sans retrait direct
           if (orga.trial) {
             r.down += 2; (r.downIps ||= []).push('o1:' + orga.id, 'o2:' + orga.id);

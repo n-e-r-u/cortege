@@ -69,6 +69,7 @@
 
 <div class="tools tools-left">
   <button class="round" id="btnAgenda" title="Prochaines mobilisations" aria-label="Prochaines mobilisations">📅</button>
+  <button class="round bell" id="btnNotif" title="Alertes sur ton téléphone" aria-label="Alertes et notifications" data-on="0">🔕</button>
   <a class="round kofi-tool" id="btnKofi" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer" title="Soutenir Cortège" aria-label="Soutenir Cortège sur Ko-fi"><img class="kofi-ico" src="/brand/kofi.png" alt="" width="30" height="24"></a>
   <button class="round" id="btnPrep" title="Bien se préparer" aria-label="Bien se préparer">🎒</button>
   <button class="round sos" id="btnSos" title="Interpellation : prévenir un proche" aria-label="Interpellation : prévenir un proche">SOS</button>
@@ -188,10 +189,7 @@
   <button class="secondary" id="btnPrefetch">Garder la zone hors ligne</button>
   <p class="fine" id="prefetchState"></p>
   <h3 class="group-title">Réglages</h3>
-  <label class="switch">
-    <input type="checkbox" id="optPush">
-    <span class="switch-txt"><b>Annonces urgentes même appli fermée</b><span id="pushHelp">Une notification quand une orga de ta zone publie une alerte urgente. Ta zone est arrondie à 10 km environ.</span></span>
-  </label>
+  <button class="secondary" id="btnNotifInfo">🔔 Alertes et notifications</button>
   <label class="switch">
     <input type="checkbox" id="optEco">
     <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
@@ -346,6 +344,26 @@
 </section>
 
 <!-- Bien se préparer -->
+<section class="sheet" id="sheetNotif" hidden aria-labelledby="ntTitle">
+  <div class="sheet-head">
+    <h2 id="ntTitle">Alertes sur ton téléphone</h2>
+    <button class="x" id="ntClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="hint" id="pushHelp">Une notification même quand l’appli est fermée. Le serveur ne connaît que ta zone, arrondie à environ 10 km, jamais ta position.</p>
+  <label class="switch">
+    <input type="checkbox" id="optPush">
+    <span class="switch-txt"><b>Annonces urgentes</b><span>Quand une orga de ta zone publie une alerte urgente (nasse annoncée, dispersion, legal team…).</span></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="optNear">
+    <span class="switch-txt"><b>Dangers signalés près de toi</b><span>Charge, nasse, lacrymo, canon à eau, sommations, BAC… signalés dans ta zone. Au plus une alerte toutes les 3 minutes.</span></span>
+  </label>
+  <h3 class="group-title">Reconnaître le danger aux vibrations</h3>
+  <p class="hint">Chaque danger a sa vibration, dans l’appli comme dans les notifications : pas besoin de sortir le téléphone.</p>
+  <ul class="vibes" id="vibeList"></ul>
+  <p class="fine" id="vibeNote">Les iPhone ne vibrent pas selon le type de danger (limite d’Apple). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications.</p>
+</section>
+
 <section class="sheet" id="sheetPrep" hidden aria-labelledby="prTitle">
   <div class="sheet-head">
     <h2 id="prTitle">Bien se préparer</h2>

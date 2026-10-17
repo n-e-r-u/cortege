@@ -21,7 +21,7 @@ Merci de ne pas tester d'attaque par saturation sur le site en ligne, de ne pas 
 ## Ce que l'appli protège
 
 - **La position** ne quitte jamais le téléphone. Le serveur ne reçoit que les signalements (arrondis à une dizaine de mètres) et les zones de carte demandées (carrés d'environ 5 km).
-- **Aucun compte, aucun cookie.** Pour l'anti-spam, les signalements et votes sont accompagnés d'un identifiant tiré au hasard sur le téléphone (lié à rien ni personne) ; le serveur n'en garde qu'une empreinte chiffrée, comme pour l'adresse IP (clé renouvelée toutes les 6 h), effacée avec le signalement ou l'événement. Pour les votes « Plus là », le serveur retient aussi depuis quand il voit cette empreinte (oublié 48 h après la dernière action), et le téléphone indique seulement s'il est près du point, sans envoyer sa position.
+- **Aucun compte, aucun cookie.** Pour l'anti-spam, les signalements et votes sont accompagnés d'un identifiant tiré au hasard sur le téléphone (lié à rien ni personne) ; le serveur n'en garde qu'une empreinte chiffrée, comme pour l'adresse IP (clé renouvelée toutes les 6 h), effacée avec le signalement ou l'événement. Pour les votes « Plus là », le serveur retient aussi depuis quand il voit cette empreinte (l'empreinte du téléphone change chaque jour, et tout est oublié au bout de 26 h), et le téléphone indique seulement s'il est près du point, sans envoyer sa position.
 - **Les tuiles de carte passent par le serveur** : les adresses IP des utilisateurs ne partent pas chez le fournisseur de carte.
 - **Le navigateur n'exécute que les scripts du site** (Content-Security-Policy), même si un texte piégé était un jour affiché.
 

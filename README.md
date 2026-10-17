@@ -1,5 +1,7 @@
 # Cortège
 
+[![Tests](https://github.com/n-e-r-u/cortege/actions/workflows/tests.yml/badge.svg)](https://github.com/n-e-r-u/cortege/actions/workflows/tests.yml)
+
 > La carte en direct des manifs, par [@neru](https://www.instagram.com/neru/) — [neru.tv](https://neru.tv). En ligne sur **[cortege.neru.tv](https://cortege.neru.tv)**.
 
 Carte collaborative en temps réel pour les manifs : on signale CRS, police, BAC, nasses, lacrymo, canon à eau, charges, street medics, legal team, presse, zones calmes, points d'eau, tête de cortège, rues bloquées. Fond de carte OpenStreetMap (Leaflet), application web installable (PWA), serveur Node sans aucune dépendance.
@@ -78,9 +80,12 @@ Une seule carte pour toute la France. Le téléphone s'ouvre sur la position de 
 ## Administration
 
 Avec la clé `ADMIN_KEY` :
-- **Orgas** : ajouter une orga (nom affiché sur ses annonces) → un lien d'accès unique s'affiche une seule fois, à transmettre par messagerie chiffrée. Supprimer une orga coupe son accès immédiatement. Seule l'empreinte des clés est stockée.
+- **Orgas** : ajouter une orga (nom affiché sur ses annonces) → une invitation à usage unique (QR code + lien, valable 24 h) s'affiche. L'orga la scanne : sa clé est créée à ce moment-là, sur son téléphone, et l'invitation ne sert plus. « Nouvelle invitation » coupe l'accès actuel et en crée un autre. Supprimer une orga coupe son accès immédiatement. Seule l'empreinte des clés est stockée.
 - **Période d'essai** : une nouvelle orga peut vérifier des signalements et publier des annonces d'info. « Retirer » y compte comme deux « Plus là », ses numéros de legal team et ses événements attendent ta validation, et les annonces urgentes sont réservées aux orgas confirmées. Bouton « Confirmer » dans l'onglet Orgas.
-- **Journal** : chaque action d'orga (vérification, retrait, annonce, événement) est enregistrée 60 jours, sans IP. Les points retirés restent une heure dans une corbeille, restaurables d'un clic. Des retraits en rafale bloquent temporairement le retrait pour l'orga concernée et apparaissent dans « À vérifier ».
+- **Journal** : chaque action d'orga (vérification, retrait, annonce, événement) est enregistrée 30 jours, sans IP. Les points retirés restent une heure dans une corbeille, restaurables d'un clic. Des retraits en rafale bloquent temporairement le retrait pour l'orga concernée et apparaissent dans « À vérifier ».
+- **Abus** : tableau des 24 dernières heures (points contestés, votes et signalements en rafale, dangers en série près des zones calmes), par heure et par zone. Gardé 48 h, sans empreinte au-delà d'une heure.
+- **Mode manif renforcé** (onglet Abus, 1 à 6 h) : limites divisées par deux et téléphones apparus depuis moins de 10 min sans poids, sans couper les signalements.
+- **Effacement d'urgence** (onglet Urgences) : efface d'un coup toutes les traces liées aux personnes et change la clé de hachage. Les orgas et l'agenda sont gardés.
 - **Digest** : bilan anonyme par jour.
 
 Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : annonces localisées (info ou urgente, 1 à 30 km, 30 min à 12 h), numéro de legal team (affiché dans « Mes droits » pour la zone), et sur chaque signalement « Vérifier » ou « Retirer (faux) ».
@@ -98,7 +103,7 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **Import du 17 octobre** : toutes les 15 min, le serveur importe dans l’agenda les manifestations et rassemblements annoncés sur la carte participative 17octobregiletjaune.net (réutilisation autorisée). Les blocages de stations, raffineries, péages ne sont pas importés. Un événement importé retiré par l'administration ne revient pas. Variables : `IMPORT_17OCT=0` pour couper, `IMPORT_17OCT_UNTIL` (défaut `2026-11-01`).
 - **SOS** : en cas d’interpellation, un SMS pré-rempli (heure, position, numéro de la legal team de la zone) part vers un proche choisi à l’avance. Le contact reste sur le téléphone, le SMS ne passe pas par le serveur.
 - **Économie de batterie** (réglage dans « ? ») : synchro toutes les 20 s, GPS moins précis, boussole coupée.
-- **Notifications** (réglage dans « ? ») : les annonces urgentes arrivent même appli fermée (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
+- **Notifications** (bouton 🔔) : les annonces urgentes et, en option, les dangers signalés près de toi (au plus une alerte toutes les 3 min) arrivent même appli fermée (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
 - **Annonces nationales** : réservées à l’administration. Les numéros de legal team sont permanents jusqu’à leur retrait.
 
 - **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie : c'est envoyé tout de suite. Une petite carte propose ensuite d'ajouter une précision (120 caractères).
@@ -108,13 +113,15 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 - **Danger contre zone calme** : un danger actif près d'une zone calme la suspend sans l'effacer. Elle s'affiche barrée avec un avertissement (ou masquée si le danger est confirmé) et revient d'elle-même quand le danger expire ou est contesté. Les personnes sur place peuvent démentir avec « C'est calme ici ». Une zone vérifiée par une orga résiste aux signalements isolés. On ne peut pas créer de zone calme là où un danger est signalé.
 - **File d'attente hors ligne** : sans réseau, le signalement est gardé sur le téléphone avec son heure et part dès que ça capte (en arrière-plan sur Android, à la réouverture sur iPhone). S'il a dépassé sa durée de vie entre-temps, il n'est pas publié.
 - **Durée de vie** par catégorie (10 min pour une charge, 15 pour la lacrymo, 45 pour un street medic, etc.). « Toujours là » prolonge (plafond : 4× la durée de base). Des « Plus là » en nombre suffisant le rendent « contesté » : il ne lui reste alors que quelques minutes, sauf nouvelle confirmation.
-- **Alerte de proximité** : vibration + bandeau si lacrymo, charge, nasse, canon à eau ou forces de l'ordre sont signalés à moins de 300 m.
+- **Alerte de proximité** : bandeau + vibration propre à chaque danger (charge, nasse, lacrymo, sommations…) quand il est signalé à moins de 300 m, pour le reconnaître sans sortir le téléphone. La légende est dans le menu 🔔.
+- **Fiabilité du jour** : un téléphone dont les signalements sont souvent confirmés par d'autres pèse un peu plus (ses points sont plus durs à contester, ses « Plus là » comptent davantage). Un téléphone qui signale des dangers près de plusieurs zones calmes à la suite voit ses signalements marqués « non confirmés » : ils ne suspendent plus les zones calmes et ne déclenchent pas de notification tant que personne ne les confirme. Tout repart de zéro chaque jour.
 - **Hors ligne** : l'interface est mise en cache, et les morceaux de carte déjà affichés restent sur le téléphone. Le préchargement d'une zone (« Garder la zone hors ligne ») est désactivé tant que les tuiles viennent d'OpenStreetMap, dont la politique l'interdit ; `TILE_PREFETCH=1` le réactive avec un fournisseur qui l'autorise.
 - **Vue nationale** : dézoomé, la carte affiche une bulle par région (nombre de signalements par famille) au lieu de tous les points ; les vrais points autour de toi restent chargés pour les alertes de proximité.
 
 ## Sécurité et vérification
 
 - Signaler une faille, ce que l'appli protège et ne protège pas : voir [`SECURITY.md`](SECURITY.md).
+- Tests automatiques (`npm test`, sans dépendance) : fusion, votes contestés, zones calmes, fiabilité, mode renforcé, invitations d'orga, effacement d'urgence, notifications, en-têtes de sécurité. Ils tournent sur GitHub à chaque modification (badge en haut de page).
 - Vérifier que l'appli en ligne est identique à ce dépôt : `node verifier.js https://cortege.neru.tv` (depuis une copie du dépôt). Version et empreintes déclarées : `/api/version`. Si tu remplaces le logo (`public/brand/logo.png`), ce fichier apparaîtra logiquement comme différent.
 
 ## Ce que le serveur sait et ne sait pas

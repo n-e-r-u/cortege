@@ -1,0 +1,21 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Vérification de la syntaxe
+        run: node --check server.js && node --check public/app.js && node --check public/sw.js && node --check verifier.js
+      - name: Tests du serveur
+        run: node --test test/*.test.js
