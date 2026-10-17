@@ -237,11 +237,32 @@ function orgaOf(req) {
   const env = ORGAS.find(o => keyEq(k, o.key));
   if (env) return { id: 'env:' + env.label, label: env.label, admin: false, trial: false };
   const h = sha(k);
-  const o = readOrgas().find(o => keyEq(h, o.hash));
-  // Période d'essai : seules les orgas créées depuis cette version la commencent (trial: true)
-  if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true };
+  // Une orga peut avoir plusieurs appareils : une clé principale (hash) et des clés d'appareils supplémentaires (keys)
+  const o = readOrgas().find(o => keyEq(h, o.hash) || (o.keys || []).some(x => keyEq(h, x)));
+  // Période d'essai : trial ; « parrainée » = invitée par une autre orga, surveillance renforcée jusqu'à sa confirmation
+  if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true, sponsored: o.sponsored === true && o.trial === true, by: o.by || null };
   keyFailed(req); return null;
 }
+// ---- Parrainage ----
+const SPONSOR = { quota: 3, quotaMs: 7 * 24 * 60 * 60_000, banMs: 30 * 24 * 60 * 60_000, readyDays: 7, readyActions: 10, removeMax: 5, annPerDay: 3 };
+const DEVICE_MS = 10 * 60_000, DEVICE_MAX = 5;
+const banUntil = id => { const v = Number(getMeta('ban:' + id) || 0); return v > Date.now() ? v : 0; };
+// Une parrainée est « prête à être confirmée » : assez ancienne, assez active, et rien de suspect dans son journal
+function orgaReady(o) {
+  const since = o.activated || o.created, days = Math.floor((Date.now() - since) / (24 * 60 * 60_000));
+  const rows = q('SELECT action, COUNT(*) n FROM orga_log WHERE oid=? GROUP BY action').all(o.id);
+  const actions = rows.filter(x => !/invitation|appareil/.test(x.action)).reduce((s, x) => s + x.n, 0);
+  const bursts = rows.filter(x => x.action === 'retrait bloqué (rafale)').reduce((s, x) => s + x.n, 0);
+  const restored = q("SELECT COUNT(*) n FROM orga_log WHERE action='restauré' AND detail=?").get('retiré par ' + o.label).n;
+  return { ready: !!o.hash && days >= SPONSOR.readyDays && actions >= SPONSOR.readyActions && !bursts && !restored, days, actions, bursts, restored };
+}
+// Toutes les orgas entrées grâce à celle-ci (filleules, filleules des filleules…)
+function descendants(list, id) {
+  const out = [], todo = [id];
+  while (todo.length) { const cur = todo.pop(); for (const o of list) if (o.by === cur && !out.includes(o.id)) { out.push(o.id); todo.push(o.id); } }
+  return out;
+}
+const newInvite = () => { const token = crypto.randomBytes(18).toString('base64url'); return { token, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; };
 const sleep = ms => { try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch { const e = Date.now() + ms; while (Date.now() < e); } };
 function withLock(fn, lockFile = LOCK_FILE) {
   let fd;
@@ -1239,8 +1260,10 @@ const server = http.createServer(async (req, res) => {
       if (!isAdmin(req)) return send(res, 403, { error: 'Clé incorrecte.' });
       if (req.method === 'GET' && pathname === '/api/admin/orgas') {
         return send(res, 200, {
-          orgas: readOrgas().map(({ id, label, created, trial, hash, invite }) => ({ id, label, created, trial: trial === true, source: 'page',
-            active: !!hash, invite: invite && invite.exp > Date.now() ? invite.exp : null, ...orgaStats(id) }))
+          orgas: (() => { const list = readOrgas(); return list.map(o => ({ id: o.id, label: o.label, created: o.created, trial: o.trial === true, source: 'page',
+            active: !!o.hash, invite: o.invite && o.invite.exp > Date.now() ? o.invite.exp : null, devices: o.hash ? 1 + (o.keys || []).length : 0,
+            by: o.by || null, byLabel: o.by ? (list.find(x => x.id === o.by)?.label || o.byLabel || 'orga supprimée') : null, sponsored: o.sponsored === true,
+            children: list.filter(x => x.by === o.id).length, ban: banUntil(o.id), ...(o.sponsored && o.trial ? { readiness: orgaReady(o) } : {}), ...orgaStats(o.id) })); })()
             .concat(ORGAS.map(o => ({ id: null, label: o.label, created: null, trial: false, source: 'variable', ...orgaStats('env:' + o.label) }))),
         });
       }
@@ -1260,6 +1283,21 @@ const server = http.createServer(async (req, res) => {
         orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'invitation', { ref: out.id, detail: out.label });
         return send(res, 201, { id: out.id, label: out.label, created: out.created, invite: token, exp: out.invite.exp });
       }
+      // Révocation pour abus : l'orga et toutes celles qu'elle a fait entrer ; sa marraine perd le droit d'inviter 30 jours
+      const revoke = pathname.match(/^\/api\/admin\/orgas\/([\w-]{1,16})\/revoke$/);
+      if (req.method === 'POST' && revoke) {
+        const out = withLock(() => {
+          const list = readOrgas(), root = list.find(x => x.id === revoke[1]);
+          if (!root) return null;
+          const ids = [root.id, ...descendants(list, root.id)];
+          writeOrgas(list.filter(x => !ids.includes(x.id)));
+          return { root, removed: list.filter(x => ids.includes(x.id)).map(x => x.label) };
+        });
+        if (!out) return send(res, 404, { error: 'Orga introuvable.' });
+        if (out.root.by) setMeta('ban:' + out.root.by, Date.now() + SPONSOR.banMs);
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'révoquée pour abus', { ref: out.root.id, detail: out.removed.join(', ') + (out.root.by ? ' · marraine privée d’invitations 30 j' : '') });
+        return send(res, 200, { removed: out.removed, sponsorBanned: !!out.root.by });
+      }
       // Nouvelle invitation pour une orga existante : l'ancienne clé est révoquée immédiatement
       const reinv = pathname.match(/^\/api\/admin\/orgas\/([\w-]{1,16})\/invite$/);
       if (req.method === 'POST' && reinv) {
@@ -1267,7 +1305,7 @@ const server = http.createServer(async (req, res) => {
         const o = withLock(() => {
           const list = readOrgas().slice(), i = list.findIndex(x => x.id === reinv[1]);
           if (i < 0) return null;
-          list[i] = { ...list[i], hash: null, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; writeOrgas(list); return list[i];
+          list[i] = { ...list[i], hash: null, keys: [], devInv: undefined, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; writeOrgas(list); return list[i];
         });
         if (!o) return send(res, 404, { error: 'Orga introuvable.' });
         orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'nouvelle invitation (ancienne clé révoquée)', { ref: o.id, detail: o.label });
@@ -1614,15 +1652,19 @@ const server = http.createServer(async (req, res) => {
       const token = String(b.token || '');
       if (!/^[\w-]{20,40}$/.test(token)) { keyFailed(req); return send(res, 400, { error: 'Invitation invalide.' }); }
       const key = crypto.randomBytes(18).toString('base64url'), h = sha(token);
+      let device = false;
       const o = withLock(() => {
-        const list = readOrgas().slice(), i = list.findIndex(x => x.invite && keyEq(x.invite.h, h) && x.invite.exp > Date.now());
-        if (i < 0) return null;
-        const { invite, ...rest } = list[i];
-        list[i] = { ...rest, hash: sha(key), activated: Date.now() }; writeOrgas(list); return list[i];
+        const list = readOrgas().slice(), now = Date.now();
+        let i = list.findIndex(x => x.invite && keyEq(x.invite.h, h) && x.invite.exp > now);
+        if (i >= 0) { const { invite, ...rest } = list[i]; list[i] = { ...rest, hash: sha(key), keys: [], activated: rest.activated || now }; writeOrgas(list); return list[i]; }
+        // Ajout d'un appareil : la clé principale reste valable, on en ajoute une (5 appareils au plus)
+        i = list.findIndex(x => x.devInv && keyEq(x.devInv.h, h) && x.devInv.exp > now);
+        if (i >= 0) { const { devInv, ...rest } = list[i]; list[i] = { ...rest, keys: [...(rest.keys || []), sha(key)].slice(-(DEVICE_MAX - 1)) }; writeOrgas(list); device = true; return list[i]; }
+        return null;
       });
-      if (!o) { keyFailed(req); return send(res, 404, { error: 'Invitation expirée ou déjà utilisée. Demande-en une nouvelle.' }); }
-      orgaLog({ id: o.id, label: o.label }, 'invitation utilisée');
-      return send(res, 200, { key, label: o.label });
+      if (!o) { keyFailed(req); return send(res, 404, { error: 'Lien expiré ou déjà utilisé. Demande-en un nouveau.' }); }
+      orgaLog({ id: o.id, label: o.label }, device ? 'appareil ajouté' : 'invitation utilisée');
+      return send(res, 200, { key, label: o.label, device });
     }
 
     // ---- Espace orga / legal team ----
@@ -1631,13 +1673,77 @@ const server = http.createServer(async (req, res) => {
       const orga = orgaOf(req);
       if (!orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
 
-      if (req.method === 'GET' && pathname === '/api/orga/me') return send(res, 200, { label: orga.label, admin: orga.admin, trial: orga.trial });
+      if (req.method === 'GET' && pathname === '/api/orga/me') {
+        const me = readOrgas().find(x => x.id === orga.id);
+        return send(res, 200, { label: orga.label, admin: orga.admin, trial: orga.trial, sponsored: !!orga.sponsored,
+          sponsor: me && me.by ? (readOrgas().find(x => x.id === me.by)?.label || me.byLabel || null) : null,
+          canInvite: !orga.trial && !banUntil(orga.id), ban: banUntil(orga.id), canAddDevice: !!me, devices: me && me.hash ? 1 + (me.keys || []).length : 0 });
+      }
+
+      // --- Parrainage : une orga confirmée invite une autre orga (QR code / lien à usage unique, 24 h) ---
+      if (req.method === 'POST' && pathname === '/api/orga/invite') {
+        if (orga.trial) return send(res, 400, { error: 'Seules les orgas confirmées peuvent inviter.' });
+        const ban = banUntil(orga.id);
+        if (ban) return send(res, 400, { error: 'Invitations suspendues jusqu’au ' + new Date(ban).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' (une orga que tu as invitée a été révoquée).' });
+        const b = await readJson(req);
+        const label = String(b.label || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 60);
+        if (label.length < 2) return send(res, 400, { error: 'Donne un nom à l’orga invitée.' });
+        const { token, invite } = newInvite();
+        const out = withLock(() => {
+          const list = readOrgas().slice();
+          if (list.some(o => o.label.toLowerCase() === label.toLowerCase())) return 'dup';
+          if (!orga.admin && list.filter(o => o.by === orga.id && o.created > Date.now() - SPONSOR.quotaMs).length >= SPONSOR.quota) return 'quota';
+          const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: null, created: Date.now(), trial: true, sponsored: true, by: orga.id, byLabel: orga.label, invite };
+          list.push(o); writeOrgas(list); return o;
+        });
+        if (out === 'dup') return send(res, 409, { error: 'Une orga porte déjà ce nom.' });
+        if (out === 'quota') return send(res, 429, { error: `${SPONSOR.quota} invitations par semaine au maximum. Réessaie dans quelques jours.` });
+        orgaLog(orga, 'invitation (parrainage)', { ref: out.id, detail: out.label });
+        return send(res, 201, { id: out.id, label: out.label, invite: token, exp: invite.exp });
+      }
+      if (req.method === 'GET' && pathname === '/api/orga/filleules') {
+        const list = readOrgas().filter(o => o.by === orga.id);
+        return send(res, 200, { orgas: list.map(o => ({ id: o.id, label: o.label, created: o.created, active: !!o.hash, trial: o.trial === true,
+          invite: o.invite && o.invite.exp > Date.now() ? o.invite.exp : null, ...orgaReady(o),
+          recent: q('SELECT t, action, cat FROM orga_log WHERE oid=? ORDER BY t DESC LIMIT 15').all(o.id) })) });
+      }
+      const fil = pathname.match(/^\/api\/orga\/filleules\/([\w-]{1,16})\/(confirm|invite)$/);
+      if (req.method === 'POST' && fil) {
+        const target = readOrgas().find(o => o.id === fil[1] && o.by === orga.id);
+        if (!target) return send(res, 404, { error: 'Orga introuvable parmi tes invitées.' });
+        if (fil[2] === 'confirm') {
+          if (!target.trial) return send(res, 400, { error: 'Déjà confirmée.' });
+          if (!orgaReady(target).ready) return send(res, 400, { error: 'Pas encore prête : il faut au moins 7 jours, 10 actions et aucun incident. Seul·e l’admin peut la confirmer avant.' });
+          withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], trial: false }; writeOrgas(l); } });
+          orgaLog(orga, 'confirmée (parrainage)', { ref: target.id, detail: target.label });
+          return send(res, 200, { id: target.id, trial: false });
+        }
+        // Nouvelle invitation (la filleule a perdu son accès) : l'ancien accès est coupé
+        const { token, invite } = newInvite();
+        withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], hash: null, keys: [], invite }; writeOrgas(l); } });
+        orgaLog(orga, 'nouvelle invitation (parrainage)', { ref: target.id, detail: target.label });
+        return send(res, 200, { id: target.id, label: target.label, invite: token, exp: invite.exp });
+      }
+      // --- Ajouter un appareil : lien à usage unique, 10 minutes, la clé actuelle reste valable ---
+      if (req.method === 'POST' && pathname === '/api/orga/device') {
+        const token = crypto.randomBytes(18).toString('base64url');
+        const ok = withLock(() => {
+          const l = readOrgas().slice(), i = l.findIndex(x => x.id === orga.id);
+          if (i < 0) return false;
+          l[i] = { ...l[i], devInv: { h: sha(token), exp: Date.now() + DEVICE_MS } }; writeOrgas(l); return true;
+        });
+        if (!ok) return send(res, 400, { error: 'Pas possible pour un accès défini par l’admin dans les réglages du serveur.' });
+        orgaLog(orga, 'lien d’appareil créé');
+        return send(res, 200, { invite: token, exp: Date.now() + DEVICE_MS });
+      }
 
       if (req.method === 'POST' && pathname === '/api/announcements') {
         const b = await readJson(req);
         // Période d'essai : pas d'annonce urgente (notification à toute la zone), numéro de legal team validé par l'admin
         if (orga.trial && b.kind !== 'legal' && b.level === 'urgent')
           return send(res, 400, { error: 'Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info ».' });
+        if (orga.sponsored && b.kind !== 'legal' && q("SELECT COUNT(*) n FROM orga_log WHERE oid=? AND action='annonce' AND t>?").get(orga.id, Date.now() - 24 * 60 * 60_000).n >= SPONSOR.annPerDay)
+          return send(res, 400, { error: `Orga parrainée : ${SPONSOR.annPerDay} annonces par jour au maximum jusqu’à ta confirmation.` });
         const out = createAnnouncement(b, orga.label, orga.admin, orga.trial && b.kind === 'legal');
         if (out[0] === 201) orgaLog(orga, out[1].pending ? 'legal team (en attente)' : 'annonce', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id,
           detail: (out[1].kind === 'legal' ? out[1].phone + ' ' : '') + (out[1].level === 'urgent' ? '[urgent] ' : '') + (out[1].national ? '[nationale] ' : '') + (out[1].text || '') });
@@ -1672,8 +1778,20 @@ const server = http.createServer(async (req, res) => {
         const out = tx(() => {
           const r = getReport(act[1], Date.now());
           if (!r) return [404, { error: 'Signalement expiré.' }];
+          // Parrainée : « Vérifier » vaut une confirmation forte, le point reste contestable
+          if (act[2] === 'verify' && orga.sponsored) {
+            const mark = 'o:' + orga.id;
+            if (r.voters.includes(mark)) return [409, { error: 'Déjà confirmé.' }];
+            r.voters.push(mark); r.up++; r.last = Date.now(); firstConfirm(r);
+            const ttl = CAT[r.cat].ttl * MIN; r.exp = Math.min(Math.max(r.exp, Date.now() + ttl), r.t + 4 * ttl);
+            saveReport(r); orgaLog(orga, 'confirmé (parrainée)', { r }); return [200, { ...publicView(r), sponsored: true }];
+          }
           if (act[2] === 'verify') { if (!r.ver) repAdd(r.voters[0], 'good', 2); r.ver = orga.label; if (r.fl === -1) r.fl = 0; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
           // Période d'essai : « Retirer » compte comme deux « Plus là », sans retrait direct
+          if (orga.sponsored && !bump('orm:' + orga.id, 'report', SPONSOR.removeMax, Date.now())) {
+            orgaLog(orga, 'retrait bloqué (rafale)', { r });
+            return [429, { error: 'Trop de retraits d’un coup : le retrait est suspendu quelques minutes.' }];
+          }
           if (orga.trial) {
             r.down += 2; (r.downIps ||= []).push('o1:' + orga.id, 'o2:' + orga.id);
             orgaLog(orga, 'retrait (essai)', { r });

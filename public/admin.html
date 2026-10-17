@@ -123,7 +123,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
           <button type="button" id="copyLink">Copier le lien</button>
           <button type="button" class="ghost" id="shareLink">Envoyer…</button>
         </div>
-        <p class="warn">L’orga scanne ce QR code avec l’appareil photo de son téléphone (ou ouvre le lien) : sa clé est créée à ce moment-là, sur son téléphone, et l’invitation ne sert plus. Si quelqu’un d’autre l’utilise avant elle, tu le verras (« activée » alors qu’elle n’a rien reçu) : crée une nouvelle invitation, l’accès précédent est coupé.</p>
+        <p class="warn">L’orga scanne ce QR code avec l’appareil photo de son téléphone (ou ouvre le lien) : sa clé est créée à ce moment-là, sur son téléphone, et l’invitation ne sert plus. Si quelqu’un d’autre l’utilise avant elle, tu le verras (« activée » alors qu’elle n’a rien reçu) : crée une nouvelle invitation, l’accès précédent est coupé. Préviens-la : son accès n’existe que sur le téléphone qui a ouvert l’invitation. Si elle vide les données du site ou change de téléphone, il faudra une nouvelle invitation (elle peut ajouter un deuxième appareil depuis son espace orga pour éviter ça).</p>
       </div>
     </section>
     <section class="card">
@@ -513,11 +513,21 @@ function renderOrgas({ orgas }) {
     const meta = document.createElement('div'); meta.className = 'meta';
     meta.textContent = (o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }))
       + (o.trial ? ' · EN PÉRIODE D’ESSAI' : ' · confirmée')
-      + (o.source === 'page' ? (o.active ? ' · activée' : o.invite ? ' · invitation en attente' : ' · invitation expirée') : '');
+      + (o.source === 'page' ? (o.active ? ' · activée' + (o.devices > 1 ? ' (' + o.devices + ' appareils)' : '') : o.invite ? ' · invitation en attente' : ' · invitation expirée') : '')
+      + (o.byLabel ? ' · parrainée par ' + o.byLabel : '') + (o.children ? ' · a invité ' + o.children + ' orga(s)' : '')
+      + (o.ban ? ' · ⛔ invitations suspendues jusqu’au ' + new Date(o.ban).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : '');
+    let extra = null;
+    if (o.readiness) {
+      const rd = document.createElement('div'); rd.className = 'meta';
+      const r = o.readiness;
+      rd.textContent = r.ready ? '✓ Prête à être confirmée (' + r.days + ' j, ' + r.actions + ' actions, aucun incident)' : `Surveillance renforcée : ${r.days} j, ${r.actions} action(s)` + (r.bursts ? `, ${r.bursts} rafale(s) bloquée(s)` : '') + (r.restored ? `, ${r.restored} retrait(s) annulé(s)` : '');
+      if (r.ready) rd.style.color = '#7ee2b0';
+      extra = rd;
+    }
     const stats = document.createElement('div'); stats.className = 'meta';
     const d = o.day || {};
     stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '');
-    info.append(name, meta, stats);
+    info.append(name, meta, ...(extra ? [extra] : []), stats);
     li.append(info);
     if (o.id) {
       const tr = document.createElement('button'); tr.className = o.trial ? '' : 'ghost'; tr.textContent = o.trial ? 'Confirmer' : 'Repasser en essai';
@@ -527,6 +537,10 @@ function renderOrgas({ orgas }) {
       inv.title = 'Crée un nouveau QR code et coupe l’accès actuel de cette orga';
       confirmBtn(inv, 'Confirmer (coupe l’accès actuel)', async () => { const r = await api('/api/admin/orgas/' + o.id + '/invite', { method: 'POST', body: '{}' }); showInvite(r); api('/api/admin/orgas').then(renderOrgas); });
       li.append(inv);
+      const rv = document.createElement('button'); rv.className = 'danger'; rv.textContent = o.children ? 'Révoquer pour abus (+ ses invitées)' : 'Révoquer pour abus';
+      rv.title = 'Coupe cette orga et toutes celles qu’elle a fait entrer. Sa marraine ne peut plus inviter pendant 30 jours.';
+      confirmBtn(rv, 'Confirmer la révocation', async () => { const r = await api('/api/admin/orgas/' + o.id + '/revoke', { method: 'POST', body: '{}' }); alertMsg('Révoquée(s) : ' + r.removed.join(', ') + (r.sponsorBanned ? '. Sa marraine ne peut plus inviter pendant 30 jours.' : '.')); api('/api/admin/orgas').then(renderOrgas); });
+      li.append(rv);
       const del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Supprimer';
       del.onclick = async () => {
         if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Confirmer'; return; }

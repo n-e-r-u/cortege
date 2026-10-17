@@ -302,6 +302,13 @@
     <button class="x" id="orClose" aria-label="Fermer">×</button>
   </div>
   <p class="hint">Tu publies en tant que <b id="orgaName">—</b>. L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier.</p>
+  <div class="access-warn" id="orgaAccessWarn">
+    <b>⚠ Ton accès orga n’existe que sur cet appareil.</b>
+    Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, «&nbsp;effacer l’historique&nbsp;»), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir.
+    <span id="orgaRecover">Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.</span>
+    <span><b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton plus bas).</span>
+  </div>
+  <p class="hint trial-note" id="orgaSponsored" hidden></p>
   <p class="hint trial-note" id="orgaTrial" hidden>Période d’essai : tu peux vérifier des signalements et publier des annonces d’info. « Retirer » compte comme deux « Plus là », et les numéros de legal team et événements sont affichés après validation par l’admin. Les annonces urgentes viendront une fois l’orga confirmée.</p>
   <form id="annForm" class="orga-form">
     <fieldset class="seg">
@@ -340,6 +347,26 @@
   <h3 class="group-title">Annonces actives dans la zone</h3>
   <ol id="annList" class="list"></ol>
   <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
+  <section id="orgaInviteBox" hidden>
+    <h3 class="group-title">Inviter une orga</h3>
+    <p class="hint">Tu peux faire entrer une orga que tu connais (3 par semaine). Elle restera « parrainée » et plus surveillée jusqu’à ce que toi ou l’admin la confirmiez. Si elle est révoquée pour abus, tu ne pourras plus inviter pendant 30 jours : n’invite que des personnes de confiance.</p>
+    <form class="controls-inline" id="orgaInviteForm">
+      <input id="orgaInviteLabel" maxlength="60" placeholder="Nom affiché, ex. : Legal Team Nîmes" aria-label="Nom de l’orga invitée">
+      <button class="secondary" type="submit">Créer l’invitation</button>
+    </form>
+    <h3 class="group-title">Mes orgas invitées</h3>
+    <ul class="filleules" id="filleulList"></ul>
+  </section>
+  <div class="invite-out" id="inviteOut" hidden>
+    <div id="inviteTitle"></div>
+    <div class="qr-invite" id="inviteQr"></div>
+    <code id="inviteUrl"></code>
+    <div class="row-btns"><button class="secondary" type="button" id="inviteCopy">Copier le lien</button><button class="secondary" type="button" id="inviteShare">Envoyer…</button></div>
+    <p class="fine" id="inviteFine"></p>
+  </div>
+  <h3 class="group-title">Mes appareils</h3>
+  <p class="hint" id="deviceState"></p>
+  <button class="secondary" id="btnAddDevice">Ajouter un appareil</button>
   <button class="ghost danger-link" id="btnOrgaLogout">Quitter le mode orga sur ce téléphone</button>
 </section>
 

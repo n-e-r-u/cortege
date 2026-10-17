@@ -12,6 +12,7 @@ const { DatabaseSync } = require('node:sqlite');
 const ADMIN = 'admin-key-for-tests-123';
 const ROOT = path.join(__dirname, '..');
 let srv, B, DIR, db, n = 0;
+const B_URL = p => B + p;
 
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-'));
@@ -150,6 +151,64 @@ test('notifications : choix enregistrés, alerte « danger près de toi » limit
   // L'envoi a été tenté : l'abonnement est marqué (ou supprimé si le service de test l'a refusé)
   const after = db.prepare('SELECT last FROM push').get();
   assert.ok(!after || after.last > 0, 'envoi tenté');
+});
+
+// Orga activée à partir d'une invitation (admin ou parrainage)
+const orgaFrom = async (token) => (await post('/api/invite', { token })).j;
+const asOrga = (key, p, body) => post(p, body, phone(), { 'x-orga-key': key });
+
+test('parrainage : seule une orga confirmée invite, la parrainée est plus surveillée', async () => {
+  const a = (await admin('/api/admin/orgas', { label: 'Marraine' })).j;
+  const A = await orgaFrom(a.invite);
+  assert.equal((await asOrga(A.key, '/api/orga/invite', { label: 'Filleule' })).s, 400, 'en essai : pas d’invitation');
+  await admin(`/api/admin/orgas/${a.id}/trial`, { trial: false });
+  const inv = await asOrga(A.key, '/api/orga/invite', { label: 'Filleule' });
+  assert.equal(inv.s, 201);
+  const B = await orgaFrom(inv.j.invite);
+  const me = await fetch(B.key ? B_URL('/api/orga/me') : '', { headers: { 'x-orga-key': B.key } }).then(r => r.json());
+  assert.equal(me.sponsored, true); assert.equal(me.sponsor, 'Marraine');
+  // « Vérifier » d'une parrainée : confirmation, pas de vérification
+  const r = (await post('/api/reports', { cat: 'police', ...place() })).j;
+  const v = await asOrga(B.key, `/api/reports/${r.id}/verify`, {});
+  assert.equal(v.j.ver, null); assert.equal(v.j.up, 1);
+  // pas encore prête : la marraine ne peut pas confirmer
+  const fl = await fetch(B_URL('/api/orga/filleules'), { headers: { 'x-orga-key': A.key } }).then(r => r.json());
+  assert.equal(fl.orgas.length, 1); assert.equal(fl.orgas[0].ready, false);
+  assert.equal((await asOrga(A.key, `/api/orga/filleules/${fl.orgas[0].id}/confirm`, {})).s, 400);
+  // 8 jours plus tard et 10 actions sans incident : prête, la marraine confirme
+  const f = DIR + '/d/orgas.json', list = JSON.parse(fs.readFileSync(f, 'utf8'));
+  const fi = list.find(o => o.label === 'Filleule'); fi.activated = Date.now() - 8 * 86400e3; fs.writeFileSync(f, JSON.stringify(list));
+  for (let i = 0; i < 10; i++) db.prepare("INSERT INTO orga_log(t,oid,orga,action) VALUES(?,?,?,'confirmé (parrainée)')").run(Date.now(), fi.id, 'Filleule');
+  assert.equal((await asOrga(A.key, `/api/orga/filleules/${fi.id}/confirm`, {})).s, 200, 'confirmée par la marraine');
+  const me2 = await fetch(B_URL('/api/orga/me'), { headers: { 'x-orga-key': B.key } }).then(r => r.json());
+  assert.equal(me2.trial, false); assert.equal(me2.sponsored, false);
+  // quota : 3 par semaine
+  await asOrga(A.key, '/api/orga/invite', { label: 'F2' }); await asOrga(A.key, '/api/orga/invite', { label: 'F3' });
+  assert.equal((await asOrga(A.key, '/api/orga/invite', { label: 'F4' })).s, 429);
+});
+
+test('appareils : un lien ajoute un appareil, une nouvelle invitation les coupe tous', async () => {
+  const o = (await admin('/api/admin/orgas', { label: 'Multi appareils' })).j;
+  const first = await orgaFrom(o.invite);
+  const dev = await asOrga(first.key, '/api/orga/device', {});
+  const second = await orgaFrom(dev.j.invite);
+  assert.equal(second.device, true);
+  for (const k of [first.key, second.key]) assert.equal((await fetch(B_URL('/api/orga/me'), { headers: { 'x-orga-key': k } })).status, 200);
+  assert.equal((await post('/api/invite', { token: dev.j.invite })).s, 404, 'lien d’appareil à usage unique');
+  await admin(`/api/admin/orgas/${o.id}/invite`, {});
+  for (const k of [first.key, second.key]) assert.equal((await fetch(B_URL('/api/orga/me'), { headers: { 'x-orga-key': k } })).status, 403);
+});
+
+test('révocation pour abus : l’orga et ses invitées sont coupées, la marraine ne peut plus inviter', async () => {
+  const a = (await admin('/api/admin/orgas', { label: 'Racine' })).j; const A = await orgaFrom(a.invite);
+  await admin(`/api/admin/orgas/${a.id}/trial`, { trial: false });
+  const bi = (await asOrga(A.key, '/api/orga/invite', { label: 'Niveau 1' })).j; const Bk = await orgaFrom(bi.invite);
+  await admin(`/api/admin/orgas/${bi.id}/trial`, { trial: false });
+  const ci = (await asOrga(Bk.key, '/api/orga/invite', { label: 'Niveau 2' })).j; const Ck = await orgaFrom(ci.invite);
+  const rv = await admin(`/api/admin/orgas/${bi.id}/revoke`, {});
+  assert.deepEqual(rv.j.removed.sort(), ['Niveau 1', 'Niveau 2']);
+  for (const k of [Bk.key, Ck.key]) assert.equal((await fetch(B_URL('/api/orga/me'), { headers: { 'x-orga-key': k } })).status, 403);
+  assert.equal((await asOrga(A.key, '/api/orga/invite', { label: 'Encore' })).s, 400, 'marraine suspendue');
 });
 
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {

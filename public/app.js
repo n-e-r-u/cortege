@@ -1079,6 +1079,7 @@
       try { localStorage.setItem('cortege-orga', params.get('orga')); } catch {}
       history.replaceState(null, '', location.pathname);
     }
+    var justJoined = false;
     // Invitation par QR code : échangée une seule fois contre une clé, créée et gardée sur ce téléphone
     if (params.has('invite')) {
       const token = params.get('invite');
@@ -1087,11 +1088,15 @@
         const res = await fetch('/api/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) { toast(body.error || 'Invitation impossible.'); }
-        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast('Bienvenue ' + body.label + ' : ton accès orga est activé sur ce téléphone'); }
+        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast(body.device ? 'Appareil ajouté à l’espace orga ' + body.label : 'Bienvenue ' + body.label + ' : ton accès orga est activé sur ce téléphone'); justJoined = !body.device; }
       } catch { toast('Pas de réseau : rouvre l’invitation quand ça capte.'); }
     }
     if (!orgaKey()) return;
-    try { const who = await orgaFetch('/api/orga/me'); setOrga(who); toast('Mode orga : ' + who.label); }
+    try {
+      const who = await orgaFetch('/api/orga/me'); setOrga(who);
+      // Premier accès : on ouvre l'espace orga pour que l'avertissement sur la perte d'accès soit lu
+      if (justJoined) setTimeout(() => $('#btnOrga').click(), 600); else toast('Mode orga : ' + who.label);
+    }
     catch (e) { toast(e.message); }
   })();
   async function orgaAction(id, action) {
@@ -1114,7 +1119,83 @@
           el('div', { class: 's' }, `${a.by} · ${a.national ? 'toute la France' : a.r + ' km'} · ${a.permanent ? 'permanent' : 'expire dans ' + left(a.exp)}`)), del));
     }
   }
-  $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); $('#sheetOrga').hidden = false; };
+  $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); renderOrgaExtras(); $('#sheetOrga').hidden = false; };
+  // ---- Parrainage, appareils, avertissement sur l'accès ----
+  const fmtExp = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  function showInviteOut(title, token, exp, fine) {
+    const url = location.origin + '/?invite=' + token;
+    $('#inviteTitle').textContent = title + ' (valable jusqu’au ' + fmtExp(exp) + ', une seule fois)';
+    $('#inviteUrl').textContent = url; $('#inviteQr').textContent = '';
+    if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#inviteQr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
+    $('#inviteFine').textContent = fine;
+    $('#inviteShare').hidden = !navigator.share;
+    $('#inviteOut').hidden = false; $('#inviteOut').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  $('#inviteCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#inviteUrl').textContent); toast('Lien copié'); } catch { toast($('#inviteUrl').textContent); } };
+  $('#inviteShare').onclick = () => navigator.share?.({ title: 'Cortège', text: 'Lien à usage unique, à ouvrir sur le bon appareil :', url: $('#inviteUrl').textContent }).catch(() => {});
+  async function renderOrgaExtras() {
+    $('#inviteOut').hidden = true;
+    let me = orga;
+    try { me = await orgaFetch('/api/orga/me'); setOrga({ ...orga, ...me }); } catch { return; }
+    $('#orgaRecover').textContent = me.sponsor
+      ? `Pour retrouver un accès, il faudra une nouvelle invitation de ${me.sponsor} ou de l’admin, ce qui coupe l’ancien.`
+      : 'Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.';
+    $('#orgaAccessWarn').hidden = !!me.admin;
+    $('#orgaSponsored').hidden = !me.sponsored;
+    if (me.sponsored) $('#orgaSponsored').textContent = `Orga parrainée par ${me.sponsor || 'une autre orga'} : surveillance renforcée jusqu’à ta confirmation. « Vérifier » compte comme une confirmation forte (le point reste contestable), 5 retraits par 5 minutes et 3 annonces par jour au maximum. Après 7 jours et 10 actions sans incident, ${me.sponsor || 'ta marraine'} ou l’admin pourra te confirmer.`;
+    // Appareils
+    $('#btnAddDevice').hidden = !me.canAddDevice;
+    $('#deviceState').textContent = me.canAddDevice
+      ? `${me.devices || 1} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès.`
+      : 'Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil.';
+    // Invitations
+    const box = $('#orgaInviteBox');
+    box.hidden = !!me.trial;
+    if (me.trial) return;
+    $('#orgaInviteForm').hidden = !me.canInvite;
+    renderFilleules(me);
+  }
+  async function renderFilleules(me) {
+    const ul = $('#filleulList'); ul.textContent = '';
+    if (me && me.ban) ul.append(el('li', {}, '⛔ Invitations suspendues jusqu’au ' + fmtExp(me.ban) + ' : une orga que tu as invitée a été révoquée pour abus.'));
+    let d; try { d = await orgaFetch('/api/orga/filleules'); } catch (e) { return; }
+    if (!d.orgas.length && !(me && me.ban)) { ul.append(el('li', { class: 'st' }, 'Aucune orga invitée pour l’instant.')); return; }
+    for (const o of d.orgas) {
+      const status = !o.trial ? '✓ confirmée' : !o.active ? (o.invite ? 'invitation en attente' : 'invitation expirée') : o.ready ? 'prête à être confirmée' : `parrainée · ${o.days} j · ${o.actions} action(s)`;
+      const li = el('li', {}, el('b', {}, o.label), el('span', { class: o.ready && o.trial ? 'ready' : 'st' }, status
+        + (o.trial && o.active && !o.ready ? ` (il faut 7 j et 10 actions${o.bursts || o.restored ? ', et aucun incident : ' + (o.bursts ? o.bursts + ' rafale(s) bloquée(s) ' : '') + (o.restored ? o.restored + ' retrait(s) annulé(s) par l’admin' : '') : ''})` : '')));
+      if (o.recent.length) {
+        const det = el('details', {}, el('summary', {}, 'Dernières actions'));
+        for (const x of o.recent) det.append(el('div', {}, new Date(x.t).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' · ' + x.action + (x.cat && CAT[x.cat] ? ' ' + CAT[x.cat].glyph : '')));
+        li.append(det);
+      }
+      const btns = el('div', { class: 'row-btns' });
+      if (o.trial && o.ready) {
+        const c = el('button', { class: 'secondary' }, 'Confirmer cette orga');
+        c.onclick = async () => { try { await orgaFetch(`/api/orga/filleules/${o.id}/confirm`, { method: 'POST', body: '{}' }); toast(o.label + ' est confirmée'); renderFilleules(me); } catch (e) { toast(e.message); } };
+        btns.append(c);
+      }
+      const inv = el('button', { class: 'secondary' }, o.active ? 'Nouvelle invitation (accès perdu)' : 'Nouvelle invitation');
+      inv.onclick = async () => {
+        if (o.active && !inv.dataset.armed) { inv.dataset.armed = '1'; inv.textContent = 'Confirmer : son accès actuel sera coupé'; return; }
+        try { const r = await orgaFetch(`/api/orga/filleules/${o.id}/invite`, { method: 'POST', body: '{}' }); showInviteOut('Invitation pour ' + r.label, r.invite, r.exp, 'Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé.'); renderFilleules(me); } catch (e) { toast(e.message); }
+      };
+      btns.append(inv); li.append(btns); ul.append(li);
+    }
+  }
+  $('#orgaInviteForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    try {
+      const r = await orgaFetch('/api/orga/invite', { method: 'POST', body: JSON.stringify({ label: $('#orgaInviteLabel').value }) });
+      $('#orgaInviteLabel').value = '';
+      showInviteOut('Invitation pour ' + r.label, r.invite, r.exp, 'L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.');
+      renderFilleules(orga);
+    } catch (err) { toast(err.message); }
+  });
+  $('#btnAddDevice').onclick = async () => {
+    try { const r = await orgaFetch('/api/orga/device', { method: 'POST', body: '{}' }); showInviteOut('Ajouter un appareil', r.invite, r.exp, 'Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga.'); }
+    catch (e) { toast(e.message); }
+  };
   $('#orClose').onclick = () => closeSheets();
   document.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', () => {
     const legal = document.querySelector('input[name="kind"]:checked').value === 'legal';
@@ -1140,7 +1221,11 @@
       etag = null; sync();
     } catch (err) { toast(err.message); }
   });
-  $('#btnOrgaLogout').onclick = () => { try { localStorage.removeItem('cortege-orga'); } catch {} setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone'); };
+  $('#btnOrgaLogout').onclick = () => {
+    const b = $('#btnOrgaLogout');
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)'; setTimeout(() => { delete b.dataset.armed; b.textContent = 'Quitter le mode orga sur ce téléphone'; }, 6000); return; }
+    try { localStorage.removeItem('cortege-orga'); } catch {} setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone');
+  };
 
   // ---- Agenda : manifs, blocus, rassemblements, AG ----
   const EVT = Object.fromEntries((cfg.eventTypes || []).map(t => [t.id, t]));

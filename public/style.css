@@ -410,3 +410,21 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .vibes li small { color: var(--muted); display: block; font-size: 12px; }
 .vibes button { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: inherit; font-size: 12px; font-weight: 600; }
 .pop-fiable { margin-top: 6px; font-size: 12px; color: #7ee2b0; }
+
+/* Espace orga : avertissement d'accès, invitations, appareils */
+.access-warn { margin: 10px 0; padding: 12px 14px; border: 1px solid #f5a524; border-radius: 12px; background: rgba(245,165,36,.08); font-size: 13px; line-height: 1.45; display: grid; gap: 6px; }
+.controls-inline { display: flex; gap: 8px; }
+.controls-inline input { flex: 1; min-width: 0; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: inherit; padding: 0 12px; font-size: 15px; }
+.controls-inline .secondary { width: auto; padding: 0 14px; margin: 0; }
+.filleules { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 8px; }
+.filleules li { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface-2); font-size: 13px; display: grid; gap: 6px; }
+.filleules .st { color: var(--muted); }
+.filleules .ready { color: #7ee2b0; font-weight: 600; }
+.filleules details { color: var(--muted); font-size: 12px; }
+.filleules .row-btns button { height: 34px; font-size: 12px; }
+.invite-out { margin: 12px 0; padding: 12px; border: 1px solid var(--accent); border-radius: 12px; display: grid; gap: 8px; }
+.invite-out code { font-size: 11px; word-break: break-all; color: var(--muted); }
+.qr-invite { width: 220px; max-width: 70%; background: #fff; border-radius: 10px; padding: 6px; justify-self: center; }
+.qr-invite svg { width: 100%; height: auto; display: block; }
+.row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.row-btns .secondary, .row-btns button { flex: 1; margin: 0; }
