@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/n-e-r-u/cortege/actions/workflows/tests.yml/badge.svg)](https://github.com/n-e-r-u/cortege/actions/workflows/tests.yml)
 
-> La carte en direct des manifs, par [@neru](https://www.instagram.com/neru/) — [neru.tv](https://neru.tv). En ligne sur **[cortege.neru.tv](https://cortege.neru.tv)**.
+> Carte collaborative des manifestations, en temps réel. Logiciel libre à héberger soi-même.
 
 Carte collaborative en temps réel pour les manifs : on signale CRS, police, BAC, nasses, lacrymo, canon à eau, charges, street medics, legal team, presse, zones calmes, points d'eau, tête de cortège, rues bloquées. Fond de carte OpenStreetMap (Leaflet), application web installable (PWA), serveur Node sans aucune dépendance.
 
@@ -14,7 +14,7 @@ node server.js            # Node 22.13+ (24 conseillé) ; ouvre http://localhost
 
 Variables d'environnement :
 
-| Variable | Défaut | Rôle |
+| Variable | Défaut ou exemple | Rôle |
 |---|---|---|
 | `PORT` | `8080` | Port d'écoute |
 | `EVENT_NAME` | `Carte des mobilisations` | Texte sous le logo (ex. « Mobilisation du 17 octobre ») |
@@ -25,16 +25,16 @@ Variables d'environnement :
 | `HOST_INFO` | vide | Coordonnées complètes de l'hébergeur pour les mentions légales |
 | `SOURCE_URL` | vide | Lien du dépôt GitHub (affiché dans les mentions légales) |
 | `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » |
-| `ARCHIVE_DAYS` | `60` | Durée de conservation de l'archive anonyme |
+| `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme et du journal des orgas (jours) |
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel |
-| `BRAND_HANDLE` | `neru` | Pseudo affiché (« Cortège par @neru ») |
-| `BRAND_INSTAGRAM` | `https://www.instagram.com/neru/` | Lien du logo et de la carte « Suivre » |
-| `BRAND_KOFI` | `https://ko-fi.com/neru` | Bouton « Soutenir Cortège » (vide = masqué) |
+| `BRAND_HANDLE` | `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») |
+| `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » |
+| `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
-| `PUBLIC_URL` | `https://cortege.neru.tv` | Adresse publique (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
+| `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 
 ## Logo
 
@@ -42,13 +42,13 @@ Dépose ton logo en `public/brand/logo.png` (carré, 512×512 conseillé). Il s'
 
 ## Mettre en ligne
 
-### Hébergement cPanel (o2switch et similaires)
+### Hébergement mutualisé avec cPanel (Passenger)
 
-1. cPanel › **Setup Node.js App** › Create Application : **Node 24** (22.13 minimum), mode Production, racine `cortege`, URL `cortege.neru.tv`, fichier de démarrage `server.js`.
+1. cPanel › **Setup Node.js App** › Create Application : **Node 24** (22.13 minimum), mode Production, racine `cortege`, URL de ton (sous-)domaine, fichier de démarrage `server.js`.
 2. Envoie le contenu du zip dans `~/cortege` (Gestionnaire de fichiers › Upload › Extraire).
 3. Variables d'environnement dans le même écran (voir tableau), puis **Restart**.
 4. Domaines › active **Forcer la redirection HTTPS** pour le sous-domaine.
-5. Vérifie `https://cortege.neru.tv/api/health` : `storageWritable` et `ipHeaderSeen` doivent valoir `true`.
+5. Vérifie `https://carte.exemple.org/api/health` : `storageWritable` et `ipHeaderSeen` doivent valoir `true`.
 
 Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jour des fichiers : bouton **Restart**. Les téléphones qui ont l'appli ouverte détectent la nouvelle version dans les secondes qui suivent et se rechargent tout seuls, au même endroit de la carte. Si quelqu'un est en train de signaler ou d'écrire, un bandeau s'affiche et la mise à jour attend qu'il ait fini.
 
@@ -122,7 +122,7 @@ Onglet Digest de l'administration : total du jour, par type (avec l'heure du pre
 
 - Signaler une faille, ce que l'appli protège et ne protège pas : voir [`SECURITY.md`](SECURITY.md).
 - Tests automatiques (`npm test`, sans dépendance) : fusion, votes contestés, zones calmes, fiabilité, mode renforcé, invitations d'orga, effacement d'urgence, notifications, en-têtes de sécurité. Ils tournent sur GitHub à chaque modification (badge en haut de page).
-- Vérifier que l'appli en ligne est identique à ce dépôt : `node verifier.js https://cortege.neru.tv` (depuis une copie du dépôt). Version et empreintes déclarées : `/api/version`. Si tu remplaces le logo (`public/brand/logo.png`), ce fichier apparaîtra logiquement comme différent.
+- Vérifier que l'appli en ligne est identique à ce dépôt : `node verifier.js https://carte.exemple.org` (depuis une copie du dépôt, avec l'adresse de l'instance à vérifier). Version et empreintes déclarées : `/api/version`. Si tu remplaces le logo (`public/brand/logo.png`), ce fichier apparaîtra logiquement comme différent.
 
 ## Ce que le serveur sait et ne sait pas
 

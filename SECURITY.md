@@ -37,7 +37,7 @@ Le code qui tourne sur les téléphones peut être comparé à ce dépôt :
 
 ```bash
 git clone https://github.com/n-e-r-u/cortege && cd cortege
-node verifier.js https://cortege.neru.tv
+node verifier.js https://adresse-de-l-instance
 ```
 
 Le script retélécharge chaque fichier servi par le site et compare son empreinte SHA-256 avec celle du dépôt. L'adresse `/api/version` affiche aussi la version en ligne et les empreintes déclarées.
