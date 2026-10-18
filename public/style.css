@@ -428,3 +428,7 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .qr-invite svg { width: 100%; height: auto; display: block; }
 .row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 .row-btns .secondary, .row-btns button { flex: 1; margin: 0; }
+
+/* Réseau faible / hors ligne : âge de ce qui est affiché */
+.net-bar { pointer-events: auto; align-self: center; padding: 7px 14px; border-radius: 999px; background: rgba(26,26,30,.92); border: 1px solid #f5a524; color: #ffcf7a; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+.net-bar.stale { border-color: var(--fdo); color: #ff9a9d; }

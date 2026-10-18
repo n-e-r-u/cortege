@@ -221,6 +221,15 @@ test('digest : les signalements retirés restent comptés, avec leur devenir', a
   assert.ok(!JSON.stringify(d).includes(r.id), 'aucun identifiant de signalement');
 });
 
+test('réseau faible : un seul fichier compact par région, publié même vide', async () => {
+  const empty = await fetch(B + '/live/p/45_5.json').then(r => r.json());
+  assert.deepEqual(empty, { r: [] });
+  const r = (await post('/api/reports', { cat: 'canon', lat: 47.2184, lng: -1.5536 })).j;
+  await new Promise(x => setTimeout(x, 1600));
+  const pf = await fetch(B + '/live/p/47_-2.json').then(x => x.json());
+  assert.ok(pf.r.some(x => x.id === r.id), 'le point est dans le fichier de sa région');
+});
+
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
   const before = fs.readFileSync(DIR + '/d/secret', 'utf8');

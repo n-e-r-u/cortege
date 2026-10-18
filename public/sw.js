@@ -1,5 +1,5 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v28', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v30', TILES = 'cortege-tiles-v1';
 const ASSETS = ['/', '/style.css', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/favicon.png', '/brand/logo.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
@@ -12,10 +12,11 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/live/')) return;
 
   if (url.pathname.startsWith('/tiles/')) {
-    // Tuiles OSM : cache d'abord
+    // Tuiles OSM : cache d'abord. Réseau faible : uniquement le cache, la bande passante va aux signalements.
     e.respondWith(caches.open(TILES).then(async c => {
       const hit = await c.match(e.request);
       if (hit) return hit;
+      if (lite) return new Response('', { status: 504, statusText: 'mode léger' });
       const res = await fetch(e.request);
       if (res.ok) c.put(e.request, res.clone());
       return res;
@@ -29,14 +30,35 @@ self.addEventListener('fetch', e => {
   }).catch(() => caches.match(e.request).then(r => r || caches.match('/'))));
 });
 
-// Notification d'annonce urgente (le contenu arrive chiffré, seul ce téléphone peut le lire)
+// Mode léger (réseau faible), décidé par l'appli
+let lite = false;
+self.addEventListener('message', e => { if (e.data && e.data.type === 'lite') lite = !!e.data.on; });
+const putData = (key, obj) => caches.open('cortege-data').then(c => c.put(key, new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } })));
+
+// Notification (annonce urgente ou danger près de toi). Le contenu arrive chiffré, seul ce téléphone peut le lire.
+// Elle transporte aussi les derniers signalements de la zone : gardés pour que la carte soit à jour à l'ouverture, même sans réseau.
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Cortège', {
+  const keep = d.d && Array.isArray(d.d.r) ? putData('/__push', d.d).then(async () => {
+    for (const c of await self.clients.matchAll({ type: 'window' })) c.postMessage({ type: 'push-data' });
+  }).catch(() => {}) : Promise.resolve();
+  e.waitUntil(keep.then(() => self.registration.showNotification(d.title || 'Cortège', {
     body: d.body || 'Nouvelle annonce urgente', tag: d.tag || 'cortege', renotify: true,
     icon: '/icon-192.png', badge: '/favicon.png', vibrate: Array.isArray(d.vibrate) ? d.vibrate.slice(0, 12) : [300, 100, 300, 100, 300], data: { url: d.url || '/' },
-  }));
+  })));
+});
+
+// Mise à jour en arrière-plan (Chrome Android, appli installée) : Chrome décide du rythme, quelques fois par jour.
+// Sert à garder à jour l'interface, l'agenda et les annonces (numéros de legal team) pour le hors-ligne.
+self.addEventListener('periodicsync', e => {
+  if (e.tag !== 'cortege-refresh') return;
+  e.waitUntil((async () => {
+    try { const c = await caches.open(SHELL); await c.addAll(ASSETS); } catch {}
+    for (const u of ['/live/events.json', '/live/ann.json']) {
+      try { const r = await fetch(u, { cache: 'no-cache' }); if (r.ok) await putData(u, await r.json()); } catch {}
+    }
+  })());
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();

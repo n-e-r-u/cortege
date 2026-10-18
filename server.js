@@ -678,11 +678,29 @@ function pushOne(sub, payload) {
     req.end(body);
   });
 }
+// Réseau saturé : chaque notification transporte aussi les signalements actifs autour de la zone de l'abonné·e
+// (format compact, ≈ 3 Ko au plus). Le téléphone les garde, même appli fermée : la carte est à jour à l'ouverture.
+// Ligne : [id, catégorie, lat, lng, début, dernière confirmation, fin, confirmations, drapeaux (1 vérifié, 2 contesté, 4 fiable, 8 non fiable)]
+function pushData(lat, lng, now = Date.now()) {
+  if (lat == null) return null;
+  const d = 0.12, out = [];
+  let size = 40;
+  for (const r of q('SELECT id, cat, lat, lng, t, last, exp, up, ver, ct, fl FROM reports WHERE exp>? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ? ORDER BY t DESC LIMIT 200')
+    .all(now, lat - d, lat + d, lng - d * 1.5, lng + d * 1.5)) {
+    const row = [r.id, r.cat, r.lat, r.lng, Math.round(r.t / 1000), Math.round((r.last || r.t) / 1000), Math.round(r.exp / 1000), r.up || 0,
+      (r.ver ? 1 : 0) | (r.ct ? 2 : 0) | (r.fl === 1 ? 4 : 0) | (r.fl === -1 && !r.up ? 8 : 0)];
+    size += JSON.stringify(row).length + 1;
+    if (size > 2800) break;
+    out.push(row);
+  }
+  return { at: Math.round(now / 1000), lat, lng, r: out };
+}
 async function pushSendAll(targets, payload) {
   const dead = [];
+  const base = JSON.parse(payload);
   for (let i = 0; i < targets.length; i += 20) {
     const batch = targets.slice(i, i + 20);
-    const codes = await Promise.all(batch.map(s => pushOne(s, payload)));
+    const codes = await Promise.all(batch.map(s => pushOne(s, JSON.stringify({ ...base, d: pushData(s.lat, s.lng) }))));
     codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(batch[j].id); });
   }
   if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
@@ -843,6 +861,7 @@ const cellId = (lat, lng) => `${Math.floor(lat / CELL)}_${Math.floor(lng / CELL)
 const regionOfCell = c => { const [i, j] = c.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
 fs.mkdirSync(path.join(LIVE_DIR, 'c'), { recursive: true });
 fs.mkdirSync(path.join(LIVE_DIR, 'r'), { recursive: true });
+fs.mkdirSync(path.join(LIVE_DIR, 'p'), { recursive: true }); // mode « réseau faible » : tous les points d'une région en un seul fichier
 // En-têtes pour Apache (ignorés ailleurs) : revalidation courte, pas de listing.
 try {
   fs.writeFileSync(path.join(LIVE_DIR, '.htaccess'), [
@@ -880,6 +899,10 @@ function writeRegion(rg) {
   const f = path.join(LIVE_DIR, 'r', rg + '.json');
   // Une région vide reste publiée (fichier vide) : sinon Apache ne trouve rien et chaque téléphone de la zone réveille Node.
   writeIfChanged(f, JSON.stringify({ c: Object.fromEntries(rows.map(x => [x.cell, x.h])) }));
+  // Réseau faible : une seule requête pour tous les signalements de la région (≈ 100 km), compressée par Apache
+  const [a, b] = rg.split('_').map(Number), now = Date.now();
+  const pts = q('SELECT * FROM reports WHERE exp>? AND lat>=? AND lat<? AND lng>=? AND lng<? ORDER BY t DESC LIMIT 600').all(now, a, a + 1, b, b + 1).map(publicView);
+  writeIfChanged(path.join(LIVE_DIR, 'p', rg + '.json'), JSON.stringify({ r: pts }));
 }
 // Vue nationale : par région d'environ 100 km, le nombre de signalements par famille et leur position moyenne
 function writeNational(now) {
@@ -966,6 +989,8 @@ function ensureRegions() {
         for (let j = Math.floor(lo1); j <= Math.floor(lo2); j++) {
           const f = path.join(LIVE_DIR, 'r', `${i}_${j}.json`);
           if (!fs.existsSync(f)) writeAtomic(f, '{"c":{}}');
+          const pf = path.join(LIVE_DIR, 'p', `${i}_${j}.json`);
+          if (!fs.existsSync(pf)) writeAtomic(pf, '{"r":[]}');
         }
   } catch (e) { console.error('régions', e.message); }
 }
@@ -1834,12 +1859,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Fichiers live/ : servis par Apache sur cPanel ; Node ne les sert que s'il est seul (VPS, local).
-    const live = pathname.match(/^\/live\/((?:[cr]\/)?[\w-]{1,40}\.json)$/);
+    const live = pathname.match(/^\/live\/((?:[crp]\/)?[\w-]{1,40}\.json)$/);
     if (req.method === 'GET' && live) {
       const f = path.join(LIVE_DIR, live[1]);
       if ((live[1] === 'index.json' || live[1] === 'g.json') && !fs.existsSync(f)) try { rebuildAll(); } catch {}
       fs.readFile(f, (err, buf) => {
-        if (err) return send(res, 200, live[1].startsWith('c/') ? { r: [] } : live[1].startsWith('r/') ? { c: {} } : {}, { 'Cache-Control': 'no-cache' });
+        if (err) return send(res, 200, live[1].startsWith('c/') || live[1].startsWith('p/') ? { r: [] } : live[1].startsWith('r/') ? { c: {} } : {}, { 'Cache-Control': 'no-cache' });
         const etag = '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"';
         if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag, 'Cache-Control': 'no-cache' }); return res.end(); }
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', ETag: etag }); res.end(buf);

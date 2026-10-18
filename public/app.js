@@ -22,7 +22,19 @@
     }
     return d;
   })();
-  const cfg = await fetch('/api/config').then(r => r.json());
+  // Réglages du serveur : gardés sur le téléphone pour que l'appli s'ouvre aussi sans réseau
+  const cfg = await (async () => {
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 8000);
+    try {
+      const c = await fetch('/api/config', { signal: ac.signal }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+      try { localStorage.setItem('cortege-config', JSON.stringify(c)); } catch {}
+      return c;
+    } catch (e) {
+      let c = null; try { c = JSON.parse(localStorage.getItem('cortege-config') || 'null'); } catch {}
+      if (c) return c;
+      throw e;
+    } finally { clearTimeout(to); }
+  })();
   const CAT = Object.fromEntries(cfg.categories.map(c => [c.id, c]));
   const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
@@ -333,7 +345,38 @@
   const cellCache = new Map();          // case -> { h, r }
   let allCache = { h: null, r: [] }, annCache = { h: null, a: [] };
   let mode = null, knownCells = new Set(), useApi = false, failures = 0;
-  const getJ = url => fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw Object.assign(new Error(r.status), { status: r.status }); return r.json(); });
+  // ---- Réseau faible ----
+  // L'appli mesure ses propres requêtes (et ce qu'annonce Chrome sur Android) : si ça rame, elle passe en mode léger.
+  const net = { lite: false, samples: [], told: false };
+  const conn = navigator.connection;
+  const slowHint = () => !!(conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '') || conn.rtt > 1500));
+  function netSample(ms, ok) {
+    net.samples.push({ ms, ok }); if (net.samples.length > 6) net.samples.shift();
+    const last4 = net.samples.slice(-4), bad = last4.filter(x => !x.ok || x.ms > 3000).length;
+    if (!net.lite && (slowHint() || bad >= 2)) setLite(true);
+    else if (net.lite && !slowHint() && net.samples.length >= 5 && net.samples.slice(-5).every(x => x.ok && x.ms < 1200)) setLite(false);
+  }
+  function setLite(on) {
+    net.lite = on;
+    navigator.serviceWorker?.controller?.postMessage({ type: 'lite', on });
+    if (on && !net.told) { net.told = true; toast('Réseau faible : mode léger activé (seuls les signalements passent)'); }
+    freshness();
+  }
+  conn?.addEventListener?.('change', () => { if (slowHint() && !net.lite) setLite(true); });
+  // Fichiers gardés pour le hors-ligne (agenda, annonces) : dernière version reçue
+  const KEEP = /\/live\/(events|ann)\.json$/;
+  const dataCache = () => caches.open('cortege-data');
+  async function cacheGet(key) { try { const r = await (await dataCache()).match(key); return r ? r.json() : null; } catch { return null; } }
+  function cachePut(key, obj) { try { dataCache().then(c => c.put(key, new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {}); } catch {} }
+  const getJ = (url, ms) => {
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), ms || (net.lite ? 6000 : 12000)), t0 = performance.now();
+    return fetch(url, { cache: 'no-cache', signal: ac.signal })
+      .then(r => { netSample(performance.now() - t0, true); if (!r.ok) throw Object.assign(new Error(r.status), { status: r.status }); return r.json(); },
+        e => { netSample(null, false); throw e; })
+      .then(j => { if (KEEP.test(url)) cachePut(url, j); return j; })
+      .catch(async e => { if (KEEP.test(url) && !e.status) { const c = await cacheGet(url); if (c) return c; } throw e; })
+      .finally(() => clearTimeout(to));
+  };
   function neededCells() {
     const b = map.getBounds(), ids = new Set();
     const add = (s, w, n, e) => {
@@ -400,7 +443,29 @@
       natLayer.addLayer(m);
     }
   }
+  // Mode léger : un seul petit fichier par région (≈ 100 km) au lieu de plusieurs requêtes ; l'état général une fois par minute
+  const lite = { g: null, gAt: 0 };
+  async function syncLite() {
+    navigator.serviceWorker?.controller?.postMessage({ type: 'lite', on: true }); // le service worker a pu redémarrer
+    const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
+    const rgs = new Set([`${Math.floor(ref[0])}_${Math.floor(ref[1])}`, `${Math.floor(c.lat)}_${Math.floor(c.lng)}`]);
+    if (!lite.g || now - lite.gAt > 60000) { try { lite.g = await getJ('/live/g.json'); lite.gAt = now; } catch {} }
+    const res = await Promise.allSettled([...rgs].map(rg => getJ(`/live/p/${rg}.json`)));
+    if (!res.some(x => x.status === 'fulfilled')) throw res[0].reason;
+    const list = res.flatMap(x => x.status === 'fulfilled' ? x.value.r || [] : []);
+    const wasLite = mode === 'lite'; mode = 'lite';
+    if (list.some(r => now - r.t < 15 * MIN)) lastActivity = now;
+    let annChanged = false;
+    const g = lite.g;
+    if (g) {
+      setPaused(g.paused); checkBuild(g.build);
+      if (g.events && evCache.h !== g.events) { try { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); } catch {} }
+      if (annCache.h !== g.ann) { try { annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; annChanged = true; } catch {} }
+    }
+    apply(list.filter(r => r.exp > now), annsFor(), () => wasLite, annChanged && !firstSync);
+  }
   async function syncLive() {
+    if (net.lite) return syncLite();
     if (legacy) return syncLegacy();
     let g;
     try { g = await getJ('/live/g.json'); }
@@ -527,12 +592,13 @@
         try { await syncLive(); }
         catch (e) { if (e.status === 404) { useApi = true; await syncApi(); } else throw e; }
       }
-      failures = 0; lastOk = Date.now();
-      setStatus('live', 'En direct');
+      failures = 0; lastOk = Date.now(); dataAt = lastOk; saveSnapshot();
+      setStatus('live', net.lite ? 'En direct · mode léger' : 'En direct');
       if (!$('#queueChip').hidden) setTimeout(() => flushQueue(), 0);
     } catch {
       failures++;
       setStatus('offline', Date.now() - lastOk > 15000 ? 'Hors ligne — nouvel essai…' : 'Connexion instable…');
+      if (!fallbackTried) { fallbackTried = true; useFallback(); }
     }
     syncing = false;
     if (again) { again = false; return sync(); }
@@ -544,6 +610,45 @@
     const delay = (failures ? Math.min(60000, base * 2 ** Math.min(failures, 3)) : base) * (0.85 + Math.random() * 0.3);
     if (!document.hidden) pollTimer = setTimeout(sync, delay);
   }
+  // ---- Dernière situation connue (hors ligne) ----
+  // Après chaque synchro réussie, on garde les points affichés sur le téléphone. Sans réseau à l'ouverture,
+  // l'appli les remontre (ceux qui ne sont pas expirés), avec l'heure, et y ajoute ceux reçus par notification.
+  let dataAt = 0, fallbackTried = false, snapAt = 0;
+  function saveSnapshot() {
+    if (Date.now() - snapAt < 30000) return; snapAt = Date.now();
+    cachePut('/__snap', { at: Date.now(), r: [...reports.values()].map(x => x.data).slice(0, 500) });
+  }
+  const unpack = d => d.r.map(([id, cat, lat, lng, t, last, exp, up, fl]) => ({ id, cat, lat, lng, t: t * 1000, last: last * 1000, exp: exp * 1000, up, down: 0,
+    ver: fl & 1 ? 'une orga' : null, notes: [], note: '', ...(fl & 2 ? { c: 1 } : {}), ...(fl & 4 ? { f: 1 } : {}), ...(fl & 8 ? { nf: 1 } : {}) })).filter(r => CAT[r.cat]);
+  function mergeIn(rows, at) {
+    if (!rows.length || at <= dataAt) return;
+    const now = Date.now(), cur = new Map([...reports.values()].map(x => [x.data.id, x.data]));
+    for (const r of rows) cur.set(r.id, r);
+    dataAt = at;
+    apply([...cur.values()].filter(r => r.exp > now), annsFor(), () => false, false);
+    freshness();
+  }
+  async function useFallback() {
+    const snap = await cacheGet('/__snap'), push = await cacheGet('/__push');
+    if (snap && snap.r) mergeIn(snap.r, snap.at);
+    if (push && push.r) mergeIn(unpack(push), push.at * 1000);
+  }
+  // Données arrivées avec une notification pendant que l'appli est ouverte mais sans réseau
+  navigator.serviceWorker?.addEventListener?.('message', async e => {
+    if (e.data && e.data.type === 'push-data' && Date.now() - lastOk > 20000) { const p = await cacheGet('/__push'); if (p && p.r) mergeIn(unpack(p), p.at * 1000); }
+  });
+  // Bandeau : mode léger, ou âge de la dernière situation connue
+  const agoTxt = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : `il y a ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };
+  function freshness() {
+    const bar = $('#netBar'); if (!bar) return;
+    const stale = dataAt && Date.now() - dataAt > 60000;
+    if (stale) { bar.hidden = false; bar.textContent = `${navigator.onLine === false || !net.lite ? '📴 Pas de réseau' : '📶 Réseau très faible'} · dernière situation connue ${agoTxt(dataAt)}`; }
+    else if (net.lite) { bar.hidden = false; bar.textContent = `📶 Réseau faible : mode léger · mis à jour ${dataAt ? agoTxt(dataAt) : '…'}`; }
+    else bar.hidden = true;
+    bar.classList.toggle('stale', !!stale);
+  }
+  setInterval(freshness, 15000);
+
   let moveTimer = null;
   map.on('moveend', () => { clearTimeout(moveTimer); moveTimer = setTimeout(sync, 400); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); else clearTimeout(pollTimer); });
@@ -1605,6 +1710,12 @@
 
   // ---- Hors ligne : PWA + pré-chargement des tuiles de la zone ----
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  // Mise à jour en arrière-plan (Chrome Android, appli installée) : agenda, annonces et interface restent frais pour le hors-ligne
+  if ('serviceWorker' in navigator) navigator.serviceWorker.ready.then(async reg => {
+    if (!reg.periodicSync) return;
+    try { const st = await navigator.permissions.query({ name: 'periodic-background-sync' }); if (st.state !== 'granted') return; } catch { return; }
+    reg.periodicSync.register('cortege-refresh', { minInterval: 6 * 3600e3 }).catch(() => {});
+  }).catch(() => {});
   // Préchargement désactivé tant que les tuiles viennent d'OpenStreetMap (leur politique l'interdit)
   if (!cfg.offlineTiles) {
     ['#btnPrefetch', '#prefetchState', '.tip-prefetch'].forEach(s => { const n = $(s); if (n) n.hidden = true; });
