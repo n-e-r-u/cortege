@@ -38,7 +38,7 @@ const DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), '.cortege-data'
 const VIOLENCE_URL = process.env.VIOLENCE_URL || 'https://www.ldh-france.org/stop-violences-policieres/';
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || '';
 const HOST_INFO = process.env.HOST_INFO || '';   // ex. « o2switch, 222 boulevard …, 63000 Clermont-Ferrand — 04 … »
-const SOURCE_URL = process.env.SOURCE_URL || ''; // lien du dépôt GitHub
+const SOURCE_URL = process.env.SOURCE_URL || 'https://github.com/n-e-r-u/cortege'; // lien du dépôt GitHub
 const BRAND = {
   handle: process.env.BRAND_HANDLE || 'neru',
   instagram: process.env.BRAND_INSTAGRAM || 'https://www.instagram.com/neru/',
@@ -508,7 +508,7 @@ function addNote(r, text, dev, t) {
 }
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
   notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}), ...(r.fl === 1 ? { f: 1 } : r.fl === -1 && !r.up ? { nf: 1 } : {}) });
-const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
+const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, city: a.city || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
   route: e.route || null, end: !!e.end, by: e.by, status: e.status, link: e.link || null, src: e.src || null, t: e.t });
@@ -533,14 +533,16 @@ function createAnnouncement(b, by, admin, pending = false) {
   // Lien « En savoir plus » : réservé à l'admin (évite les liens piégés)
   const link = admin && kind === 'info' && /^https:\/\/[^\s"<>]{4,300}$/.test(String(b.link || '').trim()) ? String(b.link).trim() : '';
   const phone = kind === 'legal' ? String(b.phone || '').replace(/[^\d+ .]/g, '').trim().slice(0, 20) : '';
+  const city = kind === 'legal' ? clean(b.city, 40) : '';
   const lat = Number(b.lat), lng = Number(b.lng);
   const r = national ? 0 : Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), 50);
   const minutes = Math.min(Math.max(Number(b.minutes) || 60, 10), 24 * 60);
   if (kind === 'info' && text.length < 3) return [400, { error: 'Écris le message de l’annonce.' }];
   if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Numéro de téléphone invalide.' }];
+  if (kind === 'legal' && city.length < 2) return [400, { error: 'Indique la ville de la legal team.' }];
   if (!national && !validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
   const now = Date.now();
-  const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, by, link,
+  const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, ...(city ? { city } : {}), by, link,
     lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
     t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
   if (pending) a.pending = true; // numéro de legal team d'une orga en essai : affiché après validation par l'admin
@@ -548,6 +550,79 @@ function createAnnouncement(b, by, admin, pending = false) {
   if (a.level === 'urgent' && !a.pending) pushBroadcast(a).catch(e => console.error('push', e.message));
   return [201, annView(a)];
 }
+
+// ---- Annuaire permanent des legal teams ----
+// Rempli par l'admin (à partir d'une liste de départ non validée). Seules les lignes validées sont publiées
+// (live/legal.json). Une veille quotidienne relit la page source de chaque ligne et prévient l'admin si le
+// numéro n'y figure plus ou si d'autres numéros apparaissent. Elle ne publie et ne modifie jamais rien.
+db.exec('CREATE TABLE IF NOT EXISTS legal_dir(id TEXT PRIMARY KEY, data TEXT)');
+const legalAll = () => q('SELECT data FROM legal_dir').all().map(x => JSON.parse(x.data)).sort((a, b) => a.city.localeCompare(b.city, 'fr') || a.name.localeCompare(b.name, 'fr'));
+const getLegal = id => { const x = q('SELECT data FROM legal_dir WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
+function saveLegal(e) { q('INSERT OR REPLACE INTO legal_dir(id,data) VALUES(?,?)').run(e.id, JSON.stringify(e)); dirty.legal = true; scheduleFlush(); }
+const legalView = e => ({ id: e.id, city: e.city, lat: e.lat, lng: e.lng, name: e.name, phone: e.phone, signal: !!e.signal, src: e.src || null, checked: e.checked || null });
+const phoneDigits = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('33') && d.length === 11) d = '0' + d.slice(2); return d; };
+// Tous les numéros français d'une page, normalisés (0XXXXXXXXX)
+const phonesIn = text => [...new Set((String(text).match(/(?:\+33[\s.\-]?|0)[1-9](?:[\s.\-]?\d{2}){4}/g) || []).map(phoneDigits))].sort();
+function cleanLegal(b, old) {
+  const e = { ...(old || {}) };
+  e.city = clean(b.city ?? e.city, 40); e.name = clean(b.name ?? e.name, 80);
+  e.phone = String(b.phone ?? e.phone ?? '').replace(/[^\d+ .]/g, '').trim().slice(0, 20);
+  e.signal = b.signal === undefined ? !!e.signal : !!b.signal;
+  const src = String(b.src ?? e.src ?? '').trim();
+  e.src = /^https?:\/\/[^\s"<>]{4,400}$/.test(src) ? src : null;
+  if (b.lat !== undefined) { e.lat = round(Number(b.lat)); e.lng = round(Number(b.lng)); }
+  if (b.srcDate !== undefined) e.srcDate = /^\d{4}-\d{2}-\d{2}$/.test(String(b.srcDate)) ? b.srcDate : null;
+  if (e.city.length < 2) return [400, 'Indique la ville.'];
+  if (e.name.length < 2) return [400, 'Indique le nom du collectif.'];
+  if (phoneDigits(e.phone).length < 6) return [400, 'Numéro de téléphone invalide.'];
+  if (!validLatLng(e.lat, e.lng)) return [400, 'Position invalide (choisis la ville dans la recherche).'];
+  return [200, e];
+}
+function seedLegal() {
+  if (getMeta('legalseed')) return;
+  try {
+    const list = JSON.parse(fs.readFileSync(path.join(__dirname, 'legal-seed.json'), 'utf8'));
+    for (const b of list) if (!getLegal(b.id)) { const [st, e] = cleanLegal(b, { id: b.id, ok: false, added: Date.now(), seed: true }); if (st === 200) saveLegal(e); }
+  } catch (e) { if (e.code !== 'ENOENT') console.error('annuaire', e.message); }
+  setMeta('legalseed', Date.now());
+}
+const LEGAL_WATCH_MS = 24 * 60 * MIN;
+async function watchOne(e) {
+  const w = { at: Date.now() };
+  try {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
+    const r = await fetch(e.src, { signal: ctl.signal, redirect: 'follow', headers: { 'user-agent': 'Cortege-veille/1 (verification annuaire legal teams)' } });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const html = (await r.text()).slice(0, 3_000_000);
+    const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/g, ' ');
+    w.phones = phonesIn(text);
+    w.found = w.phones.includes(phoneDigits(e.phone));
+  } catch (err) { w.err = String(err.name === 'AbortError' ? 'délai dépassé' : err.message).slice(0, 80); }
+  return w;
+}
+// État de la veille pour une ligne : ok, missing (numéro absent de la source), changed (numéros différents), error
+function watchStatus(e) {
+  const w = e.watch; if (!w) return 'new';
+  if (w.err) return 'error';
+  if (!w.found) return 'missing';
+  if (e.base && JSON.stringify(e.base) !== JSON.stringify(w.phones)) return 'changed';
+  return 'ok';
+}
+async function legalWatch(force = false) {
+  // Un seul processus fait la veille : on réserve le tour dans la base
+  const claimed = tx(() => { const last = +getMeta('legalwatch') || 0; if (!force && Date.now() - last < LEGAL_WATCH_MS) return false; setMeta('legalwatch', Date.now()); return true; });
+  if (!claimed) return false;
+  for (const e of legalAll().filter(x => x.src)) {
+    const w = await watchOne(e);
+    const cur = getLegal(e.id); if (!cur) continue;
+    cur.watch = w;
+    if (!cur.base && w.phones && w.found) cur.base = w.phones; // première lecture réussie : sert de référence
+    q('INSERT OR REPLACE INTO legal_dir(id,data) VALUES(?,?)').run(cur.id, JSON.stringify(cur)); // pas de republication : rien de public ne change
+  }
+  return true;
+}
+const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
 
 
 // ---- Archive anonyme pour le digest ----
@@ -883,7 +958,7 @@ function writeIfChanged(file, str) {
 const FLUSH_MS = Number(process.env.FLUSH_MS) || 1000;
 const ALL_EVERY = 10_000;
 const LIVE_LOCK = path.join(DATA_DIR, 'live.lock');
-const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false };
+const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false, legal: false };
 let flushTimer = null, lastAll = 0;
 // Publication planifiée. Une demande plus urgente avance le minuteur : un nouveau signalement n'attend
 // jamais les publications espacées (vue nationale toutes les 10 s, ancien index toutes les 5 s).
@@ -922,7 +997,7 @@ function writeNational(now) {
 let BUILD = null;
 const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)));
 function writeGlobal(now) {
-  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, paused: pausedUntil(now), build: buildId() };
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, paused: pausedUntil(now), build: buildId() };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
   // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
   if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
@@ -934,9 +1009,9 @@ function writeGlobal(now) {
 function flush() {
   flushTimer = null;
   const now = Date.now();
-  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doAll = dirty.all && now - lastAll >= ALL_EVERY;
-  const doGlobal = cells.length || doAnn || doEv || doAll || dirty.global;
-  dirty.cells.clear(); dirty.ann = dirty.events = dirty.global = false; if (doAll) dirty.all = false;
+  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doAll = dirty.all && now - lastAll >= ALL_EVERY;
+  const doGlobal = cells.length || doAnn || doEv || doLegal || doAll || dirty.global;
+  dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.global = false; if (doAll) dirty.all = false;
   if (doGlobal) try {
     withLock(() => {
       const regions = new Set();
@@ -952,6 +1027,7 @@ function flush() {
       }
       for (const rg of regions) writeRegion(rg);
       if (doAnn) { const str = JSON.stringify({ a: annActive(now).map(annView) }); writeIfChanged(path.join(LIVE_DIR, 'ann.json'), str); setMeta('annh', h8(str)); }
+      if (doLegal) { const str = JSON.stringify({ l: legalAll().filter(e => e.ok).map(legalView) }); writeIfChanged(path.join(LIVE_DIR, 'legal.json'), str); setMeta('legalh', h8(str)); }
       if (doEv) {
         const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY start LIMIT 3000").all(now - EVENT_KEEP).map(x => evView(JSON.parse(x.data))) });
         writeIfChanged(path.join(LIVE_DIR, 'events.json'), str); setMeta('evh', h8(str));
@@ -962,7 +1038,7 @@ function flush() {
   } catch (e) {
     // occupé : les changements retournent dans la file, nouvel essai dans une demi-seconde
     cells.forEach(c => dirty.cells.add(c));
-    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
+    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doLegal) dirty.legal = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
     if (!isBusy(e)) console.error('publication', e.message);
     return scheduleFlush(500);
   }
@@ -975,7 +1051,7 @@ function rebuildAll() {
   q('SELECT cell FROM cells').all().forEach(x => all.add(x.cell));
   try { fs.readdirSync(path.join(LIVE_DIR, 'c')).forEach(f => f.endsWith('.json') && all.add(f.slice(0, -5))); } catch {}
   all.forEach(c => dirty.cells.add(c));
-  dirty.ann = dirty.events = dirty.global = dirty.all = true; lastAll = 0;
+  dirty.ann = dirty.events = dirty.legal = dirty.global = dirty.all = true; lastAll = 0;
   clearTimeout(flushTimer); flushTimer = null;
   flush();
   ensureRegions();
@@ -1014,8 +1090,11 @@ function migrateJson() {
 }
 setTimeout(() => {
   try { migrateJson(); } catch (e) { console.error('reprise state.json', e.message); }
+  try { seedLegal(); } catch (e) { console.error('annuaire', e.message); }
   try { sweep(); rebuildAll(); } catch (e) { console.error('publication initiale', e.message); }
 }, 200);
+// Veille de l'annuaire : vérifiée toutes les heures, faite une fois par jour (désactivable : LEGAL_WATCH=0)
+if (process.env.LEGAL_WATCH !== '0') setInterval(() => legalWatch().catch(e => console.error('veille annuaire', e.message)), 60 * MIN).unref();
 
 // ---- HTTP helpers ----
 function send(res, status, body, headers = {}) {
@@ -1349,6 +1428,7 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { paused: pausedUntil(now),
           reports: activeReports(now).map(publicView),
           announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
+          pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(),
           pushSubs: pushCount() });
       }
       // --- Annonces de l'admin (nationales ou locales) ---
@@ -1360,6 +1440,43 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'DELETE' && delA) {
         const ok = dropAnn(delA[1]);
         return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Annonce déjà retirée.' });
+      }
+      // --- Annuaire des legal teams ---
+      if (req.method === 'GET' && pathname === '/api/admin/legal') {
+        return send(res, 200, { lastWatch: +getMeta('legalwatch') || null,
+          list: legalAll().map(e => ({ ...legalView(e), ok: !!e.ok, srcDate: e.srcDate || null, seed: !!e.seed, status: watchStatus(e),
+            watch: e.watch ? { at: e.watch.at, err: e.watch.err || null, found: !!e.watch.found, phones: e.watch.phones || [] } : null, base: e.base || null })) });
+      }
+      if (req.method === 'POST' && pathname === '/api/admin/legal') {
+        const b = await readJson(req);
+        const old = b.id ? getLegal(String(b.id)) : null;
+        if (b.id && !old) return send(res, 404, { error: 'Ligne introuvable.' });
+        const [st, e] = cleanLegal(b, old || { id: crypto.randomBytes(5).toString('base64url'), ok: false, added: Date.now() });
+        if (st !== 200) return send(res, st, { error: e });
+        // Numéro ou source modifiés : la ligne doit être revalidée et la référence de la veille est refaite
+        if (old && (phoneDigits(old.phone) !== phoneDigits(e.phone) || old.src !== e.src)) { e.ok = false; delete e.base; delete e.watch; }
+        saveLegal(e); orgaLog({ id: 'admin', label: ADMIN_LABEL }, old ? 'annuaire modifié' : 'annuaire ajouté', { ref: e.id, detail: e.city + ' ' + e.phone });
+        return send(res, 200, legalView(e));
+      }
+      const legalAct = pathname.match(/^\/api\/admin\/legal\/([\w-]{1,16})(?:\/(validate|unvalidate|ack))?$/);
+      if (legalAct && req.method === 'DELETE' && !legalAct[2]) {
+        const e = getLegal(legalAct[1]); if (!e) return send(res, 404, { error: 'Ligne introuvable.' });
+        q('DELETE FROM legal_dir WHERE id=?').run(e.id); dirty.legal = true; scheduleFlush();
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'annuaire retiré', { ref: e.id, detail: e.city + ' ' + e.phone });
+        return send(res, 200, { removed: true });
+      }
+      if (legalAct && req.method === 'POST' && legalAct[2]) {
+        const e = getLegal(legalAct[1]); if (!e) return send(res, 404, { error: 'Ligne introuvable.' });
+        if (legalAct[2] === 'validate') { e.ok = true; e.checked = Date.now(); delete e.seed; }
+        if (legalAct[2] === 'unvalidate') e.ok = false;
+        // « Vu » : la page source a changé mais le numéro est toujours bon → nouvelle référence
+        if (legalAct[2] === 'ack') { if (e.watch && e.watch.phones) e.base = e.watch.phones; e.checked = Date.now(); }
+        saveLegal(e); orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'annuaire ' + { validate: 'validé', unvalidate: 'dépublié', ack: 'source revue' }[legalAct[2]], { ref: e.id, detail: e.city + ' ' + e.phone });
+        return send(res, 200, legalView(e));
+      }
+      if (req.method === 'POST' && pathname === '/api/admin/legal-watch') {
+        await legalWatch(true);
+        return send(res, 200, { done: true });
       }
       // --- Agenda : propositions à valider + événements publiés ---
       if (req.method === 'GET' && pathname === '/api/admin/events') {
@@ -1718,6 +1835,11 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { label: orga.label, admin: orga.admin, trial: orga.trial, sponsored: !!orga.sponsored,
           sponsor: me && me.by ? (readOrgas().find(x => x.id === me.by)?.label || me.byLabel || null) : null,
           canInvite: !orga.trial && !banUntil(orga.id), ban: banUntil(orga.id), canAddDevice: !!me, devices: me && me.hash ? 1 + (me.keys || []).length : 0 });
+      }
+
+      // Ses propres annonces, y compris les numéros en attente de validation
+      if (req.method === 'GET' && pathname === '/api/orga/mine') {
+        return send(res, 200, { a: annAll(Date.now()).filter(a => orga.admin ? true : a.by === orga.label).sort((a, b) => b.t - a.t).map(annView) });
       }
 
       // --- Parrainage : une orga confirmée invite une autre orga (QR code / lien à usage unique, 24 h) ---

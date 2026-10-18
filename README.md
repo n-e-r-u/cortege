@@ -23,7 +23,8 @@ Variables d'environnement :
 | `ORGA_KEYS` | vide | Accès orga / legal team : `Nom affiché:clé,Autre nom:clé2` (clés de 12 caractères minimum) |
 | `CONTACT_EMAIL` | vide | Adresse de contact (mentions légales, bouton « Demander un accès orga »). Obligatoire avant lancement |
 | `HOST_INFO` | vide | Coordonnées complètes de l'hébergeur pour les mentions légales |
-| `SOURCE_URL` | vide | Lien du dépôt GitHub (affiché dans les mentions légales) |
+| `SOURCE_URL` | dépôt d'origine | Lien du dépôt du code (affiché dans le menu et les mentions légales) |
+| `LEGAL_WATCH` | `1` | `0` coupe la veille quotidienne des sources de l'annuaire des legal teams |
 | `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » |
 | `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme et du journal des orgas (jours) |
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel |
@@ -90,9 +91,13 @@ Avec la clé `ADMIN_KEY` :
 - **Effacement d'urgence** (onglet Urgences) : efface d'un coup toutes les traces liées aux personnes et change la clé de hachage. Les orgas et l'agenda sont gardés.
 - **Digest** : bilan anonyme par jour.
 
-Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : annonces localisées (info ou urgente, 1 à 30 km, 30 min à 12 h), numéro de legal team (affiché dans « Mes droits » pour la zone), et sur chaque signalement « Vérifier » ou « Retirer (faux) ».
+Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : annonces localisées (info ou urgente, 1 à 30 km, 30 min à 12 h), numéro de legal team (avec sa ville, affiché dans « Mes droits » pour tout le monde, rangé par ville), et sur chaque signalement « Vérifier » ou « Retirer (faux) ».
 
 `ORGA_KEYS` (variable) reste possible mais n'est plus nécessaire.
+
+### Annuaire des legal teams
+
+Onglet « Legal teams » de l'administration. Une liste de départ (`legal-seed.json`, sources publiques) est chargée au premier démarrage, **sans rien publier** : chaque ligne doit être vérifiée auprès du collectif puis validée. Une veille relit chaque jour la page source de chaque ligne et signale dans l'onglet si le numéro n'y figure plus ou si d'autres numéros sont apparus. Elle ne publie et ne modifie jamais rien : la décision reste humaine. Modifier le numéro ou la source repasse la ligne en « à valider ».
 
 ## Digest
 
@@ -107,6 +112,8 @@ Onglet Digest de l'administration : chiffres clés, carte du jour, moments clés
 - **Économie de batterie** (réglage dans « ? ») : synchro toutes les 20 s, GPS moins précis, boussole coupée.
 - **Notifications** (bouton 🔔) : les annonces urgentes et, en option, les dangers signalés près de toi (au plus une alerte toutes les 3 min) arrivent même appli fermée (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
 - **Annonces nationales** : réservées à l’administration. Les numéros de legal team sont permanents jusqu’à leur retrait.
+- **Mes droits** : les numéros de legal team de la ville la plus proche (de ta position, sinon du centre de la carte) en premier, puis les autres villes. Deux sources : l’annuaire permanent, tenu par l’administration (chaque ligne indique sa date de vérification et sa source), et les numéros publiés par les orgas pour une mobilisation. Les derniers numéros connus restent disponibles hors ligne.
+- **Menu** : un panneau qui s’ouvre depuis la droite (☰) rassemble Mes droits, la liste, l’agenda, les alertes, la préparation, le partage et les réglages. Sur la carte restent seulement : localiser, chercher, le menu et l’installation à droite ; SOS, soutien et espace orga à gauche.
 
 - **Signaler** : un viseur apparaît (sur ta position si tu l'as activée), tu choisis la catégorie : c'est envoyé tout de suite. Une petite carte propose ensuite d'ajouter une précision (120 caractères).
 - **Précisions** : n'importe qui peut ajouter une précision à un point déjà signalé (« ＋ Ajouter une précision » dans sa fiche). Les 3 plus récentes sont affichées, une par téléphone (la sienne peut être corrigée).

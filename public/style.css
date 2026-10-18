@@ -238,6 +238,16 @@ body.raster .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness
 .legal-call { background: var(--soutien); color: #04150c; }
 .legal-copy { background: transparent; border: 1px solid var(--line); color: var(--fg); }
 .legal-none { margin: 0; font-size: 13px; color: var(--muted); }
+.legal-meta { font-size: 12px; color: var(--muted); }
+.legal-meta a { color: inherit; }
+.legal-sig { display: inline-block; margin-left: 8px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--line); font-size: 11px; font-weight: 700; color: var(--muted); vertical-align: middle; letter-spacing: 0; }
+.legal-tip { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.legal-other { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.legal-other summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 4px 0; }
+.legal-city { display: flex; justify-content: space-between; margin: 12px 0 2px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.legal-city span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.legal-row.compact .legal-num { font-size: 16px; }
+.legal-row.compact .legal-call, .legal-row.compact .legal-copy { height: 30px; min-width: 72px; }
 details.right { border-top: 1px solid var(--line); }
 details.right summary { padding: 13px 2px; font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
 details.right summary::after { content: "+"; color: var(--muted); font-weight: 400; }
@@ -432,3 +442,37 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 /* Réseau faible / hors ligne : âge de ce qui est affiché */
 .net-bar { pointer-events: auto; align-self: center; padding: 7px 14px; border-radius: 999px; background: rgba(26,26,30,.92); border: 1px solid #f5a524; color: #ffcf7a; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
 .net-bar.stale { border-color: var(--fdo); color: #ff9a9d; }
+
+/* ---- Menu : panneau qui glisse depuis la droite ---- */
+.sheet.panel {
+  top: 0; bottom: 0; right: 0; left: auto; width: min(420px, 92vw); max-height: none; transform: none;
+  border-radius: 20px 0 0 20px; border-top: 0; border-left: 1px solid var(--line);
+  box-shadow: -12px 0 40px rgba(0,0,0,.55);
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  animation: slidein .2s ease-out; overscroll-behavior: contain;
+}
+@keyframes slidein { from { transform: translateX(40px); opacity: .4; } }
+@media (prefers-reduced-motion: reduce) { .sheet.panel { animation: none; } }
+.menu-group { margin: 18px 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.sheet-head + .menu-group { margin-top: 8px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.tile { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--fg); text-align: left; text-decoration: none; font: inherit; cursor: pointer; }
+.tile:active { transform: scale(.98); }
+.tile[hidden] { display: none; }
+.tile .ico { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: var(--surface); }
+.tile > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.tile b { font-size: 14.5px; }
+.tile small { font-size: 12px; color: var(--muted); line-height: 1.25; }
+.tile-rights { border-color: var(--soutien); }
+.tile-kofi { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.tile.bell[data-on="0"] { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.github-card { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 14px; border-radius: var(--radius); text-decoration: none;
+  color: var(--fg); background: var(--surface-2); border: 1px solid var(--fg); }
+.github-card span { display: flex; flex-direction: column; gap: 2px; }
+.github-card b { font-size: 15px; }
+.github-card small { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+.sheet.panel .ig-card { margin-top: 0; }
+.sheet.panel .orga-card { margin-top: 4px; }
+.menu-foot { margin-top: 18px; }
+.round.menu-btn { color: var(--fg); }

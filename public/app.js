@@ -10,6 +10,7 @@
   let eco = false; try { eco = localStorage.getItem('cortege-eco') === '1'; } catch {}
   let pushSub = null;               // abonnement aux notifications (annonces urgentes)
   let evCache = { h: null, e: [] }; // agenda (événements publiés)
+  let legalCache = { h: null, l: [] }; // annuaire permanent des legal teams (lignes validées par l'admin)
 
   // Identifiant anonyme de ce téléphone (tiré au hasard, jamais lié à une personne) : sert seulement
   // à limiter le spam par appareil, car en 4G des centaines de personnes partagent la même adresse IP.
@@ -40,12 +41,13 @@
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
   const GROUP_COLOR = { fdo: 'var(--fdo)', danger: 'var(--danger)', soutien: 'var(--soutien)', info: 'var(--info)' };
   $('#eventName').textContent = cfg.event;
+  if (cfg.sourceUrl) $('#githubLink').href = cfg.sourceUrl;
   if (cfg.violenceUrl) document.querySelectorAll('#violenceLink, .violence-inline').forEach(a => (a.href = cfg.violenceUrl));
   if (cfg.brand) {
     document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
     document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => (a.href = cfg.brand.instagram));
     $('#brandLink').href = cfg.brand.instagram;
-    if (cfg.brand.kofi) $('#kofiLink').href = $('#btnKofi').href = cfg.brand.kofi; else { $('#kofiLink').parentElement.hidden = true; $('#btnKofi').hidden = true; }
+    if (cfg.brand.kofi) $('#kofiLink').href = $('#btnKofi').href = cfg.brand.kofi; else { $('#kofiLink').hidden = true; $('#btnKofi').hidden = true; }
     const siteLabel = cfg.brand.site.replace(/^https?:\/\//, '').replace(/\/$/, '');
     document.querySelectorAll('a[href="https://neru.tv"]').forEach(a => { a.href = cfg.brand.site; if (!a.querySelector('svg')) a.textContent = siteLabel; });
   }
@@ -364,7 +366,7 @@
   }
   conn?.addEventListener?.('change', () => { if (slowHint() && !net.lite) setLite(true); });
   // Fichiers gardés pour le hors-ligne (agenda, annonces) : dernière version reçue
-  const KEEP = /\/live\/(events|ann)\.json$/;
+  const KEEP = /\/live\/(events|ann|legal)\.json$/;
   const dataCache = () => caches.open('cortege-data');
   async function cacheGet(key) { try { const r = await (await dataCache()).match(key); return r ? r.json() : null; } catch { return null; } }
   function cachePut(key, obj) { try { dataCache().then(c => c.put(key, new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {}); } catch {} }
@@ -393,6 +395,16 @@
     return annCache.a.filter(x => x.exp > Date.now() && (x.national ||
       map.distance(c, [x.lat, x.lng]) < x.r * 1000 + viewR || (me && map.distance(me, [x.lat, x.lng]) < x.r * 1000)));
   }
+  async function syncLegal(g) {
+    if (!('legal' in g) || legalCache.h === g.legal) return;
+    try { legalCache = { h: g.legal, l: g.legal ? (await getJ('/live/legal.json')).l || [] : [] }; } catch {}
+  }
+  // Sans réseau à l'ouverture : derniers numéros connus (annuaire et legal teams des manifs)
+  (async () => {
+    const [l, a] = await Promise.all([cacheGet('/live/legal.json'), cacheGet('/live/ann.json')]);
+    if (l && !legalCache.h && !legalCache.l.length) legalCache = { h: null, l: l.l || [] };
+    if (a && !annCache.h && !annCache.a.length) annCache = { h: null, a: a.a || [] };
+  })();
   // Format actuel : g.json (annonces, agenda, pause) + un index par région de 1° autour de la zone affichée.
   // Ces petits fichiers changent rarement : le téléphone reçoit presque toujours un « rien de neuf » (304).
   let lastActivity = 0, legacy = false;
@@ -461,6 +473,7 @@
       setPaused(g.paused); checkBuild(g.build);
       if (g.events && evCache.h !== g.events) { try { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); } catch {} }
       if (annCache.h !== g.ann) { try { annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; annChanged = true; } catch {} }
+      await syncLegal(g);
     }
     apply(list.filter(r => r.exp > now), annsFor(), () => wasLite, annChanged && !firstSync);
   }
@@ -498,6 +511,7 @@
     if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
+    await syncLegal(g);
     apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
   }
 
@@ -540,6 +554,7 @@
     if (!res.ok) throw new Error(res.status);
     etag = res.headers.get('ETag');
     const { reports: list, announcements: anns = [] } = await res.json();
+    if (anns.length) annCache = { h: annCache.h, a: [...annCache.a.filter(x => !anns.some(y => y.id === x.id)), ...anns] };
     lastZoneKey = key;
     apply(list, anns, () => sameZone, sameZone);
   }
@@ -1120,21 +1135,63 @@
     if (!$('#sheetOrga').hidden) renderOrgaList();
   }
 
-  // ---- Mes droits : numéros des legal teams de la zone ----
+  // ---- Mes droits : numéros des legal teams ----
+  // Deux sources : l'annuaire permanent (vérifié par l'admin) et les numéros publiés par les orgas pour une manif.
+  // Regroupés par ville, la plus proche de toi (ou du centre de la carte) en premier ; les autres villes en dessous.
+  const normCity = c => String(c || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const dayFr = t => new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  const kmTxt = m => m < 1000 ? 'ici' : m < 10000 ? 'à ' + (m / 1000).toFixed(1).replace('.', ',') + ' km' : 'à ' + Math.round(m / 1000) + ' km';
+  function legalGroups() {
+    const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
+    const rows = [
+      ...legalCache.l.map(e => ({ ...e, dir: true })),
+      ...annCache.a.filter(a => a.kind === 'legal' && a.exp > now && !a.pending)
+        .map(a => ({ id: a.id, city: a.city || '', lat: a.lat, lng: a.lng, name: a.by, phone: a.phone, text: a.text, t: a.t, dir: false })),
+    ];
+    const groups = new Map();
+    for (const e of rows) {
+      const d = map.distance(ref, [e.lat, e.lng]);
+      const key = normCity(e.city) || '@' + e.id;
+      const g = groups.get(key) || { city: e.city || 'Autour de ce point', d: Infinity, items: [] };
+      g.items.push({ ...e, d }); groups.set(key, g);
+    }
+    // Distance d'une ville : celle de l'annuaire s'il la connaît (un numéro de manif peut avoir été posé loin de sa ville)
+    for (const g of groups.values()) { const ref = g.items.some(x => x.dir) ? g.items.filter(x => x.dir) : g.items; g.d = Math.min(...ref.map(x => x.d)); }
+    // Dans une ville : l'annuaire d'abord, puis les numéros de manif (les plus récents en premier)
+    for (const g of groups.values()) g.items.sort((a, b) => (b.dir - a.dir) || (b.t || 0) - (a.t || 0));
+    return [...groups.values()].sort((a, b) => a.d - b.d);
+  }
+  function legalRow(a, compact) {
+    const num = a.phone;
+    const call = el('a', { class: 'legal-call', href: 'tel:' + num.replace(/[^\d+]/g, '') }, 'Appeler');
+    const copy = el('button', { class: 'legal-copy' }, 'Copier');
+    copy.onclick = async () => { try { await navigator.clipboard.writeText(num); toast('Numéro copié'); } catch { toast(num); } };
+    const meta = a.dir
+      ? el('span', { class: 'legal-meta' }, 'Annuaire' + (a.checked ? ' · vérifié le ' + dayFr(a.checked) : ''),
+          a.src ? el('a', { href: a.src, target: '_blank', rel: 'noopener noreferrer' }, ' · source') : '')
+      : el('span', { class: 'legal-meta' }, 'Pour la mobilisation · publié ' + ago(a.t));
+    return el('div', { class: 'legal-row' + (compact ? ' compact' : '') },
+      el('div', { class: 'legal-who' }, el('b', {}, a.name), a.text ? el('span', {}, a.text) : '', meta),
+      el('div', { class: 'legal-num' }, num, a.signal ? el('span', { class: 'legal-sig', title: 'Joignable sur Signal' }, 'Signal') : ''),
+      el('div', { class: 'legal-actions' }, call, copy));
+  }
   function renderLegal() {
-    const box = $('#legalList'); box.textContent = '';
-    const legal = announcements.filter(a => a.kind === 'legal');
-    $('#legalNone').hidden = legal.length > 0;
-    for (const a of legal) {
-      const num = a.phone;
-      const call = el('a', { class: 'legal-call', href: 'tel:' + num.replace(/[^\d+]/g, '') }, 'Appeler');
-      const copy = el('button', { class: 'legal-copy' }, 'Copier');
-      copy.onclick = async () => { try { await navigator.clipboard.writeText(num); toast('Numéro copié'); } catch { toast(num); } };
-      box.append(el('div', { class: 'legal-row' },
-        el('div', { class: 'legal-who' }, el('b', {}, a.by), a.text ? el('span', {}, a.text) : ''),
-        el('div', { class: 'legal-num' }, num), el('div', { class: 'legal-actions' }, call, copy)));
+    const box = $('#legalList'), other = $('#legalOtherList'); box.textContent = ''; other.textContent = '';
+    const groups = legalGroups(), first = groups[0];
+    $('#legalNone').hidden = !!first;
+    $('#legalOther').hidden = groups.length < 2;
+    if (!first) { $('#legalTitle').textContent = 'Legal team'; return; }
+    const far = first.d > 80000;
+    $('#legalTitle').textContent = far ? `Aucune legal team connue près de toi · la plus proche : ${first.city} (${kmTxt(first.d)})`
+      : `Legal team · ${first.city}${first.d >= 5000 ? ' (' + kmTxt(first.d) + ')' : ''}`;
+    for (const a of first.items) box.append(legalRow(a, false));
+    $('#legalOtherSum').textContent = `Autres villes (${groups.length - 1})`;
+    for (const g of groups.slice(1)) {
+      other.append(el('div', { class: 'legal-city' }, g.city, el('span', {}, kmTxt(g.d))));
+      for (const a of g.items) other.append(legalRow(a, true));
     }
   }
+  const nearestLegal = () => legalGroups()[0]?.items[0] || null;
   $('#btnRights').onclick = () => { closeReport(); closeSheets(); renderLegal(); $('#sheetRights').hidden = false; };
   $('#rgClose').onclick = () => closeSheets();
 
@@ -1211,20 +1268,30 @@
       map.closePopup(); etag = null; sync();
     } catch (e) { toast(e.message); }
   }
+  // Mes annonces (l'admin voit tout), y compris les numéros en attente de validation
+  let mineAnns = null;
+  async function loadMine() {
+    if (!orga) return;
+    try { mineAnns = (await orgaFetch('/api/orga/mine')).a || []; } catch { mineAnns = null; }
+    if (!$('#sheetOrga').hidden) renderOrgaList();
+  }
   function renderOrgaList() {
     const ol = $('#annList'); ol.textContent = '';
-    if (!announcements.length) { ol.append(el('li', { class: 'empty' }, 'Aucune annonce active ici.')); return; }
-    for (const a of announcements) {
+    const list = mineAnns || announcements;
+    $('#annListTitle').textContent = mineAnns ? (orga && orga.admin ? 'Toutes les annonces actives' : 'Tes annonces actives') : 'Annonces actives ici';
+    if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? 'Aucune annonce publiée.' : 'Aucune annonce active ici.')); return; }
+    for (const a of list) {
       const mine = orga && (orga.admin || a.by === orga.label);
       const del = el('button', { class: 'ghost' }, 'Retirer');
       del.disabled = !mine;
-      del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); } catch (e) { toast(e.message); } };
+      del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); loadMine(); } catch (e) { toast(e.message); } };
       ol.append(el('li', { class: 'ann-row' },
-        el('div', { class: 't' }, el('div', { class: 'l' }, (a.kind === 'legal' ? '⚖ ' + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
-          el('div', { class: 's' }, `${a.by} · ${a.national ? 'toute la France' : a.r + ' km'} · ${a.permanent ? 'permanent' : 'expire dans ' + left(a.exp)}`)), del));
+        el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
+          el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible dans « Mes droits »'
+            : `${a.by} · ${a.national ? 'toute la France' : (a.kind === 'legal' ? 'visible partout, rangé par ville' : a.r + ' km')} · ${a.permanent ? 'permanent' : 'expire dans ' + left(a.exp)}`)), del));
     }
   }
-  $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); renderOrgaExtras(); $('#sheetOrga').hidden = false; };
+  $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); renderOrgaExtras(); loadMine(); $('#sheetOrga').hidden = false; };
   // ---- Parrainage, appareils, avertissement sur l'accès ----
   const fmtExp = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   function showInviteOut(title, token, exp, fine) {
@@ -1309,21 +1376,21 @@
     annZoneUI();
   }));
   // Annonce nationale (admin) : pas de rayon
-  const annZoneUI = () => { $('#annRadiusWrap').hidden = $('#annNational').checked && !$('#annInfoFields').hidden; };
+  const annZoneUI = () => { $('#annRadiusWrap').hidden = $('#annInfoFields').hidden || $('#annNational').checked; };
   $('#annNational').addEventListener('change', annZoneUI);
   $('#annForm').addEventListener('submit', async e => {
     e.preventDefault();
     const kind = document.querySelector('input[name="kind"]:checked').value;
     const c = map.getCenter();
     const body = { kind, lat: c.lat, lng: c.lng, radiusKm: +$('#annRadius').value, minutes: +$('#annMinutes').value };
-    if (kind === 'legal') Object.assign(body, { phone: $('#annPhone').value, text: $('#annLegalText').value });
+    if (kind === 'legal') Object.assign(body, { phone: $('#annPhone').value, text: $('#annLegalText').value, city: $('#annCity').value });
     else Object.assign(body, { text: $('#annText').value, level: document.querySelector('input[name="level"]:checked').value,
       national: !!(orga && orga.admin && $('#annNational').checked) });
     try {
       const out = await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
       toast(out && out.pending ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce publiée');
-      $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annNational').checked = false; annZoneUI();
-      etag = null; sync();
+      $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annCity').value = ''; $('#annNational').checked = false; annZoneUI();
+      etag = null; sync(); loadMine();
     } catch (err) { toast(err.message); }
   });
   $('#btnOrgaLogout').onclick = () => {
@@ -1491,8 +1558,8 @@
     const hour = fmtHour(Date.now()).replace(':', ' h ');
     let s = who === 'me' ? `Je viens d’être interpellé·e (${hour})` : `Quelqu’un de mon groupe vient d’être interpellé·e (${hour})`;
     if (me) { const la = me[0].toFixed(4), lo = me[1].toFixed(4); s += ` ici : https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=17/${la}/${lo}`; }
-    const legal = announcements.find(a => a.kind === 'legal');
-    s += legal ? `. Préviens la legal team : ${legal.phone} (${legal.by}).` : '. Préviens la legal team de la manif.';
+    const legal = nearestLegal();
+    s += legal && legal.d < 80000 ? `. Préviens la legal team : ${legal.phone} (${legal.name}).` : '. Préviens la legal team de la manif.';
     s += ' Message envoyé avec Cortège.';
     return s;
   }
@@ -1562,7 +1629,10 @@
   // Réglages : annonces urgentes (oui par défaut, comme avant) et dangers près de toi
   let pushOpts = { urgent: true, near: false }; try { pushOpts = { ...pushOpts, ...JSON.parse(localStorage.getItem('cortege-push-opts') || '{}') }; } catch {}
   const savePushOpts = () => { try { localStorage.setItem('cortege-push-opts', JSON.stringify(pushOpts)); } catch {} };
-  function bellState() { const on = !!pushSub; $('#btnNotif').dataset.on = on ? '1' : '0'; $('#btnNotif').textContent = on ? '🔔' : '🔕'; }
+  function bellState() {
+    const on = !!pushSub; $('#btnNotif').dataset.on = on ? '1' : '0';
+    $('#btnNotif .ico').textContent = on ? '🔔' : '🔕'; $('#notifSub').textContent = on ? 'Activées sur ce téléphone' : 'Pas encore activées';
+  }
   // Le serveur ne reçoit qu'une zone arrondie à 0,1° (≈ 10 km), mise à jour quand tu changes de zone
   async function pushSend(sub, force) {
     const c = map.getCenter(), ref = me || [c.lat, c.lng];

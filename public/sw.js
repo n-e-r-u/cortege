@@ -1,5 +1,5 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v30', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v31', TILES = 'cortege-tiles-v1';
 const ASSETS = ['/', '/style.css', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/favicon.png', '/brand/logo.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
@@ -55,7 +55,7 @@ self.addEventListener('periodicsync', e => {
   if (e.tag !== 'cortege-refresh') return;
   e.waitUntil((async () => {
     try { const c = await caches.open(SHELL); await c.addAll(ASSETS); } catch {}
-    for (const u of ['/live/events.json', '/live/ann.json']) {
+    for (const u of ['/live/events.json', '/live/ann.json', '/live/legal.json']) {
       try { const r = await fetch(u, { cache: 'no-cache' }); if (r.ok) await putData(u, await r.json()); } catch {}
     }
   })());

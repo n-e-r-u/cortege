@@ -1,0 +1,18 @@
+[
+  { "id": "paris", "city": "Paris", "lat": 48.8566, "lng": 2.3522, "name": "Legal Team Paris IDF (Coordination antirépression)", "phone": "07 52 95 71 11", "signal": true,
+    "src": "https://paris-luttes.info/07-52-95-71-11-c-est-le-nouveau-12281?lang=fr", "srcDate": "2026-10-13" },
+  { "id": "lyon", "city": "Lyon", "lat": 45.764, "lng": 4.8357, "name": "Caisse de Solidarité - Témoins", "phone": "06 43 08 50 32", "signal": true,
+    "src": "https://rebellyon.info/On-bloque-tout-suivi-des-actions-de-la-41106", "srcDate": "2026-10-12" },
+  { "id": "marseille", "city": "Marseille", "lat": 43.2965, "lng": 5.3698, "name": "Legal Team Marseille", "phone": "07 53 05 25 30", "signal": true,
+    "src": "https://mars-infos.org/bilan-partiel-anti-repression-a-8493", "srcDate": "2026-03-12" },
+  { "id": "toulouse", "city": "Toulouse", "lat": 43.6047, "lng": 1.4442, "name": "Autodéfense Juridique Turbulente", "phone": "06 85 05 61 27", "signal": false,
+    "src": "https://iaata.info/Mais-c-est-quoi-l-Autodefense-Juridique-Turbulente-Toulouse-8374.html", "srcDate": "2026-02-05" },
+  { "id": "nantes", "city": "Nantes", "lat": 47.2184, "lng": -1.5536, "name": "Illegal Team Nantes", "phone": "06 75 30 95 45", "signal": false,
+    "src": "https://nantes.indymedia.org/posts/154292/le-tract-de-lillegal-team-pour-lantirep-de-manif-a-imprimer-soi-meme/", "srcDate": "2025-09-16" },
+  { "id": "nancy", "city": "Nancy", "lat": 48.6921, "lng": 6.1844, "name": "ASSAGI (permanence antirépression)", "phone": "07 84 75 81 39", "signal": true,
+    "src": "https://manif-est.info/Quelques-conseils-en-manif-face-a-la-police-et-face-a-la-justice-1381.html", "srcDate": "2026-10-17" },
+  { "id": "rennes", "city": "Rennes", "lat": 48.1173, "lng": -1.6778, "name": "Legal Team Rennes", "phone": "06 78 00 32 46", "signal": false,
+    "src": "https://www.leyho.net/legal-team-rennes", "srcDate": null },
+  { "id": "montpellier", "city": "Montpellier", "lat": 43.6108, "lng": 3.8767, "name": "Assemblée contre les violences d'État (ligne antirépression)", "phone": "07 73 74 61 07", "signal": false,
+    "src": "https://lepoing.net/les-comparutions-immediates-dans-le-viseur-des-deux-legal-team-de-montpellier/", "srcDate": "2019-06-21" }
+]

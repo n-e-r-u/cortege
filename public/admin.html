@@ -28,6 +28,7 @@ h1 small { display: block; font-size: 13px; color: var(--muted); font-weight: 50
 h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 .controls label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.controls label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--fg); }
 input, select { height: 42px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; min-width: 0; }
 button { height: 42px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--brand-grad); color: var(--accent-fg); font: inherit; font-weight: 800; cursor: pointer; }
 button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
@@ -92,7 +93,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .tabs { overflow-x: auto; scrollbar-width: none; }
 .tab { flex: none; }
 @media (max-width: 600px) { .org-list li { grid-template-columns: 1fr; } .org-list .acts { justify-content: flex-start; } }
-#pendingBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
+#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
 </style>
 </head>
@@ -114,7 +115,8 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   <div id="app" hidden>
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas">Orgas</button>
-    <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns">Annonces</button>
+    <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns">Annonces <span id="annBadge"></span></button>
+    <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal">Legal teams <span id="legalBadge"></span></button>
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda">Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports">Urgences</button>
     <button class="tab" role="tab" id="tabJournal" aria-selected="false" aria-controls="panelJournal">Journal <span id="journalBadge"></span></button>
@@ -175,6 +177,49 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <h2>Annonces actives <span id="annCount"></span></h2>
       <ul class="org-list" id="annAdminList"></ul>
       <p class="fine">Les numéros de legal team restent affichés jusqu’à ce qu’ils soient retirés ici ou par leur orga.</p>
+    </section>
+  </section>
+
+  <section class="panel" id="panelLegal" role="tabpanel" aria-labelledby="tabLegal" hidden>
+    <section class="card">
+      <h2>Annuaire permanent <span id="legalCount"></span></h2>
+      <p class="fine">Affiché dans « Mes droits » pour tout le monde, ville la plus proche en premier. Une ligne n’est publiée qu’après ta validation. Appelle ou écris au collectif avant de valider : un mauvais numéro en garde à vue, c’est grave.</p>
+      <p class="fine" id="legalWatchState">—</p>
+      <div class="controls"><button type="button" class="ghost" id="legalWatchNow">Relire les sources maintenant</button></div>
+      <ul class="org-list" id="legalList"></ul>
+    </section>
+    <section class="card">
+      <h2 id="legalFormTitle">Ajouter une legal team</h2>
+      <form class="stack" id="legalForm">
+        <input type="hidden" id="lgId">
+        <div class="controls">
+          <label for="lgCity" style="flex:1;min-width:180px">Ville
+            <input id="lgCity" maxlength="40" required placeholder="ex. : Montpellier">
+          </label>
+          <button type="button" class="ghost" id="lgFind">Placer la ville</button>
+        </div>
+        <p class="fine" id="lgPos">Position : pas encore placée.</p>
+        <label for="lgName">Nom du collectif
+          <input id="lgName" maxlength="80" required placeholder="ex. : Legal Team Montpellier">
+        </label>
+        <div class="controls">
+          <label for="lgPhone" style="flex:1;min-width:180px">Numéro
+            <input id="lgPhone" type="tel" maxlength="20" required placeholder="06 00 00 00 00">
+          </label>
+          <label class="check"><input type="checkbox" id="lgSignal"> Joignable sur Signal</label>
+        </div>
+        <label for="lgSrc">Page source publique (sert à la veille quotidienne)
+          <input id="lgSrc" type="url" maxlength="400" placeholder="https://…">
+        </label>
+        <label for="lgSrcDate">Date de la source
+          <input id="lgSrcDate" type="date">
+        </label>
+        <div class="controls">
+          <button type="submit">Enregistrer (à valider ensuite)</button>
+          <button type="button" class="ghost" id="lgCancel" hidden>Annuler la modification</button>
+        </div>
+      </form>
+      <p class="fine">Modifier le numéro ou la source repasse la ligne en « à valider ».</p>
     </section>
   </section>
 
@@ -314,7 +359,7 @@ const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type':
 
 async function login() {
   KEY = $('#key').value;
-  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); }
+  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false;
@@ -323,7 +368,7 @@ $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); }
 if (KEY) login();
 
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest']) {
+  for (const t of ['Orgas', 'Anns', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -332,6 +377,7 @@ $('#tabOrgas').onclick = () => showTab('Orgas');
 $('#tabDigest').onclick = () => showTab('Digest');
 $('#tabReports').onclick = () => { showTab('Reports'); loadReports(); };
 $('#tabAnns').onclick = () => { showTab('Anns'); loadAnns(); };
+$('#tabLegal').onclick = () => { showTab('Legal'); loadLegal(); };
 $('#tabAgenda').onclick = () => { showTab('Agenda'); loadAgenda(); };
 $('#tabJournal').onclick = () => { showTab('Journal'); loadJournal(); };
 
@@ -397,11 +443,12 @@ async function loadAnns() {
   $('#pushCount').textContent = d.pushSubs + ' téléphone(s) abonné(s) aux notifications. Une annonce urgente nationale leur arrive à tous.';
   const ul = $('#annAdminList'); ul.textContent = '';
   $('#annCount').textContent = '(' + d.announcements.length + ')';
+  $('#annBadge').textContent = d.pending || ''; $('#legalBadge').textContent = d.legalAlerts || '';
   if (!d.announcements.length) return empty(ul, 'Aucune annonce active.');
   for (const a of d.announcements) {
     const del = btn('Retirer', 'danger');
     confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/announcements/' + a.id, { method: 'DELETE' }); loadAnns(); });
-    const what = (a.pending ? '⏳ À VALIDER · ' : '') + (a.kind === 'legal' ? '⚖ Legal team ' + a.phone + (a.text ? ' · ' + a.text : '') : (a.level === 'urgent' ? '⚠ ' : '') + a.text);
+    const what = (a.pending ? '⏳ À VALIDER · ' : '') + (a.kind === 'legal' ? '⚖ Legal team ' + (a.city ? a.city + ' ' : '') + a.phone + (a.text ? ' · ' + a.text : '') : (a.level === 'urgent' ? '⚠ ' : '') + a.text);
     const where = a.national ? 'toute la France' : a.r + ' km autour de ' + a.lat.toFixed(3) + ', ' + a.lng.toFixed(3);
     const buttons = [del];
     if (a.pending) { const ok = btn('Valider'); ok.onclick = async () => { try { await api('/api/admin/announcements/' + a.id + '/approve', { method: 'POST', body: '{}' }); loadAnns(); } catch (e) { alertMsg(e.message); } }; buttons.unshift(ok); }
@@ -801,6 +848,68 @@ $('#copy').addEventListener('click', async () => {
   catch { const r = document.createRange(); r.selectNodeContents($('#summary')); getSelection().removeAllRanges(); getSelection().addRange(r); $('#copy').textContent = 'Sélectionné, fais Copier'; }
   setTimeout(() => ($('#copy').textContent = 'Copier le résumé'), 2000);
 });
+
+// ---- Annuaire des legal teams ----
+async function loadBadges() {
+  try { const d = await api('/api/admin/reports'); $('#annBadge').textContent = d.pending || ''; $('#legalBadge').textContent = d.legalAlerts || ''; } catch {}
+}
+setInterval(() => { if (!$('#app').hidden) loadBadges(); }, 120000);
+const WATCH = { ok: '✓ source relue, numéro présent', missing: '⚠ numéro ABSENT de la source', changed: '⚠ la source affiche d’autres numéros', error: '⚠ source illisible', new: 'source pas encore relue' };
+const dayFr = t => new Date(t).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: 'numeric', month: 'short', year: 'numeric' });
+let lgPos = null;
+async function loadLegal() {
+  let d; try { d = await api('/api/admin/legal'); } catch (e) { alertMsg(e.message); return; }
+  const ul = $('#legalList'); ul.textContent = '';
+  const live = d.list.filter(e => e.ok).length;
+  $('#legalCount').textContent = `(${live} publiée(s) sur ${d.list.length})`;
+  $('#legalWatchState').textContent = d.lastWatch ? 'Dernière relecture des sources : ' + dayFr(d.lastWatch) + ' à ' + hhmm(d.lastWatch) + '. La veille prévient ici, elle ne publie et ne modifie jamais rien.' : 'Les sources n’ont pas encore été relues (une fois par jour).';
+  if (!d.list.length) return empty(ul, 'Annuaire vide.');
+  for (const e of d.list) {
+    const buttons = [];
+    if (!e.ok) { const v = btn('Valider'); v.onclick = () => legalAct(e.id, 'validate'); buttons.push(v); }
+    else { const u = btn('Dépublier', 'ghost'); u.onclick = () => legalAct(e.id, 'unvalidate'); buttons.push(u); }
+    if (['missing', 'changed'].includes(e.status)) { const a = btn('Vu, numéro toujours bon', 'ghost'); a.onclick = () => legalAct(e.id, 'ack'); buttons.push(a); }
+    const ed = btn('Modifier', 'ghost'); ed.onclick = () => editLegal(e); buttons.push(ed);
+    const del = btn('Retirer', 'danger'); confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/legal/' + e.id, { method: 'DELETE' }); loadLegal(); }); buttons.push(del);
+    const title = `${e.ok ? '✅' : '⏳ À VALIDER'} · ${e.city} · ${e.name} · ${e.phone}${e.signal ? ' (Signal)' : ''}`;
+    const meta = [e.ok && e.checked ? 'vérifié le ' + dayFr(e.checked) : null, e.srcDate ? 'source du ' + dayFr(e.srcDate) : 'source non datée',
+      WATCH[e.status] + (e.watch && e.watch.at ? ' (' + dayFr(e.watch.at) + ')' : ''),
+      e.status === 'changed' && e.watch ? 'numéros vus : ' + e.watch.phones.join(', ') : null, e.watch && e.watch.err ? e.watch.err : null].filter(Boolean).join(' · ');
+    const row = li(title, meta, ...buttons);
+    if (e.src) { const a = document.createElement('a'); a.href = e.src; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Ouvrir la source'; a.className = 'meta'; row.firstChild.append(a); }
+    ul.append(row);
+  }
+}
+async function legalAct(id, act) { try { await api('/api/admin/legal/' + id + '/' + act, { method: 'POST', body: '{}' }); loadLegal(); loadBadges(); } catch (e) { alertMsg(e.message); } }
+function editLegal(e) {
+  $('#lgId').value = e.id; $('#lgCity').value = e.city; $('#lgName').value = e.name; $('#lgPhone').value = e.phone; $('#lgSignal').checked = e.signal;
+  $('#lgSrc').value = e.src || ''; $('#lgSrcDate').value = e.srcDate || ''; lgPos = { lat: e.lat, lng: e.lng };
+  $('#lgPos').textContent = 'Position : ' + e.lat.toFixed(3) + ', ' + e.lng.toFixed(3);
+  $('#legalFormTitle').textContent = 'Modifier : ' + e.city; $('#lgCancel').hidden = false;
+  $('#legalForm').scrollIntoView({ behavior: 'smooth' });
+}
+function resetLegalForm() { $('#legalForm').reset(); $('#lgId').value = ''; lgPos = null; $('#lgPos').textContent = 'Position : pas encore placée.'; $('#legalFormTitle').textContent = 'Ajouter une legal team'; $('#lgCancel').hidden = true; }
+$('#lgCancel').onclick = resetLegalForm;
+$('#lgFind').onclick = async () => {
+  try {
+    const r = await fetch('/api/geocode?q=' + encodeURIComponent($('#lgCity').value)).then(r => r.json());
+    if (!Array.isArray(r) || !r.length) return ($('#lgPos').textContent = 'Ville introuvable, précise le nom.');
+    lgPos = { lat: r[0].lat, lng: r[0].lng }; $('#lgPos').textContent = 'Position : ' + r[0].name + ' (' + r[0].lat.toFixed(3) + ', ' + r[0].lng.toFixed(3) + ')';
+  } catch { $('#lgPos').textContent = 'Recherche indisponible.'; }
+};
+$('#legalForm').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  if (!lgPos) return ($('#lgPos').textContent = 'Place d’abord la ville (bouton « Placer la ville »).');
+  const body = { city: $('#lgCity').value, name: $('#lgName').value, phone: $('#lgPhone').value, signal: $('#lgSignal').checked,
+    src: $('#lgSrc').value, srcDate: $('#lgSrcDate').value || null, lat: lgPos.lat, lng: lgPos.lng };
+  if ($('#lgId').value) body.id = $('#lgId').value;
+  try { await api('/api/admin/legal', { method: 'POST', body: JSON.stringify(body) }); resetLegalForm(); loadLegal(); loadBadges(); } catch (e) { alertMsg(e.message); }
+});
+$('#legalWatchNow').onclick = async () => {
+  const b = $('#legalWatchNow'); b.disabled = true; b.textContent = 'Relecture en cours…';
+  try { await api('/api/admin/legal-watch', { method: 'POST', body: '{}' }); } catch (e) { alertMsg(e.message); }
+  b.disabled = false; b.textContent = 'Relire les sources maintenant'; loadLegal(); loadBadges();
+};
 </script>
 </body>
 </html>

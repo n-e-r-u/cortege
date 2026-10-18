@@ -62,17 +62,14 @@
   <button class="round install-tool" id="btnInstallTool" hidden title="Installer l’appli" aria-label="Installer l’appli">⤓</button>
   <button class="round" id="btnSearch" title="Chercher une ville" aria-label="Chercher une ville">⌕</button>
   <button class="round" id="btnLocate" title="Me localiser" aria-label="Me localiser">◎</button>
-  <button class="round" id="btnList" title="Liste des signalements" aria-label="Liste des signalements">☰</button>
-  <button class="round orga-tool" id="btnOrga" hidden title="Espace orga" aria-label="Espace orga">📣</button>
-  <button class="round" id="btnRights" title="Mes droits" aria-label="Mes droits">⚖</button>
-  <button class="round" id="btnInfo" title="Réflexes et réglages" aria-label="Réflexes et réglages">?</button>
+  <button class="round menu-btn" id="btnInfo" title="Menu" aria-label="Ouvrir le menu" aria-controls="sheetInfo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+  </button>
 </div>
 
 <div class="tools tools-left">
-  <button class="round" id="btnAgenda" title="Prochaines mobilisations" aria-label="Prochaines mobilisations">📅</button>
-  <button class="round bell" id="btnNotif" title="Alertes sur ton téléphone" aria-label="Alertes et notifications" data-on="0">🔕</button>
+  <button class="round orga-tool" id="btnOrga" hidden title="Espace orga" aria-label="Espace orga">📣</button>
   <a class="round kofi-tool" id="btnKofi" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer" title="Soutenir Cortège" aria-label="Soutenir Cortège sur Ko-fi"><img class="kofi-ico" src="/brand/kofi.png" alt="" width="30" height="24"></a>
-  <button class="round" id="btnPrep" title="Bien se préparer" aria-label="Bien se préparer">🎒</button>
   <button class="round sos" id="btnSos" title="Interpellation : prévenir un proche" aria-label="Interpellation : prévenir un proche">SOS</button>
 </div>
 
@@ -139,11 +136,32 @@
 </section>
 
 <!-- Réflexes -->
-<section class="sheet" id="sheetInfo" hidden aria-labelledby="siTitle">
+<section class="sheet panel" id="sheetInfo" hidden aria-labelledby="siTitle">
   <div class="sheet-head">
-    <h2 id="siTitle">Avant de partir</h2>
-    <button class="x" id="siClose" aria-label="Fermer">×</button>
+    <h2 id="siTitle">Menu</h2>
+    <button class="x" id="siClose" aria-label="Fermer le menu">×</button>
   </div>
+
+  <h3 class="menu-group">Pendant la manif</h3>
+  <div class="tiles">
+    <button class="tile tile-rights" id="btnRights"><span class="ico" aria-hidden="true">⚖</span><span><b>Mes droits</b><small>Legal team, garde à vue</small></span></button>
+    <button class="tile" id="btnList"><span class="ico" aria-hidden="true">☰</span><span><b>Liste</b><small>Tous les signalements</small></span></button>
+    <button class="tile" id="btnAgenda"><span class="ico" aria-hidden="true">📅</span><span><b>Agenda</b><small>Prochaines mobilisations</small></span></button>
+    <button class="tile bell" id="btnNotif" data-on="0"><span class="ico" aria-hidden="true">🔕</span><span><b>Alertes</b><small id="notifSub">Notifications sur le téléphone</small></span></button>
+  </div>
+
+  <h3 class="menu-group">Avant de partir</h3>
+  <div class="tiles">
+    <button class="tile" id="btnPrep"><span class="ico" aria-hidden="true">🎒</span><span><b>Se préparer</b><small>La checklist</small></span></button>
+    <button class="tile" id="btnPrefetch"><span class="ico" aria-hidden="true">📶</span><span><b>Hors ligne</b><small>Garder la zone</small></span></button>
+  </div>
+  <p class="fine" id="prefetchState"></p>
+  <div class="install-box" id="installBox" hidden>
+    <button class="install" id="btnInstall">Installer l’appli sur mon téléphone</button>
+    <p class="install-help" id="installHelp" hidden></p>
+  </div>
+
+  <h3 class="menu-group">Faire grandir Cortège</h3>
   <div class="ig-card" id="igCard">
     <div class="ig-head">
       <img class="ig-logo" src="/brand/logo.png" alt="" width="56" height="56">
@@ -162,40 +180,40 @@
         neru.tv</a>
     </div>
   </div>
-  <div class="support-card">
-    <b class="card-title">Cortège tient grâce à toi</b>
-    <p>Gratuite, sans pub, sans pistage. Ton soutien paie le serveur et sa montée en puissance, pour que l’appli tienne le jour où tout le monde l’ouvre en même temps.</p>
-    <a class="install" id="kofiLink" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer"><img class="kofi-ico sm" src="/brand/kofi.png" alt="" width="22" height="18"> Soutenir Cortège sur Ko-fi</a>
+  <div class="tiles">
+    <button class="tile" id="btnShare"><span class="ico" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"></path></svg></span><span><b>Partager</b><small>QR code à scanner</small></span></button>
+    <a class="tile tile-kofi" id="kofiLink" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer"><span class="ico" aria-hidden="true"><img class="kofi-ico sm" src="/brand/kofi.png" alt="" width="22" height="18"></span><span><b>Soutenir</b><small>Payer le serveur, sur Ko-fi</small></span></a>
   </div>
+  <a class="github-card" id="githubLink" href="https://github.com/n-e-r-u/cortege" target="_blank" rel="noopener noreferrer">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"></path></svg>
+    <span><b>Le code est ouvert, sur GitHub</b><small>Vérifier ce que fait l’appli, proposer une idée, signaler un bug, contribuer</small></span>
+  </a>
   <div class="orga-card" id="orgaRequestCard" hidden>
     <b class="card-title">Legal team, street medics, collectif ?</b>
     <p>Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone.</p>
     <a class="secondary" id="orgaRequest" href="#">Demander un accès orga</a>
     <p class="fine">Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule.</p>
   </div>
-  <div class="install-box" id="installBox" hidden>
-    <button class="install" id="btnInstall">Installer l’appli sur mon téléphone</button>
-    <p class="install-help" id="installHelp" hidden></p>
-  </div>
-  <button class="install prep-wide" id="btnPrepInfo">🎒 Bien se préparer : la checklist</button>
-  <button class="secondary share-wide" id="btnShare">Faire installer l’appli à quelqu’un (QR code)</button>
+
+  <h3 class="menu-group">Comment ça marche</h3>
   <ul class="tips">
     <li><b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.</li>
     <li><b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor.</li>
-    <li><b>Un point disparaît</b> à l’expiration, ou quand deux personnes disent « Plus là ». « Toujours là » le prolonge.</li>
-    <li class="tip-prefetch"><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Garder la zone » pour que la carte s’affiche hors ligne.</li>
+    <li><b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer.</li>
+    <li class="tip-prefetch"><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Hors ligne » pour que la carte s’affiche sans réseau.</li>
     <li class="tip-browse" hidden><b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone.</li>
     <li><b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.</li>
   </ul>
-  <button class="secondary" id="btnPrefetch">Garder la zone hors ligne</button>
-  <p class="fine" id="prefetchState"></p>
-  <h3 class="group-title">Réglages</h3>
-  <button class="secondary" id="btnNotifInfo">🔔 Alertes et notifications</button>
+
+  <h3 class="menu-group">Réglages</h3>
+  <button class="secondary" id="btnNotifInfo" hidden>🔔 Alertes et notifications</button>
+  <button class="secondary" id="btnPrepInfo" hidden>🎒 Bien se préparer</button>
   <label class="switch">
     <input type="checkbox" id="optEco">
     <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
   </label>
-  <p class="fine"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
+  <p class="fine menu-foot"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
 </section>
 
 <!-- Partage -->
@@ -229,9 +247,14 @@
   </a>
   <button class="sos-wide" id="btnSosRights"><b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span></button>
   <div class="legal-box" id="legalBox">
-    <div class="legal-title">Legal team de ta zone</div>
+    <div class="legal-title" id="legalTitle">Legal team</div>
     <div id="legalList"></div>
-    <p class="legal-none" id="legalNone">Aucune legal team n’a publié de numéro pour cette zone. Demande-le aux orgas de ton cortège et écris-le au stylo sur ton bras.</p>
+    <p class="legal-none" id="legalNone">Aucun numéro de legal team connu pour l’instant. Demande-le aux orgas de ton cortège.</p>
+    <p class="legal-tip">Écris le numéro au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré.</p>
+    <details class="legal-other" id="legalOther" hidden>
+      <summary id="legalOtherSum">Autres villes</summary>
+      <div id="legalOtherList"></div>
+    </details>
   </div>
 
   <details class="right" open>
@@ -328,6 +351,8 @@
       <label class="check" id="annNationalWrap" hidden><input type="checkbox" id="annNational"> Annonce nationale (toute la France)</label>
     </div>
     <div id="annLegalFields" hidden>
+      <label class="note-label" for="annCity">Ville</label>
+      <input id="annCity" maxlength="40" autocomplete="address-level2" placeholder="ex. : Montpellier">
       <label class="note-label" for="annPhone">Numéro de téléphone</label>
       <input id="annPhone" type="tel" inputmode="tel" maxlength="20" placeholder="06 00 00 00 00">
       <label class="note-label" for="annLegalText">Précision (facultatif)</label>
@@ -341,11 +366,11 @@
         <select id="annMinutes"><option value="30">30 min</option><option value="60">1 h</option><option value="180" selected>3 h</option><option value="360">6 h</option><option value="720">12 h</option></select>
       </label>
     </div>
-    <p class="fine" id="annLegalHint" hidden>Le numéro reste affiché dans « Mes droits » jusqu’à ce que tu le retires.</p>
+    <p class="fine" id="annLegalHint" hidden>Le numéro apparaît dans « Mes droits » sous le nom de la ville, pour tout le monde (en premier pour les personnes les plus proches), jusqu’à ce que tu le retires.</p>
     <button class="install" type="submit">Publier</button>
   </form>
   <button class="secondary orga-event-btn" id="btnOrgaEvent">Publier une manif ou un blocus (avec parcours)</button>
-  <h3 class="group-title">Annonces actives dans la zone</h3>
+  <h3 class="group-title" id="annListTitle">Annonces actives dans la zone</h3>
   <ol id="annList" class="list"></ol>
   <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
   <section id="orgaInviteBox" hidden>

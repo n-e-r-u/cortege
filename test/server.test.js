@@ -211,6 +211,37 @@ test('révocation pour abus : l’orga et ses invitées sont coupées, la marrai
   assert.equal((await asOrga(A.key, '/api/orga/invite', { label: 'Encore' })).s, 400, 'marraine suspendue');
 });
 
+test('annuaire legal teams : publié après validation, veille qui prévient sans rien publier', async () => {
+  const http = require('node:http');
+  let page = '<p>Legal team : 06 12 34 56 78</p>';
+  const src = http.createServer((q, r) => r.end(page)).listen(0);
+  await new Promise(r => src.once('listening', r));
+  const url = 'http://127.0.0.1:' + src.address().port + '/';
+  const getA = p => fetch(B + p, { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  // Liste de départ : rien n'est publié tant que l'admin n'a pas validé
+  const seed = await getA('/api/admin/legal');
+  assert.ok(seed.list.length >= 5 && seed.list.every(e => !e.ok), 'liste de départ non validée');
+  await new Promise(x => setTimeout(x, 1200));
+  assert.deepEqual(await fetch(B + '/live/legal.json').then(r => r.json()), { l: [] });
+  const add = await admin('/api/admin/legal', { city: 'Testville', name: 'LT Test', phone: '06 12 34 56 78', src: url, lat: 44.1, lng: 4.1 });
+  assert.equal(add.s, 200);
+  assert.equal((await admin('/api/admin/legal/' + add.j.id + '/validate', {})).s, 200);
+  await new Promise(x => setTimeout(x, 1200));
+  const pub = await fetch(B + '/live/legal.json').then(r => r.json());
+  assert.deepEqual(pub.l.map(e => e.phone), ['06 12 34 56 78']);
+  // Veille : numéro présent → ok ; numéro remplacé sur la source → alerte, mais la ligne publiée ne bouge pas
+  const st = async () => { await admin('/api/admin/legal-watch', {}); return (await getA('/api/admin/legal')).list.find(e => e.id === add.j.id).status; };
+  assert.equal(await st(), 'ok');
+  page = '<p>Nouveau numéro : 07 99 88 77 66</p>';
+  assert.equal(await st(), 'missing');
+  assert.deepEqual((await fetch(B + '/live/legal.json').then(r => r.json())).l.map(e => e.phone), ['06 12 34 56 78'], 'jamais publié automatiquement');
+  // Numéro de legal team d'une orga : la ville est obligatoire
+  const k = { 'x-orga-key': ADMIN };
+  assert.equal((await post('/api/announcements', { kind: 'legal', phone: '0611223344', lat: 44, lng: 4 }, phone(), k)).s, 400);
+  assert.equal((await post('/api/announcements', { kind: 'legal', phone: '0611223344', city: 'Testville', lat: 44, lng: 4 }, phone(), k)).s, 201);
+  src.close();
+});
+
 test('digest : les signalements retirés restent comptés, avec leur devenir', async () => {
   const r = (await post('/api/reports', { cat: 'nasse', ...place() })).j;
   await fetch(B + '/api/admin/reports/' + r.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
