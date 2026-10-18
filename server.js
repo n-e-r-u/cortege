@@ -363,7 +363,7 @@ function orgaLog(orga, action, { r, lat, lng, ref, detail } = {}) {
 function trashReport(r, orga) {
   const now = Date.now();
   q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, orga.id || null, orga.label, JSON.stringify({ ...r, left: r.exp - now }));
-  dropReport(r.id, true);
+  dropReport(r.id, orga.id === 'admin' ? 'admin' : 'orga');
 }
 function orgaStats(oid) {
   const since = Date.now() - 24 * 60 * MIN;
@@ -389,9 +389,10 @@ function saveReport(r) {
       JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0);
   dirtyCell(cell);
 }
-function dropReport(id, dismissed) {
+// outcome : ce qu'est devenu le point, pour le digest (orga, admin, full = zone saturée, purge…)
+function dropReport(id, outcome) {
   const r = q('DELETE FROM reports WHERE id=? RETURNING *').get(id);
-  if (r) { archive(r, dismissed); dirtyCell(r.cell); }
+  if (r) { archive(r, outcome || 'removed'); dirtyCell(r.cell); }
   return !!r;
 }
 // Annonces
@@ -483,7 +484,7 @@ function sweep() {
   const now = Date.now();
   try {
     const expired = tx(() => q('DELETE FROM reports WHERE exp<=? RETURNING *').all(now));
-    for (const r of expired) { archive(r, !!r.ct); dirtyCell(r.cell); }
+    for (const r of expired) { archive(r, r.ct ? 'cont' : 'exp'); dirtyCell(r.cell); }
     if (q('DELETE FROM ann WHERE exp<=?').run(now).changes) dirty.ann = true;
     if (q('DELETE FROM events WHERE start<=?').run(now - EVENT_KEEP).changes) dirty.events = true;
     q('DELETE FROM rate WHERE t<?').run(now - RATE.windowMs);
@@ -550,15 +551,21 @@ function createAnnouncement(b, by, admin, pending = false) {
 
 
 // ---- Archive anonyme pour le digest ----
-// Gardé : catégorie, heure à la minute, position arrondie à ~100 m, nombre de confirmations.
-// Jamais gardé : la précision écrite, les empreintes d'IP.
+// Gardé : catégorie, heures de début et de fin à la minute, position arrondie à ~100 m, nombre de confirmations
+// et de « Plus là », nombre de précisions (jamais leur texte), vérification, fiabilité, et ce qu'est devenu le point.
+// Jamais gardé : la précision écrite, les empreintes d'IP ou de téléphone.
 const ARCHIVE_DIR = path.join(DATA_DIR, 'archive');
 fs.mkdirSync(ARCHIVE_DIR, { recursive: true, mode: 0o700 });
 const parisDay = t => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); // AAAA-MM-JJ
 const parisHour = t => Number(new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }));
-function archive(r, dismissed) {
-  const line = JSON.stringify({ c: r.cat, t: Math.floor(r.t / MIN) * MIN, lat: Math.round(r.lat * 1e3) / 1e3, lng: Math.round(r.lng * 1e3) / 1e3,
-    up: r.up, d: dismissed ? 1 : 0, v: r.ver ? 1 : 0 }) + '\n';
+const archLine = (r, o) => {
+  const notes = Array.isArray(r.notes) ? r.notes : parseNotes(r);
+  return { k: h8('a|' + r.id), c: r.cat, t: Math.floor(r.t / MIN) * MIN, e: Math.floor(Math.min(Date.now(), r.exp) / MIN) * MIN,
+    lat: Math.round(r.lat * 1e3) / 1e3, lng: Math.round(r.lng * 1e3) / 1e3, up: r.up || 0, dn: r.down || 0, n: notes.length,
+    v: r.ver ? 1 : 0, f: r.fl || 0, o, d: o === 'exp' || o === 'active' ? 0 : 1 };
+};
+function archive(r, outcome) {
+  const line = JSON.stringify(archLine(r, outcome)) + '\n';
   try { fs.appendFileSync(path.join(ARCHIVE_DIR, parisDay(r.t) + '.jsonl'), line, { mode: 0o600 }); } catch {}
 }
 function pruneArchive() {
@@ -1359,7 +1366,7 @@ const server = http.createServer(async (req, res) => {
           if (b.announcements) q('DELETE FROM ann').run();
           return list;
         });
-        list.forEach(r => archive(r, true));
+        list.forEach(r => archive(r, 'purge'));
         rebuildAll();
         const n = list.length;
         return send(res, 200, { removed: n });
@@ -1480,28 +1487,36 @@ const server = http.createServer(async (req, res) => {
       const date = String(url.searchParams.get('date') || parisDay(Date.now()));
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return send(res, 400, { error: 'Date invalide.' });
       sweep(); // archive ce qui vient d'expirer
-      let rows = [];
-      try { rows = fs.readFileSync(path.join(ARCHIVE_DIR, date + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch {}
+      const readDay = d => { try { return fs.readFileSync(path.join(ARCHIVE_DIR, d + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { return []; } };
+      // Un point restauré puis expiré apparaît deux fois : on garde sa dernière ligne
+      const dedupe = list => { const m = new Map(); list.forEach((r, i) => m.set(r.k || 'old' + i, r)); return [...m.values()]; };
+      let rows = dedupe(readDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp') }));
       // + les signalements encore actifs de ce jour
-      for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date)
-        rows.push({ c: r.cat, t: r.t, lat: Math.round(r.lat * 1e3) / 1e3, lng: Math.round(r.lng * 1e3) / 1e3, up: r.up, d: 0, active: 1 });
-      const kept = rows.filter(r => !r.d);
-      const byCat = {}, first = {}, byHour = Array(24).fill(0), zones = new Map();
-      for (const r of kept) {
-        byCat[r.c] = (byCat[r.c] || 0) + 1;
-        if (!first[r.c] || r.t < first[r.c]) first[r.c] = r.t;
-        byHour[parisHour(r.t)]++;
+      for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date) rows.push({ ...archLine(r, 'active'), e: null });
+      // Villes : carrés de ~10 km, nommés pour les plus actifs
+      const zones = {};
+      for (const r of rows) {
         const zk = (Math.round(r.lat * 10) / 10) + ',' + (Math.round(r.lng * 10) / 10);
-        const z = zones.get(zk) || { lat: Math.round(r.lat * 10) / 10, lng: Math.round(r.lng * 10) / 10, total: 0, byCat: {} };
-        z.total++; z.byCat[r.c] = (z.byCat[r.c] || 0) + 1; zones.set(zk, z);
+        r.z = zk; (zones[zk] ||= { lat: Math.round(r.lat * 10) / 10, lng: Math.round(r.lng * 10) / 10, n: 0 }).n++;
       }
-      const top = [...zones.values()].sort((a, b) => b.total - a.total).slice(0, 12);
-      for (const z of top) {
-        const d = await nominatim(`/reverse?format=jsonv2&zoom=10&lat=${z.lat}&lon=${z.lng}`);
-        z.name = placeName(d && d.address) || `${z.lat}, ${z.lng}`;
-      }
-      return send(res, 200, { date, total: kept.length, dismissed: rows.length - kept.length, confirmed: kept.filter(r => r.up > 0).length,
-        byCat, first, byHour, zones: top, verified: kept.filter(r => r.v).length, categories: CATEGORIES.map(({ id, label, glyph, group }) => ({ id, label, glyph, group })),
+      const named = Object.entries(zones).sort((a, b) => b[1].n - a[1].n).slice(0, 15);
+      for (const [, z] of named) { const d = await nominatim(`/reverse?format=jsonv2&zoom=10&lat=${z.lat}&lon=${z.lng}`); z.name = placeName(d && d.address) || null; }
+      for (const z of Object.values(zones)) z.name ||= `${z.lat}, ${z.lng}`;
+      // Activité des orgas et anti-abus ce jour-là
+      const day0 = Date.parse(date + 'T00:00:00+02:00'), lo = day0 - 2 * 3600e3, hi = day0 + 26 * 3600e3;
+      const logs = q('SELECT t, oid, action, detail FROM orga_log WHERE t BETWEEN ? AND ?').all(lo, hi).filter(x => parisDay(x.t) === date);
+      const cnt = f => logs.filter(f).length;
+      const orga = { verified: cnt(x => /^vérifié|^confirmé \(parrainée\)/.test(x.action)), removed: cnt(x => x.oid !== 'admin' && /^retiré|^retrait \(essai\)/.test(x.action)), adminRemoved: cnt(x => x.oid === 'admin' && x.action === 'retiré'),
+        announcements: cnt(x => x.action === 'annonce'), urgent: cnt(x => x.action === 'annonce' && /\[urgent\]/.test(x.detail || '')),
+        legal: cnt(x => /^legal team/.test(x.action)), restored: cnt(x => x.action === 'restauré'), contested: cnt(x => x.action === 'contesté') };
+      const abuse = {};
+      for (const x of q('SELECT t, kind FROM abuse WHERE t BETWEEN ? AND ?').all(lo, hi)) if (parisDay(x.t) === date) abuse[x.kind] = (abuse[x.kind] || 0) + 1;
+      // Comparaison : les 14 jours précédents
+      const history = [];
+      for (let i = 14; i >= 0; i--) { const d = parisDay(Date.parse(date + 'T12:00:00+02:00') - i * 86400e3); history.push({ date: d, total: i ? dedupe(readDay(d)).length : rows.length }); }
+      const events = listEvents().filter(e => parisDay(e.start) === date && e.status !== 'pending').map(e => ({ title: e.title, type: e.type, place: e.place, start: e.start }));
+      return send(res, 200, { date, rows, zones, orga, abuse, history, events,
+        categories: CATEGORIES.map(({ id, label, glyph, group, ttl }) => ({ id, label, glyph, group, ttl })), groups: GROUPS,
         days: fs.readdirSync(ARCHIVE_DIR).map(f => f.slice(0, 10)).sort().reverse() });
     }
 
@@ -1551,7 +1566,7 @@ const server = http.createServer(async (req, res) => {
           // Zone pleine : on fait de la place en retirant le plus ancien point que personne n'a confirmé ni vérifié
           const old = q('SELECT id FROM reports WHERE cell=? AND exp>? AND ver IS NULL AND up=0 ORDER BY t LIMIT 1').get(cell, now);
           if (!old) return [503, { error: 'Zone saturée, réessaie dans quelques minutes.' }];
-          dropReport(old.id, true);
+          dropReport(old.id, 'full');
         }
         if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
         const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note, notes: note ? [{ x: note, t: t0, d: dev }] : [],

@@ -96,7 +96,7 @@ Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : ann
 
 ## Digest
 
-Onglet Digest de l'administration : total du jour, par type (avec l'heure du premier signalement), par heure, par ville, et un résumé prêt à copier. L'archive ne garde que la catégorie, l'heure à la minute et une position arrondie à ~100 m. Les points retirés ou contestés par « Plus là » sont exclus.
+Onglet Digest de l'administration : chiffres clés, carte du jour, moments clés (premier danger de chaque type par ville), répartition par type, par heure (par famille) et par ville avec les horaires d'activité, devenir de chaque signalement (expiré, contesté, retiré par une orga ou l'admin…), fiabilité (confirmations, vérifications, durée de visibilité), activité des orgas et de l'anti-abus, comparaison sur 15 jours, résumé prêt à copier et export CSV. Les signalements retirés ou contestés sont gardés et peuvent être inclus ou exclus d'un clic. L'archive ne garde que la catégorie, les heures de début et de fin à la minute, une position arrondie à ~100 m et des compteurs, jamais le texte des précisions ni d'empreinte.
 
 ## Comment ça marche
 

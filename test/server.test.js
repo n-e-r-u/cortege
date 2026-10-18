@@ -211,6 +211,16 @@ test('révocation pour abus : l’orga et ses invitées sont coupées, la marrai
   assert.equal((await asOrga(A.key, '/api/orga/invite', { label: 'Encore' })).s, 400, 'marraine suspendue');
 });
 
+test('digest : les signalements retirés restent comptés, avec leur devenir', async () => {
+  const r = (await post('/api/reports', { cat: 'nasse', ...place() })).j;
+  await fetch(B + '/api/admin/reports/' + r.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  const d = await fetch(B + '/api/digest', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  const row = d.rows.find(x => x.c === 'nasse' && x.o === 'admin');
+  assert.ok(row, 'point retiré présent'); assert.ok(row.e >= row.t, 'heure de fin');
+  assert.equal(d.history.length, 15);
+  assert.ok(!JSON.stringify(d).includes(r.id), 'aucun identifiant de signalement');
+});
+
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
   const before = fs.readFileSync(DIR + '/d/secret', 'utf8');
