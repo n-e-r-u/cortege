@@ -1909,7 +1909,7 @@ const server = http.createServer(async (req, res) => {
       const body = JSON.stringify({ date: d.date, pts: d.pts, cats: CATEGORIES.map(c => ({ id: c.id, label: c.label, group: c.group })) });
       const etag = '"' + h8(body) + '"';
       if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag }); return res.end(); }
-      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=900', ETag: etag }); return res.end(body);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=120', ETag: etag }); return res.end(body);
     }
     if (req.method === 'POST' && pathname === '/api/orga-requests') {
       if (!tx(() => bump('oreq:' + clientHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });

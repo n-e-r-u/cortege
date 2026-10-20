@@ -15,7 +15,7 @@
   let cfg = {}, data;
   try {
     [cfg, data] = await Promise.all([fetch('/api/config').then(r => r.json()).catch(() => ({})),
-      fetch(`/manif/${date}/points.json`).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Indisponible.'); return j; })]);
+      fetch(`/manif/${date}/points.json?v=2`, { cache: 'no-cache' }).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Indisponible.'); return j; })]);
   } catch (e) { return msg(e.message || 'Pas de réseau.'); }
   const cats = Object.fromEntries(data.cats.map(c => [c.id, c]));
   const rows = data.pts.map(([c, t, e, la, lo, up, v]) => ({ cat: cats[c], t: t * 60000, end: e * 60000, lat: la / 1e3, lng: lo / 1e3, up, v })).filter(r => r.cat);

@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.5
+
+- Carte d’un créneau : les points sont relus à chaque ouverture de la page (cache de 2 minutes au lieu de 15), pour ne plus garder d’anciennes heures de fin.
+
 ## 2.3.4
 
 - Carte d’un créneau : les signalements archivés sans heure de fin (anciens formats, imports) prennent leur durée normale au lieu de « maintenant », et le créneau compare de vraies heures. Avant, ces journées donnaient « 0 signalement ».
