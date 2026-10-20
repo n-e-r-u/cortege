@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.8
+
+- Lieux permanents : requêtes OpenStreetMap encore allégées (simple rectangle, sans calcul des frontières, qui faisait dépasser le délai), et seuls les carrés qui contiennent une ville de la zone sont demandés (118 au lieu de 208). Avancement écrit dans le journal du serveur à chaque zone.
+- Administration : l’onglet ouvert reste dans l’adresse (F5 le rouvre), messages affichés en bas de l’écran, bouton de mise à jour des lieux qui montre ce qu’il fait.
+
 ## 2.3.7
 
 - Lieux permanents : l’import reprend là où il s’était arrêté après un redémarrage du serveur (avant, chaque mise à jour le relançait depuis le début, sans jamais finir).

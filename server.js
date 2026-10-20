@@ -1142,13 +1142,14 @@ function poiData(t, kind) {
 }
 // Requête Overpass pour un carré : France, Belgique, Suisse, Luxembourg, Monaco (et l'outre-mer, inclus dans la France)
 function overpassQuery(s, w, n, e) {
+  // Simple rectangle, sans filtre par pays (le calcul des frontières rendait chaque requête trop lente pour Overpass) :
+  // seuls les carrés qui contiennent une ville de France, Belgique, Suisse, Luxembourg ou Monaco sont demandés (voir placeChunks)
   const b = `(${s},${w},${n},${e})`;
-  return `[out:json][timeout:120];
-(area["ISO3166-1"="FR"][admin_level=2];area["ISO3166-1"="BE"][admin_level=2];area["ISO3166-1"="CH"][admin_level=2];area["ISO3166-1"="LU"][admin_level=2];area["ISO3166-1"="MC"][admin_level=2];)->.a;
-(nwr["amenity"~"^(townhall|police|courthouse|hospital|pharmacy|drinking_water)$"](area.a)${b};
- nwr["office"="government"]["government"="prefecture"](area.a)${b};
- nwr["amenity"="prison"]["name"~"tention",i](area.a)${b};
- nwr["office"="government"]["name"~"tention",i](area.a)${b};);
+  return `[out:json][timeout:90];
+(nwr["amenity"~"^(townhall|police|courthouse|hospital|pharmacy|drinking_water)$"]${b};
+ nwr["office"="government"]["government"="prefecture"]${b};
+ nwr["amenity"="prison"]["name"~"tention",i]${b};
+ nwr["office"="government"]["name"~"tention",i]${b};);
 out center tags qt;`;
 }
 // Plusieurs serveurs Overpass possibles (séparés par des virgules) : si l'un refuse ou ne répond pas, on passe au suivant
@@ -1156,7 +1157,7 @@ const OVERPASS_URLS = OVERPASS_URL.split(',').map(x => x.trim()).filter(Boolean)
 function overpass(query, url) {
   return new Promise((resolve, reject) => {
     const u = new URL(url), body = 'data=' + encodeURIComponent(query);
-    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 150_000,
+    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 120_000,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), 'User-Agent': TILE_UA, 'Accept-Encoding': 'gzip' } }, res => {
       const chunks = []; let size = 0;
       const src = /gzip/.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
@@ -1181,7 +1182,9 @@ function placeChunks() {
   for (const [la1, la2, lo1, lo2] of TILE_ZONES)
     for (let a = la1; a < la2; a += 1) for (let o = lo1; o < lo2; o += 1)
       out.push([a, o, Math.min(a + 1, la2), Math.min(o + 1, lo2)].map(x => Math.round(x * 100) / 100));
-  return out;
+  // Carrés sans aucune ville de la liste (mer, Angleterre, Allemagne, Espagne…) : ignorés
+  const near = ([s, w, n, e]) => PLACES.some(([, la, lo]) => la >= s - 0.15 && la <= n + 0.15 && lo >= w - 0.15 && lo <= e + 0.15);
+  return PLACES.length ? out.filter(near) : out;
 }
 const placesStatus = () => { try { return JSON.parse(getMeta('poisimp') || 'null'); } catch { return null; } };
 const placesRun = () => { try { return JSON.parse(getMeta('poisrun') || 'null'); } catch { return null; } };
@@ -1217,6 +1220,7 @@ async function placesImport(resume = false) {
         }
       });
       save();
+      console.log(`lieux : zone ${run.done + 1}/${chunks.length} (${s}, ${w})${res ? '' : ' en échec'} · ${run.n} lieux en tout`);
       if (res && run.done % 10 === 9) placesPublish(); // la carte se remplit au fur et à mesure
       await wait(Number(process.env.OVERPASS_GAP ?? 3000));
     }

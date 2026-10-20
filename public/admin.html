@@ -115,6 +115,9 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .story-grid img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
 #pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty), #modBadge:not(:empty), #mobBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
+#toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 20px); max-width: min(92vw, 560px); background: #26262c; color: var(--fg); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: .2s; z-index: 50; }
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
 .hours.live { height: 90px; grid-template-columns: repeat(15, minmax(0, 1fr)); }
 .cat-table { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 12px; align-items: center; font-size: 14px; }
 .cat-table label.check { display: flex; align-items: center; gap: 10px; min-height: 40px; }
@@ -583,6 +586,8 @@ async function login() {
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false; document.querySelector('main').classList.add('wide');
+  const want = location.hash.slice(1).toLowerCase(), tab = [...document.querySelectorAll('.tab')].find(b => b.id.slice(3).toLowerCase() === want);
+  if (tab) tab.click();
   $('#navCurrent').textContent = navLabel($('.tab[aria-selected="true"]'));
 }
 $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); });
@@ -598,6 +603,8 @@ function showTab(which) {
   $('#navCurrent').textContent = navLabel($('#tab' + which));
   $('#adminNav').classList.remove('open'); $('#navToggle').setAttribute('aria-expanded', 'false');
   window.scrollTo({ top: 0 });
+  // Garde l'onglet dans l'adresse : F5 rouvre le même onglet
+  try { history.replaceState(null, '', '#' + which.toLowerCase()); } catch {}
 }
 $('#navToggle').onclick = () => { const o = $('#adminNav').classList.toggle('open'); $('#navToggle').setAttribute('aria-expanded', String(o)); };
 $('#tabOrgas').onclick = () => { showTab('Orgas'); loadRequests(); };
@@ -852,7 +859,13 @@ function renderOrgas({ orgas }) {
     ul.append(li);
   }
 }
-function alertMsg(m) { $('#loginMsg').textContent = m; }
+// Messages : bulle en bas de l'écran, visible quel que soit l'endroit de la page
+function alertMsg(m) {
+  $('#loginMsg').textContent = $('#app').hidden ? m : '';
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
+  t.textContent = m; t.classList.add('on'); clearTimeout(alertMsg.t); alertMsg.t = setTimeout(() => t.classList.remove('on'), 6000);
+}
 // Invitation : QR code dessiné ici même (rien ne part chez un service extérieur)
 function showInvite(o) {
   const url = location.origin + '/?invite=' + o.invite;
@@ -1376,7 +1389,7 @@ function renderPlaces(list) {
   }
 }
 $('#plSearch').addEventListener('submit', e => { e.preventDefault(); loadPlaces(true); });
-$('#plImport').onclick = async () => { try { await api('/api/admin/places/import', { method: 'POST', body: '{}' }); alertMsg('Mise à jour lancée : compter 20 à 40 minutes pour toute la zone. Elle reprend toute seule si le serveur redémarre.'); loadPlaces(false); } catch (e) { alertMsg(e.message); } };
+$('#plImport').onclick = async () => { $('#plImport').disabled = true; $('#plState').textContent = 'Lancement…'; try { await api('/api/admin/places/import', { method: 'POST', body: '{}' }); alertMsg('Mise à jour lancée : compter 20 à 40 minutes. Elle reprend toute seule si le serveur redémarre.'); } catch (e) { alertMsg(e.message); } loadPlaces(false); };
 $('#plAdd').addEventListener('submit', async e => {
   e.preventDefault();
   const [lat, lng] = $('#plAddPos').value.split(',').map(x => Number(x.trim()));
