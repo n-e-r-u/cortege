@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.1.1
+
+- La zone de la carte hébergée correspond de nouveau au fichier extrait : l'est de la Suisse s'affiche via OpenStreetMap au lieu de rester vide.
+
 ## 2.1
 
 - Flèche vers la zone calme la plus proche (moins de 2 km), qui marche aussi sans réseau.
@@ -9,7 +13,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 - Affiche A4 imprimable par ville : QR code de l'appli et numéros de legal team.
 - Carte intégrable sur un autre site (`/embed.html`), en lecture seule.
 - Réglages « Texte plus grand » et « Contraste renforcé ».
-- Hors de la zone de la carte hébergée : repli automatique sur OpenStreetMap ; zone élargie à toute la Suisse.
+- Hors de la zone de la carte hébergée : repli automatique sur OpenStreetMap .
 - « Nouveautés » dans le menu, affichées une fois après chaque mise à jour.
 
 ## 2.0
