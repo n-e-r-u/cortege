@@ -91,11 +91,24 @@
       return L.divIcon({ className: '', iconSize: [size, size], html: `<div class="cluster" style="--c:${GROUP_COLOR[g]};width:${size}px;height:${size}px">${n}</div>` });
     },
   }).addTo(map);
-  let mapMode = 'raster';
-  if (mapMode === 'raster') {
+  // Fond de carte : tuiles vectorielles hébergées sur le serveur (PMTiles) si l'instance en a, sinon OpenStreetMap via le proxy
+  function rasterMap() {
     document.body.classList.add('raster');
     L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
   }
+  if (cfg.vector) {
+    const sc = document.createElement('script');
+    sc.src = '/vendor/protomaps-leaflet.js';
+    sc.onload = () => {
+      try {
+        window.protomapsL.leafletLayer({ url: cfg.vector.url, flavor: 'dark', lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
+          attribution: '© <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Protomaps' }).addTo(map);
+        document.body.classList.add('vector');
+      } catch { rasterMap(); }
+    };
+    sc.onerror = rasterMap;
+    document.head.append(sc);
+  } else rasterMap();
 
   // Popup ouvert : les boutons latéraux s'effacent pour ne pas le recouvrir
   map.on('popupopen', () => document.body.classList.add('pop-open'));
@@ -1812,28 +1825,47 @@
     try { const st = await navigator.permissions.query({ name: 'periodic-background-sync' }); if (st.state !== 'granted') return; } catch { return; }
     reg.periodicSync.register('cortege-refresh', { minInterval: 6 * 3600e3 }).catch(() => {});
   }).catch(() => {});
-  // Préchargement désactivé tant que les tuiles viennent d'OpenStreetMap (leur politique l'interdit)
+  // « Prêt pour la manif » : carte de la zone affichée, numéros de legal team, annonces et agenda gardés sur le téléphone.
+  // La carte n'est préchargée que si elle vient de notre serveur (OpenStreetMap interdit le préchargement chez eux).
   if (!cfg.offlineTiles) {
-    ['#btnPrefetch', '#prefetchState', '.tip-prefetch'].forEach(s => { const n = $(s); if (n) n.hidden = true; });
+    ['.tip-prefetch'].forEach(s => { const n = $(s); if (n) n.hidden = true; });
     const tip = $('.tip-browse'); if (tip) tip.hidden = false;
-    $('#prepOffline')?.closest('li')?.remove();
-    prepRender();
   }
+  const readyInfo = () => { try { return JSON.parse(localStorage.getItem('cortege-ready') || 'null'); } catch { return null; } };
+  const showReady = () => { const r = readyInfo(); if (r) $('#prefetchState').textContent = `Dernière préparation : ${new Date(r.at).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}${r.city ? ', ' + r.city : ''}.`; };
+  showReady();
   $('#btnPrefetch').onclick = async () => {
-    const state = $('#prefetchState');
-    const b = map.getBounds(), z0 = Math.max(13, map.getZoom() - 1), z1 = Math.min(18, z0 + 3);
-    const urls = [];
-    for (let z = z0; z <= z1; z++) {
-      const nw = map.project(b.getNorthWest(), z).divideBy(256).floor();
-      const se = map.project(b.getSouthEast(), z).divideBy(256).floor();
-      for (let x = nw.x; x <= se.x; x++) for (let y = nw.y; y <= se.y; y++) urls.push(`/tiles/${z}/${x}/${y}.png`);
-    }
-    if (urls.length > 1500) return (state.textContent = 'Zone trop grande : zoome sur le parcours puis réessaie.');
-    let done = 0;
-    for (let i = 0; i < urls.length; i += 6) {
-      await Promise.all(urls.slice(i, i + 6).map(u => fetch(u).then(() => done++).catch(() => {})));
-      state.textContent = `${done} / ${urls.length} morceaux de carte gardés`;
-    }
-    state.textContent = `Zone gardée (${done} morceaux). La carte s’affichera même si le réseau sature.`;
+    const state = $('#prefetchState'), btn = $('#btnPrefetch');
+    if (btn.dataset.busy) return; btn.dataset.busy = '1';
+    let tiles = 0, bytes = 0, failed = 0;
+    try {
+      if (cfg.offlineTiles) {
+        const b = map.getBounds(), urls = [];
+        const vec = !!cfg.vector, zmax = vec ? cfg.vector.maxzoom : 17;
+        const z0 = Math.max(vec ? 8 : 13, Math.min(map.getZoom(), zmax) - 3), z1 = vec ? zmax : Math.min(18, z0 + 3);
+        for (let z = z0; z <= z1; z++) {
+          const nw = map.project(b.getNorthWest(), z).divideBy(256).floor();
+          const se = map.project(b.getSouthEast(), z).divideBy(256).floor();
+          for (let x = nw.x; x <= se.x; x++) for (let y = nw.y; y <= se.y; y++) urls.push(vec ? `/vt/${z}/${x}/${y}.mvt` : `/tiles/${z}/${x}/${y}.png`);
+        }
+        if (urls.length > 2500) { state.textContent = 'Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie.'; return; }
+        for (let i = 0; i < urls.length; i += 6) {
+          await Promise.all(urls.slice(i, i + 6).map(u => fetch(u).then(async r => { if (r.ok || r.status === 204) { tiles++; bytes += (await r.arrayBuffer()).byteLength; } else failed++; }).catch(() => failed++)));
+          state.textContent = `Carte : ${tiles} / ${urls.length} morceaux…`;
+        }
+      }
+      state.textContent = 'Numéros, annonces et agenda…';
+      const [legal, ann] = await Promise.all([getJ('/live/legal.json').catch(() => ({ l: [] })), getJ('/live/ann.json').catch(() => ({ a: [] })), getJ('/live/events.json').catch(() => null)]);
+      if (legal && legal.l) legalCache = { h: legalCache.h, l: legal.l };
+      if (ann && ann.a) annCache = { h: annCache.h, a: ann.a };
+      await navigator.serviceWorker?.ready?.catch?.(() => {});
+      const n = legalCache.l.length + annCache.a.filter(a => a.kind === 'legal').length;
+      const near = nearestLegal();
+      const size = bytes < 1048576 ? Math.max(1, Math.round(bytes / 1024)) + ' Ko' : (bytes / 1048576).toFixed(1).replace('.', ',') + ' Mo';
+      state.textContent = (cfg.offlineTiles ? `Prêt : carte de la zone gardée (${size})` : 'Prêt')
+        + `, ${n} numéro${n > 1 ? 's' : ''} de legal team${near && near.d < 80000 ? ' (le plus proche : ' + near.phone + ')' : ''}, annonces et agenda. `
+        + (failed ? `${failed} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau.` : 'Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos.');
+      try { localStorage.setItem('cortege-ready', JSON.stringify({ at: Date.now(), city: legalGroups()[0]?.d < 30000 ? legalGroups()[0].city : '' })); } catch {}
+    } finally { delete btn.dataset.busy; }
   };
 })();

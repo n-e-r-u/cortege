@@ -16,10 +16,12 @@ const B_URL = p => B + p;
 
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-'));
+  fs.writeFileSync(DIR + '/carte.pmtiles', require('./pmtiles-fixture').writePmtiles([
+    { z: 13, x: 4182, y: 2994, data: Buffer.from('tuile-montpellier') }, { z: 0, x: 0, y: 0, data: Buffer.from('monde') }]));
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0' },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', TILE_PMTILES: DIR + '/carte.pmtiles' },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
@@ -290,6 +292,19 @@ test('santé : disque et mémoire exposés pour la surveillance', async () => {
   assert.equal(h.ok, true);
   assert.ok(h.diskFreePct === null || (h.diskFreePct >= 0 && h.diskFreePct <= 100));
   assert.equal(typeof h.streams, 'number');
+});
+
+test('carte hébergée : tuiles vectorielles lues dans le fichier PMTiles', async () => {
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.equal(cfg.vector.url, '/vt/{z}/{x}/{y}.mvt'); assert.equal(cfg.vector.maxzoom, 15); assert.equal(cfg.offlineTiles, true);
+  const r = await fetch(B + '/vt/13/4182/2994.mvt');
+  assert.equal(r.status, 200);
+  assert.equal(Buffer.from(await r.arrayBuffer()).toString(), 'tuile-montpellier'); // fetch décompresse le gzip
+  assert.equal((await fetch(B + '/vt/13/1/1.mvt')).status, 204);
+  assert.equal((await fetch(B + '/vt/16/1/1.mvt')).status, 204);
+  const raw = await new Promise(ok => require('http').get(B + '/vt/0/0/0.mvt', { headers: { 'accept-encoding': 'identity' } }, res => {
+    const c = []; res.on('data', d => c.push(d)); res.on('end', () => ok({ enc: res.headers['content-encoding'], body: Buffer.concat(c).toString() })); }));
+  assert.deepEqual(raw, { enc: undefined, body: 'monde' });
 });
 
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {

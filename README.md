@@ -32,6 +32,7 @@ Variables d'environnement :
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » |
 | `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
+| `TILE_PMTILES` | vide | Fichier PMTiles (tuiles vectorielles) : la carte vient du serveur lui-même, et « Prêt pour la manif » peut la garder hors ligne |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
@@ -112,6 +113,19 @@ carte.exemple.org {
 
 Caddy ne garde aucun journal d'accès tant qu'on ne lui en demande pas. Ouvrir les ports TCP 80 et 443, et UDP 443 pour HTTP/3. Mise à jour : `cd /opt/cortege/app && sudo -u cortege git pull && systemctl restart cortege`.
 
+### Carte hébergée sur le serveur (Protomaps)
+
+Sans fournisseur de carte : aucune requête de tes utilisateurices ne part ailleurs, et la carte d'une ville peut être gardée sur le téléphone. Un fichier unique pour la France, la Corse et l'outre-mer (quelques Go), découpé dans les builds quotidiens de [Protomaps](https://docs.protomaps.com/basemaps/downloads) (données OpenStreetMap, ODbL).
+
+```bash
+# Outil pmtiles (binaire unique) : https://github.com/protomaps/go-pmtiles/releases
+install -d -o cortege -g cortege /var/lib/cortege-map
+pmtiles extract https://build.protomaps.com/AAAAMMJJ.pmtiles /var/lib/cortege-map/france.pmtiles \
+  --region=/opt/cortege/app/tools/france.geojson --maxzoom=15
+```
+
+Puis `TILE_PMTILES=/var/lib/cortege-map/france.pmtiles` dans les variables et redémarrage. Pour mettre la carte à jour (tous les quelques mois), refaire l'extraction dans un nouveau fichier, puis le renommer à la place de l'ancien et redémarrer.
+
 ### VPS avec Docker
 
 ```bash
@@ -124,6 +138,7 @@ docker build -t cortege . && docker run -d -p 127.0.0.1:8080:8080 -v cortege-dat
 - **Lectures** : Node publie dans `live/` des fichiers statiques (par zone de ~5 km) qu'Apache sert sans réveiller Node. Ils ne contiennent que ce que la carte affiche publiquement. Les publications sont regroupées et ne touchent que les zones modifiées.
 - **Temps réel** (hors Passenger) : le téléphone s'abonne aux régions de ~100 km qu'il affiche et le serveur le prévient dès qu'une région change ; l'interrogation régulière passe alors à 30 s, comme filet de sécurité.
 - **Rythme des téléphones** : 5 s s'il se passe quelque chose autour (signalement de moins de 15 min ou changement récent), 12 s sinon, 20 s en vue nationale, ×3 en mode économie. Décalage aléatoire de ±15 % pour éviter les pics synchronisés ; espacement jusqu'à 60 s si le réseau sature. Presque toutes les réponses sont des 304 vides.
+- **Carte vectorielle** (`TILE_PMTILES`) : Node lit directement les tuiles dans le fichier PMTiles et les envoie compressées ; le téléphone les dessine (protomaps-leaflet) et les garde en cache.
 - **Tuiles** : chaque tuile téléchargée une fois chez OpenStreetMap est écrite dans `tiles/` ; Apache la sert ensuite. Purge automatique au-delà de 30 jours (`TILE_DAYS`).
 
 ## Anti-abus

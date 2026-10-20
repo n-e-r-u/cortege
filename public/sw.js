@@ -1,7 +1,7 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v32', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v33', TILES = 'cortege-tiles-v1';
 const ASSETS = ['/', '/style.css', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
-  '/vendor/qrcode.js', '/favicon.png', '/brand/logo.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
+  '/vendor/qrcode.js', '/vendor/protomaps-leaflet.js', '/favicon.png', '/brand/logo.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil((async () => {
   for (const k of await caches.keys()) if (k.startsWith('cortege-shell-') && k !== SHELL) await caches.delete(k);
@@ -11,7 +11,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/live/')) return;
 
-  if (url.pathname.startsWith('/tiles/')) {
+  if (url.pathname.startsWith('/tiles/') || url.pathname.startsWith('/vt/')) {
     // Tuiles OSM : cache d'abord. Réseau faible : uniquement le cache, la bande passante va aux signalements.
     e.respondWith(caches.open(TILES).then(async c => {
       const hit = await c.match(e.request);
