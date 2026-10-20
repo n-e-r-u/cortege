@@ -744,7 +744,8 @@ const readArchiveDay = d => { try { return fs.readFileSync(path.join(ARCHIVE_DIR
 // Un point restauré puis expiré apparaît deux fois : on garde sa dernière ligne
 const dedupeRows = list => { const m = new Map(); list.forEach((r, i) => m.set(r.k || 'old' + i, r)); return [...m.values()]; };
 function dayRows(date) {
-  const rows = dedupeRows(readArchiveDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp') }));
+  // Lignes sans heure de fin (anciens formats, imports) : fin = début + durée normale du type
+  const rows = dedupeRows(readArchiveDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp'), e: r.e || r.t + ((CAT[r.c] && BASE_TTL[r.c]) || 20) * MIN }));
   for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date) rows.push({ ...archLine(r, 'active'), e: null });
   // Villes : chaque point est rattaché à sa ville ou à son agglomération (liste de villes embarquée, sans service extérieur)
   const zones = {};
@@ -776,22 +777,22 @@ function pubSnapshot(date) {
     cats: Object.entries(cats).map(([id, n]) => ({ id, label: CAT[id].label, glyph: CAT[id].glyph, group: CAT[id].group, n })).sort((a, b) => b.n - a.n),
     cities: Object.values(cities).map(c => ({ name: c.name, n: c.n, lat: Math.round(c.lat / c.n * 100) / 100, lng: Math.round(c.lng / c.n * 100) / 100 })).sort((a, b) => b.n - a.n),
     first: Math.min(...ts), last: Math.max(...ts), confirmed: rows.filter(r => r.up > 0).length, confs: rows.reduce((t, r) => t + (r.up || 0), 0),
-    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length, pts: pubPts(rows) };
+    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length, pts: pubPts(rows), ptsV: PTS_V };
 }
 // Points de la journée pour la carte d'un créneau (page publique) : sans les signalements retirés ou contestés,
 // position arrondie à ~100 m, heures à la minute, nombre de confirmations, vérifié ou non. Rien d'autre.
-const PUB_PTS_MAX = 30000;
+const PUB_PTS_MAX = 30000, PTS_V = 2; // PTS_V : format des points (2 = heures de fin corrigées)
 function pubPts(rows) {
   return rows.filter(r => CAT[r.c] && !REMOVED_O.has(r.o)).slice(0, PUB_PTS_MAX)
-    .map(r => [r.c, Math.floor(r.t / MIN), Math.floor((r.e || Date.now()) / MIN), Math.round(r.lat * 1e3), Math.round(r.lng * 1e3), r.up || 0, r.v ? 1 : 0]);
+    .map(r => [r.c, Math.floor(r.t / MIN), Math.floor(Math.min(r.e || Date.now(), r.t + 24 * 60 * MIN) / MIN), Math.round(r.lat * 1e3), Math.round(r.lng * 1e3), r.up || 0, r.v ? 1 : 0]);
 }
 // Bilans publiés avant la 2.3.3 : points ajoutés à la première demande, tant que l'archive du jour existe
 function pubWithPts(date) {
   const d = getPub(date);
-  if (!d || d.pts) return d;
+  if (!d || (d.pts && d.ptsV === PTS_V)) return d;
   const { rows } = dayRows(date);
   if (!rows.length) return d;
-  d.pts = pubPts(rows);
+  d.pts = pubPts(rows); d.ptsV = PTS_V;
   q('UPDATE pub SET data=? WHERE date=?').run(JSON.stringify(d), date);
   return d;
 }

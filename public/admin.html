@@ -1427,7 +1427,7 @@ function slotRows(c, R, from, to) {
   const cat = Object.fromEntries(dg.categories.map(x => [x.id, x]));
   const rows = dg.rows.filter(r => cat[r.c] && ($('#dgAll').checked || !REMOVED.has(r.o)))
     .map(r => ({ ...r, cat: cat[r.c], end: r.e || r.t, status: REMOVED.has(r.o) ? (OUTCOME[r.o] || r.o) : '' }));
-  return window.cortegeCreneau.select(rows, c, R, from, to);
+  return window.cortegeCreneau.select(rows, c, R, from, to, dg.date);
 }
 async function slotDraw(c, R, from, to, rows) {
   const n = await window.cortegeCreneau.draw($('#slotCanvas'), { date: dg.date, c, R, from, to, rows, brand });

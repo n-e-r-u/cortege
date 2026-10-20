@@ -14,10 +14,17 @@ async function slotGeocode(q) {
   return { lat: out[0].lat, lng: out[0].lng, name: out[0].name };
 }
 // rows : [{ t, end, lat, lng, cat: { label, group }, up, v, status? }] ; garde ceux actifs pendant le créneau, à moins de R m
-function slotSelect(rows, c, R, from, to) {
+// Bornes du créneau en vraies heures (heure de Paris) : un signalement qui déborde sur le lendemain reste compté
+function parisMs(date, hhmm) {
+  const noon = Date.parse(date + 'T12:00:00Z'), h = +new Date(noon).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false });
+  return Date.parse(date + 'T' + hhmm + ':00Z') - (h - 12) * 3600e3;
+}
+function slotSelect(rows, c, R, from, to, date) {
   const k = Math.cos(c.lat * Math.PI / 180);
+  const inSlot = date ? (a => r => r.t <= a[1] && r.end >= a[0])([parisMs(date, from), parisMs(date, to) + 59999])
+    : r => hm(r.t) <= to && hm(r.end) >= from;
   return rows.map(r => ({ ...r, dist: Math.hypot((r.lat - c.lat) * 111320, (r.lng - c.lng) * 111320 * k) }))
-    .filter(r => r.cat && r.dist <= R && hm(r.t) <= to && hm(r.end) >= from)
+    .filter(r => r.cat && r.dist <= R && inSlot(r))
     .sort((a, b) => a.t - b.t);
 }
 function slotTile(z, x, y) {
@@ -156,5 +163,5 @@ async function slotDraw(cv, { date, c, R, from, to, rows, brand = {}, more = 'vo
    `Étoile : le lieu demandé ; signalements à moins de ${R} m. Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL)${slotCfg && slotCfg.vector ? ', Protomaps' : ''}.`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
   return vec ? vec.length : tiles.length;
 }
-window.cortegeCreneau = { select: slotSelect, draw: slotDraw, geocode: slotGeocode, COL: SLOT_COL, FAM: SLOT_FAM, hm };
+window.cortegeCreneau = { select: slotSelect, parisMs, draw: slotDraw, geocode: slotGeocode, COL: SLOT_COL, FAM: SLOT_FAM, hm };
 })();

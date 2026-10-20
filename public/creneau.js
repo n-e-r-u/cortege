@@ -42,11 +42,11 @@
   function preview() {
     dots.clearLayers();
     const from = $('#from').value, to = $('#to').value;
-    const live = rows.filter(r => C.hm(r.t) <= to && C.hm(r.end) >= from);
+    const lo = C.parisMs(date, from), hi = C.parisMs(date, to) + 59999, live = rows.filter(r => r.t <= hi && r.end >= lo);
     for (const r of live.slice(0, 5000)) L.circleMarker([r.lat, r.lng], { renderer, radius: 5, weight: 1, color: '#fff', fillColor: C.COL[r.cat.group] || '#888', fillOpacity: .9 }).addTo(dots);
     const R = +$('#r').value;
     if (ring) ring.setRadius(R);
-    const n = place ? C.select(rows, place, R, from, to).length : live.length;
+    const n = place ? C.select(rows, place, R, from, to, date).length : live.length;
     $('#count').textContent = place ? `${n} signalement${n > 1 ? 's' : ''} dans la zone sur ce créneau.` : `${live.length} signalement${live.length > 1 ? 's' : ''} sur ce créneau. Choisis un lieu sur la carte.`;
     $('#go').disabled = !place || busy;
   }
@@ -79,7 +79,7 @@
     if (wait > 0) return msg(`Patiente ${Math.ceil(wait / 1000)} s avant la prochaine image.`);
     busy = true; $('#go').disabled = true; msg('Fabrication de l’image…');
     try {
-      const sel = C.select(rows, place, R, from, to);
+      const sel = C.select(rows, place, R, from, to, date);
       await C.draw($('#cv'), { date, c: place, R, from, to, rows: sel, brand: cfg.brand || {}, more: 'zoome ou réduis le créneau' });
       const blob = await new Promise(ok => $('#cv').toBlob(ok, 'image/png'));
       const url = URL.createObjectURL(blob), name = `cortege-${date}-${from.replace(':', 'h')}-${to.replace(':', 'h')}.png`;
