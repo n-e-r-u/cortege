@@ -79,7 +79,8 @@ Dans l'onglet Digest, « Fabriquer les stories » produit 7 visuels 1080 × 1920
 
 ## Pages publiques, affiche et carte à intégrer
 
-- **Bilans** (`/manif`, `/manif/AAAA-MM-JJ`) : publiés depuis l'onglet Digest. Un résumé agrégé est figé à la publication (totaux par ville avec seulement le centre de la ville, types, heures, vérification) ; aucune position de signalement. Il reste en ligne même quand l'archive détaillée est effacée.
+- **Bilans** (`/manif`, `/manif/AAAA-MM-JJ`) : publiés depuis l'onglet Digest. Un résumé agrégé est figé à la publication (totaux par ville avec seulement le centre de la ville, types, heures, vérification). Il reste en ligne même quand l'archive détaillée est effacée.
+- **Carte d'un créneau** (`/manif/AAAA-MM-JJ/carte`, lien en bas de chaque bilan) : tout le monde choisit un lieu, un rayon (2 km au plus) et une plage horaire (6 h au plus), et obtient une image à télécharger ou partager. L'image est fabriquée dans le navigateur de la personne ; le serveur n'envoie qu'un fichier de points figé à la publication, mis en cache (catégorie, heures à la minute, position arrondie à ~100 m, confirmations, vérifié ou non ; jamais les signalements retirés ou contestés), avec une limite de demandes par réseau. L'admin a le même outil dans l'onglet Digest, avec en plus le CSV.
 - **Affiche A4** (`/affiche.html?ville=…`) : QR code de l'appli et numéros de legal team de la ville (annuaire et numéros publiés par les orgas), à imprimer.
 - **Carte à intégrer** (`/embed.html?lat=…&lng=…&z=…`) : lecture seule, sans géolocalisation des visiteur·ices, dans une iframe. C'est la seule page autorisée dans un autre site.
 - **Nouveautés** : `public/nouveautes.json`, affiché une fois après chaque nouvelle version ; historique dans [`CHANGELOG.md`](../CHANGELOG.md).

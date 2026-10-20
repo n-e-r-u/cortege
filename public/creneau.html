@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cortège · carte d’un créneau</title>
+<meta name="description" content="Les signalements d’une manif, sur un lieu et une plage horaire, en une image à partager.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/vendor/leaflet.css">
+<style>
+@font-face { font-family: Inter; font-weight: 400; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 700; src: url(/vendor/fonts/inter-700.woff2) format('woff2'); }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: #121214; color: #f2f1f4; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
+a { color: #ec9fa4; }
+.back { font-size: 14px; text-decoration: none; }
+h1 { margin: 4px 0 0; font-size: 26px; line-height: 1.2; }
+.lead { margin: 4px 0 0; color: #a3a1ad; }
+#map { height: 52vh; min-height: 300px; border-radius: 14px; overflow: hidden; background: #141519; border: 1px solid #34343c; }
+.hint { font-size: 14px; color: #a3a1ad; margin: -6px 0 0; }
+.card { background: #1c1c20; border: 1px solid #34343c; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #a3a1ad; }
+input, select { height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #34343c; background: #121214; color: #f2f1f4; font: inherit; min-width: 0; }
+button, .btn { height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: linear-gradient(135deg, #ec9fa4, #a191d8 60%, #7d86dc); color: #17121f; font: 800 15px system-ui, sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+button.ghost, .btn.ghost { background: transparent; color: #ec9fa4; border: 1px solid #ec9fa4; }
+button:disabled { opacity: .5; cursor: default; }
+.grow { flex: 1; min-width: 180px; }
+#count { font-weight: 700; }
+#msg { margin: 0; font-size: 14px; color: #a3a1ad; }
+#out { width: 100%; border-radius: 12px; display: block; }
+.fine { font-size: 13px; color: #a3a1ad; }
+.star { color: #5b66c4; font-size: 30px; line-height: 30px; text-align: center; text-shadow: 0 0 3px #fff, 0 0 2px #fff; }
+.raster .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6); }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <a class="back" id="back" href="/manif">← Bilan de la journée</a>
+    <h1>Carte d’un créneau</h1>
+    <p class="lead" id="day">—</p>
+  </div>
+  <div id="map" aria-label="Carte : touche un endroit pour choisir le lieu"></div>
+  <p class="hint">Touche la carte pour choisir le lieu, ou cherche une adresse.</p>
+  <form class="card" id="form">
+    <div class="row">
+      <label class="grow">Adresse<input id="q" placeholder="ex. : place de la République, Paris" autocomplete="off"></label>
+      <button type="button" class="ghost" id="search">Chercher</button>
+    </div>
+    <div class="row">
+      <label>De<input type="time" id="from" required></label>
+      <label>À<input type="time" id="to" required></label>
+      <label>Autour du lieu<select id="r">
+        <option value="200">200 m</option><option value="300">300 m</option><option value="500" selected>500 m</option>
+        <option value="700">700 m</option><option value="1000">1 km</option><option value="1500">1,5 km</option><option value="2000">2 km</option>
+      </select></label>
+    </div>
+    <p id="count" class="fine" style="margin:0;color:#f2f1f4;font-weight:700"></p>
+    <p id="msg"></p>
+    <div class="row"><button type="submit" id="go" disabled>Fabriquer l’image</button></div>
+  </form>
+  <section class="card" id="result" hidden>
+    <img id="out" alt="Carte des signalements du créneau">
+    <div class="row"><a class="btn" id="dl" href="#" download>Télécharger</a><button type="button" class="ghost" id="share" hidden>Partager</button></div>
+  </section>
+  <p class="fine">Signalements faits par des participant·es sur Cortège, sans ceux retirés ou contestés. Ils ne sont pas tous vérifiés : à recouper avant de publier. Positions arrondies à environ 100 m. L’image est fabriquée sur ton téléphone ou ton ordinateur. Fond de carte © les contributeur·ices d’OpenStreetMap.</p>
+  <canvas id="cv" hidden></canvas>
+</main>
+<script src="/vendor/leaflet.js"></script>
+<script src="/vendor/protomaps-leaflet.js"></script>
+<script src="/map-style.js"></script>
+<script src="/creneau-draw.js"></script>
+<script src="/creneau.js"></script>
+</body>
+</html>

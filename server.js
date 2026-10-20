@@ -757,8 +757,8 @@ function dayRows(date) {
 }
 
 // ---- Pages publiques par manif (/manif/AAAA-MM-JJ) ----
-// Publiées à la main par l'admin. On fige alors un résumé agrégé (aucune position de point : seulement le centre
-// de chaque ville et des totaux), gardé même quand l'archive détaillée est effacée.
+// Publiées à la main par l'admin. On fige alors un résumé agrégé (la page n'affiche que le centre de chaque ville et des totaux),
+// plus les points arrondis à ~100 m pour la carte d'un créneau, gardés même quand l'archive détaillée est effacée.
 db.exec('CREATE TABLE IF NOT EXISTS pub(date TEXT PRIMARY KEY, t INTEGER, data TEXT)');
 const getPub = date => { const x = q('SELECT data FROM pub WHERE date=?').get(date); return x ? JSON.parse(x.data) : null; };
 const REMOVED_O = new Set(['cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old']);
@@ -776,7 +776,24 @@ function pubSnapshot(date) {
     cats: Object.entries(cats).map(([id, n]) => ({ id, label: CAT[id].label, glyph: CAT[id].glyph, group: CAT[id].group, n })).sort((a, b) => b.n - a.n),
     cities: Object.values(cities).map(c => ({ name: c.name, n: c.n, lat: Math.round(c.lat / c.n * 100) / 100, lng: Math.round(c.lng / c.n * 100) / 100 })).sort((a, b) => b.n - a.n),
     first: Math.min(...ts), last: Math.max(...ts), confirmed: rows.filter(r => r.up > 0).length, confs: rows.reduce((t, r) => t + (r.up || 0), 0),
-    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length };
+    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length, pts: pubPts(rows) };
+}
+// Points de la journée pour la carte d'un créneau (page publique) : sans les signalements retirés ou contestés,
+// position arrondie à ~100 m, heures à la minute, nombre de confirmations, vérifié ou non. Rien d'autre.
+const PUB_PTS_MAX = 30000;
+function pubPts(rows) {
+  return rows.filter(r => CAT[r.c] && !REMOVED_O.has(r.o)).slice(0, PUB_PTS_MAX)
+    .map(r => [r.c, Math.floor(r.t / MIN), Math.floor((r.e || Date.now()) / MIN), Math.round(r.lat * 1e3), Math.round(r.lng * 1e3), r.up || 0, r.v ? 1 : 0]);
+}
+// Bilans publiés avant la 2.3.3 : points ajoutés à la première demande, tant que l'archive du jour existe
+function pubWithPts(date) {
+  const d = getPub(date);
+  if (!d || d.pts) return d;
+  const { rows } = dayRows(date);
+  if (!rows.length) return d;
+  d.pts = pubPts(rows);
+  q('UPDATE pub SET data=? WHERE date=?').run(JSON.stringify(d), date);
+  return d;
 }
 let storyMap = null;
 function mapSvg(cities) {
@@ -838,7 +855,9 @@ ${d.cats.map(c => `<div class="row"><span>${htmlEsc(c.label)}</span><span class=
 <section><h2>Par heure</h2><p class="fine">Le plus d’envois entre ${peak} h et ${(peak + 1) % 24} h (${maxH}).</p><div class="hours" role="img" aria-label="Signalements par heure">${d.hours.map((n, i) => `<div class="${i === peak ? 'pk' : ''}" style="height:${n / maxH * 100}%" title="${i} h : ${n}"></div>`).join('')}</div>
 <div class="ticks">${d.hours.map((_, i) => `<span>${i % 3 ? '' : i + 'h'}</span>`).join('')}</div></section>
 <section><h2>Vérification</h2><div class="kpis"><div class="kpi"><b style="color:#30a46c">${d.confirmed}</b><span>confirmés par au moins une autre personne (${d.confs} confirmations)</span></div>
-<div class="kpi"><b style="color:#8e8cd8">${d.verified}</b><span>vérifiés par une orga certifiée</span></div><div class="kpi"><b style="color:#f5a524">${d.removed}</b><span>retirés avant leur expiration (inclus dans les totaux)</span></div></div></section>`;
+<div class="kpi"><b style="color:#8e8cd8">${d.verified}</b><span>vérifiés par une orga certifiée</span></div><div class="kpi"><b style="color:#f5a524">${d.removed}</b><span>retirés avant leur expiration (inclus dans les totaux)</span></div></div></section>
+<section><h2>Carte d’un créneau</h2><p>Choisis un lieu et une plage horaire : une image avec les signalements de ce moment-là, à télécharger ou partager (presse, legal teams, témoignages).</p>
+<div class="cta" style="grid-template-columns:1fr"><a class="main" href="/manif/${d.date}/carte">Fabriquer une image d’un créneau</a></div></section>`;
   return pubShell(req, { title, desc, body });
 }
 function pubIndex(req) {
@@ -1878,6 +1897,19 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && (pathname === '/manif' || pathname === '/manif/')) return sendPage(res, pubIndex(req));
     const pubM = req.method === 'GET' && pathname.match(/^\/manif\/(\d{4}-\d{2}-\d{2})$/);
     if (pubM) { const d = getPub(pubM[1]); return d ? sendPage(res, pubPage(req, d)) : send(res, 404, 'Bilan non publié'); }
+    // Carte d'un créneau, ouverte à tous pour les bilans publiés : la page et ses points (l'image est fabriquée dans le navigateur)
+    const pubC = req.method === 'GET' && pathname.match(/^\/manif\/(\d{4}-\d{2}-\d{2})\/(carte|points\.json)$/);
+    if (pubC) {
+      if (!getPub(pubC[1])) return send(res, 404, pubC[2] === 'carte' ? 'Bilan non publié' : { error: 'Bilan non publié.' });
+      if (pubC[2] === 'carte') return serveStatic(req, res, '/creneau.html');
+      if (!tx(() => bump('pts:' + clientHash(req), 'vote', 150, Date.now()))) return send(res, 429, { error: 'Trop de demandes : réessaie dans quelques minutes.' }, { 'Retry-After': '120' });
+      const d = pubWithPts(pubC[1]);
+      if (!d.pts) return send(res, 404, { error: 'Les points de cette journée ne sont plus disponibles.' });
+      const body = JSON.stringify({ date: d.date, pts: d.pts, cats: CATEGORIES.map(c => ({ id: c.id, label: c.label, group: c.group })) });
+      const etag = '"' + h8(body) + '"';
+      if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag }); return res.end(); }
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=900', ETag: etag }); return res.end(body);
+    }
     if (req.method === 'POST' && pathname === '/api/orga-requests') {
       if (!tx(() => bump('oreq:' + clientHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });
       return send(res, ...orgaRequest(await readJson(req)));

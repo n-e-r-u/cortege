@@ -331,6 +331,15 @@ test('pages publiques par manif : publiées par l’admin, sans position de sign
   assert.match(html, /Lyon/); assert.match(html, /og:title/);
   assert.ok(!html.includes('45.7601') && !html.includes('4.8401'), 'aucune position précise');
   assert.match(await fetch(B + '/manif').then(x => x.text()), new RegExp('/manif/' + day));
+  // Carte d'un créneau : page ouverte, points arrondis à ~100 m, sans les signalements retirés
+  assert.match(html, new RegExp('/manif/' + day + '/carte'));
+  const cp = await fetch(B + '/manif/' + day + '/carte');
+  assert.equal(cp.status, 200); assert.match(await cp.text(), /creneau\.js/);
+  const pts = await fetch(B + '/manif/' + day + '/points.json').then(r => r.json());
+  const mine = pts.pts.find(x => x[0] === 'nasse' && x[3] === 45760 && x[4] === 4840);
+  assert.ok(mine, 'point présent, arrondi au millième');
+  assert.ok(pts.pts.every(x => x.length === 7 && Number.isInteger(x[3])), 'format compact, rien d’autre');
+  assert.equal((await fetch(B + '/manif/2001-01-01/points.json')).status, 404);
   await fetch(B + '/api/admin/publish/' + day, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
   assert.equal((await fetch(B + '/manif/' + day)).status, 404);
 });

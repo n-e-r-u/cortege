@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.3
+
+- Carte d’un créneau ouverte au public, depuis chaque bilan publié (`/manif/AAAA-MM-JJ/carte`) : on touche la carte (ou on cherche une adresse), on choisit l’heure et le rayon, et on télécharge ou partage l’image.
+- Garde-fous : image fabriquée dans le navigateur (aucun calcul sur le serveur), points figés et mis en cache, nombre de demandes limité par réseau, rayon de 2 km et créneau de 6 h au plus, quelques secondes entre deux images. Les signalements retirés ou contestés n’y figurent jamais.
+
 ## 2.3.2
 
 - Carte d’un créneau : étiquettes placées sans se chevaucher (ni entre elles, ni sur les points ou les traits), sans les cercles d’imprécision ni le cercle du rayon ; logo, adresse du site et compte Instagram en haut de l’image.
