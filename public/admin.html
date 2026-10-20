@@ -17,6 +17,8 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
 }
+@font-face { font-family: Inter; font-weight: 400; font-display: swap; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 700; font-display: swap; src: url(/vendor/fonts/inter-700.woff2) format('woff2'); }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font); }
@@ -559,6 +561,8 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 </main>
 <link rel="stylesheet" href="/vendor/leaflet.css">
 <script src="/vendor/leaflet.js"></script>
+<script src="/vendor/protomaps-leaflet.js"></script>
+<script src="/map-style.js"></script>
 <script src="/vendor/qrcode.js"></script>
 <script src="/stories.js"></script>
 <script>
@@ -1438,9 +1442,32 @@ function slotRows(c, R, from, to) {
 function slotTile(z, x, y) {
   return new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = `/tiles/${z}/${x}/${y}.png`; });
 }
+// Fond de carte de Cortège (tuiles vectorielles du serveur, même style que l'appli), dessiné hors écran puis recopié
+let slotCfg = null;
+async function slotVector(c, mPerPx, W, H) {
+  slotCfg = slotCfg || await fetch('/api/config').then(r => r.json()).catch(() => ({}));
+  if (!slotCfg.vector || !window.protomapsL || !window.cortegeVectorLayer) return null;
+  await window.cortegeMapFonts?.();
+  const box = document.createElement('div');
+  box.style.cssText = `position:fixed;left:-${W + 200}px;top:0;width:${W}px;height:${H}px;background:#141519`;
+  document.body.append(box);
+  const z = Math.log2(156543.03 * Math.cos(c.lat * Math.PI / 180) / mPerPx);
+  const map = L.map(box, { zoomControl: false, attributionControl: false, zoomSnap: 0, fadeAnimation: false, zoomAnimation: false, inertia: false }).setView([c.lat, c.lng], z, { animate: false });
+  const vl = window.cortegeVectorLayer(window.protomapsL, { url: slotCfg.vector.url, lang: 'fr', maxDataZoom: slotCfg.vector.maxzoom, maxZoom: 20 });
+  await new Promise(ok => { vl.once('load', ok); vl.addTo(map); setTimeout(ok, 12000); });
+  await new Promise(ok => setTimeout(ok, 600)); // derniers dessins (noms de rues)
+  const base = box.getBoundingClientRect(), out = [];
+  for (const t of box.querySelectorAll('canvas.leaflet-tile, .leaflet-tile canvas, canvas')) {
+    const r = t.getBoundingClientRect(); if (!r.width || !t.width || !t.height) continue;
+    const copy = document.createElement('canvas'); copy.width = t.width; copy.height = t.height; copy.getContext('2d').drawImage(t, 0, 0); // copie avant de fermer la carte
+    out.push([copy, r.left - base.left, r.top - base.top, r.width, r.height]);
+  }
+  map.remove(); box.remove();
+  return out.length ? out : null;
+}
 async function slotDraw(c, R, from, to, rows) {
   const W = 1600, MH = 1500, TOP = 130, lines = Math.min(rows.length, 24), cols = rows.length > 8 ? 2 : 1;
-  const listH = 50 + Math.ceil(lines / cols) * 34 + (rows.length > lines ? 34 : 0) + 110;
+  const listH = 70 + 34 * (Math.ceil(lines / cols) + 1) + (rows.length > lines ? 34 : 0) + 110;
   const cv = $('#slotCanvas'); cv.width = W; cv.height = TOP + MH + listH;
   const g = cv.getContext('2d');
   // Échelle : le cercle du rayon tient dans la carte, tuiles du zoom juste au-dessus (réduites, donc nettes)
@@ -1451,15 +1478,16 @@ async function slotDraw(c, R, from, to, rows) {
   const px = (lat, lng) => { const [x, y] = world(lat, lng); return [x - ox, y - oy + TOP]; };
   const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
   g.fillStyle = '#121214'; g.fillRect(0, 0, W, cv.height);
-  g.fillStyle = '#e8e6e1'; g.fillRect(0, TOP, W, MH);
+  g.fillStyle = '#141519'; g.fillRect(0, TOP, W, MH);
+  const vec = await slotVector(c, mPerPx, W, MH).catch(() => null);
   const jobs = [];
-  for (let x = Math.floor(ox / T); x <= Math.floor((ox + W) / T); x++) for (let y = Math.floor(oy / T); y <= Math.floor((oy + MH) / T); y++) jobs.push(slotTile(Z, x, y).then(im => im && [im, x, y]));
+  if (!vec) for (let x = Math.floor(ox / T); x <= Math.floor((ox + W) / T); x++) for (let y = Math.floor(oy / T); y <= Math.floor((oy + MH) / T); y++) jobs.push(slotTile(Z, x, y).then(im => im && [im, x, y]));
   const tiles = (await Promise.all(jobs)).filter(Boolean);
   g.save(); g.beginPath(); g.rect(0, TOP, W, MH); g.clip();
-  for (const [im, x, y] of tiles) g.drawImage(im, x * T - ox, y * T - oy + TOP, T + 0.5, T + 0.5);
-  g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(0, TOP, W, MH);
+  if (vec) for (const [el, x, y, w, h] of vec) g.drawImage(el, x, y + TOP, w, h);
+  else { g.fillStyle = '#e8e6e1'; g.fillRect(0, TOP, W, MH); for (const [im, x, y] of tiles) g.drawImage(im, x * T - ox, y * T - oy + TOP, T + 0.5, T + 0.5); g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(0, TOP, W, MH); }
   const [rx, ry] = px(c.lat, c.lng);
-  g.setLineDash([14, 10]); g.lineWidth = 3; g.strokeStyle = 'rgba(91,102,196,.75)'; g.beginPath(); g.arc(rx, ry, R / mPerPx, 0, 2 * Math.PI); g.stroke(); g.setLineDash([]);
+  g.setLineDash([14, 10]); g.lineWidth = 3; g.strokeStyle = 'rgba(161,145,216,.9)'; g.beginPath(); g.arc(rx, ry, R / mPerPx, 0, 2 * Math.PI); g.stroke(); g.setLineDash([]);
   // Points regroupés par position (archive arrondie à ~100 m)
   const groups = new Map();
   rows.forEach((r, i) => { r.n = i + 1; const k = r.lat + ',' + r.lng; if (!groups.has(k)) groups.set(k, { lat: r.lat, lng: r.lng, rows: [] }); groups.get(k).rows.push(r); });
@@ -1469,7 +1497,7 @@ async function slotDraw(c, R, from, to, rows) {
   g.fillStyle = '#5b66c4'; g.strokeStyle = '#fff'; g.lineWidth = 4;
   g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 22; g.lineTo(rx + r * Math.cos(a), ry + r * Math.sin(a)); } g.closePath(); g.stroke(); g.fill();
   // Étiquettes (si peu de groupes), sinon numéros renvoyant à la chronologie
-  const boxes = [], useLabels = groups.size <= 12;
+  const boxes = [{ x: rx - 26, y: ry - 26, w: 52, h: 52 }], useLabels = groups.size <= 12; // l'étoile du lieu reste visible
   const fit = b => !boxes.some(o => b.x < o.x + o.w + 8 && b.x + b.w + 8 > o.x && b.y < o.y + o.h + 8 && b.y + b.h + 8 > o.y) && b.x > 4 && b.x + b.w < W - 4 && b.y > TOP + 4 && b.y + b.h < TOP + MH - 60;
   for (const gr of [...groups.values()].sort((a, b) => px(a.lat, a.lng)[1] - px(b.lat, b.lng)[1])) {
     const [x, y] = px(gr.lat, gr.lng), col = SLOT_COL[gr.rows[0].cat.group] || '#888';
@@ -1520,9 +1548,9 @@ async function slotDraw(c, R, from, to, rows) {
   g.font = '500 19px system-ui, sans-serif'; g.fillStyle = '#a3a1ad';
   [`Signalements faits par des participant·es sur l’appli Cortège ; ${rows.some(r => r.v) ? '✓ = vérifié par une orga ; les autres ne sont pas vérifiés' : 'aucun n’a été vérifié par une orga'} : à recouper.`,
    'Positions arrondies à environ 100 m (cercle de couleur autour de chaque point). Fin = moment où le signalement a disparu de la carte.',
-   `Cercle en pointillés : ${R} m autour du lieu (étoile). Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL).`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
+   `Cercle en pointillés : ${R} m autour du lieu (étoile). Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL)${slotCfg && slotCfg.vector ? ', Protomaps' : ''}.`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
   cv.hidden = false;
-  return tiles.length;
+  return vec ? vec.length : tiles.length;
 }
 $('#slotForm').addEventListener('submit', async e => {
   e.preventDefault();
