@@ -1196,6 +1196,7 @@ async function placesImport(resume = false) {
   placesRunning = (async () => {
     const chunks = placeChunks(), prev = resume ? placesRun() : null;
     const run = prev && prev.total === chunks.length ? prev : { t: Date.now(), total: chunks.length, done: 0, n: 0, errs: 0, err: null };
+    run.err = null; console.log(`lieux : import ${prev && run === prev ? 'repris' : 'lancé'} (${run.done}/${chunks.length} zones faites)`);
     const t0 = run.t, save = () => setMeta('poisrun', JSON.stringify(run));
     save();
     const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
@@ -1205,8 +1206,10 @@ async function placesImport(resume = false) {
       const [s, w, nn, e] = chunks[run.done];
       let res = null;
       for (let tries = 0; tries < 2 * OVERPASS_URLS.length && !res; tries++) {
-        const url = OVERPASS_URLS[tries % OVERPASS_URLS.length];
-        try { res = await overpass(overpassQuery(s, w, nn, e), url); }
+        const url = OVERPASS_URLS[tries % OVERPASS_URLS.length], host = new URL(url).hostname;
+        run.cur = { host, since: Date.now() }; save();
+        console.log(`lieux : zone ${run.done + 1}/${chunks.length}, demande à ${host}…`);
+        try { res = await overpass(overpassQuery(s, w, nn, e), url); run.err = null; }
         catch (err) {
           run.err = `${new URL(url).hostname} · ${err.message}`.slice(0, 160); save();
           if (tries < 2 * OVERPASS_URLS.length - 1) await wait(err.status === 429 ? 60_000 : Number(process.env.OVERPASS_RETRY ?? 15_000));

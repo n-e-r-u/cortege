@@ -1343,7 +1343,8 @@ async function loadPlaces(search = false) {
   }
   const L0 = d.last;
   const R0 = d.running || d.paused;
-  $('#plState').textContent = d.running ? `Mise à jour en cours : ${R0.done || 0} / ${R0.total || '?'} zones, ${fmtN(R0.n || 0)} lieux trouvés${R0.errs ? `, ${R0.errs} zone(s) en échec` : ''}.` + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
+  $('#plState').textContent = d.running ? `Mise à jour en cours : ${R0.done || 0} / ${R0.total || '?'} zones, ${fmtN(R0.n || 0)} lieux trouvés${R0.errs ? `, ${R0.errs} zone(s) en échec` : ''}.`
+      + (R0.cur ? ` Demande en cours à ${R0.cur.host} depuis ${Math.round((Date.now() - R0.cur.since) / 1000)} s.` : '') + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
     : d.paused ? `Mise à jour interrompue à ${R0.done} / ${R0.total} zones (redémarrage du serveur). Elle reprend toute seule dans les minutes qui suivent, ou avec le bouton.` + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
     : L0 ? `Dernière mise à jour : ${dayFr(L0.t)} à ${hhmm(L0.t)} · ${fmtN(L0.n)} lieux${L0.errs ? ` · ${L0.errs} zone(s) en échec (${L0.err || 'serveur OpenStreetMap indisponible'}), relance plus tard` : ''}.`
     : 'Pas encore importés.' + (d.auto ? ' Premier import automatique deux minutes après le démarrage.' : '');

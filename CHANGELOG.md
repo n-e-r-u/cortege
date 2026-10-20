@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.10
+
+- Lieux permanents : l’admin et le journal du serveur montrent la demande en cours (serveur interrogé, depuis combien de temps) ; l’ancienne erreur est effacée à la reprise.
+
 ## 2.3.9
 
 - Lieux permanents : le serveur Overpass de secours (overpass.private.coffee) passe en premier ; overpass-api.de ne répondait pas aux requêtes du serveur.
