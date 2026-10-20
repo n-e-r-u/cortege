@@ -338,7 +338,7 @@ test('pages publiques par manif : publiées par l’admin, sans position de sign
   const pts = await fetch(B + '/manif/' + day + '/points.json').then(r => r.json());
   const mine = pts.pts.find(x => x[0] === 'nasse' && x[3] === 45760 && x[4] === 4840);
   assert.ok(mine, 'point présent, arrondi au millième');
-  assert.ok(pts.pts.every(x => x.length === 7 && Number.isInteger(x[3])), 'format compact, rien d’autre');
+  assert.ok(pts.pts.every(x => (x.length === 7 || x.length === 8) && Number.isInteger(x[3])), 'format compact, rien d’autre');
   assert.equal((await fetch(B + '/manif/2001-01-01/points.json')).status, 404);
   await fetch(B + '/api/admin/publish/' + day, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
   assert.equal((await fetch(B + '/manif/' + day)).status, 404);

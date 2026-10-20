@@ -779,12 +779,15 @@ function pubSnapshot(date) {
     first: Math.min(...ts), last: Math.max(...ts), confirmed: rows.filter(r => r.up > 0).length, confs: rows.reduce((t, r) => t + (r.up || 0), 0),
     verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length, pts: pubPts(rows), ptsV: PTS_V };
 }
-// Points de la journée pour la carte d'un créneau (page publique) : sans les signalements retirés ou contestés,
-// position arrondie à ~100 m, heures à la minute, nombre de confirmations, vérifié ou non. Rien d'autre.
-const PUB_PTS_MAX = 30000, PTS_V = 2; // PTS_V : format des points (2 = heures de fin corrigées)
+// Points de la journée pour la carte d'un créneau (page publique) : position arrondie à ~100 m, heures à la minute,
+// nombre de confirmations, vérifié ou non, et ce qu'est devenu le point. Les points retirés ou contestés restent,
+// avec la mention : un retrait (même par une orga, ou en masse par des votes) ne doit pas faire disparaître ce qui a été signalé.
+const PUB_PTS_MAX = 30000, PTS_V = 3; // PTS_V : format des points (2 = heures de fin corrigées, 3 = devenir du point)
+const PTS_O = ['', 'cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old'];
 function pubPts(rows) {
-  return rows.filter(r => CAT[r.c] && !REMOVED_O.has(r.o)).slice(0, PUB_PTS_MAX)
-    .map(r => [r.c, Math.floor(r.t / MIN), Math.floor(Math.min(r.e || Date.now(), r.t + 24 * 60 * MIN) / MIN), Math.round(r.lat * 1e3), Math.round(r.lng * 1e3), r.up || 0, r.v ? 1 : 0]);
+  return rows.filter(r => CAT[r.c]).slice(0, PUB_PTS_MAX)
+    .map(r => { const o = REMOVED_O.has(r.o) ? Math.max(1, PTS_O.indexOf(r.o)) : 0;
+      return [r.c, Math.floor(r.t / MIN), Math.floor(Math.min(r.e || Date.now(), r.t + 24 * 60 * MIN) / MIN), Math.round(r.lat * 1e3), Math.round(r.lng * 1e3), r.up || 0, r.v ? 1 : 0, ...(o ? [o] : [])]; });
 }
 // Bilans publiés avant la 2.3.3 : points ajoutés à la première demande, tant que l'archive du jour existe
 function pubWithPts(date) {

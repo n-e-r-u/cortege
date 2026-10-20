@@ -15,10 +15,12 @@
   let cfg = {}, data;
   try {
     [cfg, data] = await Promise.all([fetch('/api/config').then(r => r.json()).catch(() => ({})),
-      fetch(`/manif/${date}/points.json?v=2`, { cache: 'no-cache' }).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Indisponible.'); return j; })]);
+      fetch(`/manif/${date}/points.json?v=3`, { cache: 'no-cache' }).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Indisponible.'); return j; })]);
   } catch (e) { return msg(e.message || 'Pas de réseau.'); }
   const cats = Object.fromEntries(data.cats.map(c => [c.id, c]));
-  const rows = data.pts.map(([c, t, e, la, lo, up, v]) => ({ cat: cats[c], t: t * 60000, end: e * 60000, lat: la / 1e3, lng: lo / 1e3, up, v })).filter(r => r.cat);
+  // Devenir du point (8e valeur) : les retirés et contestés restent visibles, avec la mention
+  const OUT = ['', 'contesté (« Plus là »)', 'retiré par une orga', 'retiré par l’admin', 'évincé (zone saturée)', 'effacé (purge)', 'retiré', 'retiré'];
+  const rows = data.pts.map(([c, t, e, la, lo, up, v, o]) => ({ cat: cats[c], t: t * 60000, end: e * 60000, lat: la / 1e3, lng: lo / 1e3, up, v, status: OUT[o || 0] || '' })).filter(r => r.cat);
   if (!rows.length) return msg('Aucun signalement ce jour-là.');
 
   // Créneau par défaut : l'heure la plus chargée de la journée
@@ -43,7 +45,7 @@
     dots.clearLayers();
     const from = $('#from').value, to = $('#to').value;
     const lo = C.parisMs(date, from), hi = C.parisMs(date, to) + 59999, live = rows.filter(r => r.t <= hi && r.end >= lo);
-    for (const r of live.slice(0, 5000)) L.circleMarker([r.lat, r.lng], { renderer, radius: 5, weight: 1, color: '#fff', fillColor: C.COL[r.cat.group] || '#888', fillOpacity: .9 }).addTo(dots);
+    for (const r of live.slice(0, 5000)) L.circleMarker([r.lat, r.lng], r.status ? { renderer, radius: 5, weight: 2, color: C.COL[r.cat.group] || '#888', fillColor: '#141519', fillOpacity: 1 } : { renderer, radius: 5, weight: 1, color: '#fff', fillColor: C.COL[r.cat.group] || '#888', fillOpacity: .9 }).addTo(dots);
     const R = +$('#r').value;
     if (ring) ring.setRadius(R);
     const n = place ? C.select(rows, place, R, from, to, date).length : live.length;

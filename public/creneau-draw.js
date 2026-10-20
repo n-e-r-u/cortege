@@ -115,7 +115,9 @@ async function slotDraw(cv, { date, c, R, from, to, rows, brand = {}, more = 'vo
       g.fillStyle = '#55535f'; g.font = '500 18px system-ui, sans-serif'; g.fillText(p.L2[i], b.x + 14, b.y + 54 + i * 54); });
   }
   for (const p of G) {
-    g.fillStyle = p.col; g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.arc(p.x, p.y, useLabels ? 13 : 19, 0, 2 * Math.PI); g.fill(); g.stroke();
+    // Rond vide : tous les signalements de cet endroit ont été retirés ou contestés
+    const gone = p.rows.every(r => r.status);
+    g.fillStyle = gone ? '#141519' : p.col; g.strokeStyle = gone ? p.col : '#fff'; g.lineWidth = gone ? 5 : 4; g.beginPath(); g.arc(p.x, p.y, useLabels ? 13 : 19, 0, 2 * Math.PI); g.fill(); g.stroke();
     if (!useLabels) { g.fillStyle = '#fff'; g.font = '800 17px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(p.rows.map(r => r.n).slice(0, 2).join(',') + (p.rows.length > 2 ? '…' : ''), p.x, p.y + 6); g.textAlign = 'left'; }
   }
   // Lieu (étoile), au-dessus de tout
@@ -151,15 +153,17 @@ async function slotDraw(cv, { date, c, R, from, to, rows, brand = {}, more = 'vo
   const per = Math.ceil(lines / cols), cw = (W - 80) / cols;
   rows.slice(0, lines).forEach((r, k) => {
     const xx = 40 + Math.floor(k / per) * cw, yy = y + 34 * (k % per + 1);
-    g.fillStyle = SLOT_COL[r.cat.group] || '#888'; g.beginPath(); g.arc(xx + 9, yy - 8, 9, 0, 2 * Math.PI); g.fill();
+    const cc = SLOT_COL[r.cat.group] || '#888'; g.beginPath(); g.arc(xx + 9, yy - 8, 8, 0, 2 * Math.PI);
+    if (r.status) { g.strokeStyle = cc; g.lineWidth = 3; g.stroke(); } else { g.fillStyle = cc; g.fill(); }
     g.fillStyle = '#f2f1f4'; g.fillText(`${useLabels ? '' : r.n + '. '}${hmFr(r.t)}  ${r.cat.label}${r.up ? ` (${r.up} conf.)` : ''}${r.v ? ' ✓' : ''}`, xx + 28, yy);
+    if (r.status) { const w0 = g.measureText(`${useLabels ? '' : r.n + '. '}${hmFr(r.t)}  ${r.cat.label}${r.up ? ` (${r.up} conf.)` : ''}${r.v ? ' ✓' : ''}`).width; g.fillStyle = '#f5a524'; g.font = '500 18px system-ui, sans-serif'; g.fillText(' · ' + (cols > 1 ? r.status.replace(/ \(.*\)| par .*/, '') : r.status), xx + 28 + w0, yy); g.font = '500 22px system-ui, sans-serif'; }
     g.fillStyle = '#a3a1ad'; const e = `→ ${hmFr(r.end)}`; g.fillText(e, xx + cw - 30 - g.measureText(e).width, yy);
   });
   y += 34 * (per + 1);
   if (rows.length > lines) { g.fillStyle = '#a3a1ad'; g.fillText(`… et ${rows.length - lines} autres (${more})`, 40, y); y += 34; }
   g.font = '500 19px system-ui, sans-serif'; g.fillStyle = '#a3a1ad';
   [`Signalements faits par des participant·es sur l’appli Cortège ; ${rows.some(r => r.v) ? '✓ = vérifié par une orga ; les autres ne sont pas vérifiés' : 'aucun n’a été vérifié par une orga'} : à recouper.`,
-   'Positions arrondies à environ 100 m. Fin = moment où le signalement a disparu de la carte.',
+   rows.some(r => r.status) ? 'Rond vide : signalement retiré ou contesté (la mention précise par qui) ; il reste affiché. Positions arrondies à ~100 m. Fin = disparition de la carte.' : 'Positions arrondies à environ 100 m. Fin = moment où le signalement a disparu de la carte.',
    `Étoile : le lieu demandé ; signalements à moins de ${R} m. Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL)${slotCfg && slotCfg.vector ? ', Protomaps' : ''}.`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
   return vec ? vec.length : tiles.length;
 }
