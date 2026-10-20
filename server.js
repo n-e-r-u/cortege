@@ -1146,8 +1146,9 @@ function overpassQuery(s, w, n, e) {
   // Simple rectangle, sans filtre par pays (le calcul des frontières rendait chaque requête trop lente pour Overpass) :
   // seuls les carrés qui contiennent une ville de France, Belgique, Suisse, Luxembourg ou Monaco sont demandés (voir placeChunks)
   const b = `(${s},${w},${n},${e})`;
-  return `[out:json][timeout:90];
-(nwr["amenity"~"^(townhall|police|courthouse|hospital|pharmacy|drinking_water)$"]${b};
+  // Valeurs exactes plutôt qu'une expression régulière : Overpass utilise alors son index, bien plus vite
+  return `[out:json][timeout:170];
+(${['townhall', 'police', 'courthouse', 'hospital', 'pharmacy', 'drinking_water'].map(v => `nwr["amenity"="${v}"]${b};`).join('\n ')}
  nwr["office"="government"]["government"="prefecture"]${b};
  nwr["amenity"="prison"]["name"~"tention",i]${b};
  nwr["office"="government"]["name"~"tention",i]${b};);
@@ -1158,7 +1159,7 @@ const OVERPASS_URLS = OVERPASS_URL.split(',').map(x => x.trim()).filter(Boolean)
 function overpass(query, url) {
   return new Promise((resolve, reject) => {
     const u = new URL(url), body = 'data=' + encodeURIComponent(query);
-    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 120_000,
+    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 190_000,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), 'User-Agent': TILE_UA, 'Accept-Encoding': 'gzip' } }, res => {
       const chunks = []; let size = 0;
       const src = /gzip/.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
@@ -1202,20 +1203,29 @@ async function placesImport(resume = false) {
     const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
       kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
       rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
-    for (; run.done < chunks.length; run.done++) {
-      const [s, w, nn, e] = chunks[run.done];
-      let res = null;
-      for (let tries = 0; tries < 2 * OVERPASS_URLS.length && !res; tries++) {
-        const url = OVERPASS_URLS[tries % OVERPASS_URLS.length], host = new URL(url).hostname;
-        run.cur = { host, since: Date.now() }; save();
-        console.log(`lieux : zone ${run.done + 1}/${chunks.length}, demande à ${host}…`);
-        try { res = await overpass(overpassQuery(s, w, nn, e), url); run.err = null; }
+    // Une zone : chaque serveur essayé ; si aucun ne répond à temps, la zone est coupée en 4 (zones très denses), deux fois au plus
+    const fetchZone = async ([s, w, nn, e], label, depth = 0) => {
+      for (let tries = 0; tries < OVERPASS_URLS.length; tries++) {
+        const url = OVERPASS_URLS[tries], host = new URL(url).hostname;
+        run.cur = { host, since: Date.now(), zone: label }; save();
+        console.log(`lieux : zone ${label}, demande à ${host}…`);
+        try { const r = await overpass(overpassQuery(s, w, nn, e), url); run.err = null; return r; }
         catch (err) {
-          run.err = `${new URL(url).hostname} · ${err.message}`.slice(0, 160); save();
-          if (tries < 2 * OVERPASS_URLS.length - 1) await wait(err.status === 429 ? 60_000 : Number(process.env.OVERPASS_RETRY ?? 15_000));
+          run.err = `${host} · ${err.message}`.slice(0, 160); save();
+          console.error(`lieux : zone ${label} : ${run.err}`);
+          await wait(err.status === 429 ? 60_000 : Number(process.env.OVERPASS_RETRY ?? 10_000));
         }
       }
-      if (!res) { run.errs++; console.error('lieux : carré', s, w, run.err); }
+      if (depth >= 2) return null;
+      const ms = (s + nn) / 2, mw = (w + e) / 2, parts = [[s, w, ms, mw], [s, mw, ms, e], [ms, w, nn, mw], [ms, mw, nn, e]], out = [];
+      for (const [i, q4] of parts.entries()) { const r = await fetchZone(q4.map(x => Math.round(x * 1e4) / 1e4), `${label}.${i + 1}`, depth + 1); if (!r) return null; out.push(...(r.elements || [])); }
+      return { elements: out };
+    };
+    run.failed ||= [];
+    for (; run.done < chunks.length; run.done++) {
+      const [s, w] = chunks[run.done];
+      const res = await fetchZone(chunks[run.done], `${run.done + 1}/${chunks.length}`);
+      if (!res) { run.errs++; run.failed.push(run.done); }
       else if (Array.isArray(res.elements)) tx(() => {
         for (const el of res.elements) {
           const t = el.tags || {}, kind = poiKind(t), lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
@@ -1227,6 +1237,15 @@ async function placesImport(resume = false) {
       console.log(`lieux : zone ${run.done + 1}/${chunks.length} (${s}, ${w})${res ? '' : ' en échec'} · ${run.n} lieux en tout`);
       if (res && run.done % 10 === 9) placesPublish(); // la carte se remplit au fur et à mesure
       await wait(Number(process.env.OVERPASS_GAP ?? 3000));
+    }
+    // Zones en échec : une nouvelle tentative à la fin (souvent un serveur momentanément surchargé)
+    for (const i of run.failed.splice(0)) {
+      const res = await fetchZone(chunks[i], `${i + 1}/${chunks.length} (nouvel essai)`);
+      if (!res) { run.failed.push(i); continue; }
+      run.errs--;
+      tx(() => { for (const el of res.elements || []) { const t = el.tags || {}, kind = poiKind(t), lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
+        if (kind && validLatLng(lat, lng)) { up.run(el.type[0] + el.id, kind, Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, poiRg(lat, lng), JSON.stringify(poiData(t, kind)), t0); run.n++; } } });
+      save(); await wait(Number(process.env.OVERPASS_GAP ?? 3000));
     }
     // Lieux disparus d'OpenStreetMap : retirés seulement si tout l'import a réussi (sinon on garderait une carte trouée)
     if (!run.errs) q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);

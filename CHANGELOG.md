@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.11
+
+- Lieux permanents : requêtes par valeur exacte (index d’Overpass, bien plus rapide qu’une expression régulière), délai porté à 3 minutes ; une zone trop lente est coupée en quatre, et les zones en échec sont retentées à la fin de l’import.
+
 ## 2.3.10
 
 - Lieux permanents : l’admin et le journal du serveur montrent la demande en cours (serveur interrogé, depuis combien de temps) ; l’ancienne erreur est effacée à la reprise.
