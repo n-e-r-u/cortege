@@ -60,7 +60,7 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
   <p>Cortège est une application gratuite, sans publicité, éditée à titre non professionnel par <b>@<span class="handle">neru</span></b> (<a class="site-link" href="https://neru.tv">neru.tv</a>). Conformément à l’article 6, III, 2 de la loi pour la confiance dans l’économie numérique (LCEN), l’éditeur, personne physique non professionnelle, a communiqué ses éléments d’identification à l’hébergeur. Directeur de la publication : l’éditeur.</p>
   <p>Contact : <span class="contact"><span class="todo">adresse à compléter (variable CONTACT_EMAIL)</span></span></p>
   <h3>Hébergeur</h3>
-  <p id="hostInfo">o2switch, Clermont-Ferrand, France — <a href="https://www.o2switch.fr" target="_blank" rel="noopener">www.o2switch.fr</a></p>
+  <p id="hostInfo">Coordonnées de l’hébergeur : voir la variable HOST_INFO de l’instance.</p>
   <h3>Carte et code</h3>
   <p>Fond de carte et recherche de lieux : © les contributeur·ices d’<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, données sous licence ODbL. Le code source de Cortège est libre (licence AGPL-3.0)<span class="source-wrap" hidden> et consultable ici : <a class="source-link" href="#" target="_blank" rel="noopener">code source</a></span>.</p>
 
@@ -98,7 +98,7 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
       <tr><td>Recherche de lieux</td><td>Le texte tapé passe par notre serveur, puis par le service de recherche d’OpenStreetMap (Nominatim), sans ton adresse IP.</td><td>Non conservé</td></tr>
       <tr><td>Stockage sur ton téléphone</td><td>Identifiant aléatoire anti-spam, annonces masquées, morceaux de carte déjà affichés, signalements en attente de réseau, réglages (économie de batterie, agenda masqué sur la carte), dernière situation de la carte et derniers signalements reçus par notification (pour l’afficher sans réseau), contact SOS, et lien d’accès pour les organisations.</td><td>Jusqu’à ce que tu effaces les données du site</td></tr>
       <tr><td>Actions des orgas</td><td>Pour pouvoir corriger un abus, les actions des orgas (vérification, retrait, annonce, événement) sont enregistrées avec l’heure, le nom de l’orga, le type de signalement et une position arrondie à environ 100 m. Aucune adresse IP. Un point retiré reste restaurable une heure. Pour les orgas invitées par une autre orga, l’orga marraine voit aussi leurs dernières actions.</td><td>30 jours (1 h pour un point retiré)</td></tr>
-      <tr><td>Journaux de l’hébergeur</td><td>Comme tout site, l’hébergeur tient des journaux de connexion techniques (adresse IP, date, page demandée). Nous ne les exploitons pas.</td><td>Selon les obligations légales de l’hébergeur</td></tr>
+      <tr id="logsRow"><td>Journaux de l’hébergeur</td><td>Comme tout site, l’hébergeur tient des journaux de connexion techniques (adresse IP, date, page demandée). Nous ne les exploitons pas.</td><td>Selon les obligations légales de l’hébergeur</td></tr>
     </tbody>
   </table>
   </div>
@@ -119,6 +119,12 @@ fetch('/api/config').then(r => r.json()).then(c => {
     n.textContent = ''; const a = document.createElement('a'); a.href = 'mailto:' + c.contact; a.textContent = c.contact; n.append(a);
   });
   if (c.hostInfo) document.querySelector('#hostInfo').textContent = c.hostInfo;
+  if (c.accessLogs === 'none') {
+    const row = document.querySelector('#logsRow').children;
+    row[0].textContent = 'Journaux de connexion';
+    row[1].textContent = 'Le serveur ne tient aucun journal des connexions : ni adresse IP, ni page demandée, ni heure de visite. Comme pour tout site, l’hébergeur et ton opérateur voient seulement qu’une connexion a lieu.';
+    row[2].textContent = 'Aucune conservation';
+  }
   if (c.sourceUrl) { document.querySelector('.source-wrap').hidden = false; document.querySelector('.source-link').href = c.sourceUrl; }
 }).catch(() => {});
 </script>

@@ -309,6 +309,7 @@
   // ---- Synchro : interrogation régulière du serveur (robuste sur hébergement mutualisé) ----
   const POLL_MS = 5000;
   let etag = null, firstSync = true, pollTimer = null, lastOk = 0;
+  const stream = { es: null, ok: false, key: '', t: null };
   const status = $('#status');
   const setStatus = (state, txt) => { status.dataset.state = state; status.querySelector('.txt').textContent = txt; };
   // Le serveur ne reçoit que des carrés arrondis (≈ 5 km au plus près), jamais la position exacte.
@@ -621,7 +622,8 @@
     // 20 s en vue nationale (×3 en économie de batterie) ; on espace en cas d'échec, et on décale au hasard
     // pour que des milliers de téléphones ne demandent pas tous à la même seconde.
     const active = Date.now() - lastActivity < 120_000;
-    const base = (mode === 'all' || mode === 'nat' ? 20000 : active ? POLL_MS : 12000) * (eco ? 3 : 1);
+    // Temps réel connecté : le serveur prévient dès qu'une région affichée change, l'interrogation n'est plus qu'un filet de sécurité
+    const base = (stream.ok && mode !== 'all' && mode !== 'nat' ? 30000 : mode === 'all' || mode === 'nat' ? 20000 : active ? POLL_MS : 12000) * (eco ? 3 : 1);
     const delay = (failures ? Math.min(60000, base * 2 ** Math.min(failures, 3)) : base) * (0.85 + Math.random() * 0.3);
     if (!document.hidden) pollTimer = setTimeout(sync, delay);
   }
@@ -652,6 +654,30 @@
   navigator.serviceWorker?.addEventListener?.('message', async e => {
     if (e.data && e.data.type === 'push-data' && Date.now() - lastOk > 20000) { const p = await cacheGet('/__push'); if (p && p.r) mergeIn(unpack(p), p.at * 1000); }
   });
+  // ---- Temps réel ----
+  // Abonnement aux régions affichées (carrés de 1°, ~100 km, comme les fichiers publiés) : à chaque changement,
+  // le serveur envoie juste « cette région a changé » et l'appli relit les fichiers. Coupé quand l'appli est en arrière-plan.
+  function streamRegions() {
+    const b = map.getBounds(), out = new Set();
+    if (map.getZoom() < 8) return '';
+    for (let i = Math.floor(b.getSouth()); i <= Math.floor(b.getNorth()); i++)
+      for (let j = Math.floor(b.getWest()); j <= Math.floor(b.getEast()); j++) out.add(i + '_' + j);
+    if (me) out.add(Math.floor(me[0]) + '_' + Math.floor(me[1]));
+    return out.size > 8 ? '' : [...out].sort().join(',');
+  }
+  function streamClose() { if (stream.es) { stream.es.close(); stream.es = null; } stream.ok = false; stream.key = ''; }
+  function streamWatch() {
+    if (!cfg.stream || !window.EventSource || document.hidden) return;
+    const key = streamRegions();
+    if (key === stream.key && stream.es) return;
+    streamClose();
+    if (!key) return;
+    stream.key = key;
+    const es = stream.es = new EventSource('/api/stream?r=' + key);
+    es.onopen = () => { stream.ok = true; };
+    es.onerror = () => { stream.ok = false; };
+    es.onmessage = () => { clearTimeout(stream.t); stream.t = setTimeout(() => { etag = null; lastActivity = Date.now(); sync(); }, 250); };
+  }
   // Bandeau : mode léger, ou âge de la dernière situation connue
   const agoTxt = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : `il y a ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };
   function freshness() {
@@ -665,9 +691,9 @@
   setInterval(freshness, 15000);
 
   let moveTimer = null;
-  map.on('moveend', () => { clearTimeout(moveTimer); moveTimer = setTimeout(sync, 400); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); else clearTimeout(pollTimer); });
-  sync();
+  map.on('moveend', () => { clearTimeout(moveTimer); moveTimer = setTimeout(() => { sync(); streamWatch(); }, 400); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { sync(); streamWatch(); } else { clearTimeout(pollTimer); streamClose(); } });
+  sync(); streamWatch();
 
   // ---- Alerte de proximité ----
   function proximity(r) {

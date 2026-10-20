@@ -140,9 +140,15 @@ const LOCK_FILE = STATE_FILE + '.lock';
 // Clé de hachage des IP : jamais dans le dossier web, et renouvelée toutes les 6 h.
 // La clé peut être remplacée par « Tout effacer » (admin) : chaque processus relit le fichier s'il a changé.
 const SECRET_FILE = path.join(DATA_DIR, 'secret');
+// SECRET_STORE=memory (un seul processus, ex. VPS) : la clé n'existe que dans la mémoire du serveur, jamais sur le disque.
+// Une copie ou une saisie du disque ne permet alors pas de recalculer les empreintes. Elle change à chaque redémarrage.
+const SECRET_MEMORY = process.env.SECRET_STORE === 'memory' && !process.env.SECRET;
+let memSecret = SECRET_MEMORY ? crypto.randomBytes(32).toString('hex') : null;
+if (SECRET_MEMORY) try { fs.unlinkSync(SECRET_FILE); } catch {}
 let secretCache = { t: 0, mtime: -1, v: null };
 function secret() {
   if (process.env.SECRET) return process.env.SECRET;
+  if (memSecret) return memSecret;
   const now = Date.now();
   if (secretCache.v && now - secretCache.t < 5000) return secretCache.v;
   secretCache.t = now;
@@ -158,6 +164,7 @@ function secret() {
 }
 function rotateSecret() {
   if (process.env.SECRET) return false;
+  if (SECRET_MEMORY) { memSecret = crypto.randomBytes(32).toString('hex'); return true; }
   const tmp = SECRET_FILE + '.' + process.pid + '.tmp';
   fs.writeFileSync(tmp, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
   fs.renameSync(tmp, SECRET_FILE);
@@ -625,6 +632,32 @@ async function legalWatch(force = false) {
 const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
 
 
+// ---- Villes et agglomérations (digest) ----
+// Liste des villes de plus de 5 000 habitant·es (France, outre-mer, pays voisins francophones), d'après GeoNames (CC BY 4.0).
+// Un point est rattaché à la plus grande ville dont il est assez proche (rayon qui grandit avec la population :
+// environ 14 km pour Paris, 10 km pour Montpellier), sinon à la ville la plus proche.
+const PLACES = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'places.json'), 'utf8')); } catch { return []; } })();
+const PLACE_POP = new Map();
+for (const [n, , , p, c] of PLACES) PLACE_POP.set(n + '|' + c, (PLACE_POP.get(n + '|' + c) || 0) + p);
+const placeCache = new Map();
+function placeOf(lat, lng) {
+  const key = lat.toFixed(2) + ',' + lng.toFixed(2);
+  if (placeCache.has(key)) return placeCache.get(key);
+  const k = Math.cos(lat * Math.PI / 180);
+  let pole = null, near = null, nearD = Infinity;
+  for (const [n, la, lo, , c] of PLACES) {
+    const dy = (la - lat) * 111; if (dy > 30 || dy < -30) continue;
+    const d = Math.hypot(dy, (lo - lng) * 111 * k); if (d > 30) continue;
+    const pop = PLACE_POP.get(n + '|' + c);
+    if (d < nearD) { nearD = d; near = n; }
+    if (pop >= 20000 && d <= Math.min(20, 6 + 4 * Math.log10(pop / 20000)) && (!pole || pop > pole.pop)) pole = { n, pop };
+  }
+  const name = pole ? pole.n : near && nearD <= 15 ? near : `${lat.toFixed(1)}, ${lng.toFixed(1)}`;
+  if (placeCache.size > 50000) placeCache.clear();
+  placeCache.set(key, name);
+  return name;
+}
+
 // ---- Archive anonyme pour le digest ----
 // Gardé : catégorie, heures de début et de fin à la minute, position arrondie à ~100 m, nombre de confirmations
 // et de « Plus là », nombre de précisions (jamais leur texte), vérification, fiabilité, et ce qu'est devenu le point.
@@ -741,11 +774,31 @@ function vapidAuth(endpoint) {
   jwtCache.set(aud, { h, exp: exp * 1000 });
   return h;
 }
-function pushOne(sub, payload) {
+// File d'envoi commune : connexions réutilisées vers les services de notification (Google, Mozilla, Apple),
+// au plus PUSH_PARALLEL envois en même temps, et les annonces urgentes passent devant les alertes de proximité.
+const pushAgent = new https.Agent({ keepAlive: true, maxSockets: 64 });
+const PUSH_PARALLEL = Number(process.env.PUSH_PARALLEL) || 48;
+let pushRunning = 0;
+const pushQueue = { hi: [], lo: [] };
+function pushSlot(urgent) {
+  return new Promise(go => {
+    if (pushRunning < PUSH_PARALLEL) { pushRunning++; return go(); }
+    pushQueue[urgent ? 'hi' : 'lo'].push(go);
+  });
+}
+function pushDone() {
+  const next = pushQueue.hi.shift() || pushQueue.lo.shift();
+  if (next) next(); else pushRunning--;
+}
+async function pushOne(sub, payload, urgent = false) {
+  await pushSlot(urgent);
+  try { return await pushSend(sub, payload); } finally { pushDone(); }
+}
+function pushSend(sub, payload) {
   return new Promise(resolve => {
     let body, u;
     try { body = encryptPush(sub, payload); u = new URL(sub.e); } catch { return resolve(410); }
-    const req = https.request({ method: 'POST', hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, timeout: 10_000,
+    const req = https.request({ method: 'POST', hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, timeout: 10_000, agent: pushAgent,
       headers: { 'Content-Type': 'application/octet-stream', 'Content-Encoding': 'aes128gcm', 'Content-Length': body.length,
         TTL: '3600', Urgency: 'high', Authorization: vapidAuth(sub.e) } }, res => { res.resume(); resolve(res.statusCode); });
     req.on('timeout', () => req.destroy());
@@ -770,14 +823,13 @@ function pushData(lat, lng, now = Date.now()) {
   }
   return { at: Math.round(now / 1000), lat, lng, r: out };
 }
-async function pushSendAll(targets, payload) {
+async function pushSendAll(targets, payload, urgent = false) {
   const dead = [];
   const base = JSON.parse(payload);
-  for (let i = 0; i < targets.length; i += 20) {
-    const batch = targets.slice(i, i + 20);
-    const codes = await Promise.all(batch.map(s => pushOne(s, JSON.stringify({ ...base, d: pushData(s.lat, s.lng) }))));
-    codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(batch[j].id); });
-  }
+  // Les abonné·es d'une même zone (arrondie à ~10 km) reçoivent les mêmes données : calculées une seule fois
+  const memo = new Map(), dataFor = s => { const k = s.lat + ',' + s.lng; if (!memo.has(k)) memo.set(k, pushData(s.lat, s.lng)); return memo.get(k); };
+  const codes = await Promise.all(targets.map(s => pushOne(s, JSON.stringify({ ...base, d: dataFor(s) }), urgent)));
+  codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(targets[j].id); });
   if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
   return dead.length;
 }
@@ -800,7 +852,7 @@ async function pushBroadcast(a) {
   const targets = pushAll().filter(s => s.urg !== 0).filter(s => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8)).map(s => [s.id, s]);
   if (!targets.length) return;
   const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/', vibrate: [300, 100, 300, 100, 300] });
-  const dead = await pushSendAll(targets.map(([, s]) => s), payload);
+  const dead = await pushSendAll(targets.map(([, s]) => s), payload, true);
   console.log(`push : ${targets.length} envoi(s), ${dead} abonnement(s) expiré(s)`);
 }
 
@@ -1012,9 +1064,10 @@ function flush() {
   const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doAll = dirty.all && now - lastAll >= ALL_EVERY;
   const doGlobal = cells.length || doAnn || doEv || doLegal || doAll || dirty.global;
   dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.global = false; if (doAll) dirty.all = false;
+  const changed = new Set();
   if (doGlobal) try {
     withLock(() => {
-      const regions = new Set();
+      const regions = changed;
       for (const c of cells) {
         const rows = q('SELECT * FROM reports WHERE cell=? AND exp>? ORDER BY t').all(c, now).map(publicView);
         const f = path.join(LIVE_DIR, 'c', c + '.json');
@@ -1043,6 +1096,7 @@ function flush() {
     return scheduleFlush(500);
   }
   if (dirty.all && !flushTimer) scheduleFlush(Math.max(FLUSH_MS, ALL_EVERY - (Date.now() - lastAll)));
+  if (doGlobal) streamNotify(changed, doAnn || doEv || doLegal || dirty.global);
 }
 // Tout republier (démarrage, purge) : chaque case active, chaque fichier existant, annonces, agenda.
 function rebuildAll() {
@@ -1097,6 +1151,32 @@ setTimeout(() => {
 if (process.env.LEGAL_WATCH !== '0') setInterval(() => legalWatch().catch(e => console.error('veille annuaire', e.message)), 60 * MIN).unref();
 
 // ---- HTTP helpers ----
+// ---- Temps réel : prévenir les téléphones dès qu'une région change (Server-Sent Events) ----
+// Le téléphone s'abonne aux régions (carrés de 1°, ~100 km) qu'il affiche ; le serveur lui envoie seulement
+// « telle région a changé », et le téléphone relit les fichiers publiés comme d'habitude. Pas de position précise envoyée.
+// Un seul processus (VPS) : sous Passenger, plusieurs processus ne se voient pas, on reste sur l'interrogation régulière.
+const STREAM_ON = process.env.STREAM ? process.env.STREAM === '1' : !UNDER_PASSENGER;
+const STREAM_MAX = Number(process.env.STREAM_MAX) || 20000;
+const sseClients = new Map();
+function streamOpen(req, res, url) {
+  if (!STREAM_ON || sseClients.size >= STREAM_MAX) return send(res, 503, { error: 'Temps réel indisponible, interrogation régulière.' }, { 'Retry-After': '60' });
+  const regions = new Set(String(url.searchParams.get('r') || '').split(',').filter(x => /^-?\d{1,3}_-?\d{1,3}$/.test(x)).slice(0, 8));
+  res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no', Connection: 'keep-alive' });
+  res.write('retry: 5000\n\n');
+  const c = { regions, ping: setInterval(() => res.write(': \n\n'), 25000) };
+  sseClients.set(res, c);
+  const close = () => { clearInterval(c.ping); sseClients.delete(res); };
+  req.on('close', close); res.on('error', close);
+}
+function streamNotify(regions, global) {
+  if (!sseClients.size) return;
+  const rs = [...regions];
+  for (const [res, c] of sseClients) {
+    const mine = rs.filter(r => c.regions.has(r));
+    if (mine.length || global) res.write(`data: ${JSON.stringify({ r: mine, g: global ? 1 : 0 })}\n\n`);
+  }
+}
+
 function send(res, status, body, headers = {}) {
   const isObj = typeof body === 'object' && !Buffer.isBuffer(body);
   res.writeHead(status, {
@@ -1290,8 +1370,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
+    if (req.method === 'GET' && pathname === '/api/stream') return streamOpen(req, res, url);
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS] });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH, groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' });
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1325,7 +1406,13 @@ const server = http.createServer(async (req, res) => {
     // Vérification d'installation : ne renvoie jamais d'IP, seulement si un en-tête a été trouvé.
     if (req.method === 'GET' && pathname === '/api/health') {
       let writable = true; try { fs.accessSync(DATA_DIR, fs.constants.W_OK); } catch { writable = false; }
-      return send(res, 200, { ok: true, nodeOk: !!DatabaseSync, passenger: UNDER_PASSENGER, trustProxy: TRUST_PROXY,
+      // Pour la surveillance (UptimeRobot, mot-clé "ok":true) : ok passe à false si le disque ou la mémoire saturent
+      let diskFree = null, memFree = null;
+      try { const st = fs.statfsSync(DATA_DIR); diskFree = Math.round(st.bavail / st.blocks * 100); } catch {}
+      try { const m = fs.readFileSync('/proc/meminfo', 'utf8'), g = k => +(m.match(new RegExp('^' + k + ':\\s+(\\d+)', 'm')) || [])[1];
+        memFree = Math.round(g('MemAvailable') / g('MemTotal') * 100); } catch {}
+      const healthy = writable && (diskFree == null || diskFree >= 5) && (memFree == null || !Number.isFinite(memFree) || memFree >= 5);
+      return send(res, 200, { ok: healthy, diskFreePct: diskFree, memFreePct: Number.isFinite(memFree) ? memFree : null, streams: sseClients.size, nodeOk: !!DatabaseSync, passenger: UNDER_PASSENGER, trustProxy: TRUST_PROXY,
         ipHeaderSeen: !!(req.headers['x-forwarded-for'] || req.headers['x-real-ip']),
         cdn: !!req.headers['cf-connecting-ip'], ipIsPublic: !PRIVATE_IP.test(clientIp(req)), storageWritable: writable,
         database: 'sqlite', activeReports: q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(Date.now()).n });
@@ -1549,7 +1636,7 @@ const server = http.createServer(async (req, res) => {
           }
         }
         const top = [...zones.values()].sort((a, b) => b.n - a.n).slice(0, 10);
-        for (const z of top.slice(0, 5)) { const d = await nominatim(`/reverse?format=jsonv2&zoom=10&lat=${z.lat}&lon=${z.lng}`); z.name = placeName(d && d.address) || null; }
+        for (const z of top) z.name = placeOf(z.lat, z.lng);
         return send(res, 200, { kinds, hours, zones: top, strict: strictUntil(now), paused: pausedUntil(now),
           trusted: q('SELECT COUNT(*) n FROM devices WHERE COALESCE(good,0) - 2 * COALESCE(bad,0) >= ?').get(TRUST).n,
           unreliable: q('SELECT COUNT(*) n FROM reports WHERE fl=-1 AND up=0 AND exp>?').get(now).n });
@@ -1635,15 +1722,13 @@ const server = http.createServer(async (req, res) => {
       let rows = dedupe(readDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp') }));
       // + les signalements encore actifs de ce jour
       for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date) rows.push({ ...archLine(r, 'active'), e: null });
-      // Villes : carrés de ~10 km, nommés pour les plus actifs
+      // Villes : chaque point est rattaché à sa ville ou à son agglomération (liste de villes embarquée, sans service extérieur)
       const zones = {};
       for (const r of rows) {
-        const zk = (Math.round(r.lat * 10) / 10) + ',' + (Math.round(r.lng * 10) / 10);
-        r.z = zk; (zones[zk] ||= { lat: Math.round(r.lat * 10) / 10, lng: Math.round(r.lng * 10) / 10, n: 0 }).n++;
+        const name = placeOf(r.lat, r.lng);
+        r.z = name; const z = (zones[name] ||= { name, lat: 0, lng: 0, n: 0 }); z.n++; z.lat += r.lat; z.lng += r.lng;
       }
-      const named = Object.entries(zones).sort((a, b) => b[1].n - a[1].n).slice(0, 15);
-      for (const [, z] of named) { const d = await nominatim(`/reverse?format=jsonv2&zoom=10&lat=${z.lat}&lon=${z.lng}`); z.name = placeName(d && d.address) || null; }
-      for (const z of Object.values(zones)) z.name ||= `${z.lat}, ${z.lng}`;
+      for (const z of Object.values(zones)) { z.lat = Math.round(z.lat / z.n * 1000) / 1000; z.lng = Math.round(z.lng / z.n * 1000) / 1000; }
       // Activité des orgas et anti-abus ce jour-là
       const day0 = Date.parse(date + 'T00:00:00+02:00'), lo = day0 - 2 * 3600e3, hi = day0 + 26 * 3600e3;
       const logs = q('SELECT t, oid, action, detail FROM orga_log WHERE t BETWEEN ? AND ?').all(lo, hi).filter(x => parisDay(x.t) === date);
@@ -2006,4 +2091,4 @@ const server = http.createServer(async (req, res) => {
 // Connexions lentes ou abandonnées : on ne les garde pas indéfiniment
 server.headersTimeout = 20_000;
 server.requestTimeout = 30_000;
-server.listen(PORT, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));
+server.listen(PORT, process.env.HOST || undefined, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));

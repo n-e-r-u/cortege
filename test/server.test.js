@@ -261,6 +261,37 @@ test('réseau faible : un seul fichier compact par région, publié même vide',
   assert.ok(pf.r.some(x => x.id === r.id), 'le point est dans le fichier de sa région');
 });
 
+test('temps réel : un nouveau signalement prévient les téléphones abonnés à sa région', async () => {
+  const ctl = new AbortController();
+  const res = await fetch(B + '/api/stream?r=43_3,99_99', { signal: ctl.signal });
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type'), /text\/event-stream/);
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = '';
+  const got = (async () => { while (!buf.includes('data:')) { const { value, done } = await reader.read(); if (done) break; buf += dec.decode(value); } })();
+  await post('/api/reports', { cat: 'police', lat: 43.61, lng: 3.88 });
+  await Promise.race([got, new Promise(r => setTimeout(r, 4000))]);
+  ctl.abort();
+  const msg = JSON.parse(buf.split('data: ')[1].split('\n')[0]);
+  assert.deepEqual(msg.r, ['43_3']);
+});
+
+test('digest : villes regroupées par agglomération, sans service extérieur', async () => {
+  await post('/api/reports', { cat: 'lacrymo', lat: 48.8867, lng: 2.3066 }); // 17e arrondissement, près de Clichy
+  await post('/api/reports', { cat: 'lacrymo', lat: 43.6108, lng: 3.8767 });
+  const d = await fetch(B + '/api/digest', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  const names = Object.values(d.zones).map(z => z.name);
+  assert.ok(names.includes('Paris') && names.includes('Montpellier'), names.join(', '));
+  assert.ok(!names.includes('Clichy'));
+});
+
+test('santé : disque et mémoire exposés pour la surveillance', async () => {
+  const h = await fetch(B + '/api/health').then(r => r.json());
+  assert.equal(h.ok, true);
+  assert.ok(h.diskFreePct === null || (h.diskFreePct >= 0 && h.diskFreePct <= 100));
+  assert.equal(typeof h.streams, 'number');
+});
+
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
   const before = fs.readFileSync(DIR + '/d/secret', 'utf8');

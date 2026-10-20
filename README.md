@@ -35,6 +35,13 @@ Variables d'environnement :
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
+| `HOST` | toutes les adresses | Adresse d'écoute. `127.0.0.1` derrière un proxy sur la même machine (Caddy, Nginx) |
+| `LIVE_DIR` | `live/` du code | Dossier des fichiers publics de la carte, servi directement par le serveur web si possible |
+| `SECRET_STORE` | fichier | `memory` : la clé de hachage n'existe qu'en mémoire, jamais sur le disque (un seul processus ; elle change à chaque redémarrage) |
+| `STREAM` | auto | Temps réel (`/api/stream`). Actif par défaut hors Passenger (un seul processus), `0` pour le couper |
+| `STREAM_MAX` | `20000` | Nombre maximal de téléphones connectés en temps réel (au-delà : interrogation régulière) |
+| `ACCESS_LOGS` | vide | `none` quand le serveur web ne garde aucun journal d'accès (Caddy par défaut) : les mentions légales le disent |
+| `PUSH_PARALLEL` | `48` | Notifications envoyées en même temps |
 | `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 
 ## Logo
@@ -55,6 +62,56 @@ Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jo
 
 Mise à jour depuis une version d'avant SQLite : les données sont reprises automatiquement au premier démarrage.
 
+### VPS (Debian / Ubuntu) avec Caddy
+
+Node derrière Caddy, qui gère le HTTPS et sert directement les fichiers publics de la carte.
+
+```bash
+# Utilisateur, code, données et fichiers publics
+useradd --system --create-home --home-dir /opt/cortege --shell /usr/sbin/nologin cortege
+sudo -u cortege git clone https://github.com/n-e-r-u/cortege /opt/cortege/app
+install -d -o cortege -g cortege -m 700 /var/lib/cortege
+install -d -o cortege -g caddy -m 2750 /srv/cortege-live
+```
+
+`/etc/cortege.env` (droits 600) : `PORT=8080`, `HOST=127.0.0.1`, `TRUST_PROXY=1`, `DATA_DIR=/var/lib/cortege`, `LIVE_DIR=/srv/cortege-live`, `SECRET_STORE=memory`, `ACCESS_LOGS=none`, puis tes autres variables.
+
+Service systemd (`/etc/systemd/system/cortege.service`) :
+
+```ini
+[Service]
+User=cortege
+WorkingDirectory=/opt/cortege/app
+EnvironmentFile=/etc/cortege.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/cortege /srv/cortege-live /opt/cortege/app
+UMask=0027
+```
+
+`/etc/caddy/Caddyfile` :
+
+```
+carte.exemple.org {
+	encode zstd gzip
+	handle_path /live/* {
+		root * /srv/cortege-live
+		header Cache-Control "public, max-age=2, must-revalidate"
+		header X-Content-Type-Options nosniff
+		file_server {
+			hide .htaccess
+		}
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8080
+	}
+}
+```
+
+Caddy ne garde aucun journal d'accès tant qu'on ne lui en demande pas. Ouvrir les ports TCP 80 et 443, et UDP 443 pour HTTP/3. Mise à jour : `cd /opt/cortege/app && sudo -u cortege git pull && systemctl restart cortege`.
+
 ### VPS avec Docker
 
 ```bash
@@ -65,6 +122,7 @@ docker build -t cortege . && docker run -d -p 127.0.0.1:8080:8080 -v cortege-dat
 
 - **Base de données** : SQLite intégré à Node (`node:sqlite`, mode WAL), dans `DATA_DIR`. Plusieurs processus Passenger peuvent écrire en même temps sans se marcher dessus.
 - **Lectures** : Node publie dans `live/` des fichiers statiques (par zone de ~5 km) qu'Apache sert sans réveiller Node. Ils ne contiennent que ce que la carte affiche publiquement. Les publications sont regroupées et ne touchent que les zones modifiées.
+- **Temps réel** (hors Passenger) : le téléphone s'abonne aux régions de ~100 km qu'il affiche et le serveur le prévient dès qu'une région change ; l'interrogation régulière passe alors à 30 s, comme filet de sécurité.
 - **Rythme des téléphones** : 5 s s'il se passe quelque chose autour (signalement de moins de 15 min ou changement récent), 12 s sinon, 20 s en vue nationale, ×3 en mode économie. Décalage aléatoire de ±15 % pour éviter les pics synchronisés ; espacement jusqu'à 60 s si le réseau sature. Presque toutes les réponses sont des 304 vides.
 - **Tuiles** : chaque tuile téléchargée une fois chez OpenStreetMap est écrite dans `tiles/` ; Apache la sert ensuite. Purge automatique au-delà de 30 jours (`TILE_DAYS`).
 
@@ -150,3 +208,7 @@ Onglet Digest de l'administration : chiffres clés, carte du jour, moments clés
 - **Réseau saturé** : sans data, plus de temps réel. Pour les échanges entre personnes sans réseau, Briar (Bluetooth/Wi‑Fi) reste l'outil adapté.
 
 Licence AGPL-3.0 : toute version modifiée mise en ligne doit publier son code.
+
+## Crédits
+
+Noms et positions des villes du digest : [GeoNames](https://www.geonames.org/) (CC BY 4.0), fichier `places.json`.
