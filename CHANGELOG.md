@@ -2,8 +2,9 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
-## 2.2.1
+## 2.3
 
+- Administration › Digest : « Carte d’un créneau ». Pour un jour, un créneau horaire et un lieu (adresse ou coordonnées) avec un rayon, fabrique une image PNG des signalements actifs, avec leurs heures, et le CSV correspondant. Pour répondre aux demandes de médias ou de legal teams.
 - Administration : menu de navigation en colonne, rangé par usage (pendant la manif, organiser, bilans, réglages) ; sur téléphone, un menu déroulant au lieu d'onglets à faire défiler.
 - Administration : cases à cocher alignées avec leur texte.
 

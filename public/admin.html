@@ -505,6 +505,21 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <label class="check digest-toggle"><input type="checkbox" id="dgAll" checked> Compter aussi les signalements retirés ou contestés</label>
     <div class="kpis" id="kpis"></div>
     <section class="card"><h2>Carte du jour</h2><div id="dgMap"></div><div class="legend" id="dgLegend"></div></section>
+    <section class="card">
+      <h2>Carte d’un créneau (pour un média, une legal team)</h2>
+      <form class="stack" id="slotForm">
+        <div class="controls">
+          <label>De<input type="time" id="slotFrom" value="17:00" required></label>
+          <label>À<input type="time" id="slotTo" value="18:00" required></label>
+          <label style="flex:1;min-width:220px">Lieu (adresse, ou « latitude, longitude »)<input id="slotPlace" placeholder="ex. : place Jacques Bonsergent, Paris" required></label>
+          <label>Rayon (m)<input type="number" id="slotR" value="500" min="100" max="5000" step="50" style="width:110px"></label>
+          <button type="submit" id="slotGo">Fabriquer l’image</button>
+        </div>
+      </form>
+      <p class="fine" id="slotMsg">Les signalements actifs pendant le créneau, autour du lieu, sur une carte avec leurs heures : une image PNG à envoyer. Positions arrondies à environ 100 m, comme dans l’archive.</p>
+      <canvas id="slotCanvas" hidden style="width:100%;height:auto;border-radius:10px;margin-top:10px"></canvas>
+      <div class="controls" id="slotActions" hidden style="margin-top:10px"><a class="ghost" id="slotDl" href="#" download>Télécharger l’image</a><button type="button" class="ghost" id="slotCsv">Télécharger les données (CSV)</button></div>
+    </section>
     <section class="card"><h2>Moments clés</h2><ol class="timeline" id="moments"></ol></section>
     <section class="card"><h2>Par type</h2><div class="bars" id="cats"></div></section>
     <section class="card"><h2>Par heure (heure de Paris)</h2><div class="hours stacked" id="hours"></div><div class="hour-labels" id="hourLabels"></div><div class="legend" id="hourLegend"></div></section>
@@ -1399,6 +1414,144 @@ $('#setForm').addEventListener('submit', async e => {
   catch (err) { alertMsg(err.message); }
 });
 $('#tabSettings').onclick = () => { showTab('Settings'); loadSettings(); };
+// ==== Carte d'un créneau : image PNG des signalements actifs pendant un créneau, autour d'un lieu ====
+const SLOT_COL = { fdo: '#e5484d', danger: '#f5a524', soutien: '#30a46c', info: '#8e8cd8' };
+const SLOT_FAM = { fdo: 'Forces de l’ordre', danger: 'Danger', soutien: 'Soutien', info: 'Infos cortège' };
+const hm = t => new Date(t).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
+const hmFr = t => hm(t).replace(':', ' h ');
+let slotData = null;
+async function slotGeocode(q) {
+  const m = q.match(/^\s*(-?\d{1,2}\.\d+)\s*[,; ]\s*(-?\d{1,3}\.\d+)\s*$/);
+  if (m) return { lat: +m[1], lng: +m[2], name: null };
+  const res = await fetch('/api/geocode?q=' + encodeURIComponent(q)); const out = await res.json().catch(() => []);
+  if (!res.ok || !out.length) throw new Error(out.error || 'Lieu introuvable : essaie une autre adresse, ou « latitude, longitude ».');
+  return { lat: out[0].lat, lng: out[0].lng, name: out[0].name };
+}
+function slotRows(c, R, from, to) {
+  const cat = Object.fromEntries(dg.categories.map(x => [x.id, x]));
+  const k = Math.cos(c.lat * Math.PI / 180);
+  return dg.rows.filter(r => cat[r.c] && ($('#dgAll').checked || !REMOVED.has(r.o)))
+    .map(r => ({ ...r, cat: cat[r.c], dist: Math.hypot((r.lat - c.lat) * 111320, (r.lng - c.lng) * 111320 * k), end: r.e || r.t }))
+    .filter(r => r.dist <= R && hm(r.t) <= to && hm(r.end) >= from)
+    .sort((a, b) => a.t - b.t);
+}
+function slotTile(z, x, y) {
+  return new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = `/tiles/${z}/${x}/${y}.png`; });
+}
+async function slotDraw(c, R, from, to, rows) {
+  const W = 1600, MH = 1500, TOP = 130, lines = Math.min(rows.length, 24), cols = rows.length > 8 ? 2 : 1;
+  const listH = 50 + Math.ceil(lines / cols) * 34 + (rows.length > lines ? 34 : 0) + 110;
+  const cv = $('#slotCanvas'); cv.width = W; cv.height = TOP + MH + listH;
+  const g = cv.getContext('2d');
+  // Échelle : le cercle du rayon tient dans la carte, tuiles du zoom juste au-dessus (réduites, donc nettes)
+  const want = 2 * R * 1.25 / MH, base = 156543.03 * Math.cos(c.lat * Math.PI / 180);
+  const Z = Math.min(18, Math.max(10, Math.ceil(Math.log2(base / want)))), K = base / 2 ** Z / want, T = 256 * K, mPerPx = want;
+  const world = (lat, lng) => { const s = T * 2 ** Z, r = lat * Math.PI / 180; return [(lng + 180) / 360 * s, (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * s]; };
+  const [cx, cy] = world(c.lat, c.lng), ox = cx - W / 2, oy = cy - MH / 2;
+  const px = (lat, lng) => { const [x, y] = world(lat, lng); return [x - ox, y - oy + TOP]; };
+  const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  g.fillStyle = '#121214'; g.fillRect(0, 0, W, cv.height);
+  g.fillStyle = '#e8e6e1'; g.fillRect(0, TOP, W, MH);
+  const jobs = [];
+  for (let x = Math.floor(ox / T); x <= Math.floor((ox + W) / T); x++) for (let y = Math.floor(oy / T); y <= Math.floor((oy + MH) / T); y++) jobs.push(slotTile(Z, x, y).then(im => im && [im, x, y]));
+  const tiles = (await Promise.all(jobs)).filter(Boolean);
+  g.save(); g.beginPath(); g.rect(0, TOP, W, MH); g.clip();
+  for (const [im, x, y] of tiles) g.drawImage(im, x * T - ox, y * T - oy + TOP, T + 0.5, T + 0.5);
+  g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(0, TOP, W, MH);
+  const [rx, ry] = px(c.lat, c.lng);
+  g.setLineDash([14, 10]); g.lineWidth = 3; g.strokeStyle = 'rgba(91,102,196,.75)'; g.beginPath(); g.arc(rx, ry, R / mPerPx, 0, 2 * Math.PI); g.stroke(); g.setLineDash([]);
+  // Points regroupés par position (archive arrondie à ~100 m)
+  const groups = new Map();
+  rows.forEach((r, i) => { r.n = i + 1; const k = r.lat + ',' + r.lng; if (!groups.has(k)) groups.set(k, { lat: r.lat, lng: r.lng, rows: [] }); groups.get(k).rows.push(r); });
+  for (const gr of groups.values()) { const [x, y] = px(gr.lat, gr.lng), col = SLOT_COL[gr.rows[0].cat.group] || '#888';
+    g.fillStyle = col + '33'; g.strokeStyle = col + '99'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 55 / mPerPx, 0, 2 * Math.PI); g.fill(); g.stroke(); }
+  // Centre
+  g.fillStyle = '#5b66c4'; g.strokeStyle = '#fff'; g.lineWidth = 4;
+  g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 22; g.lineTo(rx + r * Math.cos(a), ry + r * Math.sin(a)); } g.closePath(); g.stroke(); g.fill();
+  // Étiquettes (si peu de groupes), sinon numéros renvoyant à la chronologie
+  const boxes = [], useLabels = groups.size <= 12;
+  const fit = b => !boxes.some(o => b.x < o.x + o.w + 8 && b.x + b.w + 8 > o.x && b.y < o.y + o.h + 8 && b.y + b.h + 8 > o.y) && b.x > 4 && b.x + b.w < W - 4 && b.y > TOP + 4 && b.y + b.h < TOP + MH - 60;
+  for (const gr of [...groups.values()].sort((a, b) => px(a.lat, a.lng)[1] - px(b.lat, b.lng)[1])) {
+    const [x, y] = px(gr.lat, gr.lng), col = SLOT_COL[gr.rows[0].cat.group] || '#888';
+    if (useLabels) {
+      const L1 = gr.rows.map(r => `${hmFr(r.t)} · ${r.cat.label}`), L2 = gr.rows.map(r => `jusqu’à ${hmFr(r.end)}` + (r.up ? ` · ${r.up} confirmation${r.up > 1 ? 's' : ''}` : '') + (r.v ? ' · vérifié' : '') + (REMOVED.has(r.o) ? ' · ' + (OUTCOME[r.o] || r.o) : ''));
+      g.font = '700 23px system-ui, sans-serif'; const w1 = Math.max(...L1.map(t => g.measureText(t).width));
+      g.font = '500 18px system-ui, sans-serif'; const w2 = Math.max(...L2.map(t => g.measureText(t).width));
+      const w = Math.max(w1, w2) + 28, h = L1.length * 54 + 10;
+      let best = null;
+      for (const [dx, dy] of [[60, -h / 2], [-60 - w, -h / 2], [60, -h - 30], [-60 - w, -h - 30], [60, 30], [-60 - w, 30], [-w / 2, -h - 70], [-w / 2, 70], [120, -h / 2 - 120], [-120 - w, -h / 2 + 120]]) {
+        const b = { x: x + dx, y: y + dy, w, h }; if (fit(b)) { best = b; break; } }
+      if (!best) best = { x: Math.min(Math.max(x + 60, 8), W - w - 8), y: Math.min(Math.max(y - h / 2, TOP + 8), TOP + MH - h - 64), w, h };
+      boxes.push(best);
+      g.strokeStyle = '#17121f'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(Math.min(Math.max(x, best.x), best.x + w), Math.min(Math.max(y, best.y), best.y + h)); g.stroke();
+      g.fillStyle = 'rgba(255,255,255,.96)'; g.strokeStyle = col; g.lineWidth = 4; rr(best.x, best.y, w, h, 10); g.fill(); g.stroke();
+      L1.forEach((t, i) => { g.fillStyle = '#17121f'; g.font = '700 23px system-ui, sans-serif'; g.fillText(t, best.x + 14, best.y + 32 + i * 54);
+        g.fillStyle = '#55535f'; g.font = '500 18px system-ui, sans-serif'; g.fillText(L2[i], best.x + 14, best.y + 54 + i * 54); });
+    }
+    g.fillStyle = col; g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.arc(x, y, useLabels ? 13 : 19, 0, 2 * Math.PI); g.fill(); g.stroke();
+    if (!useLabels) { g.fillStyle = '#fff'; g.font = '800 17px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(gr.rows.map(r => r.n).slice(0, 2).join(',') + (gr.rows.length > 2 ? '…' : ''), x, y + 6); g.textAlign = 'left'; }
+  }
+  g.restore();
+  // Échelle
+  const step = [50, 100, 200, 250, 500, 1000, 2000].find(v => v / mPerPx > 120) || 2000, sl = step / mPerPx, sx = 40, sy = TOP + MH - 36;
+  g.fillStyle = 'rgba(255,255,255,.9)'; rr(sx - 14, sy - 34, sl + 28, 50, 8); g.fill();
+  g.strokeStyle = '#17121f'; g.lineWidth = 4; g.beginPath(); g.moveTo(sx, sy - 6); g.lineTo(sx, sy); g.lineTo(sx + sl, sy); g.lineTo(sx + sl, sy - 6); g.stroke();
+  g.fillStyle = '#17121f'; g.font = '600 20px system-ui, sans-serif'; g.fillText(step >= 1000 ? step / 1000 + ' km' : step + ' m', sx, sy - 12);
+  // Titre
+  const day = new Date(dg.date + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  g.fillStyle = '#f2f1f4'; g.font = '800 40px system-ui, sans-serif'; g.fillText('Signalements Cortège · ' + day, 40, 58);
+  g.fillStyle = '#ec9fa4'; g.font = '600 26px system-ui, sans-serif';
+  g.fillText(`Actifs entre ${from.replace(':', ' h ')} et ${to.replace(':', ' h ')} · ${R} m autour de ${c.label}`.slice(0, 110), 40, 102);
+  // Chronologie
+  let y = TOP + MH + 52;
+  g.fillStyle = '#f2f1f4'; g.font = '700 26px system-ui, sans-serif'; g.fillText(rows.length ? 'Chronologie (début · type · fin)' : 'Aucun signalement sur ce créneau dans cette zone.', 40, y);
+  let lx = W - 40; g.font = '600 20px system-ui, sans-serif';
+  for (const f of [...new Set(rows.map(r => r.cat.group))].reverse()) { const t = SLOT_FAM[f] || f, w = g.measureText(t).width; lx -= w; g.fillStyle = '#f2f1f4'; g.fillText(t, lx, y); lx -= 26; g.fillStyle = SLOT_COL[f]; g.beginPath(); g.arc(lx + 10, y - 7, 9, 0, 2 * Math.PI); g.fill(); lx -= 24; }
+  y += 18; g.font = '500 22px system-ui, sans-serif';
+  const per = Math.ceil(lines / cols), cw = (W - 80) / cols;
+  rows.slice(0, lines).forEach((r, k) => {
+    const xx = 40 + Math.floor(k / per) * cw, yy = y + 34 * (k % per + 1);
+    g.fillStyle = SLOT_COL[r.cat.group] || '#888'; g.beginPath(); g.arc(xx + 9, yy - 8, 9, 0, 2 * Math.PI); g.fill();
+    g.fillStyle = '#f2f1f4'; g.fillText(`${useLabels ? '' : r.n + '. '}${hmFr(r.t)}  ${r.cat.label}${r.up ? ` (${r.up} conf.)` : ''}${r.v ? ' ✓' : ''}`, xx + 28, yy);
+    g.fillStyle = '#a3a1ad'; const e = `→ ${hmFr(r.end)}`; g.fillText(e, xx + cw - 30 - g.measureText(e).width, yy);
+  });
+  y += 34 * (per + 1);
+  if (rows.length > lines) { g.fillStyle = '#a3a1ad'; g.fillText(`… et ${rows.length - lines} autres (voir le fichier CSV)`, 40, y); y += 34; }
+  g.font = '500 19px system-ui, sans-serif'; g.fillStyle = '#a3a1ad';
+  [`Signalements faits par des participant·es sur l’appli Cortège ; ${rows.some(r => r.v) ? '✓ = vérifié par une orga ; les autres ne sont pas vérifiés' : 'aucun n’a été vérifié par une orga'} : à recouper.`,
+   'Positions arrondies à environ 100 m (cercle de couleur autour de chaque point). Fin = moment où le signalement a disparu de la carte.',
+   `Cercle en pointillés : ${R} m autour du lieu (étoile). Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL).`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
+  cv.hidden = false;
+  return tiles.length;
+}
+$('#slotForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!dg) return;
+  const from = $('#slotFrom').value, to = $('#slotTo').value, R = Math.min(5000, Math.max(100, +$('#slotR').value || 500));
+  if (to < from) { $('#slotMsg').textContent = 'L’heure de fin est avant l’heure de début.'; return; }
+  $('#slotGo').disabled = true; $('#slotMsg').textContent = 'Recherche du lieu et fabrication de l’image…';
+  try {
+    const c = await slotGeocode($('#slotPlace').value);
+    c.label = c.name || $('#slotPlace').value.trim();
+    const rows = slotRows(c, R, from, to);
+    const nTiles = await slotDraw(c, R, from, to, rows);
+    slotData = { c, R, from, to, rows };
+    const name = `cortege-${dg.date}-${from.replace(':', 'h')}-${to.replace(':', 'h')}`;
+    $('#slotDl').href = $('#slotCanvas').toDataURL('image/png'); $('#slotDl').download = name + '.png';
+    $('#slotActions').hidden = false;
+    $('#slotMsg').textContent = `${rows.length} signalement(s) actif(s) sur le créneau, à moins de ${R} m de « ${c.label} ».` + (nTiles ? '' : ' Fond de carte indisponible pour l’instant : réessaie dans un moment.');
+  } catch (err) { $('#slotMsg').textContent = err.message || 'Impossible de fabriquer l’image.'; }
+  $('#slotGo').disabled = false;
+});
+$('#slotCsv').onclick = () => {
+  if (!slotData) return;
+  const iso = t => new Date(t).toLocaleString('sv-SE', { timeZone: 'Europe/Paris' }).slice(0, 16);
+  const esc = v => /[;"\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+  const lines = ['debut;fin;type;famille;latitude;longitude;distance_m;confirmations;plus_la;verifie;devenir',
+    ...slotData.rows.map(r => [iso(r.t), iso(r.end), r.cat.label, SLOT_FAM[r.cat.group] || r.cat.group, r.lat, r.lng, Math.round(r.dist / 10) * 10, r.up, r.dn ?? '', r.v ? 'oui' : 'non', OUTCOME[r.o] || r.o].map(esc).join(';'))];
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv' }));
+  a.download = `cortege-${dg.date}-${slotData.from.replace(':', 'h')}-${slotData.to.replace(':', 'h')}.csv`; document.body.append(a); a.click(); a.remove();
+};
 </script>
 </body>
 </html>
