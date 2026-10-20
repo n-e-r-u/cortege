@@ -1,0 +1,11 @@
+{
+  "version": "2.1",
+  "items": [
+    ["🕊 Flèche vers la zone calme", "Quand une zone calme est signalée à moins de 2 km, une flèche t’y guide, même sans réseau."],
+    ["📊 Bilans des manifs", "Chaque grosse journée a sa page publique : villes, types de signalements, heures. Dans le menu, « Bilans »."],
+    ["🖨 Affiche à imprimer", "Une affiche A4 avec le QR code de l’appli et les numéros de legal team de ta ville, pour les AG, les facs, les locaux."],
+    ["🧩 La carte sur ton site", "Médias, collectifs, syndicats : la carte en direct de votre ville, à intégrer dans une page web."],
+    ["🔤 Texte plus grand, contraste renforcé", "Deux nouveaux réglages dans le menu, pour mieux lire en plein soleil ou avec une vue fatiguée."],
+    ["🗺 Carte partout", "Hors de France, en Belgique, en Suisse et au-delà, la carte s’affiche aussi."]
+  ]
+}

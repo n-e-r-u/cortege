@@ -58,6 +58,8 @@
 
 <div class="crosshair" id="crosshair" hidden aria-hidden="true"><span></span></div>
 
+<button class="calm-nav" id="calmNav" hidden aria-live="polite"><span class="arrow" id="calmArrow" aria-hidden="true">↑</span><span id="calmTxt"></span></button>
+
 <div class="tools">
   <button class="round install-tool" id="btnInstallTool" hidden title="Installer l’appli" aria-label="Installer l’appli">⤓</button>
   <button class="round" id="btnSearch" title="Chercher une ville" aria-label="Chercher une ville">⌕</button>
@@ -185,6 +187,10 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"></path></svg></span><span><b>Partager</b><small>QR code à scanner</small></span></button>
     <a class="tile tile-kofi" id="kofiLink" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer"><span class="ico" aria-hidden="true"><img class="kofi-ico sm" src="/brand/kofi.png" alt="" width="22" height="18"></span><span><b>Soutenir</b><small>Payer le serveur, sur Ko-fi</small></span></a>
   </div>
+  <div class="tiles">
+    <a class="tile" href="/affiche.html" id="btnPoster"><span class="ico" aria-hidden="true">🖨</span><span><b>Affiche</b><small>À imprimer pour ta ville</small></span></a>
+    <button class="tile" id="btnEmbed"><span class="ico" aria-hidden="true">🧩</span><span><b>Sur ton site</b><small>Intégrer la carte</small></span></button>
+  </div>
   <a class="github-card" id="githubLink" href="https://github.com/n-e-r-u/cortege" target="_blank" rel="noopener noreferrer">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"></path></svg>
     <span><b>Le code est ouvert, sur GitHub</b><small>Vérifier ce que fait l’appli, proposer une idée, signaler un bug, contribuer</small></span>
@@ -207,12 +213,25 @@
     <li id="onionTip" hidden><b>Avec Tor.</b> Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) : <code id="onionAddr"></code> <button type="button" class="link-btn" id="onionCopy">copier</button></li>
   </ul>
 
+  <div class="tiles">
+    <a class="tile" href="/manif"><span class="ico" aria-hidden="true">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span></a>
+    <button class="tile" id="btnNews"><span class="ico" aria-hidden="true">✨</span><span><b>Nouveautés</b><small id="newsVersion">Version</small></span></button>
+  </div>
+
   <h3 class="menu-group">Réglages</h3>
   <button class="secondary" id="btnNotifInfo" hidden>🔔 Alertes et notifications</button>
   <button class="secondary" id="btnPrepInfo" hidden>🎒 Bien se préparer</button>
   <label class="switch">
     <input type="checkbox" id="optEco">
     <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="optBig">
+    <span class="switch-txt"><b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="optContrast">
+    <span class="switch-txt"><b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span></span>
   </label>
   <p class="fine menu-foot"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
 </section>
@@ -234,6 +253,27 @@
     <span>Cortège est un projet de <a class="handle-link" id="shareIg" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a></span>
     <a id="shareSite" href="https://neru.tv" target="_blank" rel="noopener noreferrer">neru.tv</a>
   </div>
+</section>
+
+<!-- Nouveautés -->
+<section class="sheet" id="sheetNews" hidden aria-labelledby="nwTitle">
+  <div class="sheet-head">
+    <h2 id="nwTitle">Nouveautés</h2>
+    <button class="x" id="nwClose" aria-label="Fermer">×</button>
+  </div>
+  <ul class="news" id="newsList"></ul>
+  <p class="fine">Le détail de chaque version est sur GitHub (fichier CHANGELOG).</p>
+</section>
+
+<!-- Carte à intégrer -->
+<section class="sheet" id="sheetEmbed" hidden aria-labelledby="emTitle">
+  <div class="sheet-head">
+    <h2 id="emTitle">La carte sur ton site</h2>
+    <button class="x" id="emClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="fine">Pour un média, un collectif ou un syndicat : la carte en direct de la zone affichée, en lecture seule, à coller dans une page web. Elle ne demande pas la position des visiteur·ices.</p>
+  <textarea id="embedCode" rows="4" readonly></textarea>
+  <div class="row2"><button class="secondary" id="embedCopy">Copier le code</button><a class="secondary" id="embedOpen" href="/embed.html" target="_blank" rel="noopener">Aperçu</a></div>
 </section>
 
 <!-- Demande d'accès orga -->

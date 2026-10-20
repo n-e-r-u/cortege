@@ -140,7 +140,7 @@ pmtiles extract https://build.protomaps.com/AAAAMMJJ.pmtiles /var/lib/cortege-ma
   --region=/opt/cortege/app/tools/france.geojson --maxzoom=15
 ```
 
-Puis `TILE_PMTILES=/var/lib/cortege-map/france.pmtiles` dans les variables et redémarrage. Pour mettre la carte à jour (tous les quelques mois), refaire l'extraction dans un nouveau fichier, puis le renommer à la place de l'ancien et redémarrer.
+Puis `TILE_PMTILES=/var/lib/cortege-map/france.pmtiles` dans les variables et redémarrage. Hors des zones de `tools/france.geojson`, la carte se replie sur OpenStreetMap (via le proxy du serveur) ; `TILE_PMTILES_REGION` si tu as extrait une autre région. Pour mettre la carte à jour (tous les quelques mois), refaire l'extraction dans un nouveau fichier, puis le renommer à la place de l'ancien et redémarrer.
 
 ### Adresse .onion (Tor)
 
@@ -273,6 +273,13 @@ Onglet Digest de l'administration : chiffres clés, carte du jour, moments clés
 - **Réseau saturé** : sans data, plus de temps réel. Pour les échanges entre personnes sans réseau, Briar (Bluetooth/Wi‑Fi) reste l'outil adapté.
 
 Licence AGPL-3.0 : toute version modifiée mise en ligne doit publier son code.
+
+## Pages publiques, affiche et carte à intégrer
+
+- **Bilans** (`/manif`, `/manif/AAAA-MM-JJ`) : publiés depuis l'onglet Digest. Un résumé agrégé est figé à la publication (totaux par ville avec seulement le centre de la ville, types, heures, vérification) ; aucune position de signalement. Il reste en ligne même quand l'archive détaillée est effacée.
+- **Affiche A4** (`/affiche.html?ville=…`) : QR code de l'appli et numéros de legal team de la ville (annuaire et numéros publiés par les orgas), à imprimer.
+- **Carte à intégrer** (`/embed.html?lat=…&lng=…&z=…`) : lecture seule, sans géolocalisation des visiteur·ices, dans une iframe. C'est la seule page autorisée dans un autre site.
+- **Nouveautés** : `public/nouveautes.json`, affiché une fois après chaque nouvelle version ; historique dans `CHANGELOG.md`.
 
 ## Stories du digest
 

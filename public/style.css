@@ -478,3 +478,30 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .round.menu-btn { color: var(--fg); }
 
 #onionAddr { word-break: break-all; font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 6px; }
+
+/* ---- Flèche vers la zone calme ---- */
+.calm-nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 140px); z-index: 1000;
+  display: inline-flex; align-items: center; gap: 10px; max-width: calc(100vw - 150px); padding: 8px 14px 8px 8px; border-radius: 99px;
+  background: var(--surface); border: 1px solid var(--soutien); color: var(--fg); font: inherit; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.45); }
+.calm-nav[hidden] { display: none; }
+.calm-nav .arrow { width: 30px; height: 30px; border-radius: 50%; background: var(--soutien); color: #04150c; display: grid; place-items: center; font-size: 18px; font-weight: 900; transition: transform .25s; flex: none; }
+.calm-nav span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.drawing .calm-nav, .pop-open .calm-nav { display: none; }
+@media (prefers-reduced-motion: reduce) { .calm-nav .arrow { transition: none; } }
+/* ---- Carte hors zone : tuiles OpenStreetMap assombries comme l'ancienne carte ---- */
+.osm-fallback { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6); }
+/* ---- Nouveautés, intégration ---- */
+.news { list-style: none; padding: 0; margin: 8px 0 12px; display: flex; flex-direction: column; gap: 10px; }
+.news li { background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.news b { display: block; font-size: 15px; }
+.news span { display: block; font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+#embedCode { width: 100%; font: 12px/1.4 var(--font-num); background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin: 8px 0; resize: none; }
+#sheetEmbed .row2 a { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+/* ---- Accessibilité ---- */
+body.big .sheet > *, body.big .bottombar > *, body.big .overlays > * { zoom: 1.15; }
+body.big .round, body.big .calm-nav { zoom: 1.12; }
+body.contrast { --fg: #ffffff; --muted: #d6d4dc; --line: #6b6977; --surface: #0b0b0d; --surface-2: #1b1b20; }
+body.contrast .sheet, body.contrast .round, body.contrast .tile, body.contrast .chip { border-width: 2px; }
+body.contrast .leaflet-container { filter: contrast(1.15); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-contrast: more) { body { --fg: #ffffff; --muted: #d6d4dc; --line: #6b6977; } }

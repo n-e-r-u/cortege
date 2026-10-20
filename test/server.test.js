@@ -319,6 +319,33 @@ test('demandes d’accès orga : formulaire public, liste admin, suppression', a
   assert.equal((await fetch(B + '/api/admin/orga-requests', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json())).list.length, 0);
 });
 
+test('pages publiques par manif : publiées par l’admin, sans position de signalement', async () => {
+  const day = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  await post('/api/reports', { cat: 'nasse', lat: 45.7601, lng: 4.8401 });
+  assert.equal((await fetch(B + '/manif/' + day)).status, 404);
+  const pub = await fetch(B + '/api/admin/publish/' + day, { method: 'POST', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' }, body: '{}' });
+  assert.equal(pub.status, 200);
+  const r = await fetch(B + '/manif/' + day), html = await r.text();
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('content-security-policy'), /default-src 'none'/);
+  assert.match(html, /Lyon/); assert.match(html, /og:title/);
+  assert.ok(!html.includes('45.7601') && !html.includes('4.8401'), 'aucune position précise');
+  assert.match(await fetch(B + '/manif').then(x => x.text()), new RegExp('/manif/' + day));
+  await fetch(B + '/api/admin/publish/' + day, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  assert.equal((await fetch(B + '/manif/' + day)).status, 404);
+});
+
+test('carte à intégrer : seule embed.html peut s’afficher dans un autre site', async () => {
+  const e = await fetch(B + '/embed.html');
+  assert.match(e.headers.get('content-security-policy'), /frame-ancestors \*/);
+  assert.equal(e.headers.get('x-frame-options'), null);
+  const i = await fetch(B + '/');
+  assert.match(i.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.ok(cfg.vector.zones.length >= 1 && cfg.vector.zones[0].length === 4);
+  assert.equal(cfg.version, require('../package.json').version);
+});
+
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
   const before = fs.readFileSync(DIR + '/d/secret', 'utf8');

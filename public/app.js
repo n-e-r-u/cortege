@@ -97,6 +97,16 @@
     sc.src = '/vendor/protomaps-leaflet.js';
     sc.onload = () => {
       try {
+        // Hors de la zone du fichier de carte : repli sur OpenStreetMap (via le serveur), seulement pour les tuiles hors zone
+        const zones = cfg.vector.zones || [];
+        if (zones.length) {
+          const Fallback = L.TileLayer.extend({ _isValidTile(c) {
+            if (!L.TileLayer.prototype._isValidTile.call(this, c)) return false;
+            const b = this._tileCoordsToBounds(c);
+            return !zones.some(([so, no, we, ea]) => b.getSouth() >= so && b.getNorth() <= no && b.getWest() >= we && b.getEast() <= ea);
+          } });
+          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: '© OpenStreetMap' }).addTo(map);
+        }
         window.protomapsL.leafletLayer({ url: cfg.vector.url, flavor: 'dark', lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
           attribution: '© <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Protomaps' }).addTo(map);
         document.body.classList.add('vector');
@@ -160,6 +170,30 @@
     }
   }
   const calmHidden = r => calmSt.get(r.id)?.lvl === 'hid';
+  // ---- Flèche vers la zone calme la plus proche (marche aussi hors ligne, avec les points déjà reçus) ----
+  let calmTarget = null;
+  const bearing = (a, b) => { const r = Math.PI / 180, y = Math.sin((b[1] - a[1]) * r) * Math.cos(b[0] * r),
+    x = Math.cos(a[0] * r) * Math.sin(b[0] * r) - Math.sin(a[0] * r) * Math.cos(b[0] * r) * Math.cos((b[1] - a[1]) * r); return (Math.atan2(y, x) / r + 360) % 360; };
+  function calmNav() {
+    const btn = $('#calmNav'); if (!btn) return;
+    calmTarget = null;
+    if (me) {
+      let best = null, bd = 2000;
+      for (const { data: r } of reports.values()) {
+        if (r.cat !== 'calme' || r.c || r.exp < Date.now()) continue;
+        const st = calmSt.get(r.id); if (st && (st.lvl === 'hid' || st.lvl === 'sus')) continue;
+        const d = dist(me, [r.lat, r.lng]); if (d < bd) { bd = d; best = r; }
+      }
+      if (best) calmTarget = { r: best, d: bd };
+    }
+    btn.hidden = !calmTarget;
+    if (!calmTarget) return;
+    const h = heading ?? gpsHeading, b = bearing(me, [calmTarget.r.lat, calmTarget.r.lng]);
+    $('#calmArrow').style.transform = `rotate(${(b - (h ?? 0) + 360) % 360}deg)`;
+    const m = calmTarget.d < 1000 ? Math.round(calmTarget.d / 10) * 10 + ' m' : (calmTarget.d / 1000).toFixed(1).replace('.', ',') + ' km';
+    $('#calmTxt').textContent = `🕊 Zone calme · ${m}${h == null ? ' (flèche : nord en haut)' : ''}`;
+    btn.setAttribute('aria-label', `Zone calme la plus proche à ${m}. Afficher sur la carte.`);
+  }
   // « C'est calme ici » : compte comme un « Plus là » fait sur place pour chaque danger voisin
   async function calmHere(st) {
     const todo = st.ids.filter(id => !voted.has(id));
@@ -347,7 +381,7 @@
       if (fresh) proximity(r);
     }
     firstSync = false;
-    regroup();
+    regroup(); calmNav();
     refreshUI();
   }
 
@@ -755,7 +789,7 @@
     if (rawHeading == null) rawHeading = h;
     else { const d = ((h - rawHeading + 540) % 360) - 180; rawHeading = (rawHeading + d * 0.25 + 360) % 360; }
     heading = Math.round(rawHeading);
-    if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; drawHeading(); }); }
+    if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; drawHeading(); if (calmTarget) calmNav(); }); }
   }
   async function enableCompass() {
     if (eco || compassOn || typeof DeviceOrientationEvent === 'undefined') return;
@@ -773,6 +807,7 @@
     gpsHeading = p.coords.speed > 0.8 && p.coords.heading != null && !isNaN(p.coords.heading) ? p.coords.heading : gpsHeading;
     if (!meMarker) meMarker = L.marker(me, { icon: meIcon(), interactive: false, zIndexOffset: 1000, keyboard: false }).addTo(map);
     else meMarker.setLatLng(me);
+    calmNav();
     const acc = Math.min(p.coords.accuracy || 0, 500);
     if (!accCircle) accCircle = L.circle(me, { radius: acc, interactive: false, className: 'me-acc' }).addTo(map);
     else accCircle.setLatLng(me).setRadius(acc);
@@ -864,7 +899,7 @@
   renderFilters();
 
   // ---- Signaler ----
-  const sheets = ['#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
+  const sheets = ['#sheetNews', '#sheetEmbed', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -1671,6 +1706,48 @@
     toast(eco ? 'Économie de batterie activée' : 'Économie de batterie désactivée');
   });
   ecoBadge.hidden = !eco; $('#optEco').checked = eco;
+  // ---- Accessibilité : texte plus grand, contraste renforcé (gardés sur ce téléphone) ----
+  const a11y = (id, cls, key) => {
+    let on = false; try { on = localStorage.getItem(key) === '1'; } catch {}
+    document.body.classList.toggle(cls, on); $(id).checked = on;
+    $(id).addEventListener('change', e => { document.body.classList.toggle(cls, e.target.checked); try { localStorage.setItem(key, e.target.checked ? '1' : '0'); } catch {} });
+  };
+  a11y('#optBig', 'big', 'cortege-big'); a11y('#optContrast', 'contrast', 'cortege-contrast');
+  $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); reports.get(r.id)?.marker?.openPopup?.(); };
+  // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
+  let news = null;
+  async function loadNews() { try { news = await (await fetch('/nouveautes.json', { cache: 'no-cache' })).json(); } catch { news = null; } return news; }
+  function openNews() {
+    if (!news) return;
+    closeReport(); closeSheets();
+    $('#nwTitle').textContent = 'Nouveautés de la version ' + news.version;
+    const ul = $('#newsList'); ul.textContent = '';
+    for (const [t, d] of news.items) ul.append(el('li', {}, el('b', {}, t), el('span', {}, d)));
+    $('#sheetNews').hidden = false;
+    try { localStorage.setItem('cortege-news', news.version); } catch {}
+  }
+  $('#btnNews').onclick = async () => { if (!news) await loadNews(); openNews(); };
+  $('#nwClose').onclick = () => closeSheets();
+  // Première visite : rien à annoncer (tout est nouveau) ; ensuite, une fois par version
+  let returning = false; try { returning = !!localStorage.getItem('cortege-seen'); } catch {}
+  loadNews().then(n => {
+    if (!n) return;
+    $('#newsVersion').textContent = 'Version ' + n.version;
+    let seen = null; try { seen = localStorage.getItem('cortege-news'); } catch {}
+    if (seen === n.version) return;
+    if (!returning) { try { localStorage.setItem('cortege-news', n.version); } catch {} return; }
+    setTimeout(() => { if (!document.querySelector('.sheet:not([hidden])')) openNews(); }, 2500);
+  });
+  // ---- La carte sur un autre site (iframe en lecture seule) ----
+  $('#btnEmbed').onclick = () => {
+    closeReport(); closeSheets();
+    const c = map.getCenter(), src = `${location.origin}/embed.html?lat=${c.lat.toFixed(3)}&lng=${c.lng.toFixed(3)}&z=${Math.min(15, Math.max(10, map.getZoom()))}`;
+    $('#embedCode').value = `<iframe src="${src}" width="100%" height="480" style="border:0;border-radius:12px" loading="lazy" title="Carte en direct des manifs (Cortège)"></iframe>`;
+    $('#embedOpen').href = src;
+    $('#sheetEmbed').hidden = false;
+  };
+  $('#emClose').onclick = () => closeSheets();
+  $('#embedCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#embedCode').value); toast('Code copié'); } catch { $('#embedCode').select(); } };
   try {
     navigator.getBattery?.().then(b => {
       const check = () => { if (!eco && !b.charging && b.level <= 0.2 && !check.done) { check.done = true; toast('Batterie faible : active l’économie de batterie dans « ? »'); } };

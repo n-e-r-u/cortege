@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affiche Cortège</title>
+<link rel="icon" href="/favicon.png">
+<style>
+@font-face { font-family: Inter; font-weight: 400; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 800; src: url(/vendor/fonts/inter-800.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 900; src: url(/vendor/fonts/inter-900.woff2) format('woff2'); }
+@page { size: A4 portrait; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #2a2a30; font-family: Inter, system-ui, sans-serif; color: #121214; }
+.ctrl { max-width: 210mm; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: end; color: #f2f1f4; }
+.ctrl label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; flex: 1; min-width: 180px; }
+.ctrl select, .ctrl input { height: 42px; border-radius: 10px; border: 1px solid #555; background: #1c1c20; color: #f2f1f4; padding: 0 10px; font: inherit; }
+.ctrl button { height: 42px; padding: 0 18px; border-radius: 10px; border: 0; font: inherit; font-weight: 800; background: linear-gradient(135deg, #ec9fa4, #a191d8 60%, #7d86dc); color: #17121f; cursor: pointer; }
+.ctrl p { flex-basis: 100%; margin: 0; font-size: 13px; color: #b9b7c3; }
+.sheet { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; padding: 16mm 15mm 14mm; display: flex; flex-direction: column; overflow: hidden; }
+.brand { display: flex; align-items: center; gap: 5mm; }
+.brand img { width: 22mm; height: 22mm; border-radius: 4mm; }
+.brand b { font-size: 15mm; font-weight: 900; letter-spacing: -.02em; line-height: 1; display: block; }
+.brand span { font-size: 5mm; color: #555; }
+h1 { font-size: 17mm; line-height: 1.02; font-weight: 900; letter-spacing: -.03em; margin: 12mm 0 5mm; }
+.sub { font-size: 5.6mm; line-height: 1.35; margin: 0; color: #333; }
+.mid { display: grid; grid-template-columns: 78mm 1fr; gap: 9mm; align-items: center; margin: 11mm 0 9mm; }
+.qr svg { width: 78mm; height: 78mm; display: block; }
+.mid ul { margin: 0; padding: 0 0 0 5mm; font-size: 5mm; line-height: 1.45; }
+.url { font-size: 7mm; font-weight: 900; margin-top: 4mm; }
+.legal { border: 1.2mm solid #30a46c; border-radius: 6mm; padding: 6mm 7mm; }
+.legal h2 { margin: 0 0 3mm; font-size: 5mm; letter-spacing: .08em; text-transform: uppercase; color: #1d7a4e; }
+.legal .n { font-size: 11mm; font-weight: 900; letter-spacing: .02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.legal .who { font-size: 4.4mm; color: #444; margin-bottom: 2mm; }
+.legal .tip { font-size: 4.4mm; color: #333; margin-top: 2mm; }
+.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: end; font-size: 4.4mm; color: #444; padding-top: 6mm; }
+.foot b { font-size: 6mm; color: #121214; }
+@media print { body { background: #fff; } .ctrl { display: none; } .sheet { margin: 0; } }
+@media screen and (max-width: 800px) { .sheet { zoom: .45; } }
+</style>
+</head>
+<body>
+<div class="ctrl">
+  <label>Ville<select id="city"><option value="">Sans numéro de legal team</option></select></label>
+  <label>Ou un autre numéro (facultatif)<input id="extra" maxlength="40" placeholder="ex. : Legal team du cortège 06 00 00 00 00"></label>
+  <button type="button" id="print">Imprimer</button>
+  <p>Seuls les numéros vérifiés (annuaire) ou publiés par les orgas de la ville apparaissent. Vérifie-les avant d’afficher.</p>
+</div>
+<div class="sheet">
+  <div class="brand"><img src="/brand/logo.png" alt=""><div><b>Cortège</b><span id="by">La carte en direct des manifs</span></div></div>
+  <h1>Vois en direct ce qui se passe dans la manif</h1>
+  <p class="sub">Police, nasses, lacrymo, zones calmes, street medics : les manifestant·es se préviennent entre elles et eux, en temps réel.</p>
+  <div class="mid">
+    <div class="qr" id="qr"></div>
+    <div><ul><li>Gratuit, sans compte, sans pub</li><li>Ta position reste sur ton téléphone</li><li>Marche même quand le réseau sature</li><li>Les numéros de legal team de ta ville</li></ul>
+      <div class="url" id="url"></div></div>
+  </div>
+  <div class="legal" id="legal" hidden><h2 id="legalTitle">Legal team</h2><div id="legalList"></div><div class="tip">Note-le au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré.</div></div>
+  <div class="foot"><span>Scanne avec l’appareil photo de ton téléphone</span><span id="handle"></span></div>
+</div>
+<script src="/vendor/qrcode.js"></script>
+<script src="/affiche.js"></script>
+</body>
+</html>

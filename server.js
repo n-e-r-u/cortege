@@ -685,6 +685,120 @@ function placeOf(lat, lng) {
   return name;
 }
 
+// ---- Lignes d'une journée (digest et pages publiques) ----
+const readArchiveDay = d => { try { return fs.readFileSync(path.join(ARCHIVE_DIR, d + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { return []; } };
+// Un point restauré puis expiré apparaît deux fois : on garde sa dernière ligne
+const dedupeRows = list => { const m = new Map(); list.forEach((r, i) => m.set(r.k || 'old' + i, r)); return [...m.values()]; };
+function dayRows(date) {
+  const rows = dedupeRows(readArchiveDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp') }));
+  for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date) rows.push({ ...archLine(r, 'active'), e: null });
+  // Villes : chaque point est rattaché à sa ville ou à son agglomération (liste de villes embarquée, sans service extérieur)
+  const zones = {};
+  for (const r of rows) {
+    const name = placeOf(r.lat, r.lng);
+    r.z = name; const z = (zones[name] ||= { name, lat: 0, lng: 0, n: 0 }); z.n++; z.lat += r.lat; z.lng += r.lng;
+  }
+  for (const z of Object.values(zones)) { z.lat = Math.round(z.lat / z.n * 1000) / 1000; z.lng = Math.round(z.lng / z.n * 1000) / 1000; }
+  return { rows, zones };
+}
+
+// ---- Pages publiques par manif (/manif/AAAA-MM-JJ) ----
+// Publiées à la main par l'admin. On fige alors un résumé agrégé (aucune position de point : seulement le centre
+// de chaque ville et des totaux), gardé même quand l'archive détaillée est effacée.
+db.exec('CREATE TABLE IF NOT EXISTS pub(date TEXT PRIMARY KEY, t INTEGER, data TEXT)');
+const getPub = date => { const x = q('SELECT data FROM pub WHERE date=?').get(date); return x ? JSON.parse(x.data) : null; };
+const REMOVED_O = new Set(['cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old']);
+function pubSnapshot(date) {
+  const { rows: all } = dayRows(date);
+  const rows = all.filter(r => CAT[r.c]);
+  if (!rows.length) return null;
+  const cats = {}, fam = {}, hours = Array(24).fill(0), cities = {};
+  for (const r of rows) {
+    cats[r.c] = (cats[r.c] || 0) + 1; const g = CAT[r.c].group; fam[g] = (fam[g] || 0) + 1; hours[parisHour(r.t) % 24]++;
+    const c = (cities[r.z] ||= { name: r.z, n: 0, lat: 0, lng: 0 }); c.n++; c.lat += r.lat; c.lng += r.lng;
+  }
+  const ts = rows.map(r => r.t);
+  return { date, total: rows.length, fam, hours,
+    cats: Object.entries(cats).map(([id, n]) => ({ id, label: CAT[id].label, glyph: CAT[id].glyph, group: CAT[id].group, n })).sort((a, b) => b.n - a.n),
+    cities: Object.values(cities).map(c => ({ name: c.name, n: c.n, lat: Math.round(c.lat / c.n * 100) / 100, lng: Math.round(c.lng / c.n * 100) / 100 })).sort((a, b) => b.n - a.n),
+    first: Math.min(...ts), last: Math.max(...ts), confirmed: rows.filter(r => r.up > 0).length, confs: rows.reduce((t, r) => t + (r.up || 0), 0),
+    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length };
+}
+let storyMap = null;
+function mapSvg(cities) {
+  try { storyMap ||= JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'story-map.json'), 'utf8')); } catch { return ''; }
+  const m = storyMap, rad = Math.PI / 180, p0 = 44 * rad, p1 = 49 * rad, tany = y => Math.tan((Math.PI / 2 + y) / 2);
+  const n = Math.log(Math.cos(p0) / Math.cos(p1)) / Math.log(tany(p1) / tany(p0)), f = Math.cos(p0) * Math.pow(tany(p0), n) / n;
+  const P = (lon, lat) => { const x = (lon - 3) * rad, r = f / Math.pow(tany(lat * rad), n); return [r * Math.sin(n * x) * m.k + m.t[0], m.t[1] - (f - r * Math.cos(n * x)) * m.k]; };
+  const R = v => 4 + Math.sqrt(v) * 3.3;
+  const dots = cities.map(c => { const [x, y] = P(c.lng, c.lat); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R(c.n).toFixed(1)}" fill="url(#gr)" fill-opacity=".8" stroke="#121214" stroke-width="2"><title>${htmlEsc(c.name)} : ${c.n}</title></circle>`; }).join('');
+  const placed = [], labels = [];
+  for (const c of cities.slice(0, 10)) {
+    const [x, y] = P(c.lng, c.lat), r = R(c.n) + 10, w = (c.name.length + String(c.n).length + 1) * 16.5, h = 34;
+    const opts = [[x + r, y - h / 2, 'start'], [x - r - w, y - h / 2, 'end'], [x - w / 2, y - r - h, 'middle'], [x - w / 2, y + r, 'middle']];
+    const ok = opts.find(([bx, by]) => bx > 0 && by > 0 && bx + w < m.w && by + h < m.h && !placed.some(q2 => bx < q2[0] + q2[2] && bx + w > q2[0] && by < q2[1] + q2[3] && by + h > q2[1]));
+    if (!ok) continue;
+    const [bx, by, anchor] = ok; placed.push([bx, by, w, h]);
+    const tx = anchor === 'start' ? bx : anchor === 'end' ? bx + w : bx + w / 2;
+    labels.push(`<text x="${tx.toFixed(1)}" y="${(by + 26).toFixed(1)}" text-anchor="${anchor}" font-weight="800" font-size="29" fill="#f2f1f4" paint-order="stroke" stroke="#121214" stroke-width="7">${htmlEsc(c.name)} <tspan fill="#ec9fa4">${c.n}</tspan></text>`);
+  }
+  return `<svg viewBox="0 0 ${m.w} ${m.h}" role="img" aria-label="Carte des signalements par ville"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient></defs>`
+    + m.near.map(p => `<path d="${p}" fill="#1c1c20" stroke="#34343c" stroke-width="1.5"/>`).join('') + `<path d="${m.fr}" fill="#26262c" stroke="#5a5866" stroke-width="2"/>${dots}${labels.join('')}</svg>`;
+}
+const htmlEsc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const GROUP_COL = { fdo: '#e5484d', danger: '#f5a524', soutien: '#30a46c', info: '#8e8cd8' };
+const GROUP_FR = { fdo: 'Forces de l’ordre', danger: 'Danger', info: 'Info', soutien: 'Soutien' };
+const frDay = d => new Date(d + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const frHour = t => new Date(t).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
+const PUB_CSS = `*{box-sizing:border-box}body{margin:0;background:#121214;color:#f2f1f4;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}a{color:#ec9fa4}.top{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.top img{width:44px;height:44px;border-radius:10px}
+.top b{display:block;font-size:18px}.top span{color:#a3a1ad;font-size:13px}h1{font-size:clamp(28px,6vw,42px);line-height:1.1;margin:28px 0 6px}.lead{color:#c9c7d1;margin:0 0 20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}.kpi{background:#1c1c20;border:1px solid #34343c;border-radius:14px;padding:12px 14px}.kpi b{display:block;font-size:30px;font-variant-numeric:tabular-nums}.kpi span{color:#a3a1ad;font-size:13px}
+section{background:#1c1c20;border:1px solid #34343c;border-radius:16px;padding:16px;margin:14px 0}h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#ec9fa4;margin:0 0 12px}
+svg{width:100%;height:auto;display:block}.row{display:grid;grid-template-columns:minmax(120px,40%) 1fr 48px;gap:10px;align-items:center;margin:6px 0;font-size:14px}.bar{height:14px;border-radius:4px}.n{text-align:right;font-variant-numeric:tabular-nums}
+.hours{display:flex;gap:3px;align-items:flex-end;height:160px;border-bottom:1px solid #5a5866}.hours div{flex:1;background:#5b66c4;border-radius:3px 3px 0 0;min-height:1px}.hours .pk{background:#ec9fa4}.ticks{display:flex;gap:3px;color:#a3a1ad;font-size:11px}.ticks span{flex:1;text-align:center}
+.fine{color:#a3a1ad;font-size:13px}.cta{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:18px}.cta a{display:block;text-align:center;padding:14px;border-radius:14px;background:#26262c;border:1px solid #34343c;color:#f2f1f4;text-decoration:none;font-weight:700}
+.cta a.main{background:linear-gradient(135deg,#ec9fa4,#a191d8 60%,#7d86dc);color:#17121f;border:0}ul.days{list-style:none;padding:0}ul.days li{margin:8px 0}ul.days a{display:flex;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#1c1c20;border:1px solid #34343c;color:#f2f1f4;text-decoration:none}`;
+function pubShell(req, { title, desc, body }) {
+  const base = PUBLIC_URL_REAL(req);
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${htmlEsc(title)}</title><meta name="description" content="${htmlEsc(desc)}">
+<meta property="og:title" content="${htmlEsc(title)}"><meta property="og:description" content="${htmlEsc(desc)}"><meta property="og:type" content="article">
+<meta property="og:image" content="${base}/icon-512.png"><meta name="twitter:card" content="summary"><link rel="icon" href="/favicon.png"><style>${PUB_CSS}</style></head>
+<body><main><a class="top" href="/"><img src="/brand/logo.png" alt=""><span><b>Cortège</b><span>La carte en direct des manifs${BRAND.handle ? ' · par @' + htmlEsc(BRAND.handle) : ''}</span></span></a>${body}
+<div class="cta"><a class="main" href="/">Ouvrir la carte</a><a href="${htmlEsc(BRAND.instagram || '/')}" rel="noopener">${BRAND.handle ? 'Suivre @' + htmlEsc(BRAND.handle) : 'Suivre le projet'}</a></div>
+<p class="fine">Signalements anonymes envoyés par les manifestant·es : ce ne sont pas des faits vérifiés, ils sont confirmés ou contestés par les autres sur place. Aucune position précise n’est publiée ici, seulement des totaux par ville.</p></main></body></html>`;
+}
+const PUBLIC_URL_REAL = req => (process.env.PUBLIC_URL || ('https://' + String(req.headers.host || 'localhost').replace(/[^\w.:-]/g, ''))).replace(/\/$/, '');
+function pubPage(req, d) {
+  const maxC = d.cats[0].n, maxH = Math.max(...d.hours), peak = d.hours.indexOf(maxH), top = d.cities.slice(0, 12), maxV = top[0].n;
+  const title = `${frDay(d.date)[0].toUpperCase() + frDay(d.date).slice(1)} : ${d.total} signalements sur Cortège`;
+  const desc = `${d.total} signalements de manifestant·es dans ${d.cities.length} villes, de ${frHour(d.first)} à ${frHour(d.last)}. Carte, types, heures et villes.`;
+  const body = `<h1>${htmlEsc(frDay(d.date)[0].toUpperCase() + frDay(d.date).slice(1))}</h1><p class="lead">Ce que les manifestant·es ont signalé sur Cortège.</p>
+<div class="kpis"><div class="kpi"><b>${d.total}</b><span>signalements</span></div><div class="kpi"><b>${d.cities.length}</b><span>villes</span></div>
+<div class="kpi"><b>${frHour(d.first)}</b><span>premier signalement</span></div><div class="kpi"><b>${frHour(d.last)}</b><span>dernier signalement</span></div></div>
+<section><h2>Par ville</h2>${mapSvg(d.cities)}${top.map(c => `<div class="row"><span>${htmlEsc(c.name)}</span><span class="bar" style="width:${Math.max(2, c.n / maxV * 100)}%;background:linear-gradient(90deg,#ec9fa4,#a191d8)"></span><span class="n">${c.n}</span></div>`).join('')}
+${d.cities.length > 12 ? `<p class="fine">+ ${d.cities.length - 12} autres villes. Chaque ville compte aussi les communes voisines de son agglomération.</p>` : ''}</section>
+<section><h2>Par type</h2><p class="fine">${Object.entries(d.fam).map(([g, n]) => `<span style="color:${GROUP_COL[g]}">●</span> ${GROUP_FR[g]} ${n}`).join(' · ')}</p>
+${d.cats.map(c => `<div class="row"><span>${htmlEsc(c.label)}</span><span class="bar" style="width:${Math.max(1.5, c.n / maxC * 100)}%;background:${GROUP_COL[c.group]}"></span><span class="n">${c.n}</span></div>`).join('')}</section>
+<section><h2>Par heure</h2><p class="fine">Le plus d’envois entre ${peak} h et ${(peak + 1) % 24} h (${maxH}).</p><div class="hours" role="img" aria-label="Signalements par heure">${d.hours.map((n, i) => `<div class="${i === peak ? 'pk' : ''}" style="height:${n / maxH * 100}%" title="${i} h : ${n}"></div>`).join('')}</div>
+<div class="ticks">${d.hours.map((_, i) => `<span>${i % 3 ? '' : i + 'h'}</span>`).join('')}</div></section>
+<section><h2>Vérification</h2><div class="kpis"><div class="kpi"><b style="color:#30a46c">${d.confirmed}</b><span>confirmés par au moins une autre personne (${d.confs} confirmations)</span></div>
+<div class="kpi"><b style="color:#8e8cd8">${d.verified}</b><span>vérifiés par une orga certifiée</span></div><div class="kpi"><b style="color:#f5a524">${d.removed}</b><span>retirés avant leur expiration (inclus dans les totaux)</span></div></div></section>`;
+  return pubShell(req, { title, desc, body });
+}
+function pubIndex(req) {
+  const list = q('SELECT date, data FROM pub ORDER BY date DESC').all().map(x => { const d = JSON.parse(x.data); return { date: x.date, total: d.total, cities: d.cities.length }; });
+  const body = `<h1>Bilans des manifs</h1><p class="lead">Ce que les manifestant·es ont signalé sur Cortège, journée par journée.</p>
+${list.length ? `<ul class="days">${list.map(x => `<li><a href="/manif/${x.date}"><span>${htmlEsc(frDay(x.date))}</span><span>${x.total} signalements · ${x.cities} villes</span></a></li>`).join('')}</ul>` : '<p class="fine">Aucun bilan publié pour l’instant.</p>'}`;
+  return pubShell(req, { title: 'Bilans des manifs · Cortège', desc: 'Les bilans des mobilisations signalées sur Cortège, la carte en direct des manifs.', body });
+}
+function sendPage(res, html) {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300',
+    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'", 'X-Frame-Options': 'DENY' });
+  res.end(html);
+}
+
 // ---- Archive anonyme pour le digest ----
 // Gardé : catégorie, heures de début et de fin à la minute, position arrondie à ~100 m, nombre de confirmations
 // et de « Plus là », nombre de précisions (jamais leur texte), vérification, fiabilité, et ce qu'est devenu le point.
@@ -1224,7 +1338,7 @@ function readJson(req, max = 2048) {
 // ---- Statique ----
 const PUBLIC = path.join(__dirname, 'public');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json' };
+  '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.woff2': 'font/woff2' };
 // Politique de sécurité des pages : le navigateur n'exécute que nos propres scripts. Même si du code
 // était un jour injecté dans une note ou un titre, il ne pourrait pas s'exécuter. Les scripts intégrés
 // aux pages (admin, mentions légales) sont autorisés par leur empreinte exacte.
@@ -1251,7 +1365,11 @@ function serveStatic(req, res, pathname) {
     const reply = () => {
       const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: c.etag,
         'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
-      if (file.endsWith('.html')) { headers['Content-Security-Policy'] = cspFor(c.buf); headers['X-Frame-Options'] = 'DENY'; }
+      if (file.endsWith('.html')) {
+        // La carte à intégrer (embed.html) peut s'afficher dans le site d'un média ou d'un collectif ; les autres pages, jamais
+        if (pathname === '/embed.html') headers['Content-Security-Policy'] = cspFor(c.buf).replace("frame-ancestors 'none'", 'frame-ancestors *');
+        else { headers['Content-Security-Policy'] = cspFor(c.buf); headers['X-Frame-Options'] = 'DENY'; }
+      }
       if (req.headers['if-none-match'] === c.etag) { res.writeHead(304, headers); return res.end(); }
       res.writeHead(200, headers); res.end(c.buf);
     };
@@ -1293,6 +1411,15 @@ function versionInfo() {
 // TILE_PMTILES=/chemin/france.pmtiles : la carte vient du serveur lui-même, plus aucune requête vers un fournisseur.
 // Lecteur PMTiles v3 minimal (format ouvert de Protomaps) : en-tête, répertoires compressés, tuiles servies telles quelles.
 const PMTILES = process.env.TILE_PMTILES || '';
+// Zones couvertes par le fichier (rectangles [sud, nord, ouest, est]) : lues dans la région utilisée pour l'extraire
+const PM_ZONES = (() => {
+  try {
+    const g = JSON.parse(fs.readFileSync(process.env.TILE_PMTILES_REGION || path.join(__dirname, 'tools', 'france.geojson'), 'utf8'));
+    const geom = g.geometry || g;
+    const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+    return polys.map(p => { const xs = p[0].map(c => c[0]), ys = p[0].map(c => c[1]); return [Math.min(...ys), Math.max(...ys), Math.min(...xs), Math.max(...xs)]; });
+  } catch { return []; }
+})();
 const pm = { fd: null, h: null, dirs: new Map() };
 const zlib = require('zlib');
 function pmDecomp(buf, c) { return c === 2 ? zlib.gunzipSync(buf) : c === 3 ? zlib.brotliDecompressSync(buf) : buf; }
@@ -1353,7 +1480,7 @@ async function pmTile(z, x, y) {
   }
   return null;
 }
-const pmInfo = () => pm.h ? { url: '/vt/{z}/{x}/{y}.mvt', minzoom: pm.h.minz, maxzoom: pm.h.maxz, bounds: pm.h.bounds } : null;
+const pmInfo = () => pm.h ? { url: '/vt/{z}/{x}/{y}.mvt', minzoom: pm.h.minz, maxzoom: pm.h.maxz, bounds: pm.h.bounds, zones: PM_ZONES } : null;
 if (PMTILES) pmOpen().then(h => console.log(`Carte PMTiles : zoom ${h.minz}-${h.maxz}`)).catch(e => console.error('PMTiles', e.message));
 async function serveVectorTile(req, res, z, x, y) {
   let data;
@@ -1392,7 +1519,7 @@ if (TILE_DISK) setInterval(pruneTiles, 24 * 60 * MIN).unref();
 //  - zone : France métropolitaine, Corse et outre-mer à partir du zoom 8 (en dessous, le monde entier tient en peu de tuiles) ;
 //  - budget par réseau de tuiles NOUVELLES (les tuiles déjà en cache ne comptent pas) ;
 //  - plafond de téléchargements simultanés, et une même tuile demandée par mille personnes n'est téléchargée qu'une fois.
-const TILE_ZONES = [[41, 51.6, -5.8, 10], [15.8, 16.6, -61.9, -60.9], [14.3, 14.95, -61.3, -60.75], [2, 6, -54.7, -51.5],
+const TILE_ZONES = [[41, 51.6, -5.8, 10.6], [15.8, 16.6, -61.9, -60.9], [14.3, 14.95, -61.3, -60.75], [2, 6, -54.7, -51.5],
   [-21.45, -20.85, 55.1, 55.9], [-13.05, -12.6, 44.95, 45.35], [46.7, 47.2, -56.5, -56.05]]; // métropole+Corse, Guadeloupe, Martinique, Guyane, Réunion, Mayotte, St-Pierre
 // Préchargement de zone (« Garder la zone hors ligne ») : interdit par la politique d'OpenStreetMap,
 // désactivé tant que les tuiles viennent de chez eux. TILE_PREFETCH=1 pour un fournisseur qui l'autorise.
@@ -1402,8 +1529,11 @@ const TILE_UPSTREAM_MAX = 12;                                          // télé
 const tileBudget = new Map(), tileInflight = new Map();
 let tileUpstream = 0;
 const tile2lat = (y, z) => { const n = Math.PI - 2 * Math.PI * y / 2 ** z; return 180 / Math.PI * Math.atan(Math.sinh(n)); };
+// Carte hébergée (PMTiles) : hors de sa zone, les téléphones se replient sur OpenStreetMap partout dans le monde
+// (même budget par réseau et même plafond de téléchargements qu'avant).
+const TILE_WORLD = process.env.TILE_WORLD ? process.env.TILE_WORLD === '1' : !!PMTILES;
 function tileInZone(z, x, y) {
-  if (z < 8) return true;
+  if (z < 8 || TILE_WORLD) return true;
   const w = x / 2 ** z * 360 - 180, e = (x + 1) / 2 ** z * 360 - 180, n = tile2lat(y, z), so = tile2lat(y + 1, z);
   return TILE_ZONES.some(([la1, la2, lo1, lo2]) => so <= la2 && n >= la1 && w <= lo2 && e >= lo1);
 }
@@ -1476,6 +1606,9 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/stream') return streamOpen(req, res, url);
+    if (req.method === 'GET' && (pathname === '/manif' || pathname === '/manif/')) return sendPage(res, pubIndex(req));
+    const pubM = req.method === 'GET' && pathname.match(/^\/manif\/(\d{4}-\d{2}-\d{2})$/);
+    if (pubM) { const d = getPub(pubM[1]); return d ? sendPage(res, pubPage(req, d)) : send(res, 404, 'Bilan non publié'); }
     if (req.method === 'POST' && pathname === '/api/orga-requests') {
       if (!tx(() => bump('oreq:' + clientHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });
       return send(res, ...orgaRequest(await readJson(req)));
@@ -1483,7 +1616,7 @@ const server = http.createServer(async (req, res) => {
     const vt = PMTILES && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);
     if (vt) return serveVectorTile(req, res, +vt[1], +vt[2], +vt[3]);
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' });
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1639,6 +1772,15 @@ const server = http.createServer(async (req, res) => {
         const ok = dropAnn(delA[1]);
         return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Annonce déjà retirée.' });
       }
+      // --- Pages publiques par manif ---
+      const pubA = pathname.match(/^\/api\/admin\/publish\/(\d{4}-\d{2}-\d{2})$/);
+      if (pubA && req.method === 'POST') {
+        const snap = pubSnapshot(pubA[1]);
+        if (!snap) return send(res, 404, { error: 'Aucun signalement ce jour-là.' });
+        q('INSERT OR REPLACE INTO pub(date,t,data) VALUES(?,?,?)').run(pubA[1], Date.now(), JSON.stringify(snap));
+        return send(res, 200, { url: '/manif/' + pubA[1], total: snap.total });
+      }
+      if (pubA && req.method === 'DELETE') { q('DELETE FROM pub WHERE date=?').run(pubA[1]); return send(res, 200, { removed: true }); }
       // --- Demandes d'accès orga ---
       if (req.method === 'GET' && pathname === '/api/admin/orga-requests') return send(res, 200, { list: orgaRequests() });
       const oreq = pathname.match(/^\/api\/admin\/orga-requests\/([\w-]{1,16})$/);
@@ -1834,19 +1976,7 @@ const server = http.createServer(async (req, res) => {
       const date = String(url.searchParams.get('date') || parisDay(Date.now()));
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return send(res, 400, { error: 'Date invalide.' });
       sweep(); // archive ce qui vient d'expirer
-      const readDay = d => { try { return fs.readFileSync(path.join(ARCHIVE_DIR, d + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { return []; } };
-      // Un point restauré puis expiré apparaît deux fois : on garde sa dernière ligne
-      const dedupe = list => { const m = new Map(); list.forEach((r, i) => m.set(r.k || 'old' + i, r)); return [...m.values()]; };
-      let rows = dedupe(readDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp') }));
-      // + les signalements encore actifs de ce jour
-      for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date) rows.push({ ...archLine(r, 'active'), e: null });
-      // Villes : chaque point est rattaché à sa ville ou à son agglomération (liste de villes embarquée, sans service extérieur)
-      const zones = {};
-      for (const r of rows) {
-        const name = placeOf(r.lat, r.lng);
-        r.z = name; const z = (zones[name] ||= { name, lat: 0, lng: 0, n: 0 }); z.n++; z.lat += r.lat; z.lng += r.lng;
-      }
-      for (const z of Object.values(zones)) { z.lat = Math.round(z.lat / z.n * 1000) / 1000; z.lng = Math.round(z.lng / z.n * 1000) / 1000; }
+      const { rows, zones } = dayRows(date);
       // Activité des orgas et anti-abus ce jour-là
       const day0 = Date.parse(date + 'T00:00:00+02:00'), lo = day0 - 2 * 3600e3, hi = day0 + 26 * 3600e3;
       const logs = q('SELECT t, oid, action, detail FROM orga_log WHERE t BETWEEN ? AND ?').all(lo, hi).filter(x => parisDay(x.t) === date);
@@ -1858,9 +1988,9 @@ const server = http.createServer(async (req, res) => {
       for (const x of q('SELECT t, kind FROM abuse WHERE t BETWEEN ? AND ?').all(lo, hi)) if (parisDay(x.t) === date) abuse[x.kind] = (abuse[x.kind] || 0) + 1;
       // Comparaison : les 14 jours précédents
       const history = [];
-      for (let i = 14; i >= 0; i--) { const d = parisDay(Date.parse(date + 'T12:00:00+02:00') - i * 86400e3); history.push({ date: d, total: i ? dedupe(readDay(d)).length : rows.length }); }
+      for (let i = 14; i >= 0; i--) { const d = parisDay(Date.parse(date + 'T12:00:00+02:00') - i * 86400e3); history.push({ date: d, total: i ? dedupeRows(readArchiveDay(d)).length : rows.length }); }
       const events = listEvents().filter(e => parisDay(e.start) === date && e.status !== 'pending').map(e => ({ title: e.title, type: e.type, place: e.place, start: e.start }));
-      return send(res, 200, { date, rows, zones, orga, abuse, history, events,
+      return send(res, 200, { date, rows, zones, orga, abuse, history, events, published: !!getPub(date),
         categories: CATEGORIES.map(({ id, label, glyph, group, ttl }) => ({ id, label, glyph, group, ttl })), groups: GROUPS,
         days: fs.readdirSync(ARCHIVE_DIR).map(f => f.slice(0, 10)).sort().reverse() });
     }
