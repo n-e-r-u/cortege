@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.2
+
+- Carte d’un créneau : étiquettes placées sans se chevaucher (ni entre elles, ni sur les points ou les traits), sans les cercles d’imprécision ni le cercle du rayon ; logo, adresse du site et compte Instagram en haut de l’image.
+
 ## 2.3.1
 
 - Carte d’un créneau : fond de carte de Cortège (tuiles vectorielles du serveur, même style que l’appli) au lieu des tuiles OpenStreetMap, plus lisible.

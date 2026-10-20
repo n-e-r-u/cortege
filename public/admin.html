@@ -1487,38 +1487,52 @@ async function slotDraw(c, R, from, to, rows) {
   if (vec) for (const [el, x, y, w, h] of vec) g.drawImage(el, x, y + TOP, w, h);
   else { g.fillStyle = '#e8e6e1'; g.fillRect(0, TOP, W, MH); for (const [im, x, y] of tiles) g.drawImage(im, x * T - ox, y * T - oy + TOP, T + 0.5, T + 0.5); g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(0, TOP, W, MH); }
   const [rx, ry] = px(c.lat, c.lng);
-  g.setLineDash([14, 10]); g.lineWidth = 3; g.strokeStyle = 'rgba(161,145,216,.9)'; g.beginPath(); g.arc(rx, ry, R / mPerPx, 0, 2 * Math.PI); g.stroke(); g.setLineDash([]);
   // Points regroupés par position (archive arrondie à ~100 m)
   const groups = new Map();
   rows.forEach((r, i) => { r.n = i + 1; const k = r.lat + ',' + r.lng; if (!groups.has(k)) groups.set(k, { lat: r.lat, lng: r.lng, rows: [] }); groups.get(k).rows.push(r); });
-  for (const gr of groups.values()) { const [x, y] = px(gr.lat, gr.lng), col = SLOT_COL[gr.rows[0].cat.group] || '#888';
-    g.fillStyle = col + '33'; g.strokeStyle = col + '99'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 55 / mPerPx, 0, 2 * Math.PI); g.fill(); g.stroke(); }
-  // Centre
+  const G = [...groups.values()].map(gr => { const [x, y] = px(gr.lat, gr.lng); return { ...gr, x, y, col: SLOT_COL[gr.rows[0].cat.group] || '#888' }; });
+  const useLabels = G.length <= 12, MR = useLabels ? 15 : 21;
+  // Placement des étiquettes : ni sur un point, ni sur l'étoile, ni sur une autre étiquette, ni sur un trait
+  const obst = [{ x: rx - 28, y: ry - 28, w: 56, h: 56 }, ...G.map(p => ({ x: p.x - MR - 6, y: p.y - MR - 6, w: 2 * MR + 12, h: 2 * MR + 12 }))];
+  const boxes = [], segs = [];
+  const hit = (a, b, m = 10) => a.x < b.x + b.w + m && a.x + a.w + m > b.x && a.y < b.y + b.h + m && a.y + a.h + m > b.y;
+  const anchor = (p, b) => [Math.min(Math.max(p.x, b.x), b.x + b.w), Math.min(Math.max(p.y, b.y), b.y + b.h)];
+  const segHits = (x1, y1, x2, y2, b) => { for (let t = 0.12; t < 0.95; t += 0.08) { const x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t; if (x > b.x - 4 && x < b.x + b.w + 4 && y > b.y - 4 && y < b.y + b.h + 4) return true; } return false; };
+  if (useLabels) for (const p of G.sort((a, b) => a.y - b.y)) {
+    p.L1 = p.rows.map(r => `${hmFr(r.t)} · ${r.cat.label}`);
+    p.L2 = p.rows.map(r => `jusqu’à ${hmFr(r.end)}` + (r.up ? ` · ${r.up} confirmation${r.up > 1 ? 's' : ''}` : '') + (r.v ? ' · vérifié' : '') + (REMOVED.has(r.o) ? ' · ' + (OUTCOME[r.o] || r.o) : ''));
+    g.font = '700 23px system-ui, sans-serif'; const w1 = Math.max(...p.L1.map(t => g.measureText(t).width));
+    g.font = '500 18px system-ui, sans-serif'; const w2 = Math.max(...p.L2.map(t => g.measureText(t).width));
+    const w = Math.max(w1, w2) + 28, h = p.L1.length * 54 + 10;
+    let best = null, bestScore = Infinity;
+    for (const d of [40, 80, 130, 190, 260, 340]) {
+      for (const [dx, dy] of [[d, -h / 2], [-d - w, -h / 2], [-w / 2, -d - h], [-w / 2, d], [d, -d - h], [-d - w, -d - h], [d, d], [-d - w, d]]) {
+        const b = { x: p.x + dx, y: p.y + dy, w, h };
+        if (b.x < 8 || b.x + w > W - 8 || b.y < TOP + 8 || b.y + h > TOP + MH - 70) continue;
+        if (obst.some(o => !(o.x === p.x - MR - 6 && o.y === p.y - MR - 6) && hit(b, o, 4)) || boxes.some(o => hit(b, o))) continue;
+        const [ax, ay] = anchor(p, b);
+        if (boxes.some(o => segHits(p.x, p.y, ax, ay, o)) || segs.some(([x1, y1, x2, y2]) => segHits(x1, y1, x2, y2, b))) continue;
+        const score = Math.hypot(ax - p.x, ay - p.y); if (score < bestScore) { best = b; bestScore = score; }
+      }
+      if (best) break;
+    }
+    if (!best) best = { x: Math.min(Math.max(p.x + 40, 8), W - w - 8), y: Math.min(Math.max(p.y - h / 2, TOP + 8), TOP + MH - h - 70), w, h };
+    p.box = best; boxes.push(best); segs.push([p.x, p.y, ...anchor(p, best)]);
+  }
+  // Traits, puis étiquettes, puis points (toujours au-dessus)
+  for (const p of G) if (p.box) { const [ax, ay] = anchor(p, p.box); g.strokeStyle = '#f2f1f4'; g.lineWidth = 3; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(ax, ay); g.stroke(); }
+  for (const p of G) if (p.box) {
+    const b = p.box; g.fillStyle = 'rgba(255,255,255,.97)'; g.strokeStyle = p.col; g.lineWidth = 4; rr(b.x, b.y, b.w, b.h, 10); g.fill(); g.stroke();
+    p.L1.forEach((t, i) => { g.fillStyle = '#17121f'; g.font = '700 23px system-ui, sans-serif'; g.fillText(t, b.x + 14, b.y + 32 + i * 54);
+      g.fillStyle = '#55535f'; g.font = '500 18px system-ui, sans-serif'; g.fillText(p.L2[i], b.x + 14, b.y + 54 + i * 54); });
+  }
+  for (const p of G) {
+    g.fillStyle = p.col; g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.arc(p.x, p.y, useLabels ? 13 : 19, 0, 2 * Math.PI); g.fill(); g.stroke();
+    if (!useLabels) { g.fillStyle = '#fff'; g.font = '800 17px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(p.rows.map(r => r.n).slice(0, 2).join(',') + (p.rows.length > 2 ? '…' : ''), p.x, p.y + 6); g.textAlign = 'left'; }
+  }
+  // Lieu (étoile), au-dessus de tout
   g.fillStyle = '#5b66c4'; g.strokeStyle = '#fff'; g.lineWidth = 4;
   g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 22; g.lineTo(rx + r * Math.cos(a), ry + r * Math.sin(a)); } g.closePath(); g.stroke(); g.fill();
-  // Étiquettes (si peu de groupes), sinon numéros renvoyant à la chronologie
-  const boxes = [{ x: rx - 26, y: ry - 26, w: 52, h: 52 }], useLabels = groups.size <= 12; // l'étoile du lieu reste visible
-  const fit = b => !boxes.some(o => b.x < o.x + o.w + 8 && b.x + b.w + 8 > o.x && b.y < o.y + o.h + 8 && b.y + b.h + 8 > o.y) && b.x > 4 && b.x + b.w < W - 4 && b.y > TOP + 4 && b.y + b.h < TOP + MH - 60;
-  for (const gr of [...groups.values()].sort((a, b) => px(a.lat, a.lng)[1] - px(b.lat, b.lng)[1])) {
-    const [x, y] = px(gr.lat, gr.lng), col = SLOT_COL[gr.rows[0].cat.group] || '#888';
-    if (useLabels) {
-      const L1 = gr.rows.map(r => `${hmFr(r.t)} · ${r.cat.label}`), L2 = gr.rows.map(r => `jusqu’à ${hmFr(r.end)}` + (r.up ? ` · ${r.up} confirmation${r.up > 1 ? 's' : ''}` : '') + (r.v ? ' · vérifié' : '') + (REMOVED.has(r.o) ? ' · ' + (OUTCOME[r.o] || r.o) : ''));
-      g.font = '700 23px system-ui, sans-serif'; const w1 = Math.max(...L1.map(t => g.measureText(t).width));
-      g.font = '500 18px system-ui, sans-serif'; const w2 = Math.max(...L2.map(t => g.measureText(t).width));
-      const w = Math.max(w1, w2) + 28, h = L1.length * 54 + 10;
-      let best = null;
-      for (const [dx, dy] of [[60, -h / 2], [-60 - w, -h / 2], [60, -h - 30], [-60 - w, -h - 30], [60, 30], [-60 - w, 30], [-w / 2, -h - 70], [-w / 2, 70], [120, -h / 2 - 120], [-120 - w, -h / 2 + 120]]) {
-        const b = { x: x + dx, y: y + dy, w, h }; if (fit(b)) { best = b; break; } }
-      if (!best) best = { x: Math.min(Math.max(x + 60, 8), W - w - 8), y: Math.min(Math.max(y - h / 2, TOP + 8), TOP + MH - h - 64), w, h };
-      boxes.push(best);
-      g.strokeStyle = '#17121f'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(Math.min(Math.max(x, best.x), best.x + w), Math.min(Math.max(y, best.y), best.y + h)); g.stroke();
-      g.fillStyle = 'rgba(255,255,255,.96)'; g.strokeStyle = col; g.lineWidth = 4; rr(best.x, best.y, w, h, 10); g.fill(); g.stroke();
-      L1.forEach((t, i) => { g.fillStyle = '#17121f'; g.font = '700 23px system-ui, sans-serif'; g.fillText(t, best.x + 14, best.y + 32 + i * 54);
-        g.fillStyle = '#55535f'; g.font = '500 18px system-ui, sans-serif'; g.fillText(L2[i], best.x + 14, best.y + 54 + i * 54); });
-    }
-    g.fillStyle = col; g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.arc(x, y, useLabels ? 13 : 19, 0, 2 * Math.PI); g.fill(); g.stroke();
-    if (!useLabels) { g.fillStyle = '#fff'; g.font = '800 17px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(gr.rows.map(r => r.n).slice(0, 2).join(',') + (gr.rows.length > 2 ? '…' : ''), x, y + 6); g.textAlign = 'left'; }
-  }
   g.restore();
   // Échelle
   const step = [50, 100, 200, 250, 500, 1000, 2000].find(v => v / mPerPx > 120) || 2000, sl = step / mPerPx, sx = 40, sy = TOP + MH - 36;
@@ -1527,9 +1541,19 @@ async function slotDraw(c, R, from, to, rows) {
   g.fillStyle = '#17121f'; g.font = '600 20px system-ui, sans-serif'; g.fillText(step >= 1000 ? step / 1000 + ' km' : step + ' m', sx, sy - 12);
   // Titre
   const day = new Date(dg.date + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  g.fillStyle = '#f2f1f4'; g.font = '800 40px system-ui, sans-serif'; g.fillText('Signalements Cortège · ' + day, 40, 58);
-  g.fillStyle = '#ec9fa4'; g.font = '600 26px system-ui, sans-serif';
-  g.fillText(`Actifs entre ${from.replace(':', ' h ')} et ${to.replace(':', ' h ')} · ${R} m autour de ${c.label}`.slice(0, 110), 40, 102);
+  // Logo, site de l'appli et compte Instagram, à droite du titre
+  let right = W - 40;
+  const logo = await new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = '/brand/logo.png'; });
+  if (logo) { g.drawImage(logo, right - 92, 19, 92, 92); right -= 112; }
+  g.textAlign = 'right';
+  g.fillStyle = '#f2f1f4'; g.font = '700 26px system-ui, sans-serif'; g.fillText(location.host, right, 58);
+  if (brand.handle) { g.fillStyle = '#ec9fa4'; g.font = '600 24px system-ui, sans-serif'; g.fillText('Instagram @' + brand.handle, right, 98); }
+  g.textAlign = 'left';
+  const maxW = right - 40 - Math.max(g.measureText(location.host).width, 260) - 30;
+  const fitTxt = (t, f) => { g.font = f; if (g.measureText(t).width <= maxW) return t; while (t.length > 4 && g.measureText(t + '…').width > maxW) t = t.slice(0, -1); return t + '…'; };
+  g.fillStyle = '#f2f1f4'; g.fillText(fitTxt('Signalements Cortège · ' + day, '800 38px system-ui, sans-serif'), 40, 58);
+  g.fillStyle = '#ec9fa4';
+  g.fillText(fitTxt(`Actifs entre ${from.replace(':', ' h ')} et ${to.replace(':', ' h ')} · ${R} m autour de ${c.label}`, '600 24px system-ui, sans-serif'), 40, 100);
   // Chronologie
   let y = TOP + MH + 52;
   g.fillStyle = '#f2f1f4'; g.font = '700 26px system-ui, sans-serif'; g.fillText(rows.length ? 'Chronologie (début · type · fin)' : 'Aucun signalement sur ce créneau dans cette zone.', 40, y);
@@ -1547,8 +1571,8 @@ async function slotDraw(c, R, from, to, rows) {
   if (rows.length > lines) { g.fillStyle = '#a3a1ad'; g.fillText(`… et ${rows.length - lines} autres (voir le fichier CSV)`, 40, y); y += 34; }
   g.font = '500 19px system-ui, sans-serif'; g.fillStyle = '#a3a1ad';
   [`Signalements faits par des participant·es sur l’appli Cortège ; ${rows.some(r => r.v) ? '✓ = vérifié par une orga ; les autres ne sont pas vérifiés' : 'aucun n’a été vérifié par une orga'} : à recouper.`,
-   'Positions arrondies à environ 100 m (cercle de couleur autour de chaque point). Fin = moment où le signalement a disparu de la carte.',
-   `Cercle en pointillés : ${R} m autour du lieu (étoile). Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL)${slotCfg && slotCfg.vector ? ', Protomaps' : ''}.`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
+   'Positions arrondies à environ 100 m. Fin = moment où le signalement a disparu de la carte.',
+   `Étoile : le lieu demandé ; signalements à moins de ${R} m. Fond de carte © les contributeur·ices d’OpenStreetMap (ODbL)${slotCfg && slotCfg.vector ? ', Protomaps' : ''}.`].forEach((t, i) => g.fillText(t, 40, y + 4 + i * 28));
   cv.hidden = false;
   return vec ? vec.length : tiles.length;
 }
