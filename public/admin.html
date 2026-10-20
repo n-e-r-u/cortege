@@ -219,7 +219,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <p class="fine" id="plState">—</p>
       <div class="bars" id="plCounts"></div>
       <div class="controls" style="margin-top:12px"><button type="button" id="plImport">Mettre à jour depuis OpenStreetMap</button></div>
-      <p class="fine">Mise à jour automatique tous les 30 jours (jamais un jour de mobilisation). Les lieux corrigés ou ajoutés ici sont gardés aux mises à jour ; un lieu masqué reste masqué.</p>
+      <p class="fine">Mise à jour automatique tous les 30 jours (jamais un jour de mobilisation), reprise toute seule après un redémarrage. Les lieux corrigés ou ajoutés ici sont gardés aux mises à jour ; un lieu masqué reste masqué.</p>
     </section>
     <section class="card">
       <h2>Chercher, corriger, masquer</h2>
@@ -1329,10 +1329,13 @@ async function loadPlaces(search = false) {
     d.kinds.forEach(k => { plKinds[k.id] = k; $('#plKind').append(new Option(k.glyph + ' ' + k.label, k.id)); $('#plAddKind').append(new Option(k.glyph + ' ' + k.label, k.id)); });
   }
   const L0 = d.last;
-  $('#plState').textContent = d.running ? `Mise à jour en cours : ${d.running.done || 0} / ${d.running.total || '?'} zones…`
-    : L0 ? `Dernière mise à jour : ${dayFr(L0.t)} à ${hhmm(L0.t)} · ${fmtN(L0.n)} lieux${L0.errs ? ` · ${L0.errs} zone(s) en échec, réessaie plus tard` : ''}.`
-    : 'Pas encore importés.' + (d.auto ? ' Premier import automatique quelques minutes après le démarrage.' : '');
+  const R0 = d.running || d.paused;
+  $('#plState').textContent = d.running ? `Mise à jour en cours : ${R0.done || 0} / ${R0.total || '?'} zones, ${fmtN(R0.n || 0)} lieux trouvés${R0.errs ? `, ${R0.errs} zone(s) en échec` : ''}.` + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
+    : d.paused ? `Mise à jour interrompue à ${R0.done} / ${R0.total} zones (redémarrage du serveur). Elle reprend toute seule dans les minutes qui suivent, ou avec le bouton.` + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
+    : L0 ? `Dernière mise à jour : ${dayFr(L0.t)} à ${hhmm(L0.t)} · ${fmtN(L0.n)} lieux${L0.errs ? ` · ${L0.errs} zone(s) en échec (${L0.err || 'serveur OpenStreetMap indisponible'}), relance plus tard` : ''}.`
+    : 'Pas encore importés.' + (d.auto ? ' Premier import automatique deux minutes après le démarrage.' : '');
   $('#plImport').disabled = !!d.running;
+  $('#plImport').textContent = d.paused ? 'Reprendre la mise à jour' : 'Mettre à jour depuis OpenStreetMap';
   const bars = $('#plCounts'); bars.textContent = '';
   const max = Math.max(1, ...Object.values(d.counts));
   for (const k of d.kinds) {
@@ -1373,7 +1376,7 @@ function renderPlaces(list) {
   }
 }
 $('#plSearch').addEventListener('submit', e => { e.preventDefault(); loadPlaces(true); });
-$('#plImport').onclick = async () => { try { await api('/api/admin/places/import', { method: 'POST', body: '{}' }); alertMsg('Mise à jour lancée : compter 15 à 30 minutes pour toute la France.'); loadPlaces(false); } catch (e) { alertMsg(e.message); } };
+$('#plImport').onclick = async () => { try { await api('/api/admin/places/import', { method: 'POST', body: '{}' }); alertMsg('Mise à jour lancée : compter 20 à 40 minutes pour toute la zone. Elle reprend toute seule si le serveur redémarre.'); loadPlaces(false); } catch (e) { alertMsg(e.message); } };
 $('#plAdd').addEventListener('submit', async e => {
   e.preventDefault();
   const [lat, lng] = $('#plAddPos').value.split(',').map(x => Number(x.trim()));

@@ -433,7 +433,7 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
   const fake = http.createServer((req, res) => {
     let body = ''; req.on('data', c => (body += c)); req.on('end', () => {
       const q = decodeURIComponent(body.replace(/^data=/, '').replace(/\+/g, ' '));
-      const inLyon = /\[bbox:45,3\.8/.test(q) || /bbox:45(\.\d+)?,4/.test(q) || /bbox:45,/.test(q);
+      const inLyon = /\(45(\.\d+)?,4/.test(q);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ elements: inLyon && !fake.done ? (fake.done = true, [
         { type: 'node', id: 1, lat: 45.7578, lon: 4.8320, tags: { amenity: 'townhall', name: 'Hôtel de ville de Lyon' } },

@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.7
+
+- Lieux permanents : l’import reprend là où il s’était arrêté après un redémarrage du serveur (avant, chaque mise à jour le relançait depuis le début, sans jamais finir).
+- Requêtes OpenStreetMap plus légères (carrés de 1°, plus de recherche de nom sur tous les objets), second serveur Overpass en secours, réponses incomplètes détectées.
+- La carte se remplit au fur et à mesure ; l’admin affiche l’avancement, les lieux trouvés et la dernière erreur.
+
 ## 2.3.6
 
 - Carte d’un créneau : les signalements retirés ou contestés restent affichés, en rond vide, avec la mention (retiré par une orga, par l’admin, contesté par des « Plus là »…). Un retrait, même volontaire et en masse, ne fait plus disparaître ce qui a été signalé.

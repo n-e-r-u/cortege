@@ -1114,7 +1114,7 @@ const POI = Object.fromEntries(POI_KINDS.map(k => [k.id, k]));
 db.exec(`CREATE TABLE IF NOT EXISTS pois(id TEXT PRIMARY KEY, kind TEXT, lat REAL, lng REAL, rg TEXT, data TEXT, src TEXT, hid INTEGER DEFAULT 0, ed INTEGER DEFAULT 0, seen INTEGER);
   CREATE INDEX IF NOT EXISTS pois_rg ON pois(rg);`);
 const PLACES_IMPORT = process.env.PLACES_IMPORT !== '0';
-const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
+const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass-api.de/api/interpreter,https://overpass.private.coffee/api/interpreter';
 const PLACES_EVERY = 30 * 24 * 60 * MIN;
 const wait = ms => new Promise(go => setTimeout(go, ms));
 const poiRg = (lat, lng) => `${Math.floor(lat)}_${Math.floor(lng)}`;
@@ -1142,24 +1142,31 @@ function poiData(t, kind) {
 }
 // Requête Overpass pour un carré : France, Belgique, Suisse, Luxembourg, Monaco (et l'outre-mer, inclus dans la France)
 function overpassQuery(s, w, n, e) {
-  return `[out:json][timeout:180][bbox:${s},${w},${n},${e}];
+  const b = `(${s},${w},${n},${e})`;
+  return `[out:json][timeout:120];
 (area["ISO3166-1"="FR"][admin_level=2];area["ISO3166-1"="BE"][admin_level=2];area["ISO3166-1"="CH"][admin_level=2];area["ISO3166-1"="LU"][admin_level=2];area["ISO3166-1"="MC"][admin_level=2];)->.a;
-(nwr["amenity"~"^(townhall|police|courthouse|hospital|pharmacy|drinking_water)$"](area.a);
- nwr["office"="government"]["government"="prefecture"](area.a);
- nwr["name"~"rétention administrative",i](area.a););
+(nwr["amenity"~"^(townhall|police|courthouse|hospital|pharmacy|drinking_water)$"](area.a)${b};
+ nwr["office"="government"]["government"="prefecture"](area.a)${b};
+ nwr["amenity"="prison"]["name"~"tention",i](area.a)${b};
+ nwr["office"="government"]["name"~"tention",i](area.a)${b};);
 out center tags qt;`;
 }
-function overpass(query) {
+// Plusieurs serveurs Overpass possibles (séparés par des virgules) : si l'un refuse ou ne répond pas, on passe au suivant
+const OVERPASS_URLS = OVERPASS_URL.split(',').map(x => x.trim()).filter(Boolean);
+function overpass(query, url) {
   return new Promise((resolve, reject) => {
-    const u = new URL(OVERPASS_URL), body = 'data=' + encodeURIComponent(query);
-    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 240_000,
+    const u = new URL(url), body = 'data=' + encodeURIComponent(query);
+    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 150_000,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), 'User-Agent': TILE_UA, 'Accept-Encoding': 'gzip' } }, res => {
       const chunks = []; let size = 0;
       const src = /gzip/.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
       src.on('data', c => { size += c.length; if (size > 200e6) req.destroy(new Error('réponse trop grosse')); else chunks.push(c); });
       src.on('end', () => {
         if (res.statusCode !== 200) return reject(Object.assign(new Error('Overpass ' + res.statusCode), { status: res.statusCode }));
-        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch (e) { reject(e); }
+        let j; try { j = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { return reject(e); }
+        // Requête interrompue côté Overpass (trop longue, serveur chargé) : réponse 200 mais incomplète
+        if (j.remark && /runtime error|timed out|out of memory/i.test(j.remark)) return reject(new Error('Overpass : ' + j.remark.slice(0, 120)));
+        resolve(j);
       });
       src.on('error', reject);
     });
@@ -1168,47 +1175,57 @@ function overpass(query) {
     req.end(body);
   });
 }
-// Carrés de 2° couvrant les zones de la carte
+// Carrés de 1° couvrant les zones de la carte (petites requêtes : plus rapides, et un échec ne coûte qu'un carré)
 function placeChunks() {
   const out = [];
   for (const [la1, la2, lo1, lo2] of TILE_ZONES)
-    for (let a = la1; a < la2; a += 2) for (let o = lo1; o < lo2; o += 2)
-      out.push([a, o, Math.min(a + 2, la2), Math.min(o + 2, lo2)].map(x => Math.round(x * 100) / 100));
+    for (let a = la1; a < la2; a += 1) for (let o = lo1; o < lo2; o += 1)
+      out.push([a, o, Math.min(a + 1, la2), Math.min(o + 1, lo2)].map(x => Math.round(x * 100) / 100));
   return out;
 }
 const placesStatus = () => { try { return JSON.parse(getMeta('poisimp') || 'null'); } catch { return null; } };
+const placesRun = () => { try { return JSON.parse(getMeta('poisrun') || 'null'); } catch { return null; } };
 let placesRunning = null;
-async function placesImport() {
+// Import en plusieurs étapes, repris là où il s'était arrêté si le serveur redémarre (mise à jour, panne)
+async function placesImport(resume = false) {
   if (placesRunning) return placesRunning;
   placesRunning = (async () => {
-    const t0 = Date.now(), chunks = placeChunks();
-    let n = 0, errs = 0, done = 0;
-    setMeta('poisrun', JSON.stringify({ t: t0, total: chunks.length, done: 0 }));
+    const chunks = placeChunks(), prev = resume ? placesRun() : null;
+    const run = prev && prev.total === chunks.length ? prev : { t: Date.now(), total: chunks.length, done: 0, n: 0, errs: 0, err: null };
+    const t0 = run.t, save = () => setMeta('poisrun', JSON.stringify(run));
+    save();
     const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
       kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
       rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
-    for (const [s, w, nn, e] of chunks) {
+    for (; run.done < chunks.length; run.done++) {
+      const [s, w, nn, e] = chunks[run.done];
       let res = null;
-      for (let tries = 0; tries < 3 && !res; tries++) {
-        try { res = await overpass(overpassQuery(s, w, nn, e)); }
-        catch (err) { if (tries === 2) { errs++; console.error('lieux : carré', s, w, err.message); } else await wait(err.status === 429 ? 60_000 : 20_000); }
+      for (let tries = 0; tries < 2 * OVERPASS_URLS.length && !res; tries++) {
+        const url = OVERPASS_URLS[tries % OVERPASS_URLS.length];
+        try { res = await overpass(overpassQuery(s, w, nn, e), url); }
+        catch (err) {
+          run.err = `${new URL(url).hostname} · ${err.message}`.slice(0, 160); save();
+          if (tries < 2 * OVERPASS_URLS.length - 1) await wait(err.status === 429 ? 60_000 : Number(process.env.OVERPASS_RETRY ?? 15_000));
+        }
       }
-      if (res && Array.isArray(res.elements)) tx(() => {
+      if (!res) { run.errs++; console.error('lieux : carré', s, w, run.err); }
+      else if (Array.isArray(res.elements)) tx(() => {
         for (const el of res.elements) {
           const t = el.tags || {}, kind = poiKind(t), lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
           if (!kind || !validLatLng(lat, lng)) continue;
-          up.run(el.type[0] + el.id, kind, Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, poiRg(lat, lng), JSON.stringify(poiData(t, kind)), t0); n++;
+          up.run(el.type[0] + el.id, kind, Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, poiRg(lat, lng), JSON.stringify(poiData(t, kind)), t0); run.n++;
         }
       });
-      setMeta('poisrun', JSON.stringify({ t: t0, total: chunks.length, done: ++done }));
-      await wait(Number(process.env.OVERPASS_GAP ?? 5000));
+      save();
+      if (res && run.done % 10 === 9) placesPublish(); // la carte se remplit au fur et à mesure
+      await wait(Number(process.env.OVERPASS_GAP ?? 3000));
     }
     // Lieux disparus d'OpenStreetMap : retirés seulement si tout l'import a réussi (sinon on garderait une carte trouée)
-    if (!errs) q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
-    setMeta('poisimp', JSON.stringify({ t: Date.now(), n, errs, ms: Date.now() - t0 }));
+    if (!run.errs) q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
+    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: run.errs, err: run.errs ? run.err : null, ms: Date.now() - t0 }));
     q("DELETE FROM meta WHERE k='poisrun'").run();
     placesPublish();
-    console.log(`lieux : ${n} lieux importés en ${Math.round((Date.now() - t0) / 1000)} s, ${errs} carré(s) en échec`);
+    console.log(`lieux : ${run.n} lieux importés en ${Math.round((Date.now() - t0) / 1000)} s, ${run.errs} carré(s) en échec`);
   })().catch(e => console.error('lieux', e.message)).finally(() => { placesRunning = null; });
   return placesRunning;
 }
@@ -1236,10 +1253,11 @@ function placesPublish(regions = null) {
 // Import automatique : au premier démarrage (base vide), puis tous les 30 jours ; jamais un jour de mobilisation
 function placesMaybe() {
   if (!PLACES_IMPORT || placesRunning || mobToday()) return;
+  if (placesRun()) return placesImport(true); // import interrompu (redémarrage) : on reprend
   const last = placesStatus();
   if (!last || Date.now() - last.t > PLACES_EVERY) placesImport();
 }
-if (PLACES_IMPORT) { setTimeout(placesMaybe, 5 * MIN).unref(); setInterval(placesMaybe, 6 * 60 * MIN).unref(); }
+if (PLACES_IMPORT) { setTimeout(placesMaybe, 2 * MIN).unref(); setInterval(placesMaybe, 60 * MIN).unref(); }
 const poiView = x => { const d = JSON.parse(x.data || '{}'); return { id: x.id, kind: x.kind, lat: x.lat, lng: x.lng, n: d.n || '', h: d.h || '', p: d.p || '', e: !!d.e, src: x.src, hid: !!x.hid, ed: !!x.ed }; };
 
 // ---- Journées de mobilisation prévues ----
@@ -2167,12 +2185,13 @@ const server = http.createServer(async (req, res) => {
             .all(term, like, term, kind, kind, filter, filter, filter, filter);
         }
         const counts = Object.fromEntries(q('SELECT kind, COUNT(*) n FROM pois WHERE hid=0 GROUP BY kind').all().map(x => [x.kind, x.n]));
-        let run = null; try { run = JSON.parse(getMeta('poisrun') || 'null'); } catch {}
-        return send(res, 200, { kinds: POI_KINDS, counts, last: placesStatus(), running: placesRunning ? run || {} : null, auto: PLACES_IMPORT, list: rows.map(poiView) });
+        const run = placesRun();
+        return send(res, 200, { kinds: POI_KINDS, counts, last: placesStatus(), running: placesRunning ? run || {} : null, paused: !placesRunning && run ? run : null, auto: PLACES_IMPORT, list: rows.map(poiView) });
       }
       if (req.method === 'POST' && pathname === '/api/admin/places/import') {
         if (placesRunning) return send(res, 409, { error: 'Import déjà en cours.' });
-        placesImport(); orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'import des lieux lancé');
+        const resume = !!placesRun() && (await readJson(req)).restart !== true;
+        placesImport(resume); orgaLog({ id: 'admin', label: ADMIN_LABEL }, resume ? 'import des lieux repris' : 'import des lieux lancé');
         return send(res, 202, { started: true });
       }
       const plR = pathname.match(/^\/api\/admin\/places(?:\/([\w:-]{1,24}))?$/);
