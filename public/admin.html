@@ -70,9 +70,26 @@ section.card { background: var(--surface); border: 1px solid var(--line); border
 .hour-labels span:nth-child(odd) { visibility: hidden; }
 pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font: 14px/1.5 var(--font); margin: 0 0 10px; }
 .fine { font-size: 12px; color: var(--muted); max-width: 65ch; }
-.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); }
-.tab { background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; color: var(--muted); padding: 0 14px; height: 44px; font-weight: 700; }
-.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+/* Navigation : colonne à gauche sur ordinateur, menu déroulant sur téléphone */
+main.wide { max-width: 1160px; }
+#app:not([hidden]) { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 28px; align-items: start; }
+.admin-main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.tabs { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 16px; }
+.nav-group { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 14px 10px 6px; }
+.nav-group:first-child { padding-top: 0; }
+.tab { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-radius: 10px; color: var(--muted); padding: 0 10px; height: 38px; font-weight: 600; }
+.tab:hover { background: var(--surface); color: var(--fg); }
+.tab[aria-selected="true"] { background: var(--surface-2); color: var(--fg); box-shadow: inset 3px 0 0 var(--accent); }
+.tab .ni { width: 20px; text-align: center; flex: none; }
+.nav-toggle { display: none; }
+@media (max-width: 820px) {
+  #app:not([hidden]) { display: block; }
+  .nav-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; background: var(--surface); color: var(--fg); border: 1px solid var(--line); margin-bottom: 14px; }
+  .tabs { display: none; position: static; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 16px; }
+  .tabs.open { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
+  .tabs.open .nav-group { grid-column: 1 / -1; }
+}
+input[type=checkbox], input[type=radio] { width: 18px; height: 18px; padding: 0; margin: 0; flex: none; accent-color: var(--accent); }
 .panel { display: flex; flex-direction: column; gap: 18px; }
 .org-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .org-list li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
@@ -91,15 +108,15 @@ button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a
 .stack > label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
 textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; resize: vertical; }
 .org-list .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-.tabs { overflow-x: auto; scrollbar-width: none; }
-.tab { flex: none; }
 @media (max-width: 600px) { .org-list li { grid-template-columns: 1fr; } .org-list .acts { justify-content: flex-start; } }
 .story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 12px; }
 .story-grid img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
 #pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty), #modBadge:not(:empty), #mobBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
 .hours.live { height: 90px; grid-template-columns: repeat(15, minmax(0, 1fr)); }
-.cat-table { display: grid; grid-template-columns: 1fr auto auto; gap: 8px 12px; align-items: center; font-size: 14px; }
+.cat-table { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 12px; align-items: center; font-size: 14px; }
+.cat-table label.check { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+.cat-table .base { min-width: 9ch; }
 .cat-table input[type=number] { width: 84px; height: 36px; }
 .cat-table .base { color: var(--muted); font-size: 12px; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
@@ -125,21 +142,27 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   <p class="msg" id="loginMsg"></p>
 
   <div id="app" hidden>
-  <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas">Orgas <span id="reqBadge"></span></button>
-    <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns">Annonces <span id="annBadge"></span></button>
-    <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal">Legal teams <span id="legalBadge"></span></button>
-    <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda">Agenda <span id="pendingBadge"></span></button>
-    <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports">Urgences</button>
-    <button class="tab" role="tab" id="tabJournal" aria-selected="false" aria-controls="panelJournal">Journal <span id="journalBadge"></span></button>
-    <button class="tab" role="tab" id="tabAbuse" aria-selected="false" aria-controls="panelAbuse">Abus</button>
-    <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest">Digest</button>
-    <button class="tab" role="tab" id="tabLive" aria-selected="false" aria-controls="panelLive">Direct</button>
-    <button class="tab" role="tab" id="tabMod" aria-selected="false" aria-controls="panelMod">Modération <span id="modBadge"></span></button>
-    <button class="tab" role="tab" id="tabMobs" aria-selected="false" aria-controls="panelMobs">Journées <span id="mobBadge"></span></button>
-    <button class="tab" role="tab" id="tabPlaces" aria-selected="false" aria-controls="panelPlaces">Lieux</button>
-    <button class="tab" role="tab" id="tabSettings" aria-selected="false" aria-controls="panelSettings">Réglages</button>
+  <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="adminNav"><span id="navCurrent">Orgas</span><span aria-hidden="true">▾</span></button>
+  <nav class="tabs" id="adminNav" role="tablist" aria-orientation="vertical">
+    <div class="nav-group" role="presentation">Pendant la manif</div>
+    <button class="tab" role="tab" id="tabLive" aria-selected="false" aria-controls="panelLive"><span class="ni" aria-hidden="true">📈</span>Direct</button>
+    <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports"><span class="ni" aria-hidden="true">🚨</span>Urgences</button>
+    <button class="tab" role="tab" id="tabMod" aria-selected="false" aria-controls="panelMod"><span class="ni" aria-hidden="true">🛡</span>Modération <span id="modBadge"></span></button>
+    <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns"><span class="ni" aria-hidden="true">📣</span>Annonces <span id="annBadge"></span></button>
+    <div class="nav-group" role="presentation">Organiser</div>
+    <button class="tab" role="tab" id="tabMobs" aria-selected="false" aria-controls="panelMobs"><span class="ni" aria-hidden="true">🗓</span>Journées <span id="mobBadge"></span></button>
+    <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda"><span class="ni" aria-hidden="true">📅</span>Agenda <span id="pendingBadge"></span></button>
+    <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas"><span class="ni" aria-hidden="true">👥</span>Orgas <span id="reqBadge"></span></button>
+    <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal"><span class="ni" aria-hidden="true">⚖</span>Legal teams <span id="legalBadge"></span></button>
+    <button class="tab" role="tab" id="tabPlaces" aria-selected="false" aria-controls="panelPlaces"><span class="ni" aria-hidden="true">🏛</span>Lieux</button>
+    <div class="nav-group" role="presentation">Bilans et contrôle</div>
+    <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest"><span class="ni" aria-hidden="true">📊</span>Digest</button>
+    <button class="tab" role="tab" id="tabJournal" aria-selected="false" aria-controls="panelJournal"><span class="ni" aria-hidden="true">🧾</span>Journal <span id="journalBadge"></span></button>
+    <button class="tab" role="tab" id="tabAbuse" aria-selected="false" aria-controls="panelAbuse"><span class="ni" aria-hidden="true">⚠</span>Abus</button>
+    <div class="nav-group" role="presentation">Configuration</div>
+    <button class="tab" role="tab" id="tabSettings" aria-selected="false" aria-controls="panelSettings"><span class="ni" aria-hidden="true">⚙</span>Réglages</button>
   </nav>
+  <div class="admin-main">
 
 
   <section class="card prompt" id="pubPrompt" hidden>
@@ -517,6 +540,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   </div>
   </section>
   </div>
+  </div>
 </main>
 <link rel="stylesheet" href="/vendor/leaflet.css">
 <script src="/vendor/leaflet.js"></script>
@@ -538,17 +562,24 @@ async function login() {
   try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
-  $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false;
+  $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false; document.querySelector('main').classList.add('wide');
+  $('#navCurrent').textContent = navLabel($('.tab[aria-selected="true"]'));
 }
 $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); });
 if (KEY) login();
 
+const navLabel = b => b.querySelector('.ni').textContent + '  ' + [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
 function showTab(which) {
   for (const t of ['Orgas', 'Anns', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
+  // Téléphone : le menu se referme et affiche la section ouverte
+  $('#navCurrent').textContent = navLabel($('#tab' + which));
+  $('#adminNav').classList.remove('open'); $('#navToggle').setAttribute('aria-expanded', 'false');
+  window.scrollTo({ top: 0 });
 }
+$('#navToggle').onclick = () => { const o = $('#adminNav').classList.toggle('open'); $('#navToggle').setAttribute('aria-expanded', String(o)); };
 $('#tabOrgas').onclick = () => { showTab('Orgas'); loadRequests(); };
 $('#tabDigest').onclick = () => showTab('Digest');
 $('#tabReports').onclick = () => { showTab('Reports'); loadReports(); };

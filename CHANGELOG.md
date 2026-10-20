@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.2.1
+
+- Administration : menu de navigation en colonne, rangé par usage (pendant la manif, organiser, bilans, réglages) ; sur téléphone, un menu déroulant au lieu d'onglets à faire défiler.
+- Administration : cases à cocher alignées avec leur texte.
+
 ## 2.2
 
 - Lieux permanents sur la carte, depuis OpenStreetMap (mis à jour chaque mois) : préfectures, sous-préfectures, mairies, commissariats, gendarmeries, tribunaux, centres de rétention, hôpitaux dès le zoom quartier ; pharmacies (avec le 3237 pour la pharmacie de garde) et eau potable au zoom rue. Puce « 🏛 Lieux ».
