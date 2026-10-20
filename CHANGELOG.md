@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.9
+
+- Lieux permanents : le serveur Overpass de secours (overpass.private.coffee) passe en premier ; overpass-api.de ne répondait pas aux requêtes du serveur.
+
 ## 2.3.8
 
 - Lieux permanents : requêtes OpenStreetMap encore allégées (simple rectangle, sans calcul des frontières, qui faisait dépasser le délai), et seuls les carrés qui contiennent une ville de la zone sont demandés (118 au lieu de 208). Avancement écrit dans le journal du serveur à chaque zone.
