@@ -2,6 +2,15 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.2
+
+- Lieux permanents sur la carte, depuis OpenStreetMap (mis à jour chaque mois) : préfectures, sous-préfectures, mairies, commissariats, gendarmeries, tribunaux, centres de rétention, hôpitaux dès le zoom quartier ; pharmacies (avec le 3237 pour la pharmacie de garde) et eau potable au zoom rue. Puce « 🏛 Lieux ».
+- Notifications : bouton « Recevoir une notification de test » (envoyée par le serveur), statistiques d'envoi et dernière erreur dans l'administration.
+- Plus de faux « hors ligne » au retour dans l'appli : reconnexion rapide, et les échecs de ce moment ne font plus passer en mode léger.
+- Signalements des orgas confirmées vérifiés d'office et deux fois plus longs ; l'orga peut prolonger ou corriger les siens.
+- Administration : onglets Réglages (bandeau daté, vue d'ouverture, types de signalement, rayon d'alerte, distance des notifications), Journées (notification la veille, bandeau et mode renforcé le jour J, bilan proposé le lendemain), Direct (tableau de bord), Modération (points contestés), Lieux (correction, masquage, ajout).
+- README simplifié ; documentation technique dans `docs/`.
+
 ## 2.1.2
 
 - Carte retravaillée : rues plus visibles (grands axes teintés de violet), eau, parcs et bâtiments mieux marqués, noms de rues et de lieux plus grands dans la police de l'appli.

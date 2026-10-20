@@ -21,7 +21,7 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', TILE_PMTILES: DIR + '/carte.pmtiles' },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', TILE_PMTILES: DIR + '/carte.pmtiles' },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
@@ -344,6 +344,129 @@ test('carte à intégrer : seule embed.html peut s’afficher dans un autre site
   const cfg = await fetch(B + '/api/config').then(r => r.json());
   assert.ok(cfg.vector.zones.length >= 1 && cfg.vector.zones[0].length === 4);
   assert.equal(cfg.version, require('../package.json').version);
+});
+
+test('orga confirmée : signalement vérifié d’office, deux fois plus long, prolongeable et corrigeable par elle seule', async () => {
+  const o = (await admin('/api/admin/orgas', { label: 'Orga Sûre' })).j;
+  const O = await orgaFrom(o.invite);
+  await admin(`/api/admin/orgas/${o.id}/trial`, { trial: false });
+  const p = place();
+  const r = await asOrga(O.key, '/api/reports', { cat: 'medic', ...p, note: 'devant la gare' });
+  assert.equal(r.s, 201); assert.equal(r.j.ver, 'Orga Sûre'); assert.equal(r.j.mine, true);
+  const ttl = 45 * 60_000;
+  assert.ok(Math.abs(r.j.exp - r.j.t - 2 * ttl) < 2000, 'durée ×2');
+  // Un·e participant·e ne peut pas prolonger ; une autre orga non plus
+  assert.equal((await post(`/api/reports/${r.j.id}/extend`, {})).s, 403);
+  const x = (await admin('/api/admin/orgas', { label: 'Autre Orga' })).j, X = await orgaFrom(x.invite);
+  assert.equal((await asOrga(X.key, `/api/reports/${r.j.id}/extend`, {})).s, 403);
+  const ext = await asOrga(O.key, `/api/reports/${r.j.id}/extend`, {});
+  assert.equal(ext.s, 200); assert.ok(ext.j.exp > r.j.exp);
+  assert.ok(ext.j.exp - Date.now() <= 4 * ttl + 1000, 'plafond 4×');
+  await asOrga(O.key, `/api/reports/${r.j.id}/extend`, {});
+  assert.equal((await asOrga(O.key, `/api/reports/${r.j.id}/extend`, {})).s, 409, 'déjà au maximum');
+  const ed = await asOrga(O.key, `/api/reports/${r.j.id}/edit`, { cat: 'legal', note: 'côté parking' });
+  assert.equal(ed.s, 200); assert.equal(ed.j.cat, 'legal'); assert.deepEqual(ed.j.notes.map(n => n.x), ['côté parking']);
+  // Orga en essai : signalement ordinaire
+  const t = await asOrga(X.key, '/api/reports', { cat: 'medic', ...place() });
+  assert.equal(t.s, 201); assert.equal(t.j.ver, null);
+  assert.ok(Math.abs(t.j.exp - t.j.t - ttl) < 2000);
+  // Fusion sur un point existant : vérifié par l'orga confirmée
+  const q2 = place(), base = await post('/api/reports', { cat: 'crs', ...q2 });
+  const m = await asOrga(O.key, '/api/reports', { cat: 'crs', lat: q2.lat + 0.0002, lng: q2.lng });
+  assert.equal(m.j.merged, true); assert.equal(m.j.ver, 'Orga Sûre'); assert.equal(m.j.id, base.j.id);
+});
+
+test('réglages de l’admin : bandeau daté, vue, catégorie désactivée, durée, seuils', async () => {
+  const day = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const s = await admin('/api/admin/settings', { banner: { text: 'Grève générale', from: day, to: day }, view: { lat: 45.76, lng: 4.84, zoom: 12 },
+    cats: { presse: { off: true }, eau: { ttl: 120 } }, alertRadius: 500, nearKm: 15 });
+  assert.equal(s.s, 200);
+  await new Promise(r => setTimeout(r, 3100)); // relu toutes les 3 s
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.equal(cfg.event, 'Grève générale'); assert.deepEqual(cfg.center, [45.76, 4.84]); assert.equal(cfg.zoom, 12);
+  assert.equal(cfg.alertRadius, 500); assert.equal(cfg.nearKm, 15);
+  assert.equal(cfg.categories.find(c => c.id === 'presse').off, true); assert.equal(cfg.categories.find(c => c.id === 'eau').ttl, 120);
+  assert.equal((await post('/api/reports', { cat: 'presse', ...place() })).s, 400, 'catégorie désactivée');
+  const e = await post('/api/reports', { cat: 'eau', ...place() });
+  assert.ok(Math.abs(e.j.exp - e.j.t - 120 * 60_000) < 2000);
+  // Bandeau hors de ses dates : nom par défaut
+  await admin('/api/admin/settings', { banner: { text: 'Passé', from: '2020-01-01', to: '2020-01-02' } });
+  await new Promise(r => setTimeout(r, 3100));
+  const cfg2 = await fetch(B + '/api/config').then(r => r.json());
+  assert.notEqual(cfg2.event, 'Passé'); assert.equal(cfg2.categories.find(c => c.id === 'presse').off, false);
+  assert.ok(JSON.parse(fs.readFileSync(DIR + '/l/g.json', 'utf8')).cfg, 'empreinte des réglages publiée');
+});
+
+test('journées prévues, tableau de bord, modération, test de notification', async () => {
+  const tomorrow = new Date(Date.now() + 86400e3).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  assert.equal((await admin('/api/admin/mobs', { date: '2020-01-01', title: 'Vieux' })).s, 400);
+  const m = await admin('/api/admin/mobs', { date: tomorrow, title: 'Journée test' });
+  assert.equal(m.s, 201);
+  assert.equal((await admin('/api/admin/mobs', { date: tomorrow, title: 'Doublon' })).s, 409);
+  const list = await fetch(B + '/api/admin/mobs', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.equal(list.list.length, 1);
+  assert.equal((await fetch(B + '/api/admin/mobs/' + m.j.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } })).status, 200);
+  const live = await fetch(B + '/api/admin/live', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.equal(live.perMin.length, 15); assert.ok(live.sys.load.length === 3); assert.ok('subs' in live.push);
+  // Point contesté → file de modération → gardé
+  const p = place(), r = await post('/api/reports', { cat: 'chaud', ...p });
+  db.prepare('UPDATE reports SET ct=?, down=3 WHERE id=?').run(Date.now(), r.j.id);
+  const mod = await fetch(B + '/api/admin/moderation', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.ok(mod.list.some(x => x.id === r.j.id));
+  const keep = await admin(`/api/admin/reports/${r.j.id}/verify`, {});
+  assert.equal(keep.s, 200); assert.equal(keep.j.down, 0); assert.equal(keep.j.ver, 'Cortège');
+  // Test de notification : téléphone non abonné
+  assert.equal((await post('/api/push/test', { endpoint: 'https://fcm.googleapis.com/fcm/send/inconnu' })).s, 404);
+});
+
+test('lieux permanents : import OpenStreetMap, fichiers par région, correction et masquage', async () => {
+  const http = require('node:http');
+  const fake = http.createServer((req, res) => {
+    let body = ''; req.on('data', c => (body += c)); req.on('end', () => {
+      const q = decodeURIComponent(body.replace(/^data=/, '').replace(/\+/g, ' '));
+      const inLyon = /\[bbox:45,3\.8/.test(q) || /bbox:45(\.\d+)?,4/.test(q) || /bbox:45,/.test(q);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ elements: inLyon && !fake.done ? (fake.done = true, [
+        { type: 'node', id: 1, lat: 45.7578, lon: 4.8320, tags: { amenity: 'townhall', name: 'Hôtel de ville de Lyon' } },
+        { type: 'way', id: 2, center: { lat: 45.7590, lon: 4.8290 }, tags: { office: 'government', government: 'prefecture', name: 'Préfecture du Rhône' } },
+        { type: 'node', id: 3, lat: 45.75, lon: 4.85, tags: { amenity: 'police', name: 'Gendarmerie de Lyon' } },
+        { type: 'node', id: 4, lat: 45.751, lon: 4.851, tags: { amenity: 'pharmacy', name: 'Pharmacie du Centre', opening_hours: 'Mo-Sa 09:00-19:00', phone: '+33 4 00 00 00 00' } },
+        { type: 'node', id: 5, lat: 45.752, lon: 4.852, tags: { amenity: 'drinking_water', access: 'private' } },
+        { type: 'node', id: 6, lat: 45.753, lon: 4.853, tags: { amenity: 'hospital', name: 'Hôpital Test', emergency: 'yes' } },
+      ]) : [] }));
+    });
+  }).listen(0);
+  await new Promise(r => fake.on('listening', r));
+  // Le serveur de test tourne déjà : on lance un second serveur pointé sur le faux Overpass
+  const port = 20000 + Math.floor(Math.random() * 20000), B2 = 'http://127.0.0.1:' + port, D2 = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-l-'));
+  const s2 = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore', env: { ...process.env, PORT: String(port), DATA_DIR: D2 + '/d', LIVE_DIR: D2 + '/l',
+    ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', OVERPASS_URL: 'http://127.0.0.1:' + fake.address().port + '/api/interpreter', OVERPASS_GAP: '0' } });
+  try {
+    for (let i = 0; i < 100; i++) { try { if ((await fetch(B2 + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
+    const A = (p, body, method = 'POST') => fetch(B2 + p, { method, headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }).then(async r => ({ s: r.status, j: await r.json() }));
+    assert.equal((await A('/api/admin/places/import', {})).s, 202);
+    let st; for (let i = 0; i < 100; i++) { st = (await A('/api/admin/places?q=lyon', undefined, 'GET')).j; if (!st.running && st.last) break; await new Promise(r => setTimeout(r, 100)); }
+    assert.equal(st.last.n, 5, 'eau privée ignorée');
+    assert.equal(st.counts.pref, 1); assert.equal(st.counts.gend, 1); assert.equal(st.counts.mairie, 1);
+    const main = JSON.parse(fs.readFileSync(D2 + '/l/l/45_4.json', 'utf8')).p, street = JSON.parse(fs.readFileSync(D2 + '/l/l/45_4-s.json', 'utf8')).p;
+    assert.equal(main.length, 4); assert.equal(street.length, 1);
+    assert.equal(street[0][1], 'pharma'); assert.equal(street[0][5], 'Mo-Sa 09:00-19:00');
+    assert.equal(main.find(x => x[1] === 'hopital')[7], 1, 'urgences');
+    // Correction, masquage, ajout
+    const ed = await A('/api/admin/places/n1', { n: 'Mairie centrale' });
+    assert.equal(ed.j.n, 'Mairie centrale'); assert.equal(ed.j.ed, true);
+    await A('/api/admin/places/n3', { hid: true });
+    const add = await A('/api/admin/places', { kind: 'cra', lat: 45.72, lng: 4.9, n: 'CRA de test' });
+    assert.equal(add.s, 201);
+    const main2 = JSON.parse(fs.readFileSync(D2 + '/l/l/45_4.json', 'utf8')).p;
+    assert.ok(main2.some(x => x[4] === 'Mairie centrale')); assert.ok(!main2.some(x => x[0] === 'n3')); assert.ok(main2.some(x => x[1] === 'cra'));
+    // Nouvel import vide : les lieux corrigés ou ajoutés restent, les autres d'OSM disparaissent
+    assert.equal((await A('/api/admin/places/import', {})).s, 202);
+    for (let i = 0; i < 100; i++) { st = (await A('/api/admin/places?filter=edited', undefined, 'GET')).j; if (!st.running && st.last.n === 0) break; await new Promise(r => setTimeout(r, 100)); }
+    const main3 = JSON.parse(fs.readFileSync(D2 + '/l/l/45_4.json', 'utf8')).p;
+    assert.deepEqual(main3.map(x => x[1]).sort(), ['cra', 'mairie']);
+    assert.ok(JSON.parse(fs.readFileSync(D2 + '/l/g.json', 'utf8')).pois);
+  } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
 });
 
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {

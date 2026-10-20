@@ -2,7 +2,6 @@
 (async function () {
   const $ = s => document.querySelector(s);
   const MIN = 60_000;
-  const ALERT_RADIUS = 300;                 // mètres
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'nasse', 'bac', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
   let announcements = [];
@@ -37,10 +36,12 @@
     } finally { clearTimeout(to); }
   })();
   const CAT = Object.fromEntries(cfg.categories.map(c => [c.id, c]));
+  let ALERT_RADIUS = cfg.alertRadius || 300;   // mètres (réglable par l'admin)
   const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
   const GROUP_COLOR = { fdo: 'var(--fdo)', danger: 'var(--danger)', soutien: 'var(--soutien)', info: 'var(--info)' };
-  $('#eventName').textContent = cfg.event;
+  function applyBanner() { const e = $('#eventName'); e.textContent = cfg.event; e.classList.toggle('on', !!cfg.banner); }
+  applyBanner();
   if (cfg.sourceUrl) $('#githubLink').href = cfg.sourceUrl;
   if (cfg.onion) {
     $('#onionTip').hidden = false; $('#onionAddr').textContent = cfg.onion;
@@ -263,11 +264,27 @@
       ok.onclick = () => orgaAction(r.id, 'verify');
       rm.onclick = () => { if (rm.dataset.armed) orgaAction(r.id, 'remove'); else { rm.dataset.armed = '1'; rm.textContent = 'Confirmer le retrait'; } };
       root.append(el('div', { class: 'pop-actions orga' }, ok, rm));
+      // Son propre signalement : prolonger ou corriger (type, précision)
+      if (mine.has(r.id) || orga.admin) {
+        const ext = el('button', { class: 'secondary' }, '⏱ Prolonger');
+        const edit = el('button', { class: 'secondary' }, '✎ Modifier');
+        ext.onclick = () => ownAction(r.id, 'extend');
+        const form = el('form', { class: 'pop-edit', hidden: '' });
+        const sel = el('select', { 'aria-label': 'Type' });
+        for (const c of cfg.categories.filter(c => !c.off)) { const o = el('option', { value: c.id }, c.glyph + ' ' + c.label); if (c.id === r.cat) o.selected = true; sel.append(o); }
+        const mineNote = (r.notes || [])[0]?.x || '';
+        const inp = el('input', { maxlength: '120', placeholder: 'Précision (vide = aucune)', 'aria-label': 'Précision', value: mineNote });
+        form.append(sel, inp, el('button', { type: 'submit' }, 'Enregistrer'));
+        edit.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) inp.focus(); };
+        form.onsubmit = e => { e.preventDefault(); ownAction(r.id, 'edit', { cat: sel.value, note: inp.value }); };
+        root.append(el('div', { class: 'pop-actions orga' }, ext, edit), form);
+      }
     }
     return root;
   }
   // Quelqu'un écrit une précision dans un popup : on ne le redessine pas (le texte serait perdu)
-  const typingInPopup = () => { const f = document.querySelector('.leaflet-popup .pop-note-form:not([hidden])'); return !!(f && (f.contains(document.activeElement) || f.querySelector('input').value)); };
+  const typingInPopup = () => { const f = document.querySelector('.leaflet-popup .pop-note-form:not([hidden])'), e = document.querySelector('.leaflet-popup .pop-edit:not([hidden])');
+    return !!e || !!(f && (f.contains(document.activeElement) || f.querySelector('input').value)); };
   function upsert(r, fresh = false) {
     const cur = reports.get(r.id);
     if (cur) {
@@ -399,7 +416,11 @@
   const net = { lite: false, samples: [], told: false };
   const conn = navigator.connection;
   const slowHint = () => !!(conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '') || conn.rtt > 1500));
+  // Retour de l'arrière-plan ou réseau retrouvé : les premiers échecs ne veulent pas dire « réseau faible »
+  let resumeAt = 0;
+  const RESUME_GRACE = 12000;
   function netSample(ms, ok) {
+    if (!ok && (navigator.onLine === false || Date.now() - resumeAt < RESUME_GRACE)) return;
     net.samples.push({ ms, ok }); if (net.samples.length > 6) net.samples.shift();
     const last4 = net.samples.slice(-4), bad = last4.filter(x => !x.ok || x.ms > 3000).length;
     if (!net.lite && (slowHint() || bad >= 2)) setLite(true);
@@ -413,7 +434,7 @@
   }
   conn?.addEventListener?.('change', () => { if (slowHint() && !net.lite) setLite(true); });
   // Fichiers gardés pour le hors-ligne (agenda, annonces) : dernière version reçue
-  const KEEP = /\/live\/(events|ann|legal)\.json$/;
+  const KEEP = /\/live\/(events|ann|legal|l\/[\w-]+)\.json$/;
   const dataCache = () => caches.open('cortege-data');
   async function cacheGet(key) { try { const r = await (await dataCache()).match(key); return r ? r.json() : null; } catch { return null; } }
   function cachePut(key, obj) { try { dataCache().then(c => c.put(key, new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {}); } catch {} }
@@ -517,7 +538,7 @@
     let annChanged = false;
     const g = lite.g;
     if (g) {
-      setPaused(g.paused); checkBuild(g.build);
+      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois);
       if (g.events && evCache.h !== g.events) { try { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); } catch {} }
       if (annCache.h !== g.ann) { try { annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; annChanged = true; } catch {} }
       await syncLegal(g);
@@ -554,7 +575,7 @@
       // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
       if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
     }
-    setPaused(g.paused); checkBuild(g.build);
+    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois);
     if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
@@ -618,6 +639,20 @@
     try { const c = map.getCenter(); sessionStorage.setItem('cortege-view', JSON.stringify({ c: [c.lat, c.lng], z: map.getZoom() })); } catch {}
     location.reload();
   }
+  // Réglages changés par l'admin (bandeau, catégories, rayon d'alerte) : relus sans recharger l'appli
+  let cfgSeen = cfg.cfgh || null;
+  async function checkCfg(h) {
+    if (!h || h === cfgSeen) return;
+    cfgSeen = h;
+    try {
+      const c = await fetch('/api/config', { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+      try { localStorage.setItem('cortege-config', JSON.stringify(c)); } catch {}
+      cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
+      ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
+      for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
+      document.querySelectorAll('#catGrid .cat').forEach(b => { b.hidden = !!(CAT[b.dataset.cat] && CAT[b.dataset.cat].off); });
+    } catch { cfgSeen = null; }
+  }
   function checkBuild(b) {
     if (!b) return;
     if (!buildSeen) { buildSeen = b; return; }
@@ -655,9 +690,16 @@
         catch (e) { if (e.status === 404) { useApi = true; await syncApi(); } else throw e; }
       }
       failures = 0; lastOk = Date.now(); dataAt = lastOk; saveSnapshot();
-      setStatus('live', net.lite ? 'En direct · mode léger' : 'En direct');
+      setStatus('live', net.lite ? 'En direct · mode léger' : 'En direct'); freshness();
       if (!$('#queueChip').hidden) setTimeout(() => flushQueue(), 0);
     } catch {
+      // Retour au premier plan : le téléphone met souvent quelques secondes à rouvrir le réseau.
+      // Pendant ce temps, on dit « reconnexion » au lieu de « hors ligne », et on réessaie vite.
+      if (document.hidden || Date.now() - resumeAt < RESUME_GRACE) {
+        setStatus('live', 'Reconnexion…'); syncing = false;
+        if (!document.hidden) { clearTimeout(pollTimer); pollTimer = setTimeout(sync, 1500); }
+        return;
+      }
       failures++;
       setStatus('offline', Date.now() - lastOk > 15000 ? 'Hors ligne — nouvel essai…' : 'Connexion instable…');
       if (!fallbackTried) { fallbackTried = true; useFallback(); }
@@ -729,6 +771,7 @@
   function freshness() {
     const bar = $('#netBar'); if (!bar) return;
     const stale = dataAt && Date.now() - dataAt > 60000;
+    if (stale && (document.hidden || Date.now() - resumeAt < RESUME_GRACE)) return; // retour de l'arrière-plan : le temps de se reconnecter
     if (stale) { bar.hidden = false; bar.textContent = `${navigator.onLine === false || !net.lite ? '📴 Pas de réseau' : '📶 Réseau très faible'} · dernière situation connue ${agoTxt(dataAt)}`; }
     else if (net.lite) { bar.hidden = false; bar.textContent = `📶 Réseau faible : mode léger · mis à jour ${dataAt ? agoTxt(dataAt) : '…'}`; }
     else bar.hidden = true;
@@ -738,7 +781,12 @@
 
   let moveTimer = null;
   map.on('moveend', () => { clearTimeout(moveTimer); moveTimer = setTimeout(() => { sync(); streamWatch(); }, 400); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { sync(); streamWatch(); } else { clearTimeout(pollTimer); streamClose(); } });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { resumeAt = Date.now(); failures = 0; sync(); streamWatch(); setTimeout(freshness, RESUME_GRACE + 500); }
+    else { clearTimeout(pollTimer); streamClose(); }
+  });
+  // Réseau retrouvé (sortie de tunnel, mode avion coupé) : on resynchronise tout de suite
+  window.addEventListener('online', () => { resumeAt = Date.now(); failures = 0; sync(); streamWatch(); });
   sync(); streamWatch();
 
   // ---- Alerte de proximité ----
@@ -876,6 +924,74 @@
   }
 
   // ---- Filtres ----
+  // ---- Lieux permanents (OpenStreetMap) : préfectures, mairies, commissariats, tribunaux, CRA, hôpitaux ; pharmacies et eau au zoom rue ----
+  const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
+  const POI_Z = 13, POI_STREET_Z = 16, POI_MAX = 350;
+  let poiHidden = false; try { poiHidden = localStorage.getItem('cortege-poi-hidden') === '1'; } catch {}
+  let poiHash = null, poiSeq = 0;
+  const poiFiles = new Map(), poiDrawn = new Map();
+  const poiLayer = L.layerGroup().addTo(map);
+  async function poiLoad(file) {
+    const c = poiFiles.get(file);
+    if (c && (c.h === poiHash || !poiHash)) return c.p;
+    try { const p = (await getJ('/live/l/' + file)).p || []; poiFiles.set(file, { h: poiHash, p }); return p; }
+    catch (e) { if (e.status === 404) { poiFiles.set(file, { h: poiHash, p: [] }); return []; } return c ? c.p : []; }
+  }
+  const poiFilesFor = (b, street) => {
+    const out = [];
+    for (let i = Math.floor(b.getSouth()); i <= Math.floor(b.getNorth()); i++)
+      for (let j = Math.floor(b.getWest()); j <= Math.floor(b.getEast()); j++) { out.push(`${i}_${j}.json`); if (street) out.push(`${i}_${j}-s.json`); }
+    return out;
+  };
+  // Horaires OpenStreetMap (« Mo-Sa 09:00-19:30 ») en français lisible
+  const DAYS = { Mo: 'lun', Tu: 'mar', We: 'mer', Th: 'jeu', Fr: 'ven', Sa: 'sam', Su: 'dim', PH: 'fériés' };
+  const hoursFr = h => h === '24/7' ? 'Ouvert 24 h/24, 7 j/7' : h.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, d => DAYS[d]).replace(/\boff\b/g, 'fermé')
+    .replace(/(\d\d):(\d\d)/g, (_, a, b) => b === '00' ? `${+a} h` : `${+a} h ${b}`).replace(/;\s*/g, ' · ').replace(/-/g, '–').replace(/,/g, ', ');
+  function poiPopup(x) {
+    const [, kind, , , name, hours, phone, flag] = x, k = PK[kind] || { label: 'Lieu', glyph: '📍' };
+    const root = el('div', { class: 'poi-pop' });
+    root.append(el('div', { class: 'pop-title' }, k.glyph + ' ', name || k.label));
+    if (name) root.append(el('div', { class: 'pop-meta' }, k.label + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
+    if (hours) root.append(el('p', { class: 'poi-h' }, '🕒 ', hoursFr(hours)));
+    if (phone) root.append(el('p', {}, el('a', { href: 'tel:' + phone.replace(/[^\d+]/g, '') }, '📞 ' + phone)));
+    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, 'Pharmacie de garde (nuit, dimanche, jour férié) : appelle le ', el('a', { href: 'tel:3237' }, '3237'), '.'));
+    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? '🚑 Service d’urgences' : 'Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.'));
+    if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, 'Fontaine saisonnière : peut être coupée en hiver.'));
+    root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
+    return root;
+  }
+  function poiIcon(x, labels) {
+    const k = PK[x[1]] || { glyph: '📍', grp: 'pouvoir' };
+    const box = el('div', { class: `poi poi-${k.grp}${k.street ? ' poi-sm' : ''}` }, el('span', { class: 'poi-g', 'aria-hidden': 'true' }, k.glyph));
+    if (labels && x[4]) box.append(el('span', { class: 'poi-l' }, x[4].length > 28 ? x[4].slice(0, 27) + '…' : x[4]));
+    const s = k.street ? 24 : 30;
+    return L.divIcon({ className: 'poi-wrap', html: box, iconSize: [s, s], iconAnchor: [s / 2, s / 2], popupAnchor: [0, -s / 2] });
+  }
+  async function renderPois() {
+    const seq = ++poiSeq, z = map.getZoom();
+    if (poiHidden || z < POI_Z || !cfg.poiKinds) { poiLayer.clearLayers(); poiDrawn.clear(); return; }
+    const b = map.getBounds(), files = poiFilesFor(b.pad(0.1), z >= POI_STREET_Z);
+    if (files.length > 8) return;
+    const rows = (await Promise.all(files.map(poiLoad))).flat();
+    if (seq !== poiSeq) return; // la carte a bougé entre-temps
+    const vb = b.pad(0.15), c = map.getCenter(), labels = z >= 15;
+    let want = rows.filter(x => vb.contains([x[2], x[3]]) && (z >= POI_STREET_Z || !(PK[x[1]] && PK[x[1]].street)));
+    if (want.length > POI_MAX) want = want.map(x => [x, map.distance(c, [x[2], x[3]])]).sort((a, b2) => a[1] - b2[1]).slice(0, POI_MAX).map(x => x[0]);
+    const keep = new Map(want.map(x => [x[0], x]));
+    for (const [id, m] of poiDrawn) if (!keep.has(id) || m.options.lab !== labels || m.options.sig !== keep.get(id).join('|')) { poiLayer.removeLayer(m); poiDrawn.delete(id); }
+    for (const [id, x] of keep) {
+      if (poiDrawn.has(id)) continue;
+      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labels), zIndexOffset: -1000, keyboard: false, title: (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labels, sig: x.join('|') });
+      m.bindPopup(() => poiPopup(x));
+      poiLayer.addLayer(m); poiDrawn.set(id, m);
+    }
+  }
+  function syncPois(h) { if (h && h !== poiHash) { poiHash = h; renderPois(); } }
+  let poiTimer = null;
+  map.on('moveend', () => { clearTimeout(poiTimer); poiTimer = setTimeout(renderPois, 250); });
+  // « Prêt pour la manif » : garder aussi les lieux de la zone
+  const poiPrefetch = () => Promise.all(poiFilesFor(map.getBounds().pad(0.3), true).slice(0, 12).map(f => getJ('/live/l/' + f).catch(() => null)));
+
   function renderFilters() {
     const box = $('#filters'); box.textContent = '';
     for (const g of cfg.groups) {
@@ -898,6 +1014,16 @@
       toast(evHidden ? 'Événements de l’agenda masqués sur la carte' : 'Événements de l’agenda affichés');
     };
     box.append(ev);
+    if (cfg.poiKinds) {
+      const pl = el('button', { class: 'chip chip-poi', style: '--c:#8e7bd8', 'aria-pressed': String(!poiHidden), title: 'Lieux permanents : préfectures, mairies, commissariats, tribunaux, hôpitaux… (zoome pour les voir)' }, '🏛 Lieux');
+      pl.onclick = () => {
+        poiHidden = !poiHidden;
+        try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
+        renderPois(); renderFilters();
+        toast(poiHidden ? 'Lieux permanents masqués' : map.getZoom() < POI_Z ? 'Lieux permanents affichés : zoome sur une ville pour les voir' : 'Lieux permanents affichés');
+      };
+      box.append(pl);
+    }
   }
   renderFilters();
 
@@ -963,6 +1089,7 @@
       const row = el('div', { class: 'row' });
       for (const c of cfg.categories.filter(c => c.group === g.id)) {
         const b = el('button', { class: 'cat', 'data-cat': c.id, style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
+        if (c.off) b.hidden = true;
         b.onclick = () => submit(c.id);
         row.append(b);
       }
@@ -995,15 +1122,17 @@
   const rid = () => { const b = new Uint8Array(9); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, '0')).join(''); };
   // Réponse inexploitable (pas de réseau, serveur hôte saturé sans message) : on garde pour plus tard
   async function postReport(it) {
-    const res = await fetch('/api/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE },
-      body: JSON.stringify({ cat: it.cat, lat: it.lat, lng: it.lng, note: it.note, t: it.t }) });
+    const headers = { 'Content-Type': 'application/json', 'X-Device': DEVICE };
+    if (orga && !orga.trial && !orga.sponsored) headers['X-Orga-Key'] = orgaKey(); // orga confirmée : vérifié d'office, dure plus longtemps
+    const res = await fetch('/api/reports', { method: 'POST', headers, body: JSON.stringify({ cat: it.cat, lat: it.lat, lng: it.lng, note: it.note, t: it.t }) });
     const body = await res.json().catch(() => null);
+    if (body && body.mine && body.id) mineAdd(body.id);
     if (!body && res.status >= 500) throw new Error('indisponible');
     return { status: res.status, body: body || {} };
   }
   function resultText(it, { status, body }) {
     const label = CAT[it.cat].label;
-    if (status === 201) return `${label} signalé`;
+    if (status === 201) return body.mine ? `${label} signalé et vérifié (orga)` : `${label} signalé`;
     if (status === 200 && body.merged) return body.self ? 'Tu l’avais déjà signalé : point mis à jour' : `Déjà signalé : ta confirmation est ajoutée (${body.up + 1} personnes)`;
     return body.error || 'Envoi impossible. Réessaie.';
   }
@@ -1291,6 +1420,9 @@
   // ---- Espace orga / legal team ----
   // Le lien orga ressemble à https://cortege.neru.tv/?orga=CLÉ : la clé est gardée sur ce téléphone et retirée de l'adresse.
   const orgaKey = () => { try { return localStorage.getItem('cortege-orga') || ''; } catch { return ''; } };
+  // Signalements faits par cette orga depuis ce téléphone : elle peut les prolonger ou les corriger
+  const mine = new Set((() => { try { return JSON.parse(localStorage.getItem('cortege-mine') || '[]'); } catch { return []; } })());
+  function mineAdd(id) { mine.add(id); try { localStorage.setItem('cortege-mine', JSON.stringify([...mine].slice(-200))); } catch {} }
   async function orgaFetch(url, opts = {}) {
     const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Orga-Key': orgaKey(), ...(opts.headers || {}) } });
     const body = await res.json().catch(() => ({}));
@@ -1334,6 +1466,13 @@
     }
     catch (e) { toast(e.message); }
   })();
+  async function ownAction(id, action, body = {}) {
+    try {
+      const out = await orgaFetch(`/api/reports/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
+      toast(action === 'extend' ? `Prolongé : expire dans ${left(out.exp)}` : 'Signalement corrigé');
+      map.closePopup(); etag = null; sync();
+    } catch (e) { toast(e.message); }
+  }
   async function orgaAction(id, action) {
     try {
       const out = await orgaFetch(`/api/reports/${id}/${action}`, { method: 'POST', body: '{}' });
@@ -1781,7 +1920,21 @@
     try { localStorage.setItem('cortege-push-zone', key); } catch {}
   }
   if (isIOS && !standalone) $('#pushHelp').textContent += ' Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.';
-  function syncSwitches() { $('#optPush').checked = !!pushSub && pushOpts.urgent; $('#optNear').checked = !!pushSub && pushOpts.near; bellState(); }
+  function syncSwitches() { $('#optPush').checked = !!pushSub && pushOpts.urgent; $('#optNear').checked = !!pushSub && pushOpts.near; $('#pushTestBox').hidden = !pushSub; bellState(); }
+  // Notification de test envoyée par le serveur : vérifie toute la chaîne, pas seulement le vibreur du téléphone
+  $('#btnPushTest').onclick = async () => {
+    const b = $('#btnPushTest'), msg = $('#pushTestMsg');
+    if (!pushSub) return;
+    b.disabled = true; msg.textContent = 'Envoi…';
+    try {
+      await pushSend(pushSub, true).catch(() => {});
+      const res = await fetch('/api/push/test', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ endpoint: pushSub.endpoint }) });
+      const out = await res.json().catch(() => ({}));
+      msg.textContent = res.ok ? 'Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone.'
+        : (out.error || 'Envoi impossible.');
+    } catch { msg.textContent = 'Pas de réseau : réessaie quand ça capte.'; }
+    setTimeout(() => { b.disabled = false; }, 4000);
+  };
   if (pushOK) navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
     if (sub && Notification.permission === 'granted') {
       pushSub = sub; syncSwitches();
@@ -1951,7 +2104,8 @@
           state.textContent = `Carte : ${tiles} / ${urls.length} morceaux…`;
         }
       }
-      state.textContent = 'Numéros, annonces et agenda…';
+      state.textContent = 'Numéros, annonces, agenda et lieux…';
+      await poiPrefetch().catch(() => {});
       const [legal, ann] = await Promise.all([getJ('/live/legal.json').catch(() => ({ l: [] })), getJ('/live/ann.json').catch(() => ({ a: [] })), getJ('/live/events.json').catch(() => null)]);
       if (legal && legal.l) legalCache = { h: legalCache.h, l: legal.l };
       if (ann && ann.a) annCache = { h: annCache.h, a: ann.a };

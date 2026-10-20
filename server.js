@@ -332,6 +332,58 @@ const getMeta = k => q('SELECT v FROM meta WHERE k=?').get(k)?.v;
 const setMeta = (k, v) => q('INSERT INTO meta(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v').run(k, String(v));
 const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p > now ? p : 0; };
 
+// ---- Réglages modifiables depuis l'admin (sans toucher aux variables du serveur) ----
+// Bandeau d'événement (avec dates), vue d'ouverture, catégories (activées, durée), rayon d'alerte, distance des notifications.
+// Les clés, chemins et liens restent dans les variables d'environnement.
+const BASE_TTL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.ttl]));
+let SET = { at: 0, v: {}, h: '' };
+function settings() {
+  const now = Date.now();
+  if (now - SET.at > 3000) {
+    const raw = getMeta('settings') || '{}';
+    if (raw !== SET.raw) {
+      let v = {}; try { v = JSON.parse(raw); } catch {}
+      for (const c of CATEGORIES) { const o = v.cats?.[c.id]; c.ttl = o && o.ttl >= 5 && o.ttl <= 24 * 60 ? Math.round(o.ttl) : BASE_TTL[c.id]; c.off = !!(o && o.off); }
+      SET = { at: now, v, raw };
+    } else SET.at = now;
+  }
+  return SET.v;
+}
+function cleanSettings(b) {
+  const s = {}, str = (x, n) => String(x || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+  const day = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || '')) ? String(x) : null;
+  if (b.banner && str(b.banner.text, 80)) s.banner = { text: str(b.banner.text, 80), from: day(b.banner.from), to: day(b.banner.to) };
+  if (b.view) {
+    const lat = Number(b.view.lat), lng = Number(b.view.lng), zoom = Math.round(Number(b.view.zoom));
+    if (Math.abs(lat) <= 85 && Math.abs(lng) <= 180 && zoom >= 3 && zoom <= 17) s.view = { lat: Math.round(lat * 1e4) / 1e4, lng: Math.round(lng * 1e4) / 1e4, zoom };
+  }
+  if (b.cats && typeof b.cats === 'object') {
+    s.cats = {};
+    for (const c of CATEGORIES) {
+      const o = b.cats[c.id]; if (!o) continue;
+      const ttl = Math.round(Number(o.ttl)), out = {};
+      if (o.off) out.off = true;
+      if (ttl >= 5 && ttl <= 24 * 60 && ttl !== BASE_TTL[c.id]) out.ttl = ttl;
+      if (Object.keys(out).length) s.cats[c.id] = out;
+    }
+  }
+  const ar = Math.round(Number(b.alertRadius)); if (ar >= 50 && ar <= 2000) s.alertRadius = ar;
+  const nk = Number(b.nearKm); if (nk >= 1 && nk <= 50) s.nearKm = Math.round(nk);
+  return s;
+}
+function saveSettings(s) { setMeta('settings', JSON.stringify(s)); SET.at = 0; settings(); dirty.global = true; scheduleFlush(); }
+// Journées de mobilisation prévues : notification la veille au soir, bandeau et mode renforcé le jour J, bilan proposé le lendemain
+const mobsAll = () => { try { return JSON.parse(getMeta('mobs') || '[]'); } catch { return []; } };
+const mobToday = (now = Date.now()) => { const d = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); return mobsAll().find(m => m.date === d) || null; };
+// Bandeau affiché en haut de la carte : journée de mobilisation du jour, sinon bandeau des réglages (dans ses dates), sinon le nom par défaut
+function bannerNow(now = Date.now()) {
+  const m = mobToday(now); if (m) return m.title;
+  const b = settings().banner, d = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  if (b && b.text && (!b.from || d >= b.from) && (!b.to || d <= b.to)) return b.text;
+  return null;
+}
+const cfgHash = () => { const s = settings(); return crypto.createHash('sha1').update(JSON.stringify([s, bannerNow()])).digest('base64url').slice(0, 10); };
+
 // Signalements
 // Empreinte du réseau de l'auteur (même HMAC tournant que l'anti-spam), effacée avec le signalement.
 try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
@@ -342,6 +394,8 @@ try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch
 // « Plus là » pondérés (dw) et heure à laquelle le point est devenu contesté (ct)
 try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
+// Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié
+try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch {}
 // Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
 // Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
@@ -386,7 +440,7 @@ function orgaStats(oid) {
 }
 const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
-  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell });
+  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: r.oid || null });
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
@@ -394,11 +448,11 @@ function saveReport(r) {
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-     ON CONFLICT(id) DO UPDATE SET lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
        down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0);
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0, r.oid || null);
   dirtyCell(cell);
 }
 // outcome : ce qu'est devenu le point, pour le digest (orga, admin, full = zone saturée, purge…)
@@ -941,9 +995,16 @@ function pushSend(sub, payload) {
     try { body = encryptPush(sub, payload); u = new URL(sub.e); } catch { return resolve(410); }
     const req = https.request({ method: 'POST', hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, timeout: 10_000, agent: pushAgent,
       headers: { 'Content-Type': 'application/octet-stream', 'Content-Encoding': 'aes128gcm', 'Content-Length': body.length,
-        TTL: '3600', Urgency: 'high', Authorization: vapidAuth(sub.e) } }, res => { res.resume(); resolve(res.statusCode); });
-    req.on('timeout', () => req.destroy());
-    req.on('error', () => resolve(0));
+        TTL: '3600', Urgency: 'high', Authorization: vapidAuth(sub.e) } }, res => {
+      if (res.statusCode < 300 || res.statusCode === 404 || res.statusCode === 410) { res.resume(); return resolve(res.statusCode); }
+      // Refus inattendu : on garde le début de la réponse du service pour le diagnostic (tableau de bord de l'admin)
+      let txt = ''; res.setEncoding('utf8');
+      res.on('data', d => { if (txt.length < 300) txt += d; });
+      res.on('end', () => { PSTATS.lastErr = { t: Date.now(), host: u.hostname, code: res.statusCode, msg: txt.slice(0, 300) }; resolve(res.statusCode); });
+      res.on('error', () => resolve(res.statusCode));
+    });
+    req.on('timeout', () => req.destroy(new Error('délai dépassé')));
+    req.on('error', e => { PSTATS.lastErr = { t: Date.now(), host: u.hostname, code: 0, msg: String(e.code || e.message).slice(0, 120) }; resolve(0); });
     req.end(body);
   });
 }
@@ -964,20 +1025,36 @@ function pushData(lat, lng, now = Date.now()) {
   }
   return { at: Math.round(now / 1000), lat, lng, r: out };
 }
-async function pushSendAll(targets, payload, urgent = false) {
+// Statistiques d'envoi depuis le démarrage (tableau de bord de l'admin) : réussis, expirés, refusés, sans réponse
+const PSTATS = { since: Date.now(), sent: 0, ok: 0, gone: 0, fail: 0, codes: {}, batches: [] };
+function pushStat(kind, codes) {
+  const b = { t: Date.now(), kind, n: codes.length, ok: 0, gone: 0, fail: 0, codes: {} };
+  for (const c of codes) {
+    const k = c >= 200 && c < 300 ? 'ok' : c === 404 || c === 410 ? 'gone' : 'fail';
+    b[k]++; PSTATS[k]++; PSTATS.sent++;
+    if (k !== 'ok') { b.codes[c] = (b.codes[c] || 0) + 1; PSTATS.codes[c] = (PSTATS.codes[c] || 0) + 1; }
+  }
+  PSTATS.batches.unshift(b); PSTATS.batches.length = Math.min(PSTATS.batches.length, 20);
+  // Dans le journal du serveur (journalctl -u cortege | grep push) : code 0 = pas de réponse du service de notification
+  console.log(`push ${kind} : ${b.n} envoi(s), ${b.ok} reçu(s), ${b.gone} expiré(s), ${b.fail} échec(s)` + (b.fail ? ' ' + JSON.stringify(b.codes) : ''));
+  return b;
+}
+async function pushSendAll(targets, payload, urgent = false, kind = 'envoi') {
   const dead = [];
   const base = JSON.parse(payload);
   // Les abonné·es d'une même zone (arrondie à ~10 km) reçoivent les mêmes données : calculées une seule fois
   const memo = new Map(), dataFor = s => { const k = s.lat + ',' + s.lng; if (!memo.has(k)) memo.set(k, pushData(s.lat, s.lng)); return memo.get(k); };
   const codes = await Promise.all(targets.map(s => pushOne(s, JSON.stringify({ ...base, d: dataFor(s) }), urgent)));
   codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(targets[j].id); });
+  pushStat(kind, codes);
   if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
   return dead.length;
 }
 // « Danger près de toi » : abonné·es dont la zone (arrondie à ~10 km) est à moins de 10 km, au plus un envoi toutes les 3 min
-const NEAR_KM = 10, NEAR_GAP = 3 * MIN;
+const NEAR_GAP = 3 * MIN;
+const nearKm = () => settings().nearKm || 10;
 async function pushNear(r) {
-  const now = Date.now(), c = CAT[r.cat], d = NEAR_KM / 111;
+  const NEAR_KM = nearKm(), now = Date.now(), c = CAT[r.cat], d = NEAR_KM / 111;
   const cand = q('SELECT * FROM push WHERE near=1 AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?').all(r.lat - d, r.lat + d, r.lng - d * 1.5, r.lng + d * 1.5)
     .filter(s => distKm(s.lat, s.lng, r.lat, r.lng) <= NEAR_KM);
   // On réserve l'envoi (plusieurs processus peuvent tourner en même temps)
@@ -985,17 +1062,207 @@ async function pushNear(r) {
   if (!targets.length) return;
   const payload = JSON.stringify({ title: `${c.glyph} ${c.label} près de ta zone`, body: 'Signalé à l’instant. Ouvre Cortège pour voir où exactement.',
     tag: 'near-' + r.cat, url: `/?at=${r.lat},${r.lng}`, vibrate: VIBES[r.cat] || [200, 100, 200] });
-  const dead = await pushSendAll(targets, payload);
-  console.log(`push danger : ${targets.length} envoi(s), ${dead} expiré(s)`);
+  await pushSendAll(targets, payload, false, 'danger');
 }
 const pushNearLater = r => setImmediate(() => pushNear(r).catch(e => console.error('push danger', e.message)));
 async function pushBroadcast(a) {
   const targets = pushAll().filter(s => s.urg !== 0).filter(s => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8)).map(s => [s.id, s]);
   if (!targets.length) return;
   const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/', vibrate: [300, 100, 300, 100, 300] });
-  const dead = await pushSendAll(targets.map(([, s]) => s), payload, true);
-  console.log(`push : ${targets.length} envoi(s), ${dead} abonnement(s) expiré(s)`);
+  await pushSendAll(targets.map(([, s]) => s), payload, true, 'annonce');
 }
+
+// ---- Lieux permanents : lieux de pouvoir et lieux utiles aux manifestant·es, depuis OpenStreetMap ----
+// Importés une fois par mois (Overpass), corrigeables et masquables dans l'admin. Publiés par région de 1° :
+// l/<région>.json (pouvoir + hôpitaux, visibles dès le zoom 13) et l/<région>-s.json (pharmacies, eau : zoom rue).
+const POI_KINDS = [
+  { id: 'mairie', label: 'Mairie', glyph: '🏛', grp: 'pouvoir' },
+  { id: 'pref', label: 'Préfecture', glyph: '🏢', grp: 'pouvoir' },
+  { id: 'spref', label: 'Sous-préfecture', glyph: '🏢', grp: 'pouvoir' },
+  { id: 'police', label: 'Commissariat', glyph: '👮', grp: 'pouvoir' },
+  { id: 'gend', label: 'Gendarmerie', glyph: '👮', grp: 'pouvoir' },
+  { id: 'tribunal', label: 'Tribunal', glyph: '🔨', grp: 'pouvoir' },
+  { id: 'cra', label: 'Centre de rétention (CRA)', glyph: '🔒', grp: 'pouvoir' },
+  { id: 'hopital', label: 'Hôpital', glyph: '🏥', grp: 'aide' },
+  { id: 'pharma', label: 'Pharmacie', glyph: '💊', grp: 'aide', street: true },
+  { id: 'eau', label: 'Eau potable', glyph: '🚰', grp: 'aide', street: true },
+];
+const POI = Object.fromEntries(POI_KINDS.map(k => [k.id, k]));
+db.exec(`CREATE TABLE IF NOT EXISTS pois(id TEXT PRIMARY KEY, kind TEXT, lat REAL, lng REAL, rg TEXT, data TEXT, src TEXT, hid INTEGER DEFAULT 0, ed INTEGER DEFAULT 0, seen INTEGER);
+  CREATE INDEX IF NOT EXISTS pois_rg ON pois(rg);`);
+const PLACES_IMPORT = process.env.PLACES_IMPORT !== '0';
+const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
+const PLACES_EVERY = 30 * 24 * 60 * MIN;
+const wait = ms => new Promise(go => setTimeout(go, ms));
+const poiRg = (lat, lng) => `${Math.floor(lat)}_${Math.floor(lng)}`;
+function poiKind(t) {
+  const name = t.name || '';
+  if (/r[ée]tention administrative/i.test(name)) return 'cra';
+  if (t.office === 'government' && t.government === 'prefecture') return /sous[- ]pr[ée]fecture/i.test(name) ? 'spref' : 'pref';
+  if (t.amenity === 'townhall') return /^(village_hall|community_centre)$/.test(t['townhall:type'] || '') ? null : 'mairie';
+  if (t.amenity === 'police') return /gendarmerie/i.test(name + ' ' + (t.operator || '') + ' ' + (t['police:FR'] || '')) ? 'gend' : 'police';
+  if (t.amenity === 'courthouse') return 'tribunal';
+  if (t.amenity === 'hospital') return 'hopital';
+  if (t.amenity === 'pharmacy') return 'pharma';
+  if (t.amenity === 'drinking_water') return /^(private|no)$/.test(t.access || '') || t.drinking_water === 'no' ? null : 'eau';
+  return null;
+}
+const poiStr = (x, n) => String(x || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+function poiData(t, kind) {
+  const d = {};
+  const n = poiStr(t['name:fr'] || t.name, 80); if (n) d.n = n;
+  const h = poiStr(t.opening_hours, 120); if (h && kind !== 'eau') d.h = h;
+  const p = poiStr(t['contact:phone'] || t.phone, 30); if (p && /^[+\d][\d .()-]{5,}$/.test(p)) d.p = p;
+  if (kind === 'hopital' && t.emergency === 'yes') d.e = 1;
+  if (kind === 'eau' && t.seasonal === 'yes') d.s = 1;
+  return d;
+}
+// Requête Overpass pour un carré : France, Belgique, Suisse, Luxembourg, Monaco (et l'outre-mer, inclus dans la France)
+function overpassQuery(s, w, n, e) {
+  return `[out:json][timeout:180][bbox:${s},${w},${n},${e}];
+(area["ISO3166-1"="FR"][admin_level=2];area["ISO3166-1"="BE"][admin_level=2];area["ISO3166-1"="CH"][admin_level=2];area["ISO3166-1"="LU"][admin_level=2];area["ISO3166-1"="MC"][admin_level=2];)->.a;
+(nwr["amenity"~"^(townhall|police|courthouse|hospital|pharmacy|drinking_water)$"](area.a);
+ nwr["office"="government"]["government"="prefecture"](area.a);
+ nwr["name"~"rétention administrative",i](area.a););
+out center tags qt;`;
+}
+function overpass(query) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(OVERPASS_URL), body = 'data=' + encodeURIComponent(query);
+    const req = (u.protocol === 'http:' ? http : https).request({ method: 'POST', hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 240_000,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), 'User-Agent': TILE_UA, 'Accept-Encoding': 'gzip' } }, res => {
+      const chunks = []; let size = 0;
+      const src = /gzip/.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
+      src.on('data', c => { size += c.length; if (size > 200e6) req.destroy(new Error('réponse trop grosse')); else chunks.push(c); });
+      src.on('end', () => {
+        if (res.statusCode !== 200) return reject(Object.assign(new Error('Overpass ' + res.statusCode), { status: res.statusCode }));
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch (e) { reject(e); }
+      });
+      src.on('error', reject);
+    });
+    req.on('timeout', () => req.destroy(new Error('délai dépassé')));
+    req.on('error', reject);
+    req.end(body);
+  });
+}
+// Carrés de 2° couvrant les zones de la carte
+function placeChunks() {
+  const out = [];
+  for (const [la1, la2, lo1, lo2] of TILE_ZONES)
+    for (let a = la1; a < la2; a += 2) for (let o = lo1; o < lo2; o += 2)
+      out.push([a, o, Math.min(a + 2, la2), Math.min(o + 2, lo2)].map(x => Math.round(x * 100) / 100));
+  return out;
+}
+const placesStatus = () => { try { return JSON.parse(getMeta('poisimp') || 'null'); } catch { return null; } };
+let placesRunning = null;
+async function placesImport() {
+  if (placesRunning) return placesRunning;
+  placesRunning = (async () => {
+    const t0 = Date.now(), chunks = placeChunks();
+    let n = 0, errs = 0, done = 0;
+    setMeta('poisrun', JSON.stringify({ t: t0, total: chunks.length, done: 0 }));
+    const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
+      kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
+      rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
+    for (const [s, w, nn, e] of chunks) {
+      let res = null;
+      for (let tries = 0; tries < 3 && !res; tries++) {
+        try { res = await overpass(overpassQuery(s, w, nn, e)); }
+        catch (err) { if (tries === 2) { errs++; console.error('lieux : carré', s, w, err.message); } else await wait(err.status === 429 ? 60_000 : 20_000); }
+      }
+      if (res && Array.isArray(res.elements)) tx(() => {
+        for (const el of res.elements) {
+          const t = el.tags || {}, kind = poiKind(t), lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
+          if (!kind || !validLatLng(lat, lng)) continue;
+          up.run(el.type[0] + el.id, kind, Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, poiRg(lat, lng), JSON.stringify(poiData(t, kind)), t0); n++;
+        }
+      });
+      setMeta('poisrun', JSON.stringify({ t: t0, total: chunks.length, done: ++done }));
+      await wait(Number(process.env.OVERPASS_GAP ?? 5000));
+    }
+    // Lieux disparus d'OpenStreetMap : retirés seulement si tout l'import a réussi (sinon on garderait une carte trouée)
+    if (!errs) q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
+    setMeta('poisimp', JSON.stringify({ t: Date.now(), n, errs, ms: Date.now() - t0 }));
+    q("DELETE FROM meta WHERE k='poisrun'").run();
+    placesPublish();
+    console.log(`lieux : ${n} lieux importés en ${Math.round((Date.now() - t0) / 1000)} s, ${errs} carré(s) en échec`);
+  })().catch(e => console.error('lieux', e.message)).finally(() => { placesRunning = null; });
+  return placesRunning;
+}
+const poiRow = x => { const d = JSON.parse(x.data || '{}'); const row = [x.id, x.kind, x.lat, x.lng, d.n || '', d.h || '', d.p || '', d.e || d.s || 0];
+  while (row.length > 4 && !row[row.length - 1]) row.pop(); return row; };
+// Publie les fichiers de lieux (toutes les régions, ou seulement celles indiquées)
+function placesPublish(regions = null) {
+  const dir = path.join(LIVE_DIR, 'l');
+  fs.mkdirSync(dir, { recursive: true });
+  const rgs = regions ? [...regions] : q('SELECT DISTINCT rg FROM pois').all().map(x => x.rg);
+  const street = new Set(POI_KINDS.filter(k => k.street).map(k => k.id));
+  const written = new Set();
+  for (const rg of rgs) {
+    const rows = q('SELECT id, kind, lat, lng, data FROM pois WHERE rg=? AND hid=0').all(rg);
+    for (const [suffix, list] of [['', rows.filter(x => !street.has(x.kind))], ['-s', rows.filter(x => street.has(x.kind))]]) {
+      const f = path.join(dir, rg + suffix + '.json');
+      if (list.length) { writeIfChanged(f, JSON.stringify({ p: list.map(poiRow) })); written.add(rg + suffix + '.json'); }
+      else try { fs.unlinkSync(f); } catch {}
+    }
+  }
+  if (!regions) for (const f of fs.readdirSync(dir)) if (f.endsWith('.json') && !written.has(f)) try { fs.unlinkSync(path.join(dir, f)); } catch {}
+  setMeta('poish', h8(String(Date.now()) + q('SELECT COUNT(*) n FROM pois').get().n));
+  dirty.global = true; scheduleFlush();
+}
+// Import automatique : au premier démarrage (base vide), puis tous les 30 jours ; jamais un jour de mobilisation
+function placesMaybe() {
+  if (!PLACES_IMPORT || placesRunning || mobToday()) return;
+  const last = placesStatus();
+  if (!last || Date.now() - last.t > PLACES_EVERY) placesImport();
+}
+if (PLACES_IMPORT) { setTimeout(placesMaybe, 5 * MIN).unref(); setInterval(placesMaybe, 6 * 60 * MIN).unref(); }
+const poiView = x => { const d = JSON.parse(x.data || '{}'); return { id: x.id, kind: x.kind, lat: x.lat, lng: x.lng, n: d.n || '', h: d.h || '', p: d.p || '', e: !!d.e, src: x.src, hid: !!x.hid, ed: !!x.ed }; };
+
+// ---- Journées de mobilisation prévues ----
+// La veille à 20 h : notification à tous les abonné·es aux annonces urgentes. Le jour J dès 7 h : mode renforcé jusqu'à 2 h du matin
+// et titre de la journée en bandeau. Le lendemain : l'admin est invité·e à publier le bilan public.
+const nextDay = d => parisDay(parisMs(d, '12:00') + 24 * 60 * MIN);
+function cleanMob(b, old = {}) {
+  const str = (x, n) => String(x || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+  const date = String(b.date || old.date || '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) return { error: 'Date invalide.' };
+  const title = str(b.title ?? old.title, 80);
+  if (title.length < 3) return { error: 'Donne un titre à la journée (affiché en bandeau).' };
+  return { id: old.id || crypto.randomBytes(5).toString('base64url'), date, title, eve: str(b.eve ?? old.eve, 160),
+    push: (b.push ?? old.push) !== false, strict: (b.strict ?? old.strict) !== false };
+}
+async function mobEve(m) {
+  const targets = pushAll().filter(s => s.urg !== 0);
+  if (!targets.length) return;
+  const d = new Date(parisMs(m.date, '12:00')).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
+  const payload = JSON.stringify({ title: '📣 Demain : ' + m.title, body: m.eve || `Journée de mobilisation ${d}. Ouvre Cortège pour voir l’agenda et les numéros utiles.`,
+    tag: 'mob-' + m.id, url: '/', vibrate: [300, 100, 300] });
+  await pushSendAll(targets, payload, true, 'veille de mobilisation');
+}
+function mobTick() {
+  const now = Date.now(), today = parisDay(now), h = parisHour(now) % 24;
+  if (mobTick.day !== today) { mobTick.day = today; dirty.global = true; scheduleFlush(); } // bandeau du jour
+  let list = mobsAll();
+  if (!list.length) return;
+  const old = parisDay(now - 30 * 24 * 60 * MIN), kept = list.filter(m => m.date >= old);
+  if (kept.length !== list.length) { setMeta('mobs', JSON.stringify(kept)); list = kept; }
+  for (const m of list) {
+    if (m.push && m.date === nextDay(today) && h >= 20 && h < 23 && !getMeta('mob:eve:' + m.id)) {
+      setMeta('mob:eve:' + m.id, now);
+      mobEve(m).catch(e => console.error('veille de mobilisation', e.message));
+    }
+    if (m.strict && m.date === today && h >= 7 && !getMeta('mob:strict:' + m.id)) {
+      setMeta('mob:strict:' + m.id, now);
+      const until = parisMs(nextDay(today), '02:00');
+      if (strictUntil(now) < until) { setMeta('strict', until); orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'mode manif renforcé (journée prévue)', { detail: m.title }); }
+    }
+  }
+}
+setInterval(() => { try { mobTick(); } catch (e) { console.error('journées', e.message); } }, 60_000).unref();
+// Bilans à publier : journées passées depuis moins de 7 jours, pas encore publiées
+const mobsToPublish = (now = Date.now()) => { const today = parisDay(now), from = parisDay(now - 7 * 24 * 60 * MIN);
+  return mobsAll().filter(m => m.date < today && m.date >= from && !getPub(m.date)).map(m => ({ date: m.date, title: m.title })); };
 
 // ---- Import : manifestations de la carte participative du 17 octobre (réutilisation autorisée) ----
 // On importe les actions « manifestation » (où qu'elles soient) et les « rassemblements » des lieux de manif.
@@ -1190,7 +1457,7 @@ function writeNational(now) {
 let BUILD = null;
 const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)));
 function writeGlobal(now) {
-  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, paused: pausedUntil(now), build: buildId() };
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
   // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
   if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
@@ -1286,7 +1553,8 @@ function migrateJson() {
 setTimeout(() => {
   try { migrateJson(); } catch (e) { console.error('reprise state.json', e.message); }
   try { seedLegal(); } catch (e) { console.error('annuaire', e.message); }
-  try { sweep(); rebuildAll(); } catch (e) { console.error('publication initiale', e.message); }
+  try { settings(); sweep(); rebuildAll(); } catch (e) { console.error('publication initiale', e.message); }
+  try { if (!fs.existsSync(path.join(LIVE_DIR, 'l')) && q('SELECT 1 FROM pois LIMIT 1').get()) placesPublish(); } catch (e) { console.error('lieux', e.message); }
 }, 200);
 // Veille de l'annuaire : vérifiée toutes les heures, faite une fois par jour (désactivable : LEGAL_WATCH=0)
 if (process.env.LEGAL_WATCH !== '0') setInterval(() => legalWatch().catch(e => console.error('veille annuaire', e.message)), 60 * MIN).unref();
@@ -1591,6 +1859,7 @@ function serveTile(req, res, z, x, y) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const { pathname } = url;
+  try { settings(); } catch {}
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Strict-Transport-Security', 'max-age=15552000');
@@ -1616,7 +1885,10 @@ const server = http.createServer(async (req, res) => {
     const vt = PMTILES && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);
     if (vt) return serveVectorTile(req, res, +vt[1], +vt[2], +vt[3]);
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' });
+      { const S = settings(), banner = bannerNow();
+      return send(res, 200, { event: banner || EVENT_NAME, banner: !!banner, center: S.view ? [S.view.lat, S.view.lng] : CENTER, zoom: S.view ? S.view.zoom : ZOOM,
+        alertRadius: S.alertRadius || 300, nearKm: nearKm(), poiKinds: POI_KINDS, cfgh: cfgHash(),
+        brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1645,6 +1917,23 @@ const server = http.createServer(async (req, res) => {
       });
       if (out === 'rate') return send(res, 429, { error: 'Trop de demandes, réessaie plus tard.' });
       return out ? send(res, 200, { ok: true }) : send(res, 503, { error: 'Trop d’abonnements, réessaie plus tard.' });
+    }
+
+    // Notification de test envoyée par le serveur à ce seul téléphone : vérifie toute la chaîne (serveur → Google/Apple/Mozilla → téléphone)
+    if (req.method === 'POST' && pathname === '/api/push/test') {
+      const b = await readJson(req, 4096);
+      const endpoint = String(b.endpoint || '');
+      const row = endpoint && q('SELECT * FROM push WHERE id=?').get(sha(endpoint).slice(0, 24));
+      if (!row) return send(res, 404, { error: 'Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications.' });
+      if (!tx(() => bump('ptest:' + deviceHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trois essais au plus toutes les 5 minutes.' });
+      const code = await pushOne(row, JSON.stringify({ title: '🔔 Test Cortège', body: 'Les notifications marchent : tu seras prévenu·e ici.', tag: 'test', url: '/',
+        vibrate: [200, 100, 200, 100, 600] }), true);
+      pushStat('test', [code]);
+      if (code === 404 || code === 410) q('DELETE FROM push WHERE id=?').run(row.id);
+      const ok = code >= 200 && code < 300;
+      return send(res, ok ? 200 : 502, ok ? { ok: true, code }
+        : { error: code === 404 || code === 410 ? 'Abonnement expiré chez le service de notification : réactive les notifications.'
+          : code === 0 ? 'Le serveur n’arrive pas à joindre le service de notification. Réessaie plus tard.' : `Le service de notification a refusé l’envoi (code ${code}).`, code });
     }
 
     // Vérification d'installation : ne renvoie jamais d'IP, seulement si un en-tête a été trouvé.
@@ -1760,7 +2049,127 @@ const server = http.createServer(async (req, res) => {
           reports: activeReports(now).map(publicView),
           announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
           pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length,
-          pushSubs: pushCount() });
+          pushSubs: pushCount(), moderation: q('SELECT COUNT(*) n FROM reports WHERE exp>? AND (ct>0 OR fl=-1)').get(now).n, toPublish: mobsToPublish(now) });
+      }
+      // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---
+      if (req.method === 'GET' && pathname === '/api/admin/settings')
+        return send(res, 200, { settings: settings(), defaults: { event: EVENT_NAME, center: CENTER, zoom: ZOOM, alertRadius: 300, nearKm: 10, ttl: BASE_TTL },
+          categories: CATEGORIES.map(c => ({ id: c.id, label: c.label, glyph: c.glyph, group: c.group, ttl: c.ttl, base: BASE_TTL[c.id], off: !!c.off })) });
+      if (req.method === 'POST' && pathname === '/api/admin/settings') {
+        const s = cleanSettings(await readJson(req, 8192));
+        saveSettings(s);
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'réglages modifiés');
+        return send(res, 200, { settings: s });
+      }
+      // --- Journées de mobilisation prévues ---
+      if (req.method === 'GET' && pathname === '/api/admin/mobs')
+        return send(res, 200, { list: mobsAll().sort((a, b) => a.date.localeCompare(b.date)).map(m => ({ ...m, eveSent: !!getMeta('mob:eve:' + m.id), strictSet: !!getMeta('mob:strict:' + m.id), published: !!getPub(m.date) })),
+          toPublish: mobsToPublish(), today: parisDay(Date.now()) });
+      const mobR = pathname.match(/^\/api\/admin\/mobs(?:\/([\w-]{1,16}))?$/);
+      if (mobR && req.method === 'POST') {
+        const b = await readJson(req, 4096), list = mobsAll(), i = mobR[1] ? list.findIndex(m => m.id === mobR[1]) : -1;
+        if (mobR[1] && i < 0) return send(res, 404, { error: 'Journée introuvable.' });
+        const m = cleanMob(b, i >= 0 ? list[i] : {});
+        if (m.error) return send(res, 400, m);
+        if (i < 0 && m.date < parisDay(Date.now())) return send(res, 400, { error: 'Cette date est passée.' });
+        if (list.some((x, j) => j !== i && x.date === m.date)) return send(res, 409, { error: 'Une journée est déjà prévue ce jour-là.' });
+        if (i >= 0) list[i] = m; else list.push(m);
+        setMeta('mobs', JSON.stringify(list)); dirty.global = true; scheduleFlush();
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, i >= 0 ? 'journée modifiée' : 'journée prévue', { detail: m.date + ' ' + m.title });
+        return send(res, i >= 0 ? 200 : 201, m);
+      }
+      if (mobR && mobR[1] && req.method === 'DELETE') {
+        const list = mobsAll(), next = list.filter(m => m.id !== mobR[1]);
+        if (next.length === list.length) return send(res, 404, { error: 'Journée introuvable.' });
+        setMeta('mobs', JSON.stringify(next)); dirty.global = true; scheduleFlush();
+        return send(res, 200, { removed: true });
+      }
+      // --- Tableau de bord en direct ---
+      if (req.method === 'GET' && pathname === '/api/admin/live') {
+        const now = Date.now(), perMin = Array(15).fill(0);
+        for (const x of q('SELECT t FROM reports WHERE t>?').all(now - 15 * MIN)) { const i = Math.floor((now - x.t) / MIN); if (i >= 0 && i < 15) perMin[14 - i]++; }
+        let disk = null, mem = null;
+        try { const st = fs.statfsSync(DATA_DIR); disk = { free: Math.round(st.bavail / st.blocks * 100), gb: Math.round(st.bavail * st.bsize / 1e9 * 10) / 10 }; } catch {}
+        try { const m = fs.readFileSync('/proc/meminfo', 'utf8'), g = k => +(m.match(new RegExp('^' + k + ':\\s+(\\d+)', 'm')) || [])[1];
+          mem = { free: Math.round(g('MemAvailable') / g('MemTotal') * 100), mb: Math.round(g('MemAvailable') / 1024) }; } catch {}
+        const subs = q('SELECT COUNT(*) n, SUM(urg=1) urg, SUM(near=1) near FROM push').get();
+        return send(res, 200, { now, perMin, active: q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n,
+          contested: q('SELECT COUNT(*) n FROM reports WHERE exp>? AND (ct>0 OR fl=-1)').get(now).n,
+          streams: sseClients.size, strict: strictUntil(now), paused: pausedUntil(now), mob: mobToday(now),
+          push: { subs: subs.n, urg: subs.urg || 0, near: subs.near || 0, queue: pushQueue.hi.length + pushQueue.lo.length, running: pushRunning,
+            since: PSTATS.since, sent: PSTATS.sent, ok: PSTATS.ok, gone: PSTATS.gone, fail: PSTATS.fail, codes: PSTATS.codes, batches: PSTATS.batches.slice(0, 8), lastErr: PSTATS.lastErr || null },
+          sys: { disk, mem, load: os.loadavg().map(x => Math.round(x * 100) / 100), cpus: os.cpus().length, uptime: Math.round(process.uptime()), rss: Math.round(process.memoryUsage().rss / 1e6) },
+          version: APP_VERSION });
+      }
+      // --- File de modération : points contestés ou non fiables ---
+      if (req.method === 'GET' && pathname === '/api/admin/moderation') {
+        const now = Date.now();
+        return send(res, 200, { list: q('SELECT * FROM reports WHERE exp>? AND (ct>0 OR fl=-1 OR down>0) ORDER BY t DESC LIMIT 300').all(now)
+          .map(x => ({ ...publicView(toReport(x)), dw: x.dw || 0, fl: x.fl || 0, ct: x.ct || 0, place: placeOf(x.lat, x.lng) })) });
+      }
+      const modR = pathname.match(/^\/api\/admin\/reports\/([\w-]{1,16})\/(keep|verify)$/);
+      if (modR && req.method === 'POST') {
+        const out = tx(() => {
+          const r = getReport(modR[1], Date.now());
+          if (!r) return [404, { error: 'Signalement expiré.' }];
+          r.down = 0; r.downIps = []; r.dw = 0; r.ct = 0; if (r.fl === -1) r.fl = 0;
+          if (modR[2] === 'verify') { if (!r.ver) repAdd(r.voters[0], 'good', 2); r.ver = ADMIN_LABEL; }
+          saveReport(r); orgaLog({ id: 'admin', label: ADMIN_LABEL }, modR[2] === 'verify' ? 'vérifié (modération)' : 'gardé (modération)', { r });
+          return [200, publicView(r)];
+        });
+        return send(res, ...out);
+      }
+      // --- Lieux permanents ---
+      if (req.method === 'GET' && pathname === '/api/admin/places') {
+        const term = String(url.searchParams.get('q') || '').trim().slice(0, 60).toLowerCase(), kind = String(url.searchParams.get('kind') || '');
+        const filter = url.searchParams.get('filter') || '';
+        let rows = [];
+        if (term.length >= 2 || filter || kind) {
+          const like = '%' + term.replace(/[%_]/g, '') + '%';
+          rows = q(`SELECT * FROM pois WHERE (? = '' OR lower(data) LIKE ? OR lower(id)=?) AND (? = '' OR kind=?)
+            AND (? = '' OR (?='hidden' AND hid=1) OR (?='edited' AND ed=1) OR (?='admin' AND src='admin')) LIMIT 200`)
+            .all(term, like, term, kind, kind, filter, filter, filter, filter);
+        }
+        const counts = Object.fromEntries(q('SELECT kind, COUNT(*) n FROM pois WHERE hid=0 GROUP BY kind').all().map(x => [x.kind, x.n]));
+        let run = null; try { run = JSON.parse(getMeta('poisrun') || 'null'); } catch {}
+        return send(res, 200, { kinds: POI_KINDS, counts, last: placesStatus(), running: placesRunning ? run || {} : null, auto: PLACES_IMPORT, list: rows.map(poiView) });
+      }
+      if (req.method === 'POST' && pathname === '/api/admin/places/import') {
+        if (placesRunning) return send(res, 409, { error: 'Import déjà en cours.' });
+        placesImport(); orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'import des lieux lancé');
+        return send(res, 202, { started: true });
+      }
+      const plR = pathname.match(/^\/api\/admin\/places(?:\/([\w:-]{1,24}))?$/);
+      if (plR && req.method === 'POST') {
+        const b = await readJson(req, 4096), old = plR[1] ? q('SELECT * FROM pois WHERE id=?').get(plR[1]) : null;
+        if (plR[1] && !old) return send(res, 404, { error: 'Lieu introuvable.' });
+        const kind = b.kind != null ? String(b.kind) : old?.kind;
+        if (!POI[kind]) return send(res, 400, { error: 'Type de lieu inconnu.' });
+        const lat = b.lat != null ? Number(b.lat) : old?.lat, lng = b.lng != null ? Number(b.lng) : old?.lng;
+        if (!validLatLng(lat, lng)) return send(res, 400, { error: 'Position invalide.' });
+        const d = old ? JSON.parse(old.data || '{}') : {};
+        if (b.n != null) { const v = poiStr(b.n, 80); if (v) d.n = v; else delete d.n; }
+        if (b.h != null) { const v = poiStr(b.h, 120); if (v) d.h = v; else delete d.h; }
+        if (b.p != null) { const v = poiStr(b.p, 30); if (v) d.p = v; else delete d.p; }
+        if (b.e != null) { if (b.e && kind === 'hopital') d.e = 1; else delete d.e; }
+        const onlyHide = old && Object.keys(b).every(k => k === 'hid');
+        const id = old ? old.id : 'a' + crypto.randomBytes(5).toString('hex');
+        const rgs = new Set([poiRg(lat, lng)]); if (old) rgs.add(old.rg);
+        q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,hid,ed,seen) VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET kind=excluded.kind, lat=excluded.lat,
+           lng=excluded.lng, rg=excluded.rg, data=excluded.data, hid=excluded.hid, ed=excluded.ed`)
+          .run(id, kind, Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, poiRg(lat, lng), JSON.stringify(d), old ? old.src : 'admin',
+            b.hid != null ? (b.hid ? 1 : 0) : old ? old.hid : 0, onlyHide ? old.ed : 1, Date.now());
+        placesPublish(rgs);
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, old ? (onlyHide ? (b.hid ? 'lieu masqué' : 'lieu réaffiché') : 'lieu corrigé') : 'lieu ajouté', { lat, lng, ref: id, detail: d.n || POI[kind].label });
+        return send(res, old ? 200 : 201, poiView(q('SELECT * FROM pois WHERE id=?').get(id)));
+      }
+      if (plR && plR[1] && req.method === 'DELETE') {
+        const old = q('SELECT * FROM pois WHERE id=?').get(plR[1]);
+        if (!old) return send(res, 404, { error: 'Lieu introuvable.' });
+        // Un lieu d'OpenStreetMap reviendrait au prochain import : on le masque au lieu de l'effacer
+        if (old.src === 'osm') q('UPDATE pois SET hid=1 WHERE id=?').run(old.id); else q('DELETE FROM pois WHERE id=?').run(old.id);
+        placesPublish([old.rg]);
+        return send(res, 200, { removed: true, hidden: old.src === 'osm' });
       }
       // --- Annonces de l'admin (nationales ou locales) ---
       if (req.method === 'POST' && pathname === '/api/admin/announcements') {
@@ -2000,11 +2409,14 @@ const server = http.createServer(async (req, res) => {
       const cat = Object.hasOwn(CAT, String(b.cat)) ? CAT[b.cat] : null;
       const lat = Number(b.lat), lng = Number(b.lng);
       if (!cat) return send(res, 400, { error: 'Catégorie inconnue.' });
+      if (cat.off) return send(res, 400, { error: 'Ce type de signalement est désactivé pour l’instant.' });
       if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return send(res, 400, { error: 'Position invalide.' });
       const note = String(b.note || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, NOTE_MAX);
       const ipH = clientHash(req), dev = deviceHash(req);
+      // Orga confirmée (ni en essai, ni parrainée en attente) : son signalement est vérifié d'office et dure deux fois plus longtemps
+      const orga = req.headers['x-orga-key'] ? orgaOf(req) : null, sure = !!(orga && !orga.trial && !orga.sponsored);
       const result = tx(() => {
-        const now = Date.now(), ttl = cat.ttl * MIN;
+        const base = cat.ttl * MIN, now = Date.now(), ttl = sure ? 2 * base : base;
         const age = deviceAge(dev, now), strict = strictUntil(now) > 0;
         // Heure où le signalement a été fait (file d'attente hors ligne). Jamais dans le futur ;
         // mentir dessus ne peut que raccourcir la vie du point.
@@ -2030,6 +2442,11 @@ const server = http.createServer(async (req, res) => {
           if (note) addNote(r, note, dev, t0);
           r.last = Math.max(r.last || r.t, t0);
           r.exp = Math.max(r.exp, t0 + ttl);
+          if (sure) {
+            r.exp = Math.min(r.exp, Math.max(r.t + 4 * base, t0 + ttl));
+            if (!r.ver) { repAdd(r.voters[0], 'good', 2); r.ver = orga.label; orgaLog(orga, 'vérifié (signalement)', { r }); }
+            if (r.fl === -1) r.fl = 0;
+          }
           saveReport(r);
           return [200, { ...publicView(r), merged: true, self }];
         }
@@ -2055,9 +2472,12 @@ const server = http.createServer(async (req, res) => {
         }
         if (!r.fl && strict && !trusted && age < CONTEST.newDev) r.fl = -1;
         if (!r.fl && trusted) r.fl = 1;
+        if (sure) { r.ver = orga.label; r.fl = 1; r.oid = orga.id; r.notes.forEach(n => { n.d = 'o:' + orga.id; }); }
         saveReport(r);
+        if (sure) orgaLog(orga, 'signalement', { r });
         // Notification « danger près de toi » : seulement pour un téléphone qui n'est pas tout neuf (ou fiable), jamais pour un signalement non fiable
-        if (ALERT_CATS.has(cat.id) && r.fl !== -1 && (age >= CONTEST.newDev || trusted)) pushNearLater(r);
+        if (ALERT_CATS.has(cat.id) && r.fl !== -1 && (age >= CONTEST.newDev || trusted || sure)) pushNearLater(r);
+        if (sure) return [201, { ...publicView(r), mine: true }];
         return [201, publicView(r)];
       });
       return send(res, ...result);
@@ -2159,7 +2579,7 @@ const server = http.createServer(async (req, res) => {
 
     // ---- Espace orga / legal team ----
     if (pathname.startsWith('/api/orga') || pathname.startsWith('/api/announcements') || /^\/api\/events\/[\w-]{1,16}$/.test(pathname)
-      || /^\/api\/reports\/[\w-]{1,16}\/(verify|remove)$/.test(pathname)) {
+      || /^\/api\/reports\/[\w-]{1,16}\/(verify|remove|extend|edit)$/.test(pathname)) {
       const orga = orgaOf(req);
       if (!orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
 
@@ -2268,6 +2688,35 @@ const server = http.createServer(async (req, res) => {
         return send(res, ...out);
       }
 
+      // Son propre signalement : le prolonger (une durée de plus, au plus 4 fois la durée normale à partir de maintenant) ou le corriger
+      const own = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/(extend|edit)$/);
+      if (req.method === 'POST' && own) {
+        const b = own[2] === 'edit' ? await readJson(req) : {};
+        const out = tx(() => {
+          const now = Date.now(), r = getReport(own[1], now);
+          if (!r) return [404, { error: 'Signalement expiré.' }];
+          if (!orga.admin && r.oid !== orga.id) return [403, { error: 'Seule l’orga qui l’a signalé peut le modifier.' }];
+          if (own[2] === 'extend') {
+            const base = CAT[r.cat].ttl * MIN;
+            const exp = Math.min(Math.max(r.exp, now) + base, now + 4 * base);
+            if (exp <= r.exp + MIN) return [409, { error: 'Déjà prolongé au maximum.' }];
+            r.exp = exp; r.last = now; saveReport(r); orgaLog(orga, 'prolongé', { r });
+            return [200, { ...publicView(r), mine: true }];
+          }
+          const cat = b.cat != null && Object.hasOwn(CAT, String(b.cat)) ? CAT[b.cat] : null;
+          if (b.cat != null && (!cat || cat.off)) return [400, { error: 'Catégorie inconnue.' }];
+          const note = b.note == null ? null : String(b.note).replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX);
+          if (cat && cat.id !== r.cat) r.cat = cat.id;
+          if (note != null) {
+            const mark = 'o:' + orga.id;
+            r.notes = (r.notes || []).filter(n => n.d !== mark);
+            if (note) addNote(r, note, mark, now);
+          }
+          saveReport(r); orgaLog(orga, 'corrigé', { r, detail: note || null });
+          return [200, { ...publicView(r), mine: true }];
+        });
+        return send(res, ...out);
+      }
       const act = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/(verify|remove)$/);
       if (req.method === 'POST' && act) {
         const out = tx(() => {
@@ -2314,12 +2763,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Fichiers live/ : servis par Apache sur cPanel ; Node ne les sert que s'il est seul (VPS, local).
-    const live = pathname.match(/^\/live\/((?:[crp]\/)?[\w-]{1,40}\.json)$/);
+    const live = pathname.match(/^\/live\/((?:[crpl]\/)?[\w-]{1,40}\.json)$/);
     if (req.method === 'GET' && live) {
       const f = path.join(LIVE_DIR, live[1]);
       if ((live[1] === 'index.json' || live[1] === 'g.json') && !fs.existsSync(f)) try { rebuildAll(); } catch {}
       fs.readFile(f, (err, buf) => {
-        if (err) return send(res, 200, live[1].startsWith('c/') || live[1].startsWith('p/') ? { r: [] } : live[1].startsWith('r/') ? { c: {} } : {}, { 'Cache-Control': 'no-cache' });
+        if (err) return send(res, 200, live[1].startsWith('l/') ? { p: [] } : live[1].startsWith('c/') || live[1].startsWith('p/') ? { r: [] } : live[1].startsWith('r/') ? { c: {} } : {}, { 'Cache-Control': 'no-cache' });
         const etag = '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"';
         if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag, 'Cache-Control': 'no-cache' }); return res.end(); }
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', ETag: etag }); res.end(buf);

@@ -96,8 +96,17 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 @media (max-width: 600px) { .org-list li { grid-template-columns: 1fr; } .org-list .acts { justify-content: flex-start; } }
 .story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 12px; }
 .story-grid img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
-#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
+#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty), #modBadge:not(:empty), #mobBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
+.hours.live { height: 90px; grid-template-columns: repeat(15, minmax(0, 1fr)); }
+.cat-table { display: grid; grid-template-columns: 1fr auto auto; gap: 8px 12px; align-items: center; font-size: 14px; }
+.cat-table input[type=number] { width: 84px; height: 36px; }
+.cat-table .base { color: var(--muted); font-size: 12px; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.prompt { border-color: var(--accent); }
+.edit-form label { display: flex; flex-direction: column; gap: 4px; } .edit-form input, .edit-form select { width: 100%; }
+.edit-form { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); padding: 8px 0 4px; grid-column: 1 / -1; }
 </style>
 </head>
 <body>
@@ -125,7 +134,133 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabJournal" aria-selected="false" aria-controls="panelJournal">Journal <span id="journalBadge"></span></button>
     <button class="tab" role="tab" id="tabAbuse" aria-selected="false" aria-controls="panelAbuse">Abus</button>
     <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest">Digest</button>
+    <button class="tab" role="tab" id="tabLive" aria-selected="false" aria-controls="panelLive">Direct</button>
+    <button class="tab" role="tab" id="tabMod" aria-selected="false" aria-controls="panelMod">Modération <span id="modBadge"></span></button>
+    <button class="tab" role="tab" id="tabMobs" aria-selected="false" aria-controls="panelMobs">Journées <span id="mobBadge"></span></button>
+    <button class="tab" role="tab" id="tabPlaces" aria-selected="false" aria-controls="panelPlaces">Lieux</button>
+    <button class="tab" role="tab" id="tabSettings" aria-selected="false" aria-controls="panelSettings">Réglages</button>
   </nav>
+
+
+  <section class="card prompt" id="pubPrompt" hidden>
+    <h2>Bilan à publier</h2>
+    <ul class="org-list" id="pubPromptList"></ul>
+  </section>
+
+  <section class="panel" id="panelLive" role="tabpanel" aria-labelledby="tabLive" hidden>
+    <div class="kpis" id="liveKpis"></div>
+    <section class="card"><h2>Nouveaux signalements par minute (15 dernières)</h2><div class="hours live" id="livePerMin"></div><p class="fine" id="liveState"></p></section>
+    <section class="card">
+      <h2>Notifications depuis le démarrage du serveur</h2>
+      <dl class="kv" id="livePush"></dl>
+      <ul class="org-list" id="liveBatches"></ul>
+      <p class="fine">« Expirés » : téléphones désabonnés ou appli désinstallée, retirés automatiquement. « Échecs » : le service de notification (Google, Apple, Mozilla) a refusé ou n’a pas répondu ; le détail de la dernière erreur s’affiche ci-dessus.</p>
+    </section>
+    <section class="card"><h2>Serveur</h2><dl class="kv" id="liveSys"></dl><p class="fine">Actualisé toutes les 10 secondes tant que cet onglet est ouvert.</p></section>
+  </section>
+
+  <section class="panel" id="panelMod" role="tabpanel" aria-labelledby="tabMod" hidden>
+    <section class="card">
+      <h2>À vérifier <span id="modCount"></span></h2>
+      <p class="fine">Points contestés (« Plus là »), ou venus d’un téléphone suspect. « Garder » efface les contestations ; « Vérifier » marque aussi le point vérifié ; « Retirer » le supprime.</p>
+      <div class="controls"><button type="button" class="ghost" id="modReload">Actualiser</button></div>
+      <ul class="org-list" id="modList"></ul>
+    </section>
+  </section>
+
+  <section class="panel" id="panelMobs" role="tabpanel" aria-labelledby="tabMobs" hidden>
+    <section class="card">
+      <h2>Prévoir une journée de mobilisation</h2>
+      <form class="stack" id="mobForm">
+        <div class="controls">
+          <label>Date<input type="date" id="mobDate" required></label>
+          <label style="flex:1;min-width:220px">Titre (bandeau de la carte)<input id="mobTitle" maxlength="80" placeholder="ex. : Grève et manifs partout en France" required></label>
+        </div>
+        <label>Texte de la notification de la veille (facultatif)<input id="mobEve" maxlength="160" placeholder="Par défaut : « Journée de mobilisation … Ouvre Cortège pour voir l’agenda et les numéros utiles. »"></label>
+        <div class="controls">
+          <label class="check"><input type="checkbox" id="mobPush" checked> Notification la veille à 20 h</label>
+          <label class="check"><input type="checkbox" id="mobStrict" checked> Mode renforcé le jour J (7 h → 2 h)</label>
+        </div>
+        <div class="controls"><button type="submit" id="mobSave">Prévoir la journée</button><button type="button" class="ghost" id="mobCancel" hidden>Annuler la modification</button></div>
+      </form>
+      <p class="fine">La veille à 20 h : une notification à tous les téléphones abonnés aux annonces urgentes. Le jour J : le titre s’affiche en bandeau et le mode renforcé démarre à 7 h. Le lendemain : le bilan public est proposé ici, à publier en un clic.</p>
+    </section>
+    <section class="card"><h2>Journées prévues</h2><ul class="org-list" id="mobList"></ul></section>
+  </section>
+
+  <section class="panel" id="panelPlaces" role="tabpanel" aria-labelledby="tabPlaces" hidden>
+    <section class="card">
+      <h2>Lieux permanents (OpenStreetMap)</h2>
+      <p class="fine" id="plState">—</p>
+      <div class="bars" id="plCounts"></div>
+      <div class="controls" style="margin-top:12px"><button type="button" id="plImport">Mettre à jour depuis OpenStreetMap</button></div>
+      <p class="fine">Mise à jour automatique tous les 30 jours (jamais un jour de mobilisation). Les lieux corrigés ou ajoutés ici sont gardés aux mises à jour ; un lieu masqué reste masqué.</p>
+    </section>
+    <section class="card">
+      <h2>Chercher, corriger, masquer</h2>
+      <form class="controls" id="plSearch">
+        <label style="flex:1;min-width:160px">Nom ou identifiant<input id="plQ" placeholder="ex. : préfecture du Rhône"></label>
+        <label>Type<select id="plKind"><option value="">Tous</option></select></label>
+        <label>Afficher<select id="plFilter"><option value="">Tous</option><option value="edited">Corrigés</option><option value="hidden">Masqués</option><option value="admin">Ajoutés ici</option></select></label>
+        <button type="submit">Chercher</button>
+      </form>
+      <ul class="org-list" id="plList"></ul>
+    </section>
+    <section class="card">
+      <h2>Ajouter un lieu</h2>
+      <form class="stack" id="plAdd">
+        <div class="controls">
+          <label>Type<select id="plAddKind"></select></label>
+          <label style="flex:1;min-width:200px">Nom<input id="plAddName" maxlength="80" required></label>
+        </div>
+        <div class="controls">
+          <label style="flex:1;min-width:220px">Position (latitude, longitude)<input id="plAddPos" placeholder="45.7578, 4.8320" required></label>
+          <label style="flex:1;min-width:160px">Horaires (facultatif)<input id="plAddHours" maxlength="120" placeholder="Mo-Fr 09:00-17:00"></label>
+          <label>Téléphone (facultatif)<input id="plAddPhone" maxlength="30"></label>
+        </div>
+        <div class="controls"><button type="submit">Ajouter</button></div>
+      </form>
+      <p class="fine">Astuce : sur openstreetmap.org, un clic droit sur la carte puis « Afficher l’adresse » donne la position.</p>
+    </section>
+  </section>
+
+  <section class="panel" id="panelSettings" role="tabpanel" aria-labelledby="tabSettings" hidden>
+    <form class="panel" id="setForm">
+      <section class="card">
+        <h2>Bandeau en haut de la carte</h2>
+        <div class="controls">
+          <label style="flex:1;min-width:220px">Texte (vide = nom par défaut)<input id="setBanner" maxlength="80"></label>
+          <label>Du<input type="date" id="setFrom"></label>
+          <label>Au<input type="date" id="setTo"></label>
+        </div>
+        <p class="fine" id="setBannerDef"></p>
+      </section>
+      <section class="card">
+        <h2>Vue à l’ouverture</h2>
+        <div class="controls">
+          <label>Latitude<input id="setLat" inputmode="decimal" style="width:120px"></label>
+          <label>Longitude<input id="setLng" inputmode="decimal" style="width:120px"></label>
+          <label>Zoom (3 à 17)<input id="setZoom" type="number" min="3" max="17" style="width:90px"></label>
+          <button type="button" class="ghost" id="setViewReset">Vue par défaut</button>
+        </div>
+        <p class="fine" id="setViewDef">Pour les personnes qui ouvrent l’appli sans position connue. Exemples : France entière 46.6, 2.4, zoom 6 ; Paris 48.857, 2.347, zoom 12.</p>
+      </section>
+      <section class="card">
+        <h2>Seuils</h2>
+        <div class="controls">
+          <label>Rayon de l’alerte dans l’appli (m)<input id="setRadius" type="number" min="50" max="2000" style="width:120px"></label>
+          <label>Distance des notifications « danger près de toi » (km)<input id="setNear" type="number" min="1" max="50" style="width:120px"></label>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Types de signalement</h2>
+        <p class="fine">Décoche pour retirer un type du bouton « Signaler ». Durée : en minutes (de 5 à 1440).</p>
+        <div class="cat-table" id="setCats"></div>
+      </section>
+      <div class="controls"><button type="submit">Enregistrer les réglages</button><span class="fine" id="setMsg"></span></div>
+      <p class="fine">Appliqué tout de suite sur le serveur, et sur les téléphones à leur prochaine mise à jour (quelques secondes). Les clés, les chemins et les liens restent dans le fichier de configuration du serveur.</p>
+    </form>
+  </section>
 
   <section class="panel" id="panelOrgas" role="tabpanel" aria-labelledby="tabOrgas">
     <section class="card" id="reqCard">
@@ -409,7 +544,7 @@ $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login(); }
 if (KEY) login();
 
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest']) {
+  for (const t of ['Orgas', 'Anns', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -893,7 +1028,11 @@ $('#copy').addEventListener('click', async () => {
 
 // ---- Annuaire des legal teams ----
 async function loadBadges() {
-  try { const d = await api('/api/admin/reports'); $('#annBadge').textContent = d.pending || ''; $('#legalBadge').textContent = d.legalAlerts || ''; } catch {}
+  try {
+    const d = await api('/api/admin/reports'); $('#annBadge').textContent = d.pending || ''; $('#legalBadge').textContent = d.legalAlerts || '';
+    $('#modBadge').textContent = d.moderation || ''; $('#mobBadge').textContent = (d.toPublish || []).length || '';
+    pubPrompt(d.toPublish || []);
+  } catch {}
 }
 setInterval(() => { if (!$('#app').hidden) loadBadges(); }, 120000);
 const WATCH = { ok: '✓ source relue, numéro présent', missing: '⚠ numéro ABSENT de la source', changed: '⚠ la source affiche d’autres numéros', error: '⚠ source illisible', new: 'source pas encore relue' };
@@ -1017,6 +1156,218 @@ $('#pubBtn').onclick = async () => {
   if (!dg) return;
   try { await api('/api/admin/publish/' + dg.date, { method: 'POST', body: '{}' }); dg.published = true; pubUi(); alertMsg('Page publiée.'); } catch (e) { alertMsg(e.message); }
 };
+// ==== 2.2 ====
+const fmtN = n => Number(n || 0).toLocaleString('fr-FR');
+const dayLong = d => new Date(d + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const dur = s => s < 3600 ? Math.round(s / 60) + ' min' : s < 86400 ? Math.floor(s / 3600) + ' h ' + String(Math.round(s % 3600 / 60)).padStart(2, '0') : Math.floor(s / 86400) + ' j ' + Math.floor(s % 86400 / 3600) + ' h';
+const kv = (dl, rows) => { dl.textContent = ''; for (const [k, v] of rows) { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; dl.append(dt, dd); } };
+const kpi = (n, label) => { const d = document.createElement('div'); d.className = 'kpi'; const b = document.createElement('b'); b.textContent = n; const sp = document.createElement('span'); sp.textContent = label; d.append(b, sp); return d; };
+
+// ---- Bilans à publier (le lendemain d'une journée prévue) ----
+function pubPrompt(list) {
+  const ul = $('#pubPromptList'); ul.textContent = '';
+  $('#pubPrompt').hidden = !list.length;
+  for (const m of list) {
+    const go = btn('Publier le bilan'), see = btn('Voir le digest', 'ghost');
+    go.onclick = async () => { try { const r = await api('/api/admin/publish/' + m.date, { method: 'POST', body: '{}' }); alertMsg('Bilan publié : ' + location.origin + r.url); loadBadges(); } catch (e) { alertMsg(e.message); } };
+    see.onclick = () => { $('#tabDigest').click(); $('#date').value = m.date; $('#form').requestSubmit(); };
+    ul.append(li(m.title, dayLong(m.date) + ' · les chiffres de la page publique sont figés au moment de la publication', see, go));
+  }
+}
+
+// ---- Direct ----
+let liveTimer = null;
+async function loadLive() {
+  clearTimeout(liveTimer);
+  if ($('#panelLive').hidden) return;
+  let d; try { d = await api('/api/admin/live'); } catch (e) { alertMsg(e.message); return; }
+  const k = $('#liveKpis'); k.textContent = '';
+  const last15 = d.perMin.reduce((a, b) => a + b, 0);
+  k.append(kpi(fmtN(d.active), 'signalements actifs'), kpi(fmtN(last15), 'nouveaux en 15 min'), kpi(fmtN(d.contested), 'à vérifier'),
+    kpi(fmtN(d.streams), 'téléphones en temps réel'), kpi(fmtN(d.push.subs), 'abonnés aux notifications'));
+  const box = $('#livePerMin'); box.textContent = '';
+  const max = Math.max(1, ...d.perMin);
+  d.perMin.forEach((n, i) => { const b = document.createElement('div'); b.style.height = Math.max(2, n / max * 100) + '%'; if (!n) b.className = 'zero'; b.title = (14 - i) + ' min : ' + n; box.append(b); });
+  const st = [];
+  if (d.mob) st.push('Journée prévue aujourd’hui : ' + d.mob.title);
+  st.push(d.strict ? 'Mode renforcé jusqu’à ' + hhmm(d.strict) : 'Mode renforcé : non');
+  st.push(d.paused ? 'Signalements en pause jusqu’à ' + hhmm(d.paused) : 'Signalements ouverts');
+  $('#liveState').textContent = st.join(' · ');
+  const p = d.push, rate = p.sent ? Math.round(p.ok / p.sent * 100) + ' %' : '—';
+  kv($('#livePush'), [
+    ['Abonnés', `${fmtN(p.subs)} (annonces urgentes : ${fmtN(p.urg)}, dangers près de soi : ${fmtN(p.near)})`],
+    ['Envoyées', `${fmtN(p.sent)} depuis ${dur(Math.round((d.now - p.since) / 1000))}`],
+    ['Reçues par le service', `${fmtN(p.ok)} (${rate})`], ['Expirées', fmtN(p.gone)],
+    ['Échecs', fmtN(p.fail) + (Object.keys(p.codes).length ? ' · codes ' + Object.entries(p.codes).map(([c, n]) => (c === '0' ? 'sans réponse' : c) + ' ×' + n).join(', ') : '')],
+    ['En file', `${p.queue} en attente, ${p.running} en cours`],
+    ['Dernière erreur', p.lastErr ? `${hhmm(p.lastErr.t)} · ${p.lastErr.host} · ${p.lastErr.code || 'pas de réponse'} · ${p.lastErr.msg || ''}` : 'aucune'],
+  ]);
+  const bl = $('#liveBatches'); bl.textContent = '';
+  for (const b of p.batches) bl.append(li(`${b.kind} : ${b.n} envoi(s)`, `${hhmm(b.t)} · ${b.ok} reçue(s), ${b.gone} expirée(s), ${b.fail} échec(s)` + (b.fail ? ' ' + JSON.stringify(b.codes) : '')));
+  const sy = d.sys;
+  kv($('#liveSys'), [
+    ['Version', d.version], ['En ligne depuis', dur(sy.uptime)],
+    ['Charge (1, 5, 15 min)', sy.load.join(' · ') + ` pour ${sy.cpus} cœurs`],
+    ['Mémoire libre', sy.mem ? `${sy.mem.free} % (${fmtN(sy.mem.mb)} Mo)` : '—'], ['Mémoire de Cortège', sy.rss + ' Mo'],
+    ['Disque libre', sy.disk ? `${sy.disk.free} % (${String(sy.disk.gb).replace('.', ',')} Go)` : '—'],
+  ]);
+  liveTimer = setTimeout(loadLive, 10000);
+}
+$('#tabLive').onclick = () => { showTab('Live'); loadLive(); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('#panelLive').hidden) loadLive(); });
+
+// ---- Modération ----
+async function loadMod() {
+  let d; try { d = await api('/api/admin/moderation'); } catch (e) { alertMsg(e.message); return; }
+  const ul = $('#modList'); ul.textContent = '';
+  $('#modCount').textContent = '(' + d.list.length + ')';
+  if (!d.list.length) return empty(ul, 'Rien à vérifier.');
+  for (const r of d.list) {
+    const c = CATS[r.cat] || { glyph: '•', label: r.cat };
+    const keep = btn('Garder', 'ghost'), ver = btn('Vérifier'), del = btn('Retirer', 'danger');
+    keep.onclick = async () => { try { await api(`/api/admin/reports/${r.id}/keep`, { method: 'POST', body: '{}' }); loadMod(); loadBadges(); } catch (e) { alertMsg(e.message); } };
+    ver.onclick = async () => { try { await api(`/api/admin/reports/${r.id}/verify`, { method: 'POST', body: '{}' }); loadMod(); loadBadges(); } catch (e) { alertMsg(e.message); } };
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/reports/' + r.id, { method: 'DELETE' }); loadMod(); loadBadges(); });
+    const why = [r.c ? `contesté (${r.down} « Plus là »)` : r.down ? `${r.down} « Plus là »` : '', r.nf ? 'téléphone suspect' : ''].filter(Boolean).join(' · ');
+    const l = li(`${c.glyph} ${c.label}${r.ver ? ' ✓ ' + r.ver : ''} · ${r.place}`,
+      `${why} · signalé il y a ${Math.round((Date.now() - r.t) / 60000)} min · ${r.up + 1} personne(s)${r.note ? ' · « ' + r.note + ' »' : ''}`, keep, ver, del);
+    const a = document.createElement('a'); a.href = `https://www.openstreetmap.org/?mlat=${r.lat}&mlon=${r.lng}#map=17/${r.lat}/${r.lng}`; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ' · voir'; a.style.color = 'var(--accent)';
+    l.querySelector('.meta').append(a);
+    ul.append(l);
+  }
+}
+$('#tabMod').onclick = () => { showTab('Mod'); loadMod(); };
+$('#modReload').onclick = loadMod;
+
+// ---- Journées de mobilisation ----
+let mobEdit = null;
+async function loadMobs() {
+  let d; try { d = await api('/api/admin/mobs'); } catch (e) { alertMsg(e.message); return; }
+  $('#mobDate').min = d.today;
+  pubPrompt(d.toPublish); $('#mobBadge').textContent = d.toPublish.length || '';
+  const ul = $('#mobList'); ul.textContent = '';
+  if (!d.list.length) return empty(ul, 'Aucune journée prévue.');
+  for (const m of d.list) {
+    const ed = btn('Modifier', 'ghost'), del = btn('Supprimer', 'danger');
+    ed.onclick = () => { mobEdit = m.id; $('#mobDate').value = m.date; $('#mobTitle').value = m.title; $('#mobEve').value = m.eve || ''; $('#mobPush').checked = m.push; $('#mobStrict').checked = m.strict;
+      $('#mobSave').textContent = 'Enregistrer'; $('#mobCancel').hidden = false; $('#mobForm').scrollIntoView({ behavior: 'smooth' }); };
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/mobs/' + m.id, { method: 'DELETE' }); loadMobs(); });
+    const past = m.date < d.today, today = m.date === d.today;
+    const st = [m.push ? (m.eveSent ? 'notification envoyée' : 'notification la veille à 20 h') : 'sans notification',
+      m.strict ? (m.strictSet ? 'mode renforcé lancé' : 'mode renforcé le jour J') : 'sans mode renforcé', past ? (m.published ? 'bilan publié' : 'bilan pas encore publié') : ''].filter(Boolean).join(' · ');
+    ul.append(li((today ? '● Aujourd’hui · ' : '') + dayLong(m.date) + ' · ' + m.title, st, ...(past ? [del] : [ed, del])));
+  }
+}
+const mobReset = () => { mobEdit = null; $('#mobForm').reset(); $('#mobSave').textContent = 'Prévoir la journée'; $('#mobCancel').hidden = true; };
+$('#mobCancel').onclick = mobReset;
+$('#mobForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const body = { date: $('#mobDate').value, title: $('#mobTitle').value, eve: $('#mobEve').value, push: $('#mobPush').checked, strict: $('#mobStrict').checked };
+  try { await api('/api/admin/mobs' + (mobEdit ? '/' + mobEdit : ''), { method: 'POST', body: JSON.stringify(body) }); alertMsg(mobEdit ? 'Journée modifiée.' : 'Journée prévue.'); mobReset(); loadMobs(); }
+  catch (err) { alertMsg(err.message); }
+});
+$('#tabMobs').onclick = () => { showTab('Mobs'); loadMobs(); };
+
+// ---- Lieux permanents ----
+let plKinds = {}, plTimer = null;
+async function loadPlaces(search = false) {
+  clearTimeout(plTimer);
+  const qs = new URLSearchParams({ q: $('#plQ').value.trim(), kind: $('#plKind').value, filter: $('#plFilter').value });
+  let d; try { d = await api('/api/admin/places?' + (search ? qs : '')); } catch (e) { alertMsg(e.message); return; }
+  if (!Object.keys(plKinds).length) {
+    d.kinds.forEach(k => { plKinds[k.id] = k; $('#plKind').append(new Option(k.glyph + ' ' + k.label, k.id)); $('#plAddKind').append(new Option(k.glyph + ' ' + k.label, k.id)); });
+  }
+  const L0 = d.last;
+  $('#plState').textContent = d.running ? `Mise à jour en cours : ${d.running.done || 0} / ${d.running.total || '?'} zones…`
+    : L0 ? `Dernière mise à jour : ${dayFr(L0.t)} à ${hhmm(L0.t)} · ${fmtN(L0.n)} lieux${L0.errs ? ` · ${L0.errs} zone(s) en échec, réessaie plus tard` : ''}.`
+    : 'Pas encore importés.' + (d.auto ? ' Premier import automatique quelques minutes après le démarrage.' : '');
+  $('#plImport').disabled = !!d.running;
+  const bars = $('#plCounts'); bars.textContent = '';
+  const max = Math.max(1, ...Object.values(d.counts));
+  for (const k of d.kinds) {
+    const n = d.counts[k.id] || 0, row = document.createElement('div'); row.className = 'bar';
+    row.innerHTML = '<span class="lbl"></span><span class="track"><span class="fill"></span></span><span class="n"></span>';
+    row.querySelector('.lbl').textContent = k.glyph + ' ' + k.label; row.querySelector('.n').textContent = fmtN(n);
+    row.querySelector('.fill').style.cssText = `width:${n / max * 100}%;--c:${k.grp === 'aide' ? '#3fcf86' : '#9b87e8'}`;
+    bars.append(row);
+  }
+  if (search) renderPlaces(d.list);
+  if (d.running) plTimer = setTimeout(() => loadPlaces(false), 5000);
+}
+function renderPlaces(list) {
+  const ul = $('#plList'); ul.textContent = '';
+  if (!list.length) return empty(ul, 'Aucun lieu trouvé.');
+  for (const x of list) {
+    const k = plKinds[x.kind] || { glyph: '📍', label: x.kind };
+    const ed = btn('Corriger', 'ghost'), hide = btn(x.hid ? 'Réafficher' : 'Masquer', x.hid ? '' : 'danger');
+    hide.onclick = async () => { try { await api('/api/admin/places/' + x.id, { method: 'POST', body: JSON.stringify({ hid: !x.hid }) }); loadPlaces(true); } catch (e) { alertMsg(e.message); } };
+    const l = li(`${k.glyph} ${x.n || k.label}${x.hid ? ' · masqué' : ''}${x.ed ? ' · corrigé' : ''}`,
+      `${k.label} · ${x.lat.toFixed(4)}, ${x.lng.toFixed(4)}${x.h ? ' · ' + x.h : ''}${x.p ? ' · ' + x.p : ''} · ${x.src === 'osm' ? 'OpenStreetMap ' + x.id : 'ajouté ici'}`, ed, hide);
+    ed.onclick = () => {
+      if (l.querySelector('.edit-form')) return;
+      const f = document.createElement('form'); f.className = 'edit-form';
+      const inp = (lab, val, max) => { const w = document.createElement('label'); w.className = 'fine'; w.textContent = lab; const i = document.createElement('input'); i.value = val || ''; i.maxLength = max; w.append(i); f.append(w); return i; };
+      const sel = document.createElement('select'); Object.values(plKinds).forEach(kk => sel.append(new Option(kk.glyph + ' ' + kk.label, kk.id))); sel.value = x.kind; f.append(sel);
+      const n = inp('Nom', x.n, 80), h = inp('Horaires', x.h, 120), p = inp('Téléphone', x.p, 30), pos = inp('Position', x.lat + ', ' + x.lng, 40);
+      const save = btn('Enregistrer'); save.type = 'submit'; f.append(save);
+      f.onsubmit = async e => {
+        e.preventDefault();
+        const [la, lo] = pos.value.split(',').map(Number);
+        try { await api('/api/admin/places/' + x.id, { method: 'POST', body: JSON.stringify({ kind: sel.value, n: n.value, h: h.value, p: p.value, lat: la, lng: lo }) }); alertMsg('Lieu corrigé.'); loadPlaces(true); }
+        catch (err) { alertMsg(err.message); }
+      };
+      l.append(f); n.focus();
+    };
+    ul.append(l);
+  }
+}
+$('#plSearch').addEventListener('submit', e => { e.preventDefault(); loadPlaces(true); });
+$('#plImport').onclick = async () => { try { await api('/api/admin/places/import', { method: 'POST', body: '{}' }); alertMsg('Mise à jour lancée : compter 15 à 30 minutes pour toute la France.'); loadPlaces(false); } catch (e) { alertMsg(e.message); } };
+$('#plAdd').addEventListener('submit', async e => {
+  e.preventDefault();
+  const [lat, lng] = $('#plAddPos').value.split(',').map(x => Number(x.trim()));
+  try { await api('/api/admin/places', { method: 'POST', body: JSON.stringify({ kind: $('#plAddKind').value, n: $('#plAddName').value, lat, lng, h: $('#plAddHours').value, p: $('#plAddPhone').value }) });
+    $('#plAdd').reset(); alertMsg('Lieu ajouté.'); $('#plFilter').value = 'admin'; loadPlaces(true); }
+  catch (err) { alertMsg(err.message); }
+});
+$('#tabPlaces').onclick = () => { showTab('Places'); loadPlaces(false); };
+
+// ---- Réglages ----
+let setData = null;
+async function loadSettings() {
+  try { setData = await api('/api/admin/settings'); } catch (e) { alertMsg(e.message); return; }
+  const s = setData.settings, df = setData.defaults;
+  $('#setBanner').value = s.banner?.text || ''; $('#setFrom').value = s.banner?.from || ''; $('#setTo').value = s.banner?.to || '';
+  $('#setBannerDef').textContent = `Nom par défaut : « ${df.event} ». Sans dates, le bandeau reste affiché jusqu’à ce que tu le vides. Un jour de mobilisation prévue, son titre passe devant.`;
+  $('#setLat').value = s.view ? s.view.lat : ''; $('#setLng').value = s.view ? s.view.lng : ''; $('#setZoom').value = s.view ? s.view.zoom : '';
+  $('#setLat').placeholder = df.center[0]; $('#setLng').placeholder = df.center[1]; $('#setZoom').placeholder = df.zoom;
+  $('#setRadius').value = s.alertRadius || ''; $('#setRadius').placeholder = df.alertRadius;
+  $('#setNear').value = s.nearKm || ''; $('#setNear').placeholder = df.nearKm;
+  const box = $('#setCats'); box.textContent = '';
+  for (const c of setData.categories) {
+    const on = document.createElement('label'); on.className = 'check';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !c.off; cb.dataset.cat = c.id; cb.className = 'set-on';
+    on.append(cb, ' ' + c.glyph + ' ' + c.label);
+    const ttl = document.createElement('input'); ttl.type = 'number'; ttl.min = 5; ttl.max = 1440; ttl.value = c.ttl; ttl.dataset.cat = c.id; ttl.className = 'set-ttl'; ttl.setAttribute('aria-label', 'Durée en minutes : ' + c.label);
+    const base = document.createElement('span'); base.className = 'base'; base.textContent = c.ttl !== c.base ? `min (défaut ${c.base})` : 'min';
+    box.append(on, ttl, base);
+  }
+}
+$('#setViewReset').onclick = () => { $('#setLat').value = $('#setLng').value = $('#setZoom').value = ''; };
+$('#setForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const cats = {};
+  document.querySelectorAll('#setCats .set-on').forEach(cb => { cats[cb.dataset.cat] = { off: !cb.checked }; });
+  document.querySelectorAll('#setCats .set-ttl').forEach(i => { cats[i.dataset.cat].ttl = Number(i.value); });
+  const num = id => $(id).value.trim() === '' ? null : Number($(id).value.replace(',', '.'));
+  const body = { cats, alertRadius: num('#setRadius'), nearKm: num('#setNear') };
+  if ($('#setBanner').value.trim()) body.banner = { text: $('#setBanner').value, from: $('#setFrom').value, to: $('#setTo').value };
+  if (num('#setLat') != null && num('#setLng') != null) body.view = { lat: num('#setLat'), lng: num('#setLng'), zoom: num('#setZoom') ?? 12 };
+  if ($('#setTo').value && $('#setFrom').value && $('#setTo').value < $('#setFrom').value) return alertMsg('La date de fin est avant la date de début.');
+  try { await api('/api/admin/settings', { method: 'POST', body: JSON.stringify(body) }); $('#setMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; loadSettings(); }
+  catch (err) { alertMsg(err.message); }
+});
+$('#tabSettings').onclick = () => { showTab('Settings'); loadSettings(); };
 </script>
 </body>
 </html>

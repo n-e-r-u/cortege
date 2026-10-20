@@ -507,3 +507,24 @@ body.contrast .sheet, body.contrast .round, body.contrast .tile, body.contrast .
 body.contrast .leaflet-container { filter: contrast(1.15); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (prefers-contrast: more) { body { --fg: #ffffff; --muted: #d6d4dc; --line: #6b6977; } }
+
+/* ---- 2.2 : lieux permanents ---- */
+.poi-wrap { background: none; border: 0; }
+.poi { position: relative; width: 30px; height: 30px; border-radius: 9px; background: #1c1c20; border: 2px solid #9b87e8;
+  display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.55); }
+.poi-aide { border-color: #3fcf86; }
+.poi-sm { width: 24px; height: 24px; border-radius: 7px; }
+.poi-g { font-size: 16px; line-height: 1; }
+.poi-sm .poi-g { font-size: 13px; }
+.poi-l { position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+  font: 600 11px/1.2 Inter, var(--font); color: #e9e7f0; text-shadow: 0 0 3px #141519, 0 0 3px #141519, 0 0 2px #141519; }
+.poi-sm .poi-l { font-size: 10px; font-weight: 500; }
+.poi-pop .poi-h { font-family: var(--font-num); font-size: 12px; word-break: break-word; }
+.poi-pop .poi-tip { color: var(--fg); }
+.poi-pop a { color: var(--accent); }
+.event.on { color: var(--accent); font-weight: 600; }
+/* ---- 2.2 : test de notification, corrections d'orga ---- */
+.push-test { margin: 6px 0 14px; }
+.push-test button { width: 100%; }
+.pop-edit { display: grid; gap: 6px; margin-top: 6px; }
+.pop-edit select, .pop-edit input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font: inherit; }

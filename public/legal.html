@@ -62,7 +62,7 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
   <h3>Hébergeur</h3>
   <p id="hostInfo">Coordonnées de l’hébergeur : voir la variable HOST_INFO de l’instance.</p>
   <h3>Carte et code</h3>
-  <p id="mapCredit">Fond de carte et recherche de lieux : © les contributeur·ices d’<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, données sous licence ODbL. Le code source de Cortège est libre (licence AGPL-3.0)<span class="source-wrap" hidden> et consultable ici : <a class="source-link" href="#" target="_blank" rel="noopener">code source</a></span>.</p>
+  <p id="mapCredit">Fond de carte et recherche de lieux : © les contributeur·ices d’<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, données sous licence ODbL. Les lieux permanents (préfectures, mairies, commissariats, tribunaux, hôpitaux, pharmacies, points d’eau) viennent aussi d’OpenStreetMap, mis à jour chaque mois : ils peuvent être incomplets ou dépassés. Le code source de Cortège est libre (licence AGPL-3.0)<span class="source-wrap" hidden> et consultable ici : <a class="source-link" href="#" target="_blank" rel="noopener">code source</a></span>.</p>
 
   <h2 id="regles">2. Règles d’utilisation</h2>
   <p>Cortège sert à se protéger collectivement en manifestation. Les signalements sont visibles par tout le monde : chacun·e en est responsable.</p>
@@ -95,7 +95,7 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
       <tr><td>Notifications (si tu les actives)</td><td>L’adresse technique fournie par ton navigateur pour recevoir les notifications, ta zone arrondie à environ 10 km, tes choix (annonces urgentes, dangers près de toi) et l’heure de la dernière alerte « danger » (pour ne pas t’en envoyer plus d’une toutes les 3 minutes). Le contenu des notifications est chiffré de bout en bout jusqu’à ton téléphone ; il comprend les signalements publics actifs autour de ta zone, pour que la carte soit à jour même sans réseau.</td><td>Jusqu’à ce que tu désactives le réglage</td></tr>
       <tr><td>Événements proposés</td><td>Titre, date, lieu, parcours et précision que tu écris, visibles par tout le monde une fois validés. Une empreinte anti-spam de ton téléphone est gardée tant que la proposition attend la validation.</td><td>12 h après le début de l’événement</td></tr>
       <tr><td>Contact « SOS interpellation »</td><td>Le nom et le numéro de la personne à prévenir restent sur ton téléphone. Le SMS part de ton téléphone, avec ton forfait : il ne passe pas par Cortège.</td><td>Jamais envoyé</td></tr>
-      <tr><td>Recherche de lieux</td><td>Le texte tapé passe par notre serveur, puis par le service de recherche d’OpenStreetMap (Nominatim), sans ton adresse IP.</td><td>Non conservé</td></tr>
+      <tr><td>Recherche de lieux</td><td>Le texte tapé passe par le serveur de Cortège, puis par le service de recherche d’OpenStreetMap (Nominatim), sans ton adresse IP.</td><td>Non conservé</td></tr>
       <tr><td>Stockage sur ton téléphone</td><td>Identifiant aléatoire anti-spam, annonces masquées, morceaux de carte déjà affichés, signalements en attente de réseau, réglages (économie de batterie, agenda masqué sur la carte), dernière situation de la carte et derniers signalements reçus par notification (pour l’afficher sans réseau), contact SOS, et lien d’accès pour les organisations.</td><td>Jusqu’à ce que tu effaces les données du site</td></tr>
       <tr><td>Actions des orgas</td><td>Pour pouvoir corriger un abus, les actions des orgas (vérification, retrait, annonce, événement) sont enregistrées avec l’heure, le nom de l’orga, le type de signalement et une position arrondie à environ 100 m. Aucune adresse IP. Un point retiré reste restaurable une heure. Pour les orgas invitées par une autre orga, l’orga marraine voit aussi leurs dernières actions.</td><td>30 jours (1 h pour un point retiré)</td></tr>
       <tr><td>Demandes d’accès orga</td><td>Nom du collectif, ville, rôle, lien public, canal officiel du collectif et message éventuel, envoyés par le formulaire « Devenir orga certifiée ». Ni adresse IP ni identifiant du téléphone n’y sont joints.</td><td>Jusqu’au traitement de la demande, 30 jours au plus</td></tr>
@@ -120,7 +120,7 @@ fetch('/api/config').then(r => r.json()).then(c => {
     n.textContent = ''; const a = document.createElement('a'); a.href = 'mailto:' + c.contact; a.textContent = c.contact; n.append(a);
   });
   if (c.hostInfo) document.querySelector('#hostInfo').textContent = c.hostInfo;
-  if (c.vector) { const p = document.querySelector('#mapCredit'); p.insertBefore(document.createTextNode('Carte hébergée sur notre propre serveur (format Protomaps) : aucune demande ne part chez un fournisseur de carte. '), p.firstChild); }
+  if (c.vector) { const p = document.querySelector('#mapCredit'); p.insertBefore(document.createTextNode('Carte hébergée sur le serveur de Cortège (format Protomaps) : aucune demande ne part chez un fournisseur de carte. '), p.firstChild); }
   if (c.accessLogs === 'none') {
     const row = document.querySelector('#logsRow').children;
     row[0].textContent = 'Journaux de connexion';
