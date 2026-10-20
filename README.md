@@ -114,6 +114,21 @@ carte.exemple.org {
 
 Caddy ne garde aucun journal d'accès tant qu'on ne lui en demande pas. Ouvrir les ports TCP 80 et 443, et UDP 443 pour HTTP/3. Mise à jour : `cd /opt/cortege/app && sudo -u cortege git pull && systemctl restart cortege`.
 
+### Sauvegarde chiffrée
+
+`tools/cortege-backup.sh` fait chaque nuit une copie cohérente de la base (pendant que l'appli tourne), des accès orga, des clés de notification, de l'archive, de la clé .onion et de la configuration, chiffrée avec [age](https://age-encryption.org) pour une clé publique : la clé secrète reste hors du serveur. 14 copies gardées dans `/var/backups/cortege`.
+
+```bash
+apt install -y age
+age-keygen -o /root/cle-sauvegarde.txt          # garde le contenu dans ton gestionnaire de mots de passe
+age-keygen -y /root/cle-sauvegarde.txt > /etc/cortege-backup.pub && shred -u /root/cle-sauvegarde.txt
+install -m 700 tools/cortege-backup.sh /usr/local/sbin/cortege-backup
+cp tools/cortege-backup.service tools/cortege-backup.timer /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now cortege-backup.timer && systemctl start cortege-backup
+```
+
+Une copie hors du serveur est indispensable : `tools/sauvegarde-pc.ps1` la rapatrie chaque jour sur un PC Windows (tâche planifiée). Restauration : `age -d -i cle.txt sauvegarde.tar.gz.age | tar xz`, puis remettre `data/` dans `DATA_DIR`, `tor-cortege/` dans `/var/lib/tor/cortege` (propriétaire `debian-tor`) et les fichiers de `config/`.
+
 ### Carte hébergée sur le serveur (Protomaps)
 
 Sans fournisseur de carte : aucune requête de tes utilisateurices ne part ailleurs, et la carte d'une ville peut être gardée sur le téléphone. Un fichier unique pour la France, la Corse et l'outre-mer (quelques Go), découpé dans les builds quotidiens de [Protomaps](https://docs.protomaps.com/basemaps/downloads) (données OpenStreetMap, ODbL).

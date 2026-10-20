@@ -1,0 +1,8 @@
+[Unit]
+Description=Sauvegarde chiffrée de Cortège
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cortege-backup
+Nice=10
+IOSchedulingClass=idle
