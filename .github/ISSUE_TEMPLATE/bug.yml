@@ -1,0 +1,31 @@
+name: Un bug
+description: Quelque chose ne marche pas comme prévu
+labels: [bug]
+body:
+  - type: textarea
+    id: quoi
+    attributes:
+      label: Ce qui s'est passé
+      description: Ce que tu as fait, ce que tu attendais, ce qui s'est passé à la place.
+    validations:
+      required: true
+  - type: input
+    id: appareil
+    attributes:
+      label: Téléphone et navigateur
+      placeholder: ex. Android 15, Chrome ; iPhone, Safari ; appli installée ou non
+    validations:
+      required: true
+  - type: dropdown
+    id: reseau
+    attributes:
+      label: Réseau à ce moment-là
+      options: [Normal, Lent ou saturé, Pas de réseau, Je ne sais pas]
+  - type: textarea
+    id: plus
+    attributes:
+      label: Captures ou détails
+      description: Floute les visages, positions et numéros personnels avant de publier une capture.
+  - type: markdown
+    attributes:
+      value: "**Faille de sécurité ?** Ne l'écris pas ici : passe par l'onglet Security du dépôt (voir SECURITY.md)."

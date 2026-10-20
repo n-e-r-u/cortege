@@ -42,6 +42,7 @@ Variables d'environnement :
 | `STREAM` | auto | Temps réel (`/api/stream`). Actif par défaut hors Passenger (un seul processus), `0` pour le couper |
 | `STREAM_MAX` | `20000` | Nombre maximal de téléphones connectés en temps réel (au-delà : interrogation régulière) |
 | `ACCESS_LOGS` | vide | `none` quand le serveur web ne garde aucun journal d'accès (Caddy par défaut) : les mentions légales le disent |
+| `ONION_HOST` | vide | Adresse .onion de l'instance (affichée dans le menu) |
 | `PUSH_PARALLEL` | `48` | Notifications envoyées en même temps |
 | `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 
@@ -126,6 +127,36 @@ pmtiles extract https://build.protomaps.com/AAAAMMJJ.pmtiles /var/lib/cortege-ma
 
 Puis `TILE_PMTILES=/var/lib/cortege-map/france.pmtiles` dans les variables et redémarrage. Pour mettre la carte à jour (tous les quelques mois), refaire l'extraction dans un nouveau fichier, puis le renommer à la place de l'ancien et redémarrer.
 
+### Adresse .onion (Tor)
+
+Pour que ton opérateur ne voie même pas que tu utilises l'appli. Sur le VPS : `apt install tor`, puis dans `/etc/tor/torrc` :
+
+```
+HiddenServiceDir /var/lib/tor/cortege/
+HiddenServicePort 80 127.0.0.1:8081
+```
+
+Après `systemctl restart tor`, l'adresse est dans `/var/lib/tor/cortege/hostname`. Dans le Caddyfile, un deuxième site, local, qui marque les requêtes venues de Tor (l'anti-spam se fonde alors sur l'identifiant du téléphone, sinon tout Tor partagerait une seule limite) :
+
+```
+http://:8081 {
+	bind 127.0.0.1
+	handle_path /live/* {
+		root * /srv/cortege-live
+		file_server {
+			hide .htaccess
+		}
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8080 {
+			header_up X-Cortege-Onion 1
+		}
+	}
+}
+```
+
+Sur le site public, ajouter `header Onion-Location http://ADRESSE.onion{uri}` (Tor Browser proposera la version .onion) et `request_header -X-Cortege-Onion` (personne ne peut se faire passer pour Tor). Enfin `ONION_HOST=ADRESSE.onion` dans les variables.
+
 ### VPS avec Docker
 
 ```bash
@@ -171,6 +202,10 @@ Sur le téléphone d'une orga apparaissent le badge ORGA et le bouton 📣 : ann
 ### Annuaire des legal teams
 
 Onglet « Legal teams » de l'administration. Une liste de départ (`legal-seed.json`, sources publiques) est chargée au premier démarrage, **sans rien publier** : chaque ligne doit être vérifiée auprès du collectif puis validée. Une veille relit chaque jour la page source de chaque ligne et signale dans l'onglet si le numéro n'y figure plus ou si d'autres numéros sont apparus. Elle ne publie et ne modifie jamais rien : la décision reste humaine. Modifier le numéro ou la source repasse la ligne en « à valider ».
+
+## Devenir orga
+
+Le bouton « Demander un accès orga » ouvre un formulaire dans l'appli (nom du collectif, ville, lien public, canal officiel). Les demandes arrivent dans l'onglet Orgas de l'administration, à vérifier par les canaux publics du collectif ; elles sont effacées une fois traitées, et au plus tard au bout de 30 jours. L'administration crée aussi des liens de candidature par ville (`/?rejoindre=Ville`, avec QR code) à partager dans les AG : ils ouvrent le formulaire, sans donner aucun accès.
 
 ## Digest
 
@@ -224,6 +259,11 @@ Onglet Digest de l'administration : chiffres clés, carte du jour, moments clés
 
 Licence AGPL-3.0 : toute version modifiée mise en ligne doit publier son code.
 
+## Stories du digest
+
+Dans l'onglet Digest, « Fabriquer les stories » produit 7 visuels 1080 × 1920 (chiffres bruts, carte des villes, types, heures, villes, vérification, source), avec deux photos facultatives dont le bas est flouté. Tout est calculé dans le navigateur de l'admin ; sur téléphone, « Partager » les envoie directement vers une appli.
+
 ## Crédits
 
 Noms et positions des villes du digest : [GeoNames](https://www.geonames.org/) (CC BY 4.0), fichier `places.json`.
+Polices des stories : Inter et JetBrains Mono (SIL Open Font License), dans `public/vendor/fonts/`. Rendu de la carte vectorielle : [protomaps-leaflet](https://github.com/protomaps/protomaps-leaflet) (BSD-3-Clause). Fond de carte des stories : Natural Earth via world-atlas (domaine public).

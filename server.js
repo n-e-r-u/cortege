@@ -177,7 +177,12 @@ function rotateSecret() {
 // - Sinon : dernière adresse publique de X-Forwarded-For, celle ajoutée par le proxy de l'hébergeur ;
 //   les premières peuvent être inventées par le client pour contourner les limites.
 const PRIVATE_IP = /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|f[cd][0-9a-f]{2}:|fe80:|::ffff:(10\.|127\.|192\.168\.))/i;
+// Accès par Tor (.onion) : toutes les connexions arrivent du serveur lui-même. Le proxy local de l'adresse .onion
+// ajoute X-Cortege-Onion ; l'anti-spam se fonde alors sur l'identifiant du téléphone, sinon tout Tor partagerait une seule limite.
+const ONION_HOST = (process.env.ONION_HOST || '').trim();
+function viaOnion(req) { return TRUST_PROXY && req.headers['x-cortege-onion'] === '1' && /^(127\.|::1$|::ffff:127\.)/.test(req.socket.remoteAddress || ''); }
 function clientIp(req) {
+  if (viaOnion(req)) { const d = String(req.headers['x-device'] || ''); return 'onion:' + (/^[\w-]{16,64}$/.test(d) ? d : 'sans-id'); }
   if (TRUST_PROXY) {
     const cf = String(req.headers['cf-connecting-ip'] || '').trim();
     if (cf) return cf;
@@ -631,6 +636,28 @@ async function legalWatch(force = false) {
 }
 const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
 
+
+// ---- Demandes d'accès orga (formulaire dans l'appli, au lieu d'un e-mail) ----
+// Gardé : nom du collectif, ville, rôle, lien public, canal officiel du collectif, garant éventuel, message.
+// Supprimé dès que l'admin a traité la demande, et au plus tard au bout de 30 jours. Ni IP ni identifiant du téléphone.
+db.exec('CREATE TABLE IF NOT EXISTS orga_req(id TEXT PRIMARY KEY, t INTEGER, data TEXT)');
+const OREQ_DAYS = 30;
+function orgaRequest(b) {
+  const f = { collective: clean(b.collective, 80), city: clean(b.city, 60), role: clean(b.role, 40), link: String(b.link || '').trim().slice(0, 300),
+    since: clean(b.since, 40), contact: clean(b.contact, 120), sponsor: clean(b.sponsor, 120), note: clean(b.note, 600) };
+  if (f.collective.length < 2) return [400, { error: 'Indique le nom du collectif.' }];
+  if (f.city.length < 2) return [400, { error: 'Indique la ville ou le secteur.' }];
+  if (!/^https:\/\/[^\s"<>]{4,300}$/.test(f.link)) return [400, { error: 'Donne le lien public du collectif (site, Instagram…), en https://' }];
+  if (f.contact.length < 3) return [400, { error: 'Indique le canal officiel du collectif où te confirmer la demande.' }];
+  const now = Date.now();
+  q('DELETE FROM orga_req WHERE t<?').run(now - OREQ_DAYS * 24 * 60 * MIN);
+  if (q('SELECT COUNT(*) n FROM orga_req').get().n >= 500) return [503, { error: 'Trop de demandes en attente, réessaie dans quelques jours.' }];
+  const id = crypto.randomBytes(6).toString('base64url');
+  q('INSERT INTO orga_req(id,t,data) VALUES(?,?,?)').run(id, now, JSON.stringify(f));
+  return [201, { ok: true }];
+}
+const orgaRequests = () => { q('DELETE FROM orga_req WHERE t<?').run(Date.now() - OREQ_DAYS * 24 * 60 * MIN);
+  return q('SELECT id, t, data FROM orga_req ORDER BY t').all().map(x => ({ id: x.id, t: x.t, ...JSON.parse(x.data) })); };
 
 // ---- Villes et agglomérations (digest) ----
 // Liste des villes de plus de 5 000 habitant·es (France, outre-mer, pays voisins francophones), d'après GeoNames (CC BY 4.0).
@@ -1449,10 +1476,14 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/stream') return streamOpen(req, res, url);
+    if (req.method === 'POST' && pathname === '/api/orga-requests') {
+      if (!tx(() => bump('oreq:' + clientHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });
+      return send(res, ...orgaRequest(await readJson(req)));
+    }
     const vt = PMTILES && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);
     if (vt) return serveVectorTile(req, res, +vt[1], +vt[2], +vt[3]);
     if (req.method === 'GET' && pathname === '/api/config')
-      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' });
+      return send(res, 200, { event: EVENT_NAME, center: CENTER, zoom: ZOOM, brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' });
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
     if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {
@@ -1595,7 +1626,7 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { paused: pausedUntil(now),
           reports: activeReports(now).map(publicView),
           announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
-          pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(),
+          pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length,
           pushSubs: pushCount() });
       }
       // --- Annonces de l'admin (nationales ou locales) ---
@@ -1607,6 +1638,13 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'DELETE' && delA) {
         const ok = dropAnn(delA[1]);
         return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Annonce déjà retirée.' });
+      }
+      // --- Demandes d'accès orga ---
+      if (req.method === 'GET' && pathname === '/api/admin/orga-requests') return send(res, 200, { list: orgaRequests() });
+      const oreq = pathname.match(/^\/api\/admin\/orga-requests\/([\w-]{1,16})$/);
+      if (oreq && req.method === 'DELETE') {
+        const n = q('DELETE FROM orga_req WHERE id=?').run(oreq[1]).changes;
+        return n ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Demande déjà traitée.' });
       }
       // --- Annuaire des legal teams ---
       if (req.method === 'GET' && pathname === '/api/admin/legal') {
@@ -1688,7 +1726,7 @@ const server = http.createServer(async (req, res) => {
         if (b.confirm !== 'EFFACER') return send(res, 400, { error: 'Tape EFFACER pour confirmer.' });
         const n = tx(() => {
           const n = q('DELETE FROM reports').run().changes;
-          for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'hidden', 'push', 'abuse']) q('DELETE FROM ' + t).run();
+          for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'hidden', 'push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
           for (const e of listEvents()) if (e.dev) { delete e.dev; saveEvent(e); }
           q("UPDATE events SET dev=NULL").run();
           return n;

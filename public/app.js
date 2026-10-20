@@ -42,6 +42,10 @@
   const GROUP_COLOR = { fdo: 'var(--fdo)', danger: 'var(--danger)', soutien: 'var(--soutien)', info: 'var(--info)' };
   $('#eventName').textContent = cfg.event;
   if (cfg.sourceUrl) $('#githubLink').href = cfg.sourceUrl;
+  if (cfg.onion) {
+    $('#onionTip').hidden = false; $('#onionAddr').textContent = cfg.onion;
+    $('#onionCopy').onclick = async () => { try { await navigator.clipboard.writeText('http://' + cfg.onion); toast('Adresse .onion copiée'); } catch { toast(cfg.onion); } };
+  }
   if (cfg.violenceUrl) document.querySelectorAll('#violenceLink, .violence-inline').forEach(a => (a.href = cfg.violenceUrl));
   if (cfg.brand) {
     document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
@@ -58,16 +62,8 @@
     if (img.complete && !img.naturalWidth) fail(); else img.addEventListener('error', fail);
   });
 
-  // Demande d'accès orga : un e-mail prérempli avec ce qu'il faut pour vérifier le collectif
-  if (cfg.contact) {
-    const body = ['Bonjour,', '', 'Je souhaite un accès orga certifiée sur Cortège.', '',
-      'Collectif ou organisation :', 'Ville ou secteur :', 'Rôle (legal team, street medics, orga de manif, syndicat, autre) :',
-      'Site ou compte public du collectif (lien) :', 'Depuis quand le collectif existe :',
-      'Canal officiel du collectif où te confirmer la demande (adresse ou compte publié par le collectif, pas un contact personnel) :',
-      'Organisation déjà connue qui peut se porter garante (facultatif) :', '', 'Merci !'].join('\n');
-    $('#orgaRequest').href = `mailto:${cfg.contact}?subject=${encodeURIComponent('Demande orga')}&body=${encodeURIComponent(body)}`;
-    $('#orgaRequestCard').hidden = false;
-  }
+  // Demande d'accès orga : formulaire dans l'appli (lien partageable par ville : /?rejoindre=Montpellier)
+  $('#orgaRequestCard').hidden = false;
 
   // ---- Carte ----
   // Les popups ne doivent pas finir sous l'en-tête ni sous le bouton « Signaler »
@@ -868,7 +864,7 @@
   renderFilters();
 
   // ---- Signaler ----
-  const sheets = ['#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
+  const sheets = ['#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -1408,6 +1404,27 @@
     catch (e) { toast(e.message); }
   };
   $('#orClose').onclick = () => closeSheets();
+  function openJoin(city) {
+    closeReport(); closeSheets();
+    if (city) $('#joCity').value = city;
+    $('#sheetJoin').hidden = false;
+  }
+  $('#orgaRequest').onclick = () => openJoin();
+  $('#joClose').onclick = () => closeSheets();
+  $('#joinForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const body = { collective: $('#joCollective').value, city: $('#joCity').value, role: $('#joRole').value, link: $('#joLink').value,
+      contact: $('#joContact').value, since: $('#joSince').value, sponsor: $('#joSponsor').value, note: $('#joNote').value };
+    try {
+      const r = await fetch('/api/orga-requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return toast(j.error || 'Envoi impossible, réessaie.');
+      $('#joinForm').reset(); closeSheets();
+      toast('Demande envoyée : on te recontacte par le canal du collectif');
+    } catch { toast('Pas de réseau : réessaie plus tard'); }
+  });
+  { const q = new URLSearchParams(location.search), city = q.get('rejoindre');
+    if (city !== null) { history.replaceState(null, '', location.pathname); setTimeout(() => openJoin(city.slice(0, 60)), 800); } }
   document.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', () => {
     const legal = document.querySelector('input[name="kind"]:checked').value === 'legal';
     $('#annInfoFields').hidden = legal; $('#annLegalFields').hidden = !legal;

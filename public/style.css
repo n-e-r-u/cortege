@@ -476,3 +476,5 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .sheet.panel .orga-card { margin-top: 4px; }
 .menu-foot { margin-top: 18px; }
 .round.menu-btn { color: var(--fg); }
+
+#onionAddr { word-break: break-all; font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 6px; }

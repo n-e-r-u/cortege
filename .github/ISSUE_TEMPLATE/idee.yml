@@ -1,0 +1,23 @@
+name: Une idée
+description: Proposer une amélioration ou une nouvelle fonction
+labels: [idée]
+body:
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Le besoin
+      description: Quelle situation en manif ça règle ? Pour qui (manifestant·es, orgas, legal teams, street medics…) ?
+    validations:
+      required: true
+  - type: textarea
+    id: idee
+    attributes:
+      label: L'idée
+      description: Comment tu l'imagines dans l'appli.
+  - type: checkboxes
+    id: regles
+    attributes:
+      label: Vérifications
+      options:
+        - label: L'idée n'oblige pas à envoyer la position exacte ni à garder des données identifiantes
+          required: true

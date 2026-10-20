@@ -307,12 +307,24 @@ test('carte hébergée : tuiles vectorielles lues dans le fichier PMTiles', asyn
   assert.deepEqual(raw, { enc: undefined, body: 'monde' });
 });
 
+test('demandes d’accès orga : formulaire public, liste admin, suppression', async () => {
+  assert.equal((await post('/api/orga-requests', { collective: 'LT Test', city: 'Testville' })).s, 400);
+  const ok = await post('/api/orga-requests', { collective: 'Legal Team Testville', city: 'Testville', role: 'Legal team', link: 'https://exemple.org/lt', contact: 'contact@exemple.org' });
+  assert.equal(ok.s, 201);
+  const list = await fetch(B + '/api/admin/orga-requests', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  const r = list.list.find(x => x.collective === 'Legal Team Testville');
+  assert.ok(r && r.city === 'Testville' && !('ip' in r));
+  const del = await fetch(B + '/api/admin/orga-requests/' + r.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  assert.equal(del.status, 200);
+  assert.equal((await fetch(B + '/api/admin/orga-requests', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json())).list.length, 0);
+});
+
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
   const before = fs.readFileSync(DIR + '/d/secret', 'utf8');
   const w = await admin('/api/admin/wipe', { confirm: 'EFFACER' });
   assert.equal(w.s, 200); assert.equal(w.j.rotated, true);
-  for (const t of ['reports', 'devices', 'abuse', 'trash', 'orga_log', 'push'])
+  for (const t of ['reports', 'devices', 'abuse', 'trash', 'orga_log', 'push', 'orga_req'])
     assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n, 0, t + ' vide');
   assert.notEqual(fs.readFileSync(DIR + '/d/secret', 'utf8'), before, 'nouvelle clé');
 });

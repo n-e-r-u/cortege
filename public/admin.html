@@ -93,7 +93,9 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .tabs { overflow-x: auto; scrollbar-width: none; }
 .tab { flex: none; }
 @media (max-width: 600px) { .org-list li { grid-template-columns: 1fr; } .org-list .acts { justify-content: flex-start; } }
-#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
+.story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 12px; }
+.story-grid img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
+#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
 </style>
 </head>
@@ -114,7 +116,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 
   <div id="app" hidden>
   <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas">Orgas</button>
+    <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas">Orgas <span id="reqBadge"></span></button>
     <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns">Annonces <span id="annBadge"></span></button>
     <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal">Legal teams <span id="legalBadge"></span></button>
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda">Agenda <span id="pendingBadge"></span></button>
@@ -125,6 +127,26 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   </nav>
 
   <section class="panel" id="panelOrgas" role="tabpanel" aria-labelledby="tabOrgas">
+    <section class="card" id="reqCard">
+      <h2>Demandes d’accès <span id="reqCount"></span></h2>
+      <ul class="org-list" id="reqList"></ul>
+      <p class="fine">Vérifie chaque demande par les canaux publics du collectif (le lien donné, le canal officiel), jamais par un contact personnel. « Créer l’invitation » remplit le formulaire ci-dessous ; envoie ensuite l’invitation par le canal officiel. Les demandes sont effacées une fois traitées, et au plus tard au bout de 30 jours.</p>
+    </section>
+    <section class="card">
+      <h2>Lien de candidature pour une ville</h2>
+      <form class="controls" id="joinLinkForm">
+        <label for="joinCity" style="flex:1;min-width:200px">Ville
+          <input id="joinCity" maxlength="60" required placeholder="ex. : Montpellier">
+        </label>
+        <button type="submit">Créer le lien</button>
+      </form>
+      <div class="newlink" id="joinLinkOut" hidden>
+        <div class="qr-invite" id="joinQr"></div>
+        <code id="joinUrl"></code>
+        <div class="row"><button type="button" id="joinCopy">Copier le lien</button></div>
+        <p class="fine">À partager dans les AG et sur les canaux des collectifs locaux : le lien ouvre le formulaire de demande avec la ville déjà remplie. Il ne donne aucun accès par lui-même.</p>
+      </div>
+    </section>
     <section class="card">
       <h2>Ajouter une orga</h2>
       <form class="controls" id="orgaForm">
@@ -338,6 +360,17 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <pre id="summary"></pre>
       <div class="controls"><button type="button" class="ghost" id="copy">Copier le résumé</button><button type="button" class="ghost" id="csv">Télécharger les données (CSV)</button></div>
     </section>
+    <section class="card">
+      <h2>Stories Instagram</h2>
+      <p class="fine">7 visuels 1080 × 1920 avec les chiffres bruts de la journée (tous les signalements, retirés compris). Les photos sont facultatives : le bas est flouté automatiquement. Tout est fabriqué ici, dans ton navigateur.</p>
+      <div class="controls">
+        <label>Photo de couverture <input type="file" id="stCover" accept="image/*"></label>
+        <label>Photo de fin <input type="file" id="stEnd" accept="image/*"></label>
+        <button type="button" id="stMake">Fabriquer les stories</button>
+      </div>
+      <div class="story-grid" id="stOut"></div>
+      <div class="controls" id="stActions" hidden><button type="button" id="stShare">Partager (téléphone)</button><button type="button" class="ghost" id="stSave">Tout télécharger</button></div>
+    </section>
     <p class="fine">Données anonymes : catégorie, heures de début et de fin à la minute, position arrondie à environ 100 m, nombre de confirmations, de « Plus là » et de précisions (jamais leur texte). Les empreintes de connexion ne sont jamais archivées. Ce sont des signalements de participant·es, pas des faits vérifiés : à recouper avant publication.</p>
   </div>
   </section>
@@ -346,6 +379,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 <link rel="stylesheet" href="/vendor/leaflet.css">
 <script src="/vendor/leaflet.js"></script>
 <script src="/vendor/qrcode.js"></script>
+<script src="/stories.js"></script>
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
@@ -359,7 +393,7 @@ const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type':
 
 async function login() {
   KEY = $('#key').value;
-  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); }
+  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false;
@@ -373,7 +407,7 @@ function showTab(which) {
     $('#panel' + t).hidden = t !== which;
   }
 }
-$('#tabOrgas').onclick = () => showTab('Orgas');
+$('#tabOrgas').onclick = () => { showTab('Orgas'); loadRequests(); };
 $('#tabDigest').onclick = () => showTab('Digest');
 $('#tabReports').onclick = () => { showTab('Reports'); loadReports(); };
 $('#tabAnns').onclick = () => { showTab('Anns'); loadAnns(); };
@@ -910,6 +944,55 @@ $('#legalWatchNow').onclick = async () => {
   try { await api('/api/admin/legal-watch', { method: 'POST', body: '{}' }); } catch (e) { alertMsg(e.message); }
   b.disabled = false; b.textContent = 'Relire les sources maintenant'; loadLegal(); loadBadges();
 };
+
+// ---- Demandes d'accès orga ----
+async function loadRequests() {
+  let d; try { d = await api('/api/admin/orga-requests'); } catch (e) { return; }
+  const ul = $('#reqList'); ul.textContent = '';
+  $('#reqCount').textContent = '(' + d.list.length + ')'; $('#reqBadge').textContent = d.list.length || '';
+  if (!d.list.length) return empty(ul, 'Aucune demande en attente.');
+  for (const r of d.list) {
+    const inv = btn('Créer l’invitation');
+    inv.onclick = async () => { $('#orgaLabel').value = r.collective; $('#orgaForm').requestSubmit();
+      try { await api('/api/admin/orga-requests/' + r.id, { method: 'DELETE' }); } catch {} loadRequests(); };
+    const del = btn('Refuser', 'danger');
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/orga-requests/' + r.id, { method: 'DELETE' }); loadRequests(); });
+    const meta = [r.role, r.city, 'canal : ' + r.contact, r.since ? 'depuis ' + r.since : null, r.sponsor ? 'garant : ' + r.sponsor : null,
+      new Date(r.t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })].filter(Boolean).join(' · ');
+    const row = li(r.collective, meta, inv, del);
+    const a = document.createElement('a'); a.href = r.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = r.link; a.className = 'meta'; row.firstChild.append(a);
+    if (r.note) { const n = document.createElement('div'); n.className = 'meta'; n.textContent = '« ' + r.note + ' »'; row.firstChild.append(n); }
+    ul.append(row);
+  }
+}
+$('#joinLinkForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const url = location.origin + '/?rejoindre=' + encodeURIComponent($('#joinCity').value.trim());
+  $('#joinUrl').textContent = url; $('#joinQr').textContent = '';
+  if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#joinQr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
+  $('#joinLinkOut').hidden = false;
+});
+$('#joinCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#joinUrl').textContent); alertMsg('Lien copié.'); } catch {} };
+
+// ---- Stories Instagram du digest ----
+let stBlobs = [];
+$('#stMake').onclick = async () => {
+  if (!dg) return;
+  const b = $('#stMake'); b.disabled = true; b.textContent = 'Fabrication…';
+  try {
+    stBlobs = await window.makeStories(dg, { cover: $('#stCover').files[0], end: $('#stEnd').files[0], brand: brand.handle });
+    const out = $('#stOut'); out.textContent = '';
+    stBlobs.forEach((bl, i) => { const img = document.createElement('img'); img.src = URL.createObjectURL(bl); img.alt = 'Story ' + (i + 1); out.append(img); });
+    $('#stActions').hidden = false;
+    $('#stShare').hidden = !(navigator.canShare && navigator.canShare({ files: [new File([stBlobs[0]], 'a.png', { type: 'image/png' })] }));
+  } catch (e) { alertMsg('Stories : ' + e.message); }
+  b.disabled = false; b.textContent = 'Fabriquer les stories';
+};
+const stFiles = () => stBlobs.map((bl, i) => new File([bl], `cortege-${dg.date}-${i + 1}.png`, { type: 'image/png' }));
+$('#stShare').onclick = () => navigator.share({ files: stFiles() }).catch(() => {});
+$('#stSave').onclick = () => stFiles().forEach((f, i) => setTimeout(() => {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.append(a); a.click(); a.remove();
+}, i * 300));
 </script>
 </body>
 </html>

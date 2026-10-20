@@ -192,7 +192,7 @@
   <div class="orga-card" id="orgaRequestCard" hidden>
     <b class="card-title">Legal team, street medics, collectif ?</b>
     <p>Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone.</p>
-    <a class="secondary" id="orgaRequest" href="#">Demander un accès orga</a>
+    <button type="button" class="secondary" id="orgaRequest">Demander un accès orga</button>
     <p class="fine">Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule.</p>
   </div>
 
@@ -204,6 +204,7 @@
     <li class="tip-prefetch"><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone.</li>
     <li class="tip-browse" hidden><b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone.</li>
     <li><b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.</li>
+    <li id="onionTip" hidden><b>Avec Tor.</b> Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) : <code id="onionAddr"></code> <button type="button" class="link-btn" id="onionCopy">copier</button></li>
   </ul>
 
   <h3 class="menu-group">Réglages</h3>
@@ -233,6 +234,47 @@
     <span>Cortège est un projet de <a class="handle-link" id="shareIg" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a></span>
     <a id="shareSite" href="https://neru.tv" target="_blank" rel="noopener noreferrer">neru.tv</a>
   </div>
+</section>
+
+<!-- Demande d'accès orga -->
+<section class="sheet" id="sheetJoin" hidden aria-labelledby="joTitle">
+  <div class="sheet-head">
+    <h2 id="joTitle">Devenir orga certifiée</h2>
+    <button class="x" id="joClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="fine">Pour les collectifs : legal teams, street medics, orgas de manif, syndicats. Chaque demande est vérifiée par les canaux publics du collectif, et l’accès est remis au collectif, jamais à une personne seule.</p>
+  <form id="joinForm" class="orga-form">
+    <label class="note-label" for="joCollective">Nom du collectif
+      <input id="joCollective" maxlength="80" required placeholder="ex. : Legal Team Montpellier">
+    </label>
+    <div class="row2">
+      <label class="note-label" for="joCity">Ville ou secteur
+        <input id="joCity" maxlength="60" required autocomplete="address-level2" placeholder="ex. : Montpellier">
+      </label>
+      <label class="note-label" for="joRole">Rôle
+        <select id="joRole"><option>Legal team</option><option>Street medics</option><option>Orga de manif</option><option>Syndicat</option><option>Média indépendant</option><option>Autre</option></select>
+      </label>
+    </div>
+    <label class="note-label" for="joLink">Site ou compte public du collectif
+      <input id="joLink" type="url" maxlength="300" required placeholder="https://www.instagram.com/…">
+    </label>
+    <label class="note-label" for="joContact">Canal officiel où te confirmer la demande
+      <input id="joContact" maxlength="120" required placeholder="adresse ou compte publié par le collectif, pas un contact perso">
+    </label>
+    <div class="row2">
+      <label class="note-label" for="joSince">Existe depuis
+        <input id="joSince" maxlength="40" placeholder="ex. : 2019">
+      </label>
+      <label class="note-label" for="joSponsor">Orga qui peut se porter garante (facultatif)
+        <input id="joSponsor" maxlength="120" placeholder="ex. : syndicat local">
+      </label>
+    </div>
+    <label class="note-label" for="joNote">Un mot (facultatif)
+      <textarea id="joNote" maxlength="600" rows="2"></textarea>
+    </label>
+    <button class="install" type="submit">Envoyer la demande</button>
+    <p class="fine">Ces infos servent seulement à vérifier le collectif. Elles sont effacées dès que la demande est traitée, et au plus tard au bout de 30 jours.</p>
+  </form>
 </section>
 
 <!-- Mes droits -->
