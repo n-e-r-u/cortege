@@ -7,6 +7,8 @@
 <title>Cortège · carte en direct</title>
 <link rel="stylesheet" href="/vendor/leaflet.css">
 <style>
+@font-face { font-family: Inter; font-weight: 400; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 700; src: url(/vendor/fonts/inter-700.woff2) format('woff2'); }
 html, body, #map { height: 100%; margin: 0; background: #121214; }
 body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #f2f1f4; }
 .raster .leaflet-tile-pane, .osm-fallback { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6); }
@@ -25,6 +27,7 @@ body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-
 <div id="map"></div>
 <div class="bar"><span><i class="live"></i><span id="state">Carte en direct des manifs</span></span><a id="open" href="/" target="_blank" rel="noopener">Ouvrir Cortège ↗</a></div>
 <script src="/vendor/leaflet.js"></script>
+<script src="/map-style.js"></script>
 <script src="/embed.js"></script>
 </body>
 </html>

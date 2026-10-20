@@ -107,8 +107,11 @@
           } });
           new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: '© OpenStreetMap' }).addTo(map);
         }
-        window.protomapsL.leafletLayer({ url: cfg.vector.url, flavor: 'dark', lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
-          attribution: '© <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Protomaps' }).addTo(map);
+        const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
+          attribution: '© <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Protomaps' };
+        const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
+        vl.addTo(map);
+        window.cortegeMapFonts?.().then(() => vl.redraw?.());
         document.body.classList.add('vector');
       } catch { rasterMap(); }
     };

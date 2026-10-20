@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.1.2
+
+- Carte retravaillée : rues plus visibles (grands axes teintés de violet), eau, parcs et bâtiments mieux marqués, noms de rues et de lieux plus grands dans la police de l'appli.
+
 ## 2.1.1
 
 - La zone de la carte hébergée correspond de nouveau au fichier extrait : l'est de la Suisse s'affiche via OpenStreetMap au lieu de rester vide.
