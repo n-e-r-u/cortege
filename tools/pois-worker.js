@@ -8,7 +8,7 @@ function kindOf(p) {
   const k = String(p.kind ?? p['pmap:kind'] ?? ''), name = String(p.name || '');
   if (/r[ée]tention administrative/i.test(name)) return 'cra';
   if (/^(h[ôo]tel de (la )?)?sous[- ]pr[ée]fecture\b/i.test(name)) return 'spref';
-  if (/^(h[ôo]tel de (la )?)?pr[ée]fecture\b/i.test(name) && !/police/i.test(name)) return 'pref';
+  if (/^(h[ôo]tel de (la )?)?pr[ée]fecture\b/i.test(name)) return 'pref'; // y compris la préfecture de police
   if (k === 'townhall') return /salle|maison des associations/i.test(name) ? null : 'mairie';
   if (k === 'police') return /gendarmerie/i.test(name) ? 'gend' : 'police';
   if (k === 'courthouse') return 'tribunal';
