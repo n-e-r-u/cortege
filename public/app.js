@@ -926,8 +926,15 @@
   // ---- Filtres ----
   // ---- Lieux permanents (OpenStreetMap) : préfectures, mairies, commissariats, tribunaux, CRA, hôpitaux ; pharmacies et eau au zoom rue ----
   const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
-  const POI_Z = 13, POI_STREET_Z = 16, POI_MAX = 350;
+  const POI_Z = 14, POI_STREET_Z = 16, POI_MAX = 350;
+  // Zoom à partir duquel chaque type apparaît : les grands lieux d'abord, les mairies et commissariats au zoom quartier, le reste au zoom rue
+  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, mairie: 15, police: 15, gend: 15, pharma: 16, eau: 16 };
+  // Filtres proposés (préfectures et sous-préfectures ensemble, commissariats et gendarmeries ensemble)
+  const POI_FILTERS = [['pref', '🏢 Préfectures et sous-préfectures', ['pref', 'spref']], ['mairie', '🏛 Mairies', ['mairie']], ['police', '👮 Commissariats et gendarmeries', ['police', 'gend']],
+    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']]];
   let poiHidden = false; try { poiHidden = localStorage.getItem('cortege-poi-hidden') === '1'; } catch {}
+  let poiOff = new Set(); try { poiOff = new Set(JSON.parse(localStorage.getItem('cortege-poi-off') || '[]')); } catch {}
+  const poiShown = kind => { const f = POI_FILTERS.find(x => x[2].includes(kind)); return !f || !poiOff.has(f[0]); };
   let poiHash = null, poiSeq = 0;
   const poiFiles = new Map(), poiDrawn = new Map();
   const poiLayer = L.layerGroup().addTo(map);
@@ -974,14 +981,16 @@
     if (files.length > 8) return;
     const rows = (await Promise.all(files.map(poiLoad))).flat();
     if (seq !== poiSeq) return; // la carte a bougé entre-temps
-    const vb = b.pad(0.15), c = map.getCenter(), labels = z >= 15;
-    let want = rows.filter(x => vb.contains([x[2], x[3]]) && (z >= POI_STREET_Z || !(PK[x[1]] && PK[x[1]].street)));
+    const vb = b.pad(0.15), c = map.getCenter();
+    // Noms : au zoom quartier pour les grands lieux, seulement au zoom le plus proche pour les pharmacies et l'eau (sinon illisible)
+    const labOf = x => z >= ((PK[x[1]] && PK[x[1]].street) ? 18 : 15);
+    let want = rows.filter(x => vb.contains([x[2], x[3]]) && z >= (POI_MINZ[x[1]] || POI_STREET_Z) && poiShown(x[1]));
     if (want.length > POI_MAX) want = want.map(x => [x, map.distance(c, [x[2], x[3]])]).sort((a, b2) => a[1] - b2[1]).slice(0, POI_MAX).map(x => x[0]);
     const keep = new Map(want.map(x => [x[0], x]));
-    for (const [id, m] of poiDrawn) if (!keep.has(id) || m.options.lab !== labels || m.options.sig !== keep.get(id).join('|')) { poiLayer.removeLayer(m); poiDrawn.delete(id); }
+    for (const [id, m] of poiDrawn) if (!keep.has(id) || m.options.lab !== labOf(keep.get(id) || []) || m.options.sig !== keep.get(id).join('|')) { poiLayer.removeLayer(m); poiDrawn.delete(id); }
     for (const [id, x] of keep) {
       if (poiDrawn.has(id)) continue;
-      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labels), zIndexOffset: -1000, keyboard: false, title: (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labels, sig: x.join('|') });
+      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
       m.bindPopup(() => poiPopup(x));
       poiLayer.addLayer(m); poiDrawn.set(id, m);
     }
@@ -1016,19 +1025,34 @@
     box.append(ev);
     if (cfg.poiKinds) {
       const pl = el('button', { class: 'chip chip-poi', style: '--c:#8e7bd8', 'aria-pressed': String(!poiHidden), title: 'Lieux permanents : préfectures, mairies, commissariats, tribunaux, hôpitaux… (zoome pour les voir)' }, '🏛 Lieux');
-      pl.onclick = () => {
-        poiHidden = !poiHidden;
-        try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
-        renderPois(); renderFilters();
-        toast(poiHidden ? 'Lieux permanents masqués' : map.getZoom() < POI_Z ? 'Lieux permanents affichés : zoome sur une ville pour les voir' : 'Lieux permanents affichés');
-      };
+      pl.onclick = () => openPoiSheet();
       box.append(pl);
     }
   }
   renderFilters();
+  // Choix des lieux affichés : tout afficher ou masquer, et type par type
+  function openPoiSheet() {
+    closeReport(); closeSheets();
+    const box = $('#poiList'); box.textContent = '';
+    $('#poiAll').checked = !poiHidden;
+    for (const [key, label, kinds] of POI_FILTERS) {
+      const z = Math.min(...kinds.map(k => POI_MINZ[k] || POI_STREET_Z));
+      const cb = el('input', { type: 'checkbox' }); cb.checked = !poiOff.has(key); cb.disabled = poiHidden;
+      cb.onchange = () => { cb.checked ? poiOff.delete(key) : poiOff.add(key); try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {} renderPois(); };
+      box.append(el('label', { class: 'switch' }, cb, el('span', { class: 'switch-txt' }, el('b', {}, label), el('span', {}, z >= 16 ? 'Visible au zoom rue' : z >= 15 ? 'Visible au zoom quartier' : 'Visible au zoom ville'))));
+    }
+    $('#sheetPoi').hidden = false;
+  }
+  $('#poiAll').addEventListener('change', e => {
+    poiHidden = !e.target.checked;
+    try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
+    $('#poiList').querySelectorAll('input').forEach(i => (i.disabled = poiHidden));
+    renderPois(); renderFilters();
+  });
+  $('#poiClose').onclick = () => closeSheets();
 
   // ---- Signaler ----
-  const sheets = ['#sheetNews', '#sheetEmbed', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
+  const sheets = ['#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -1862,9 +1886,13 @@
   function openNews() {
     if (!news) return;
     closeReport(); closeSheets();
-    $('#nwTitle').textContent = 'Nouveautés de la version ' + news.version;
-    const ul = $('#newsList'); ul.textContent = '';
-    for (const [t, d] of news.items) ul.append(el('li', {}, el('b', {}, t), el('span', {}, d)));
+    $('#nwTitle').textContent = 'Nouveautés';
+    const box = $('#newsList'); box.textContent = '';
+    // Les dernières versions, la plus récente en premier
+    for (const [i, v] of (news.history || [{ version: news.version, items: news.items }]).entries()) {
+      box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, 'Version ' + v.version));
+      for (const [t, d] of v.items) box.append(el('li', {}, el('b', {}, t), el('span', {}, d)));
+    }
     $('#sheetNews').hidden = false;
     try { localStorage.setItem('cortege-news', news.version); } catch {}
   }
@@ -1874,7 +1902,7 @@
   let returning = false; try { returning = !!localStorage.getItem('cortege-seen'); } catch {}
   loadNews().then(n => {
     if (!n) return;
-    $('#newsVersion').textContent = 'Version ' + n.version;
+    $('#newsVersion').textContent = 'Version ' + (cfg.version || n.version);
     let seen = null; try { seen = localStorage.getItem('cortege-news'); } catch {}
     if (seen === n.version) return;
     if (!returning) { try { localStorage.setItem('cortege-news', n.version); } catch {} return; }

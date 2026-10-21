@@ -528,3 +528,8 @@ body.contrast .leaflet-container { filter: contrast(1.15); }
 .push-test button { width: 100%; }
 .pop-edit { display: grid; gap: 6px; margin-top: 6px; }
 .pop-edit select, .pop-edit input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font: inherit; }
+
+/* ---- 2.3 : nouveautés par version, choix des lieux ---- */
+.news li.news-v { background: none; border: 0; padding: 4px 2px 0; font-weight: 700; color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+.news li.news-v.old { margin-top: 10px; color: var(--muted); }
+#poiList { display: flex; flex-direction: column; }

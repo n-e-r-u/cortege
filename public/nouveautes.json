@@ -1,10 +1,78 @@
 {
-  "version": "2.2",
+  "version": "2.3",
   "items": [
-    ["🏛 Lieux sur la carte", "Préfectures, mairies, commissariats, tribunaux, hôpitaux, et au zoom rue les pharmacies et les points d’eau. Puce « Lieux » pour les afficher ou les masquer."],
-    ["🔔 Tester tes notifications", "Dans le menu 🔔, « Recevoir une notification de test » : le serveur t’en envoie une vraie, comme pendant une manif."],
-    ["✓ Signalements des orgas", "Un signalement fait par une orga confirmée est vérifié d’office et reste affiché plus longtemps."],
-    ["📶 Moins de faux « hors ligne »", "En revenant dans l’appli, elle se reconnecte au lieu d’afficher « hors ligne »."],
-    ["📣 Journées de mobilisation", "Les grandes journées sont annoncées la veille au soir et affichées en haut de la carte le jour J."]
+    [
+      "🗺 Carte d’un créneau",
+      "Sur chaque bilan de manif (menu, « Bilans »), choisis un lieu et une plage horaire : une image avec les signalements de ce moment-là, à télécharger ou partager."
+    ],
+    [
+      "⊘ Les retraits restent visibles",
+      "Dans ces images, un signalement retiré ou contesté reste affiché, en rond vide, avec la mention de qui l’a retiré."
+    ],
+    [
+      "🏛 Choisis tes lieux",
+      "Touche la puce « Lieux » : préfectures, mairies, commissariats, tribunaux, hôpitaux, pharmacies, eau potable, type par type. Ils apparaissent en zoomant."
+    ]
+  ],
+  "history": [
+    {
+      "version": "2.3",
+      "items": [
+        [
+          "🗺 Carte d’un créneau",
+          "Sur chaque bilan de manif (menu, « Bilans »), choisis un lieu et une plage horaire : une image avec les signalements de ce moment-là, à télécharger ou partager."
+        ],
+        [
+          "⊘ Les retraits restent visibles",
+          "Dans ces images, un signalement retiré ou contesté reste affiché, en rond vide, avec la mention de qui l’a retiré."
+        ],
+        [
+          "🏛 Choisis tes lieux",
+          "Touche la puce « Lieux » : préfectures, mairies, commissariats, tribunaux, hôpitaux, pharmacies, eau potable, type par type. Ils apparaissent en zoomant."
+        ]
+      ]
+    },
+    {
+      "version": "2.2",
+      "items": [
+        [
+          "🏛 Lieux sur la carte",
+          "Préfectures, mairies, commissariats, tribunaux, hôpitaux, et au zoom rue les pharmacies et les points d’eau. Puce « Lieux » pour les afficher ou les masquer."
+        ],
+        [
+          "🔔 Tester tes notifications",
+          "Dans le menu 🔔, « Recevoir une notification de test » : le serveur t’en envoie une vraie, comme pendant une manif."
+        ],
+        [
+          "✓ Signalements des orgas",
+          "Un signalement fait par une orga confirmée est vérifié d’office et reste affiché plus longtemps."
+        ],
+        [
+          "📶 Moins de faux « hors ligne »",
+          "En revenant dans l’appli, elle se reconnecte au lieu d’afficher « hors ligne »."
+        ],
+        [
+          "📣 Journées de mobilisation",
+          "Les grandes journées sont annoncées la veille au soir et affichées en haut de la carte le jour J."
+        ]
+      ]
+    },
+    {
+      "version": "2.1",
+      "items": [
+        [
+          "🕊 Flèche vers la zone calme",
+          "Quand une zone calme est signalée à moins de 2 km, une flèche t’y guide, même sans réseau."
+        ],
+        [
+          "📊 Bilans des manifs",
+          "Chaque grosse journée a sa page publique : villes, types de signalements, heures. Dans le menu, « Bilans »."
+        ],
+        [
+          "🖨 Affiche à imprimer",
+          "Une affiche A4 avec le QR code de l’appli et les numéros de legal team de ta ville."
+        ]
+      ]
+    }
   ]
 }

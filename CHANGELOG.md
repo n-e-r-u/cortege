@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.13
+
+- Lieux : la puce « Lieux » ouvre un choix type par type (préfectures, mairies, commissariats et gendarmeries, tribunaux, centres de rétention, hôpitaux, pharmacies, eau potable). Ils apparaissent plus près : grands lieux au zoom 14, mairies et commissariats au 15, pharmacies et eau au 16 (noms seulement au plus près).
+- Nouveautés : les dernières versions sont toutes affichées, la plus récente en premier ; le menu indique la version exacte.
+
 ## 2.3.12
 
 - Lieux permanents lus directement dans la carte de France du serveur (fichier PMTiles), dans un fil séparé : plus aucune requête vers Overpass, plus de blocage ni d’attente. Relus automatiquement quand la carte change. Overpass reste utilisé seulement sans carte sur le serveur (ou avec `PLACES_SOURCE=overpass`).
