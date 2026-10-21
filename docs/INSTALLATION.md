@@ -40,7 +40,8 @@ Variables d'environnement :
 | `ACCESS_LOGS` | vide | `none` quand le serveur web ne garde aucun journal d'accès (Caddy par défaut) : les mentions légales le disent |
 | `ONION_HOST` | vide | Adresse .onion de l'instance (affichée dans le menu) |
 | `PUSH_PARALLEL` | `48` | Notifications envoyées en même temps |
-| `PLACES_IMPORT` | `1` | `0` coupe l'import mensuel des lieux permanents depuis OpenStreetMap |
+| `PLACES_IMPORT` | `1` | `0` coupe l'import automatique des lieux permanents (le bouton de l'admin reste disponible) |
+| `PLACES_SOURCE` | auto | `overpass` : lieux pris chez Overpass même si la carte PMTiles est sur le serveur (par défaut, ils sont lus dans la carte) |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |
 | `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 

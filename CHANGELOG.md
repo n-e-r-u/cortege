@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.12
+
+- Lieux permanents lus directement dans la carte de France du serveur (fichier PMTiles), dans un fil séparé : plus aucune requête vers Overpass, plus de blocage ni d’attente. Relus automatiquement quand la carte change. Overpass reste utilisé seulement sans carte sur le serveur (ou avec `PLACES_SOURCE=overpass`).
+- Outil `tools/pmtiles-pois.js` pour inspecter les lieux d’un fichier de carte.
+
 ## 2.3.11
 
 - Lieux permanents : requêtes par valeur exacte (index d’Overpass, bien plus rapide qu’une expression régulière), délai porté à 3 minutes ; une zone trop lente est coupée en quatre, et les zones en échec sont retentées à la fin de l’import.

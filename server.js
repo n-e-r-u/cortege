@@ -1191,9 +1191,51 @@ function placeChunks() {
 const placesStatus = () => { try { return JSON.parse(getMeta('poisimp') || 'null'); } catch { return null; } };
 const placesRun = () => { try { return JSON.parse(getMeta('poisrun') || 'null'); } catch { return null; } };
 let placesRunning = null;
+// Source des lieux : la carte du serveur (fichier PMTiles, aucune requête extérieure) si elle existe, sinon Overpass.
+// PLACES_SOURCE=overpass force Overpass (horaires et téléphones en plus, mais services publics parfois saturés).
+const placesFromMap = () => !!PMTILES && process.env.PLACES_SOURCE !== 'overpass' && fs.existsSync(PMTILES);
+function placesImportMap() {
+  return new Promise((resolve, reject) => {
+    const { Worker } = require('worker_threads');
+    const t0 = Date.now(), run = { t: t0, total: 0, done: 0, n: 0, errs: 0, err: null, src: 'carte' };
+    const save = () => setMeta('poisrun', JSON.stringify(run));
+    save(); console.log('lieux : lecture de la carte du serveur…');
+    const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
+      kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
+      rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
+    const w = new Worker(path.join(__dirname, 'tools', 'pois-worker.js'), { workerData: { file: PMTILES, zones: [] } });
+    let last = 0;
+    w.on('message', m => {
+      if (m.type === 'start') { run.total = m.total; save(); }
+      else if (m.type === 'progress') { run.done = m.done; if (Date.now() - last > 3000) { last = Date.now(); save(); } if (m.done % 50000 === 0) console.log(`lieux : ${m.done}/${m.total} tuiles lues, ${run.n} lieux`); }
+      else if (m.type === 'batch') tx(() => {
+        for (const r of m.rows) {
+          const lat = Math.round(r.lat * 1e5) / 1e5, lng = Math.round(r.lng * 1e5) / 1e5;
+          const id = 'm' + sha(r.kind + '|' + lat + '|' + lng).slice(0, 12);
+          up.run(id, r.kind, lat, lng, poiRg(lat, lng), JSON.stringify(r.name ? { n: r.name } : {}), t0); run.n++;
+        }
+      });
+      else if (m.type === 'done') {
+        // Lieux disparus de la carte (anciens imports compris) : retirés, sauf ceux corrigés ou ajoutés dans l'admin
+        q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
+        setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 0, err: null, ms: Date.now() - t0, src: 'carte' }));
+        q("DELETE FROM meta WHERE k='poisrun'").run();
+        placesPublish();
+        console.log(`lieux : ${run.n} lieux lus dans la carte en ${Math.round((Date.now() - t0) / 1000)} s`);
+        resolve();
+      }
+    });
+    w.on('error', e => { run.err = e.message; run.errs = 1; save(); reject(e); });
+    w.on('exit', code => { if (code) reject(new Error('lecture de la carte interrompue (' + code + ')')); });
+  });
+}
 // Import en plusieurs étapes, repris là où il s'était arrêté si le serveur redémarre (mise à jour, panne)
 async function placesImport(resume = false) {
   if (placesRunning) return placesRunning;
+  if (placesFromMap()) {
+    placesRunning = placesImportMap().catch(e => console.error('lieux', e.message)).finally(() => { placesRunning = null; });
+    return placesRunning;
+  }
   placesRunning = (async () => {
     const chunks = placeChunks(), prev = resume ? placesRun() : null;
     const run = prev && prev.total === chunks.length ? prev : { t: Date.now(), total: chunks.length, done: 0, n: 0, errs: 0, err: null };
@@ -1282,6 +1324,8 @@ function placesMaybe() {
   if (!PLACES_IMPORT || placesRunning || mobToday()) return;
   if (placesRun()) return placesImport(true); // import interrompu (redémarrage) : on reprend
   const last = placesStatus();
+  // Depuis la carte du serveur : relu seulement quand le fichier de carte a changé (nouvelle extraction)
+  if (placesFromMap()) { if (!last || last.src !== 'carte' || fs.statSync(PMTILES).mtimeMs > last.t) placesImport(); return; }
   if (!last || Date.now() - last.t > PLACES_EVERY) placesImport();
 }
 if (PLACES_IMPORT) { setTimeout(placesMaybe, 2 * MIN).unref(); setInterval(placesMaybe, 60 * MIN).unref(); }
@@ -2213,7 +2257,7 @@ const server = http.createServer(async (req, res) => {
         }
         const counts = Object.fromEntries(q('SELECT kind, COUNT(*) n FROM pois WHERE hid=0 GROUP BY kind').all().map(x => [x.kind, x.n]));
         const run = placesRun();
-        return send(res, 200, { kinds: POI_KINDS, counts, last: placesStatus(), running: placesRunning ? run || {} : null, paused: !placesRunning && run ? run : null, auto: PLACES_IMPORT, list: rows.map(poiView) });
+        return send(res, 200, { kinds: POI_KINDS, counts, last: placesStatus(), source: placesFromMap() ? 'carte' : 'overpass', running: placesRunning ? run || {} : null, paused: !placesRunning && run ? run : null, auto: PLACES_IMPORT, list: rows.map(poiView) });
       }
       if (req.method === 'POST' && pathname === '/api/admin/places/import') {
         if (placesRunning) return send(res, 409, { error: 'Import déjà en cours.' });
