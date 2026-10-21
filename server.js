@@ -1967,10 +1967,33 @@ function serveTile(req, res, z, x, y) {
   fetchTile(z, x, y).then(out, () => { if (!res.headersSent) send(res, 502, 'tile upstream'); });
 }
 
+// ---- Protection contre la saturation (sans service extérieur) ----
+// 1. Une même adresse ne peut pas envoyer plus de FLOOD_MAX requêtes par minute à Node (les fichiers live/ servis
+//    par le serveur web ne comptent pas). Large : des centaines de téléphones partagent parfois une adresse d'opérateur.
+// 2. Si Node est débordé (boucle d'événements en retard), il ne garde que l'essentiel : envoyer un signalement,
+//    voter, le temps réel et la santé. Le reste reçoit « réessaie dans 5 s », et les téléphones ont la carte en cache.
+const FLOOD_MAX = Number(process.env.FLOOD_MAX) || 6000;
+const FLOOD = new Map();
+function floodOk(ip, now) {
+  let e = FLOOD.get(ip);
+  if (!e || now - e.t > 60_000) { if (FLOOD.size > 200_000) FLOOD.clear(); FLOOD.set(ip, (e = { t: now, n: 0 })); }
+  return ++e.n <= FLOOD_MAX;
+}
+setInterval(() => { const now = Date.now(); for (const [k, e] of FLOOD) if (now - e.t > 60_000) FLOOD.delete(k); }, 60_000).unref();
+const LAG = require('perf_hooks').monitorEventLoopDelay({ resolution: 20 }); LAG.enable();
+let lagMs = 0;
+setInterval(() => { lagMs = LAG.percentile(99) / 1e6; LAG.reset(); }, 1000).unref();
+const LAG_SHED = Number(process.env.LAG_SHED) || 500;
+const essential = (req, pathname) => pathname === '/api/health' || pathname === '/api/stream'
+  || (req.method === 'POST' && (pathname === '/api/reports' || /^\/api\/reports\/[\w-]{1,16}\/(vote|note)$/.test(pathname)));
+let shedCount = 0, floodCount = 0;
+
 // ---- Routes ----
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const { pathname } = url;
+  if (!floodOk(clientIp(req), Date.now())) { floodCount++; res.writeHead(429, { 'Retry-After': '60', 'Content-Type': 'text/plain' }); return res.end('Trop de requêtes'); }
+  if (lagMs > LAG_SHED && !essential(req, pathname)) { shedCount++; res.writeHead(503, { 'Retry-After': '5', 'Content-Type': 'text/plain' }); return res.end('Serveur chargé, réessaie'); }
   try { settings(); } catch {}
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
@@ -2224,7 +2247,7 @@ const server = http.createServer(async (req, res) => {
           push: { subs: subs.n, urg: subs.urg || 0, near: subs.near || 0, queue: pushQueue.hi.length + pushQueue.lo.length, running: pushRunning,
             since: PSTATS.since, sent: PSTATS.sent, ok: PSTATS.ok, gone: PSTATS.gone, fail: PSTATS.fail, codes: PSTATS.codes, batches: PSTATS.batches.slice(0, 8), lastErr: PSTATS.lastErr || null },
           sys: { disk, mem, load: os.loadavg().map(x => Math.round(x * 100) / 100), cpus: os.cpus().length, uptime: Math.round(process.uptime()), rss: Math.round(process.memoryUsage().rss / 1e6) },
-          version: APP_VERSION });
+          load: { lagMs: Math.round(lagMs), shed: shedCount, flood: floodCount, ips: FLOOD.size }, version: APP_VERSION });
       }
       // --- File de modération : points contestés ou non fiables ---
       if (req.method === 'GET' && pathname === '/api/admin/moderation') {

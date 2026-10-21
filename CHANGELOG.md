@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.14
+
+- Protection contre la saturation, sans service extérieur : pare-feu du noyau prêt à installer (`tools/protection/`, essai de 3 minutes avec retrait automatique), plafond de requêtes par adresse dans Node, et délestage quand Node est débordé (signalements, votes et temps réel passent en priorité). L’onglet Direct affiche le retard de Node et les requêtes refusées.
+- Documentation : réglages Caddy et défense de Tor (preuve de travail) pour l’adresse .onion.
+
 ## 2.3.13
 
 - Lieux : la puce « Lieux » ouvre un choix type par type (préfectures, mairies, commissariats et gendarmeries, tribunaux, centres de rétention, hôpitaux, pharmacies, eau potable). Ils apparaissent plus près : grands lieux au zoom 14, mairies et commissariats au 15, pharmacies et eau au 16 (noms seulement au plus près).

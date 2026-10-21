@@ -171,6 +171,40 @@ http://:8081 {
 
 Sur le site public, ajouter `header Onion-Location http://ADRESSE.onion{uri}` (Tor Browser proposera la version .onion) et `request_header -X-Cortege-Onion` (personne ne peut se faire passer pour Tor). Enfin `ONION_HOST=ADRESSE.onion` dans les variables.
 
+### Résister à la saturation (sans service extérieur)
+
+Aucun intermédiaire de type Cloudflare : il verrait l'adresse IP de chaque visiteur. La protection se fait sur le serveur lui-même, à trois niveaux.
+
+1. **Pare-feu du noyau** (`tools/protection/`) : une adresse qui ouvre des centaines de connexions par seconde est mise de côté 10 minutes, une adresse qui garde des milliers de connexions ouvertes est refusée, et les essais SSH en série sont freinés. Les limites sont larges, car des milliers de téléphones partagent parfois une adresse d'opérateur mobile. Réglages réseau du noyau en plus (protection contre les inondations de demandes de connexion).
+   ```bash
+   sudo sh tools/protection/installer.sh            # essai : tout est retiré seul au bout de 3 minutes
+   sudo sh tools/protection/installer.sh confirmer  # après avoir vérifié qu'une nouvelle connexion SSH passe
+   sudo sh tools/protection/installer.sh retirer
+   ```
+2. **Caddy** : délais courts pour les connexions lentes. En tête du Caddyfile :
+   ```
+   {
+   	servers {
+   		timeouts {
+   			read_header 10s
+   			read_body 30s
+   			idle 2m
+   		}
+   		max_header_size 16KB
+   	}
+   }
+   ```
+3. **Node** : `FLOOD_MAX` requêtes par minute et par adresse au plus (6000 par défaut, les fichiers `live/` ne comptent pas), et, si Node est débordé (retard de plus de `LAG_SHED` ms, 500 par défaut), seul l'essentiel passe : envoyer un signalement, voter, le temps réel. Les téléphones gardent la carte en cache. L'onglet Direct de l'admin montre le retard et les requêtes refusées.
+
+**Adresse .onion** : Tor sait se défendre seul. Dans `/etc/tor/torrc`, sous `HiddenServiceDir`, ajoute :
+```
+HiddenServiceEnableIntroDoSDefense 1
+HiddenServicePoWDefensesEnabled 1
+```
+Pendant une attaque, les navigateurs Tor résolvent un petit calcul avant d'entrer : les vraies visites passent, les robots coûtent cher. L'adresse .onion reste aussi un repli quand l'adresse normale est noyée.
+
+Une attaque par le volume (plus de trafic que la connexion du serveur n'en accepte) ne se règle pas sur le serveur : elle dépend de la protection réseau de l'hébergeur.
+
 ### VPS avec Docker
 
 ```bash
