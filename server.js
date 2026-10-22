@@ -314,6 +314,7 @@ db.exec(`PRAGMA synchronous=NORMAL;
   CREATE INDEX IF NOT EXISTS reports_exp ON reports(exp);
   CREATE TABLE IF NOT EXISTS ann(id TEXT PRIMARY KEY, exp INTEGER, data TEXT);
   CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, status TEXT, src TEXT, start INTEGER, dev TEXT, data TEXT);
+  CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY, status TEXT, end INTEGER, dev TEXT, data TEXT);
   CREATE TABLE IF NOT EXISTS rate(k TEXT PRIMARY KEY, t INTEGER, reports INTEGER DEFAULT 0, votes INTEGER DEFAULT 0);
   CREATE TABLE IF NOT EXISTS hidden(id TEXT PRIMARY KEY, until INTEGER);
   CREATE TABLE IF NOT EXISTS cells(cell TEXT PRIMARY KEY, region TEXT, h TEXT);
@@ -553,6 +554,7 @@ function sweep() {
     for (const r of expired) { archive(r, r.ct ? 'cont' : 'exp'); dirtyCell(r.cell); }
     if (q('DELETE FROM ann WHERE exp<=?').run(now).changes) dirty.ann = true;
     if (q('DELETE FROM events WHERE start<=?').run(now - EVENT_KEEP).changes) dirty.events = true;
+    if (q('DELETE FROM orders WHERE end<=?').run(now).changes) dirty.ord = true;
     q('DELETE FROM rate WHERE t<?').run(now - RATE.windowMs);
     q('DELETE FROM hidden WHERE until<?').run(now);
     q('DELETE FROM trash WHERE t<?').run(now - TRASH_MS);
@@ -562,7 +564,7 @@ function sweep() {
     q('DELETE FROM orga_log WHERE t<?').run(now - ARCHIVE_DAYS * 24 * 60 * MIN);
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
-    if (expired.length || dirty.ann || dirty.events || dirty.global) scheduleFlush(0);
+    if (expired.length || dirty.ann || dirty.events || dirty.ord || dirty.global) scheduleFlush(0);
   } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
 }
 setInterval(sweep, 30_000).unref();
@@ -1608,6 +1610,126 @@ function createEvent(b, orga, dev, ipH) {
 }
 
 
+// ---- Arrêtés et restrictions (interdiction de manif, couvre-feu, transports…) ----
+// N'importe qui peut proposer, avec une source fiable ; seul l'admin valide. La zone est une commune ou un département :
+// son contour officiel est envoyé aux téléphones, qui affichent un bandeau quand on regarde la zone ou qu'on s'y trouve.
+const ORDER_KINDS = [
+  { id: 'manif', glyph: '🚫', label: 'Manifestation interdite' }, { id: 'perimetre', glyph: '⛔', label: 'Périmètre interdit' },
+  { id: 'couvre', glyph: '🌙', label: 'Couvre-feu' }, { id: 'transport', glyph: '🚋', label: 'Transports' },
+  { id: 'consigne', glyph: '⚠', label: 'Consigne' }, { id: 'autre', glyph: 'ℹ', label: 'Information' },
+];
+const ORDER_KIND = Object.fromEntries(ORDER_KINDS.map(k => [k.id, k]));
+// Départements : contours simplifiés (≈ 400 m) d'après france-geojson (IGN, licence ouverte) ; outre-mer : par commune seulement
+const DEPS = (() => {
+  let list = []; try { list = JSON.parse(fs.readFileSync(path.join(__dirname, 'geo', 'departements.json'), 'utf8')); } catch (e) { console.error('départements', e.message); }
+  for (const [c, n] of [['971', 'Guadeloupe'], ['972', 'Martinique'], ['973', 'Guyane'], ['974', 'La Réunion'], ['976', 'Mayotte']]) if (!list.some(d => d.c === c)) list.push({ c, n, b: null, p: null });
+  return list;
+})();
+const depOf = c => DEPS.find(d => d.c === String(c || '').toUpperCase().padStart(2, '0'));
+const GEO_API = process.env.GEO_API || 'https://geo.api.gouv.fr';
+const normName = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+// Simplification d'un contour (Douglas-Peucker), pour garder des fichiers légers
+function simplifyRing(pts, tol) {
+  if (pts.length < 5) return pts;
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+  const st = [[0, pts.length - 1]];
+  while (st.length) {
+    const [a, b] = st.pop(); let md = 0, mi = -1;
+    const [x1, y1] = pts[a], [x2, y2] = pts[b], dx = x2 - x1, dy = y2 - y1, L = dx * dx + dy * dy;
+    for (let i = a + 1; i < b; i++) {
+      const [x, y] = pts[i]; const t = L ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / L)) : 0;
+      const d = Math.hypot(x - (x1 + t * dx), y - (y1 + t * dy)); if (d > md) { md = d; mi = i; }
+    }
+    if (md > tol) { keep[mi] = 1; st.push([a, mi], [mi, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+function geoPoly(g, tol = 0.0004) {
+  const polys = g && g.type === 'Polygon' ? [g.coordinates] : g && g.type === 'MultiPolygon' ? g.coordinates : [];
+  const r = v => Math.round(v * 1e4) / 1e4;
+  const p = polys.map(poly => poly.map(ring => simplifyRing(ring, tol).map(([x, y]) => [r(x), r(y)])).filter(ring => ring.length >= 4)).filter(x => x.length);
+  if (!p.length) return null;
+  const all = p.flat(2), lat = all.map(x => x[1]), lng = all.map(x => x[0]);
+  return { p, b: [Math.min(...lat), Math.min(...lng), Math.max(...lat), Math.max(...lng)] };
+}
+// Contour officiel d'une commune (API Géo de l'État, appelée par le serveur seulement, à la validation)
+async function communeZone(dep, name, insee) {
+  const f = 'fields=nom,code,codeDepartement,population,contour&format=json';
+  let list;
+  if (/^\d[\dAB]\d{3}$/.test(insee || '')) list = [await getJson(`${GEO_API}/communes/${insee}?${f}`, 15_000)];
+  else list = await getJson(`${GEO_API}/communes?nom=${encodeURIComponent(name)}&codeDepartement=${encodeURIComponent(dep)}&boost=population&limit=10&${f}`, 15_000);
+  list = (Array.isArray(list) ? list : []).filter(c => c && c.contour);
+  const c = list.find(c => normName(c.nom) === normName(name)) || (insee ? list[0] : null);
+  if (!c) throw new Error(`commune « ${name} » introuvable dans le département ${dep}${list.length ? ` (proches : ${list.slice(0, 3).map(x => x.nom).join(', ')})` : ''}`);
+  const z = geoPoly(c.contour);
+  if (!z) throw new Error('contour de la commune illisible');
+  return { scope: 'commune', name: c.nom, insee: c.code, dep: c.codeDepartement, ...z };
+}
+async function orderZone(o) {
+  const d = depOf(o.dep);
+  if (!d) throw new Error('département inconnu');
+  if (o.commune) return communeZone(d.c, o.commune, o.insee);
+  if (!d.p) throw new Error(`pour ${d.n}, indique la commune`);
+  return { scope: 'dep', name: d.n, insee: null, dep: d.c, p: d.p, b: d.b };
+}
+const getOrder = id => { const x = q('SELECT data FROM orders WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
+function saveOrder(o) { q('INSERT OR REPLACE INTO orders(id,status,end,dev,data) VALUES(?,?,?,?,?)').run(o.id, o.status, o.end, o.dev || null, JSON.stringify(o)); dirty.ord = true; scheduleFlush(); }
+function dropOrder(id) { const n = q('DELETE FROM orders WHERE id=?').run(id).changes; if (n) { dirty.ord = true; scheduleFlush(); } return n > 0; }
+const ordersAll = () => q('SELECT data FROM orders ORDER BY end').all().map(x => JSON.parse(x.data));
+const srcHost = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
+const orderView = o => ({ id: o.id, status: o.status, dep: o.dep, commune: o.commune || '', start: o.start, end: o.end, items: o.items, src: o.src, host: srcHost(o.src),
+  by: o.by, t: o.t, ok: o.ok || null, zone: o.zone ? { scope: o.zone.scope, name: o.zone.name, insee: o.zone.insee, dep: o.zone.dep } : null });
+const ordersLive = now => ordersAll().filter(o => o.status === 'ok' && o.end > now && o.zone)
+  .map(o => ({ id: o.id, start: o.start, end: o.end, items: o.items, src: o.src, host: srcHost(o.src), ok: o.ok, scope: o.zone.scope, name: o.zone.name, dep: o.zone.dep, b: o.zone.b, p: o.zone.p }));
+// Heure de Paris : « 2026-10-24 20:00 », « 2026-10-24T20:00 », ou horodatage en millisecondes
+const whenMs = v => typeof v === 'number' ? v : /^\d{4}-\d{2}-\d{2}([ T]\d{1,2}:\d{2})?$/.test(String(v || '').trim())
+  ? parisMs(String(v).trim().slice(0, 10), String(v).trim().slice(11) || '00:00') : NaN;
+function cleanOrder(b) {
+  const d = depOf(b.dep ?? b.departement);
+  if (!d) return [null, 'Choisis le département.'];
+  const commune = clean(b.commune, 80), insee = clean(b.insee, 5);
+  const start = whenMs(b.start ?? b.debut), end = whenMs(b.end ?? b.fin), now = Date.now();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return [null, 'Indique le début et la fin.'];
+  if (end <= start) return [null, 'La fin doit être après le début.'];
+  if (end <= now) return [null, 'Cette mesure est déjà terminée.'];
+  if (start > now + 60 * 24 * 60 * MIN || end - start > 62 * 24 * 60 * MIN) return [null, 'Dates trop lointaines (2 mois au plus).'];
+  const raw = Array.isArray(b.items ?? b.mesures) ? (b.items ?? b.mesures) : [];
+  const items = raw.slice(0, 8).map(x => Array.isArray(x) ? { k: x[0], text: x[1] } : { k: x && (x.k ?? x.type), text: x && (x.text ?? x.texte) })
+    .map(x => ({ k: Object.hasOwn(ORDER_KIND, String(x.k)) ? String(x.k) : 'autre', text: clean(x.text, 220) })).filter(x => x.text.length >= 3);
+  if (!items.length) return [null, 'Décris au moins une mesure.'];
+  const src = clean(b.src ?? b.source, 400);
+  let u; try { u = new URL(src); } catch {}
+  if (!u || !/^https?:$/.test(u.protocol)) return [null, 'Donne le lien de la source (site de la préfecture, compte officiel ou article de presse).'];
+  return [{ dep: d.c, commune, insee: /^\d[\dAB]\d{3}$/.test(insee) ? insee : '', start, end, items, src: u.href }, null];
+}
+// Proposition (téléphone) : en attente de validation ; admin : publiée tout de suite (après calcul de la zone)
+async function createOrder(b, { admin = false, dev = null, ipH = null } = {}) {
+  const [o, err] = cleanOrder(b);
+  if (err) return [400, { error: err }];
+  const now = Date.now();
+  if (!admin) {
+    if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
+    if (q("SELECT COUNT(*) n FROM orders WHERE status='pending' AND dev=?").get(dev).n >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
+    if (q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n >= 200) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
+    const p = { id: crypto.randomBytes(6).toString('base64url'), ...o, status: 'pending', by: 'Proposition de participant·e', dev, t: now };
+    saveOrder(p);
+    return [201, orderView(p)];
+  }
+  let zone; try { zone = await orderZone(o); } catch (e) { return [400, { error: 'Zone : ' + e.message }]; }
+  const p = { id: crypto.randomBytes(6).toString('base64url'), ...o, zone, status: 'ok', by: 'admin', t: now, ok: now };
+  saveOrder(p);
+  return [201, orderView(p)];
+}
+async function approveOrder(id) {
+  const o = getOrder(id);
+  if (!o) return [404, { error: 'Introuvable.' }];
+  let zone; try { zone = await orderZone(o); } catch (e) { return [400, { error: 'Zone : ' + e.message }]; }
+  const p = { ...o, zone, status: 'ok', ok: Date.now() }; delete p.dev;
+  saveOrder(p);
+  return [200, orderView(p)];
+}
+
+
 // ---- Publication en fichiers statiques ----
 // Node écrit de petits fichiers JSON dans live/ ; sur cPanel, Apache les sert directement aux téléphones.
 // Seuls les morceaux modifiés sont réécrits, au plus une fois par seconde (les changements sont regroupés).
@@ -1646,7 +1768,7 @@ function writeIfChanged(file, str) {
 const FLUSH_MS = Number(process.env.FLUSH_MS) || 1000;
 const ALL_EVERY = 10_000;
 const LIVE_LOCK = path.join(DATA_DIR, 'live.lock');
-const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false, legal: false };
+const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false, legal: false, ord: false };
 let flushTimer = null, lastAll = 0;
 // Publication planifiée. Une demande plus urgente avance le minuteur : un nouveau signalement n'attend
 // jamais les publications espacées (vue nationale toutes les 10 s, ancien index toutes les 5 s).
@@ -1685,7 +1807,7 @@ function writeNational(now) {
 let BUILD = null;
 const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)));
 function writeGlobal(now) {
-  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, ord: getMeta('ordh') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
   // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
   if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
@@ -1697,9 +1819,9 @@ function writeGlobal(now) {
 function flush() {
   flushTimer = null;
   const now = Date.now();
-  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doAll = dirty.all && now - lastAll >= ALL_EVERY;
-  const doGlobal = cells.length || doAnn || doEv || doLegal || doAll || dirty.global;
-  dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.global = false; if (doAll) dirty.all = false;
+  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doOrd = dirty.ord, doAll = dirty.all && now - lastAll >= ALL_EVERY;
+  const doGlobal = cells.length || doAnn || doEv || doLegal || doOrd || doAll || dirty.global;
+  dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = false; if (doAll) dirty.all = false;
   const changed = new Set();
   if (doGlobal) try {
     withLock(() => {
@@ -1716,6 +1838,7 @@ function flush() {
       }
       for (const rg of regions) writeRegion(rg);
       if (doAnn) { const str = JSON.stringify({ a: annActive(now).map(annView) }); writeIfChanged(path.join(LIVE_DIR, 'ann.json'), str); setMeta('annh', h8(str)); }
+      if (doOrd) { const str = JSON.stringify({ o: ordersLive(now) }); writeIfChanged(path.join(LIVE_DIR, 'ord.json'), str); setMeta('ordh', h8(str)); }
       if (doLegal) { const str = JSON.stringify({ l: legalAll().filter(e => e.ok).map(legalView) }); writeIfChanged(path.join(LIVE_DIR, 'legal.json'), str); setMeta('legalh', h8(str)); }
       if (doEv) {
         const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY start LIMIT 3000").all(now - EVENT_KEEP).map(x => evView(JSON.parse(x.data))) });
@@ -1727,12 +1850,12 @@ function flush() {
   } catch (e) {
     // occupé : les changements retournent dans la file, nouvel essai dans une demi-seconde
     cells.forEach(c => dirty.cells.add(c));
-    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doLegal) dirty.legal = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
+    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doLegal) dirty.legal = true; if (doOrd) dirty.ord = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
     if (!isBusy(e)) console.error('publication', e.message);
     return scheduleFlush(500);
   }
   if (dirty.all && !flushTimer) scheduleFlush(Math.max(FLUSH_MS, ALL_EVERY - (Date.now() - lastAll)));
-  if (doGlobal) streamNotify(changed, doAnn || doEv || doLegal || dirty.global);
+  if (doGlobal) streamNotify(changed, doAnn || doEv || doLegal || doOrd || dirty.global);
 }
 // Tout republier (démarrage, purge) : chaque case active, chaque fichier existant, annonces, agenda.
 function rebuildAll() {
@@ -1741,7 +1864,7 @@ function rebuildAll() {
   q('SELECT cell FROM cells').all().forEach(x => all.add(x.cell));
   try { fs.readdirSync(path.join(LIVE_DIR, 'c')).forEach(f => f.endsWith('.json') && all.add(f.slice(0, -5))); } catch {}
   all.forEach(c => dirty.cells.add(c));
-  dirty.ann = dirty.events = dirty.legal = dirty.global = dirty.all = true; lastAll = 0;
+  dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = dirty.all = true; lastAll = 0;
   clearTimeout(flushTimer); flushTimer = null;
   flush();
   ensureRegions();
@@ -2164,7 +2287,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && pathname === '/api/config')
       { const S = settings(), banner = bannerNow();
       return send(res, 200, { event: banner || EVENT_NAME, banner: !!banner, center: S.view ? [S.view.lat, S.view.lng] : CENTER, zoom: S.view ? S.view.zoom : ZOOM,
-        alertRadius: S.alertRadius || 300, nearKm: nearKm(), poiKinds: POI_KINDS, cfgh: cfgHash(),
+        alertRadius: S.alertRadius || 300, nearKm: nearKm(), poiKinds: POI_KINDS, orderKinds: ORDER_KINDS, deps: DEPS.map(d => [d.c, d.n]), cfgh: cfgHash(),
         brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
 
     // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
@@ -2325,7 +2448,7 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { paused: pausedUntil(now),
           reports: activeReports(now).map(publicView),
           announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
-          pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length,
+          pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length, ordersPending: q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n,
           pushSubs: pushCount(), moderation: q('SELECT COUNT(*) n FROM reports WHERE exp>? AND (ct>0 OR fl=-1)').get(now).n, toPublish: mobsToPublish(now) });
       }
       // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---
@@ -2512,6 +2635,26 @@ const server = http.createServer(async (req, res) => {
         await legalWatch(true);
         return send(res, 200, { done: true });
       }
+      // --- Arrêtés : propositions à valider, publiés, import d'un bloc préparé ---
+      if (req.method === 'GET' && pathname === '/api/admin/orders') return send(res, 200, { orders: ordersAll().map(orderView), kinds: ORDER_KINDS, deps: DEPS.map(d => [d.c, d.n]) });
+      if (req.method === 'POST' && pathname === '/api/admin/orders') {
+        const out = await createOrder(await readJson(req, 16384), { admin: true });
+        if (out[0] < 300) orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'arrêté publié', { ref: out[1].id, detail: out[1].zone && out[1].zone.name });
+        return send(res, ...out);
+      }
+      if (req.method === 'POST' && pathname === '/api/admin/orders/import') {
+        const b = await readJson(req, 65536);
+        let list; try { list = JSON.parse(String(b.text || '')); } catch { return send(res, 400, { error: 'Bloc illisible : colle-le en entier, du premier [ au dernier ].' }); }
+        if (list && !Array.isArray(list)) list = list.arretes || list.orders || [list];
+        if (!Array.isArray(list) || !list.length || list.length > 30) return send(res, 400, { error: 'Le bloc doit contenir entre 1 et 30 arrêtés.' });
+        const results = [];
+        for (const x of list) { const [st, out] = await createOrder(x || {}, { admin: true }); results.push(st < 300 ? { ok: true, name: out.zone.name, id: out.id } : { ok: false, error: out.error, name: (x && (x.commune || x.departement || x.dep)) || '?' }); }
+        orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'arrêtés importés', { detail: `${results.filter(r => r.ok).length} / ${results.length}` });
+        return send(res, 200, { results });
+      }
+      const ordAct = pathname.match(/^\/api\/admin\/orders\/([\w-]{1,16})(\/approve)?$/);
+      if (ordAct && req.method === 'POST' && ordAct[2]) return send(res, ...await approveOrder(ordAct[1]));
+      if (ordAct && req.method === 'DELETE' && !ordAct[2]) return dropOrder(ordAct[1]) ? send(res, 200, { ok: true }) : send(res, 404, { error: 'Introuvable.' });
       // --- Agenda : propositions à valider + événements publiés ---
       if (req.method === 'GET' && pathname === '/api/admin/events') {
         return send(res, 200, { events: listEvents().map(evView) });
@@ -2762,6 +2905,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Agenda : une orga publie directement, un·e participant·e propose (validé ensuite par l'admin)
+    // Proposer un arrêté ou une restriction (validé par l'admin avant d'apparaître)
+    if (req.method === 'POST' && pathname === '/api/orders') return send(res, ...await createOrder(await readJson(req, 8192), { dev: deviceHash(req), ipH: clientHash(req) }));
+
     if (req.method === 'POST' && pathname === '/api/events') {
       const b = await readJson(req, 16384);
       const orga = req.headers['x-orga-key'] ? orgaOf(req) : null;

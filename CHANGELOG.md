@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.4.4
+
+- Arrêtés et restrictions : interdiction de manifester, périmètre interdit, couvre-feu, transports, consignes. Un bandeau s’affiche quand on regarde la zone (commune ou département, contour officiel) ou qu’on s’y trouve ; il donne les dates, chaque mesure et la source. Menu « Arrêtés » : ceux d’ici d’abord, puis le reste de la France, et « Voir la zone sur la carte ».
+- N’importe qui peut signaler un arrêté depuis l’appli, avec une source obligatoire ; seul l’admin valide. Onglet Admin « Arrêtés » : validation, publication directe, import d’un bloc préparé (JSON), retrait. Les arrêtés disparaissent tout seuls à la fin.
+- Contours : départements de métropole livrés avec l’appli (`geo/departements.json`, simplifiés d’après france-geojson, données IGN sous licence ouverte) ; communes demandées par le serveur à l’API Géo de l’État au moment de la validation (`GEO_API`). Outre-mer : par commune.
+
 ## 2.4.3
 
 - Robustesse : plus de 3 000 requêtes aux données absurdes envoyées sur toutes les adresses du serveur, sans plantage. Un corps de requête qui n’est pas un objet JSON est refusé proprement.

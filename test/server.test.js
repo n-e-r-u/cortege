@@ -11,24 +11,32 @@ const { DatabaseSync } = require('node:sqlite');
 
 const ADMIN = 'admin-key-for-tests-123';
 const ROOT = path.join(__dirname, '..');
-let srv, B, DIR, db, n = 0;
+let srv, B, DIR, db, n = 0, geo;
 const B_URL = p => B + p;
 
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-'));
   fs.writeFileSync(DIR + '/carte.pmtiles', require('./pmtiles-fixture').writePmtiles([
     { z: 13, x: 4182, y: 2994, data: Buffer.from('tuile-montpellier') }, { z: 0, x: 0, y: 0, data: Buffer.from('monde') }]));
+  // Faux service de contours des communes (API Géo)
+  const mtp = { nom: 'Montpellier', code: '34172', codeDepartement: '34', population: 300000, contour: { type: 'Polygon', coordinates: [[[3.80, 43.56], [3.94, 43.56], [3.94, 43.66], [3.80, 43.66], [3.80, 43.56]]] } };
+  geo = require('node:http').createServer((req, res) => {
+    const u = new URL(req.url, 'http://x'); res.setHeader('content-type', 'application/json');
+    if (u.pathname === '/communes') return res.end(JSON.stringify(/montpellier/i.test(u.searchParams.get('nom')) && u.searchParams.get('codeDepartement') === '34' ? [mtp] : []));
+    res.statusCode = 404; res.end('{}');
+  }).listen(0);
+  await new Promise(r => geo.on('listening', r));
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', TILE_PMTILES: DIR + '/carte.pmtiles' },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
   await new Promise(r => setTimeout(r, 400));
   db = new DatabaseSync(DIR + '/d/cortege.db'); db.exec('PRAGMA busy_timeout=5000');
 });
-after(() => { try { db.close(); } catch {} srv.kill(); fs.rmSync(DIR, { recursive: true, force: true }); });
+after(() => { try { db.close(); } catch {} srv.kill(); geo.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
 
 // Un « téléphone » = un identifiant + un réseau
 const phone = (net = '81.0.' + (n % 250) + '.' + (++n % 250)) => ({ dev: ('dev' + n + 'x').padEnd(24, 'x'), ip: net });
@@ -476,6 +484,34 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
     assert.deepEqual(main3.map(x => x[1]).sort(), ['cra', 'mairie']);
     assert.ok(JSON.parse(fs.readFileSync(D2 + '/l/g.json', 'utf8')).pois);
   } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
+});
+
+test('arrêtés : proposition avec source, validation par l’admin, zone officielle, import', async () => {
+  const day = d => new Date(Date.now() + d * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const base = { dep: '34', commune: 'Montpellier', start: day(1) + ' 22:00', end: day(3) + ' 06:00', items: [['manif', 'La manifestation de samedi est interdite.'], ['couvre', 'Couvre-feu des mineurs dès 22 h.']], src: 'https://www.herault.gouv.fr/arrete' };
+  assert.equal((await post('/api/orders', { ...base, src: 'pas un lien' })).s, 400, 'source obligatoire');
+  assert.equal((await post('/api/orders', { ...base, dep: '99' })).s, 400, 'département inconnu');
+  const p = await post('/api/orders', base);
+  assert.equal(p.s, 201); assert.equal(p.j.status, 'pending');
+  const ord = () => JSON.parse(fs.readFileSync(DIR + '/l/ord.json', 'utf8')).o;
+  await new Promise(r => setTimeout(r, 1300));
+  assert.ok(!fs.existsSync(DIR + '/l/ord.json') || !ord().length, 'rien avant validation');
+  const ok = await admin('/api/admin/orders/' + p.j.id + '/approve', {});
+  assert.equal(ok.s, 200); assert.equal(ok.j.zone.name, 'Montpellier'); assert.equal(ok.j.zone.insee, '34172');
+  // Import : département entier (contour livré avec l'appli), commune introuvable refusée, outre-mer sans commune refusé
+  const blk = [{ departement: '34', debut: day(1) + ' 06:00', fin: day(1) + ' 23:00', source: 'https://x.fr/a', mesures: [{ type: 'transport', texte: 'Pas de tram samedi.' }] },
+    { departement: '34', commune: 'Inconnue', debut: day(1) + ' 06:00', fin: day(1) + ' 23:00', source: 'https://x.fr/a', mesures: [{ type: 'autre', texte: 'Test' }] },
+    { departement: '971', debut: day(1) + ' 06:00', fin: day(1) + ' 23:00', source: 'https://x.fr/a', mesures: [{ type: 'autre', texte: 'Test' }] }];
+  const imp = await admin('/api/admin/orders/import', { text: JSON.stringify(blk) });
+  assert.deepEqual(imp.j.results.map(r => r.ok), [true, false, false]);
+  await new Promise(r => setTimeout(r, 1300));
+  const live = ord();
+  assert.deepEqual(live.map(o => o.name).sort(), ['Hérault', 'Montpellier']);
+  const m = live.find(o => o.name === 'Montpellier');
+  assert.equal(m.scope, 'commune'); assert.deepEqual(m.b, [43.56, 3.8, 43.66, 3.94]); assert.equal(m.host, 'herault.gouv.fr');
+  assert.ok(JSON.parse(fs.readFileSync(DIR + '/l/g.json', 'utf8')).ord, 'empreinte dans g.json');
+  const h = live.find(o => o.name === 'Hérault'); assert.equal(h.scope, 'dep'); assert.ok(h.p[0][0].length > 20, 'contour du département');
+  assert.equal((await fetch(B + '/api/admin/orders/' + m.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } })).status, 200);
 });
 
 test('adresses piégées des robots : erreur 400 ou 404, le serveur reste debout', async () => {

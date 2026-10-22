@@ -53,6 +53,7 @@
   <div class="alert" id="alert" hidden role="alert"></div>
   <div class="net-bar" id="netBar" hidden role="status"></div>
   <div class="ann urgent" id="pauseBanner" hidden role="status"><div class="ann-text">Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable.</div></div>
+  <div id="ordBar" hidden></div>
   <div id="anns" class="anns" aria-live="polite"></div>
 </div>
 
@@ -148,6 +149,7 @@
   <div class="tiles">
     <button class="tile tile-rights" id="btnRights"><span class="ico" aria-hidden="true">⚖</span><span><b>Mes droits</b><small>Legal team, garde à vue</small></span></button>
     <button class="tile" id="btnList"><span class="ico" aria-hidden="true">☰</span><span><b>Liste</b><small>Tous les signalements</small></span></button>
+    <button class="tile" id="btnOrders"><span class="ico" aria-hidden="true">🚫</span><span><b>Arrêtés</b><small>Interdictions, couvre-feux</small></span></button>
     <button class="tile" id="btnAgenda"><span class="ico" aria-hidden="true">📅</span><span><b>Agenda</b><small>Prochaines mobilisations</small></span></button>
     <button class="tile bell" id="btnNotif" data-on="0"><span class="ico" aria-hidden="true">🔕</span><span><b>Alertes</b><small id="notifSub">Notifications sur le téléphone</small></span></button>
   </div>
@@ -655,6 +657,50 @@
     </div>
     <label class="check"><input type="checkbox" id="evEnd"> Le dernier point du parcours est la dispersion</label>
     <button class="install" type="submit" id="evSubmit">Publier</button>
+  </form>
+</section>
+
+<!-- Arrêtés et restrictions -->
+<section class="sheet" id="sheetOrd" hidden aria-labelledby="ordTitle">
+  <div class="sheet-head">
+    <h2 id="ordTitle">Arrêtés et restrictions</h2>
+    <button class="x" id="ordClose" aria-label="Fermer">×</button>
+  </div>
+  <div id="ordList"></div>
+  <p class="empty" id="ordEmpty" hidden>Aucun arrêté ni restriction connus en ce moment.</p>
+  <button class="secondary" id="btnOrdPropose">Signaler un arrêté ou un couvre-feu</button>
+  <p class="fine">Annonces des préfectures et des mairies, vérifiées avant d’apparaître. Elles ne remplacent pas le texte officiel : ouvre la source en cas de doute.</p>
+</section>
+
+<section class="sheet" id="sheetOrdNew" hidden aria-labelledby="ordNewTitle">
+  <div class="sheet-head">
+    <h2 id="ordNewTitle">Signaler un arrêté</h2>
+    <button class="x" id="ordNewClose" aria-label="Fermer">×</button>
+  </div>
+  <form id="ordForm" class="orga-form">
+    <div class="row2">
+      <label class="note-label" for="ordDep">Département
+        <select id="ordDep" required></select>
+      </label>
+      <label class="note-label" for="ordCommune">Commune (vide : tout le département)
+        <input id="ordCommune" maxlength="80" placeholder="ex. : Montpellier" autocomplete="off">
+      </label>
+    </div>
+    <div class="row2">
+      <label class="note-label" for="ordStart">À partir de
+        <input id="ordStart" type="datetime-local" required>
+      </label>
+      <label class="note-label" for="ordEnd">Jusqu’à
+        <input id="ordEnd" type="datetime-local" required>
+      </label>
+    </div>
+    <div id="ordItems"></div>
+    <button type="button" class="secondary" id="ordAddItem">Ajouter une mesure</button>
+    <label class="note-label" for="ordSrc">Source (obligatoire)
+      <input id="ordSrc" type="url" maxlength="400" required placeholder="https://www.herault.gouv.fr/…">
+    </label>
+    <p class="fine" style="margin:0">Lien vers le site de la préfecture ou de la mairie, leur compte officiel, ou un article de presse. Sans source fiable, la proposition est refusée.</p>
+    <button class="install" type="submit" id="ordSubmit">Envoyer pour vérification</button>
   </form>
 </section>
 

@@ -2,6 +2,10 @@
   "version": "2.4",
   "items": [
     [
+      "🚫 Arrêtés et couvre-feux",
+      "Manif interdite, couvre-feu, transports coupés : un bandeau s’affiche quand tu regardes la zone concernée ou que tu t’y trouves, avec la source officielle. Tu peux en signaler un depuis le menu « Arrêtés », avec un lien vers la source : il est vérifié avant d’apparaître."
+    ],
+    [
       "📷 Caméras de surveillance",
       "Nouvelle puce « Caméras » : en zoomant au plus près, les caméras qui filment la rue. Rouge : publique. Orange : privée. Le cône montre la direction filmée quand elle est connue. Recensement bénévole d’OpenStreetMap, donc incomplet : une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
     ],
@@ -14,6 +18,10 @@
     {
       "version": "2.4",
       "items": [
+        [
+          "🚫 Arrêtés et couvre-feux",
+          "Manif interdite, couvre-feu, transports coupés : un bandeau s’affiche quand tu regardes la zone concernée ou que tu t’y trouves, avec la source officielle. Tu peux en signaler un depuis le menu « Arrêtés », avec un lien vers la source : il est vérifié avant d’apparaître."
+        ],
         [
           "📷 Caméras de surveillance",
           "Nouvelle puce « Caméras » : en zoomant au plus près, les caméras qui filment la rue. Rouge : publique. Orange : privée. Le cône montre la direction filmée quand elle est connue. Recensement bénévole d’OpenStreetMap, donc incomplet : une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."

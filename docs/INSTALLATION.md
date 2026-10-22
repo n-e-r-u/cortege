@@ -43,6 +43,7 @@ Variables d'environnement :
 | `PLACES_IMPORT` | `1` | `0` coupe l'import automatique des lieux permanents (le bouton de l'admin reste disponible) |
 | `PLACES_SOURCE` | auto | `osm` (copie Geofabrik triée par osmium, par défaut si `osmium` est installé), `carte` (lus dans le fichier PMTiles, sans caméras), `overpass` |
 | `GEOFABRIK_URLS` | France entière | Fichier(s) `.osm.pbf` de Geofabrik à télécharger chaque mois, séparés par des virgules (ex. une seule région pour un petit serveur) |
+| `GEO_API` | geo.api.gouv.fr | API Géo de l'État : contour officiel d'une commune, demandé par le serveur à la validation d'un arrêté |
 | `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |
 | `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |

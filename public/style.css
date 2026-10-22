@@ -538,3 +538,18 @@ body.contrast .leaflet-container { filter: contrast(1.15); }
 .news li.news-v { background: none; border: 0; padding: 4px 2px 0; font-weight: 700; color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
 .news li.news-v.old { margin-top: 10px; color: var(--muted); }
 #poiList { display: flex; flex-direction: column; }
+
+/* Arrêtés et restrictions */
+#ordBar { display: flex; flex-direction: column; }
+.ann.ord { border-color: #f0a020; cursor: pointer; }
+.ann.ord.live { background: color-mix(in srgb, #f0a020 16%, var(--surface)); }
+.ann.ord .ann-text { font-weight: 600; }
+.ord-card { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.ord-card h3 { margin: 0; font-size: 16px; }
+.ord-card .fine { margin: 0; }
+.ord-items { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ord-items li { display: grid; grid-template-columns: 22px 1fr; gap: 6px; overflow-wrap: anywhere; }
+.ord-item { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 8px; margin-bottom: 8px; }
+@media (max-width: 480px) { .ord-item { grid-template-columns: 1fr; } }
+.ann.ord .ann-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ord-card a { color: var(--accent); }

@@ -129,6 +129,11 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .prompt { border-color: var(--accent); }
 .edit-form label { display: flex; flex-direction: column; gap: 4px; } .edit-form input, .edit-form select { width: 100%; }
 .edit-form { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); padding: 8px 0 4px; grid-column: 1 / -1; }
+#panelOrders .orga-form { display: flex; flex-direction: column; gap: 12px; }
+#panelOrders .orga-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+#panelOrders .orga-form input, #panelOrders .orga-form select, #panelOrders .orga-form textarea { width: 100%; box-sizing: border-box; }
+#panelOrders .orga-form textarea { min-height: 120px; font-family: inherit; }
+#panelOrders .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 </style>
 </head>
 <body>
@@ -154,6 +159,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabReports" aria-selected="false" aria-controls="panelReports"><span class="ni" aria-hidden="true">🚨</span>Urgences</button>
     <button class="tab" role="tab" id="tabMod" aria-selected="false" aria-controls="panelMod"><span class="ni" aria-hidden="true">🛡</span>Modération <span id="modBadge"></span></button>
     <button class="tab" role="tab" id="tabAnns" aria-selected="false" aria-controls="panelAnns"><span class="ni" aria-hidden="true">📣</span>Annonces <span id="annBadge"></span></button>
+    <button class="tab" role="tab" id="tabOrders" aria-selected="false" aria-controls="panelOrders"><span class="ni" aria-hidden="true">🚫</span>Arrêtés <span id="ordBadge"></span></button>
     <div class="nav-group" role="presentation">Organiser</div>
     <button class="tab" role="tab" id="tabMobs" aria-selected="false" aria-controls="panelMobs"><span class="ni" aria-hidden="true">🗓</span>Journées <span id="mobBadge"></span></button>
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda"><span class="ni" aria-hidden="true">📅</span>Agenda <span id="pendingBadge"></span></button>
@@ -409,6 +415,45 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     </section>
   </section>
 
+  <section class="panel" id="panelOrders" role="tabpanel" aria-labelledby="tabOrders" hidden>
+    <section class="card">
+      <h2>Propositions à valider</h2>
+      <ul class="org-list" id="ordPending"></ul>
+      <p class="fine">Envoyées depuis l’appli. Ouvre la source et vérifie les dates, la commune et chaque mesure avant de valider : le bandeau s’affiche alors pour toute la zone.</p>
+    </section>
+    <section class="card">
+      <h2>Publier un arrêté</h2>
+      <form class="orga-form" id="ordAdminForm">
+        <div class="row2">
+          <label>Département<select id="oaDep" required></select></label>
+          <label>Commune (vide : tout le département)<input id="oaCommune" maxlength="80" placeholder="ex. : Montpellier"></label>
+        </div>
+        <div class="row2">
+          <label>À partir de<input id="oaStart" type="datetime-local" required></label>
+          <label>Jusqu’à<input id="oaEnd" type="datetime-local" required></label>
+        </div>
+        <label>Mesures (une par ligne, commençant par le type : manif, perimetre, couvre, transport, consigne, autre)
+          <textarea id="oaItems" rows="5" required placeholder="manif: La manifestation du samedi 24 octobre est interdite.&#10;couvre: Couvre-feu pour les mineurs non accompagnés vendredi dès 22 h et samedi dès 20 h.&#10;transport: Pas de tram samedi.&#10;consigne: Commerçants : rentrez les terrasses."></textarea>
+        </label>
+        <label>Source<input id="oaSrc" type="url" maxlength="400" required placeholder="https://www.herault.gouv.fr/…"></label>
+        <div class="controls"><button type="submit">Publier</button></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Importer un bloc préparé</h2>
+      <form class="orga-form" id="ordImportForm">
+        <label>Bloc (JSON)<textarea id="oiText" rows="6" required placeholder='[{"departement": "34", "commune": "Montpellier", "debut": "2026-10-23 22:00", "fin": "2026-10-25 06:00", "source": "https://…", "mesures": [{"type": "manif", "texte": "…"}]}]'></textarea></label>
+        <div class="controls"><button type="submit">Importer et publier</button></div>
+      </form>
+      <p class="fine" id="oiMsg">Relis le bloc avant de l’importer : chaque arrêté est publié tout de suite. Heures de Paris.</p>
+    </section>
+    <section class="card">
+      <h2>Arrêtés publiés</h2>
+      <ul class="org-list" id="ordList"></ul>
+      <p class="fine">Ils disparaissent tout seuls à la fin. La zone est le contour officiel de la commune ou du département.</p>
+    </section>
+  </section>
+
   <section class="panel" id="panelAgenda" role="tabpanel" aria-labelledby="tabAgenda" hidden>
     <section class="card">
       <h2>Propositions à valider</h2>
@@ -595,7 +640,7 @@ if (KEY) login();
 
 const navLabel = b => b.querySelector('.ni').textContent + '  ' + [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings']) {
+  for (const t of ['Orgas', 'Anns', 'Orders', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -721,6 +766,48 @@ async function loadAgenda() {
     }
   }
 }
+
+// ---- Arrêtés et restrictions ----
+let ordKinds = {};
+async function loadOrders() {
+  let d; try { d = await api('/api/admin/orders'); } catch (e) { alertMsg(e.message); return; }
+  ordKinds = Object.fromEntries(d.kinds.map(k => [k.id, k]));
+  if (!$('#oaDep').options.length) { $('#oaDep').append(new Option('Choisir…', '')); d.deps.forEach(([c, n]) => $('#oaDep').append(new Option(c + ' · ' + n, c))); }
+  const pending = d.orders.filter(o => o.status === 'pending'), ok = d.orders.filter(o => o.status === 'ok');
+  $('#ordBadge').textContent = pending.length || '';
+  for (const [ul, list, none] of [[$('#ordPending'), pending, 'Aucune proposition en attente.'], [$('#ordList'), ok, 'Aucun arrêté en cours ou à venir.']]) {
+    ul.textContent = '';
+    if (!list.length) { empty(ul, none); continue; }
+    for (const o of list) {
+      const src = document.createElement('a'); src.href = o.src; src.target = '_blank'; src.rel = 'noopener noreferrer'; src.textContent = 'source : ' + (o.host || 'lien');
+      src.style.cssText = 'color:var(--accent);align-self:center;font-size:13px';
+      const del = btn(o.status === 'pending' ? 'Refuser' : 'Retirer', 'danger');
+      confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/orders/' + o.id, { method: 'DELETE' }); loadOrders(); });
+      const buttons = [src];
+      if (o.status === 'pending') { const okb = btn('Valider'); okb.onclick = async () => { okb.disabled = true; try { await api('/api/admin/orders/' + o.id + '/approve', { method: 'POST', body: '{}' }); alertMsg('Arrêté publié.'); loadOrders(); } catch (err) { alertMsg(err.message); okb.disabled = false; } }; buttons.push(okb); }
+      buttons.push(del);
+      const zone = o.zone ? o.zone.name + (o.zone.scope === 'dep' ? ' (département)' : ` (${o.zone.dep})`) : (o.commune ? o.commune + ' (' + o.dep + ')' : 'département ' + o.dep);
+      ul.append(li(`🚫 ${zone}`, `${when(o.start)} → ${when(o.end)} · ${o.items.map(x => (ordKinds[x.k] || { glyph: 'ℹ' }).glyph + ' ' + x.text).join(' · ')} · ${o.by}`, ...buttons));
+    }
+  }
+}
+$('#tabOrders').onclick = () => { showTab('Orders'); loadOrders(); };
+$('#ordAdminForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const items = $('#oaItems').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const m = l.match(/^(manif|perimetre|couvre|transport|consigne|autre)\s*:\s*(.+)$/i); return m ? { k: m[1].toLowerCase(), text: m[2] } : { k: 'autre', text: l }; });
+  const body = { dep: $('#oaDep').value, commune: $('#oaCommune').value, start: new Date($('#oaStart').value).getTime(), end: new Date($('#oaEnd').value).getTime(), items, src: $('#oaSrc').value };
+  try { await api('/api/admin/orders', { method: 'POST', body: JSON.stringify(body) }); alertMsg('Arrêté publié.'); $('#ordAdminForm').reset(); loadOrders(); } catch (err) { alertMsg(err.message); }
+});
+$('#ordImportForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    const d = await api('/api/admin/orders/import', { method: 'POST', body: JSON.stringify({ text: $('#oiText').value }) });
+    const bad = d.results.filter(r => !r.ok);
+    $('#oiMsg').textContent = `${d.results.length - bad.length} publié(s) sur ${d.results.length}.` + (bad.length ? ' Refusés : ' + bad.map(r => `${r.name} (${r.error})`).join(' ; ') : '');
+    if (!bad.length) $('#oiText').value = '';
+    loadOrders();
+  } catch (err) { alertMsg(err.message); }
+});
 
 // ---- Urgences ----
 let CATS = {};
@@ -1094,7 +1181,7 @@ $('#copy').addEventListener('click', async () => {
 async function loadBadges() {
   try {
     const d = await api('/api/admin/reports'); $('#annBadge').textContent = d.pending || ''; $('#legalBadge').textContent = d.legalAlerts || '';
-    $('#modBadge').textContent = d.moderation || ''; $('#mobBadge').textContent = (d.toPublish || []).length || '';
+    $('#modBadge').textContent = d.moderation || ''; $('#ordBadge').textContent = d.ordersPending || ''; $('#mobBadge').textContent = (d.toPublish || []).length || '';
     pubPrompt(d.toPublish || []);
   } catch {}
 }
