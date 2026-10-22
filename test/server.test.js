@@ -478,6 +478,15 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
   } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
 });
 
+test('adresses piégées des robots : erreur 400 ou 404, le serveur reste debout', async () => {
+  const net = require('node:net'), port = new URL(B).port;
+  for (const u of ['//%5c%2e%2e/%2e%2e/%2e%2e/etc%5cpasswd', '//%5c%2e%2e/etc/passwd/', '/..%2f..%2fd%2fsecret', '//etc/passwd', 'http://evil/x']) {
+    const line = await new Promise(r => { const c = net.connect(port, '127.0.0.1', () => c.write(`GET ${u} HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n`)); let d = ''; c.on('data', x => (d += x)); c.on('close', () => r(d.split('\r\n')[0])); c.on('error', () => r('')); });
+    assert.match(line, /^HTTP\/1\.1 (400|404)/, u);
+  }
+  assert.equal((await fetch(B + '/api/health')).status, 200);
+});
+
 test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('child_process').spawnSync('osmium', ['--version']).status !== 0 && 'osmium absent' }, async () => {
   const http = require('node:http'), { execFileSync } = require('child_process');
   const D2 = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-g-'));

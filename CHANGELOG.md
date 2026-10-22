@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.4.2
+
+- Correctif de sécurité : une adresse piégée envoyée par un robot d’attaque (« //%5c%2e%2e/…/etc/passwd ») faisait planter le serveur à chaque requête ; quelques requêtes suffisaient pour que systemd abandonne et que l’appli reste hors ligne (erreur 502). Ces adresses reçoivent maintenant une erreur 400, et toute erreur imprévue dans une requête est notée dans le journal sans arrêter le serveur.
+
 ## 2.4.1
 
 - Correctif : la page de l’appli n’est plus jamais refusée quand le serveur est chargé (le délestage ne touche plus que les API non vitales et les tuiles), et seulement après 3 secondes de surcharge continue, jamais pendant les 20 secondes qui suivent un démarrage. Avant, un seul pic d’une seconde (démarrage, import des lieux) pouvait renvoyer une erreur 503 à l’ouverture, que le navigateur d’Instagram affiche comme « Page Web non disponible ».

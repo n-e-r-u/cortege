@@ -2109,8 +2109,11 @@ const essential = (req, pathname) => pathname === '/api/health' || pathname === 
 let shedCount = 0, floodCount = 0;
 
 // ---- Routes ----
+// Filet de sécurité : une erreur imprévue dans une requête est notée dans le journal, elle n'arrête plus le serveur
+process.on('unhandledRejection', e => console.error('erreur non gérée :', e && e.stack || e));
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, 'http://x');
+  // Adresse lue sans jamais planter : « //%5c.. » et autres chemins piégés des robots d'attaque donnent une erreur 400
+  let url; try { url = new URL('http://x' + (String(req.url || '/').startsWith('/') ? req.url : '/' + req.url)); } catch { res.writeHead(400, { 'Content-Type': 'text/plain' }); return res.end('Requête invalide'); }
   const { pathname } = url;
   if (!floodOk(clientIp(req), Date.now())) { floodCount++; res.writeHead(429, { 'Retry-After': '60', 'Content-Type': 'text/plain' }); return res.end('Trop de requêtes'); }
   if (shedding() && !essential(req, pathname)) { shedCount++; res.writeHead(503, { 'Retry-After': '5', 'Content-Type': 'text/plain' }); return res.end('Serveur chargé, réessaie'); }
