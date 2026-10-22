@@ -98,7 +98,7 @@ ReadWritePaths=/var/lib/cortege /srv/cortege-live /opt/cortege/app
 UMask=0027
 ```
 
-Cloisonnement supplémentaire (Node ne voit plus que ses dossiers, sans aucun privilège) : `sudo mkdir -p /etc/systemd/system/cortege.service.d && sudo cp tools/systemd/durcissement.conf /etc/systemd/system/cortege.service.d/`, puis `daemon-reload` et redémarrage. La note de `systemd-analyze security cortege` passe d'environ 8,7 à moins de 3.
+Cloisonnement supplémentaire (Node ne voit plus que ses dossiers, sans aucun privilège) : `sudo mkdir -p /etc/systemd/system/cortege.service.d && sudo cp tools/systemd/durcissement.conf /etc/systemd/system/cortege.service.d/`, puis `daemon-reload` et redémarrage. La note de `systemd-analyze security cortege` baisse nettement (8,7 sans ce fichier).
 
 `/etc/caddy/Caddyfile` :
 
