@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.4.3
+
+- Robustesse : plus de 3 000 requêtes aux données absurdes envoyées sur toutes les adresses du serveur, sans plantage. Un corps de requête qui n’est pas un objet JSON est refusé proprement.
+- Admin, onglet Direct : depuis combien de temps le serveur tourne, et la cause du dernier plantage s’il y en a eu un dans la semaine (gardée avant que systemd relance le serveur).
+
 ## 2.4.2
 
 - Correctif de sécurité : une adresse piégée envoyée par un robot d’attaque (« //%5c%2e%2e/…/etc/passwd ») faisait planter le serveur à chaque requête ; quelques requêtes suffisaient pour que systemd abandonne et que l’appli reste hors ligne (erreur 502). Ces adresses reçoivent maintenant une erreur 400, et toute erreur imprévue dans une requête est notée dans le journal sans arrêter le serveur.

@@ -1826,7 +1826,7 @@ function readJson(req, max = 2048) {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
     req.on('data', c => { size += c.length; if (size > max) { reject(new Error('too large')); req.destroy(); } else chunks.push(c); });
-    req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); } catch { reject(new Error('bad json')); } });
+    req.on('end', () => { let v; try { v = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { return reject(new Error('bad json')); } v && typeof v === 'object' && !Array.isArray(v) ? resolve(v) : reject(new Error('bad json')); });
     req.on('error', reject);
   });
 }
@@ -2111,6 +2111,12 @@ let shedCount = 0, floodCount = 0;
 // ---- Routes ----
 // Filet de sécurité : une erreur imprévue dans une requête est notée dans le journal, elle n'arrête plus le serveur
 process.on('unhandledRejection', e => console.error('erreur non gérée :', e && e.stack || e));
+// Plantage vraiment imprévu : la cause est gardée pour l'onglet Direct de l'admin, puis systemd relance le serveur
+process.on('uncaughtException', e => {
+  console.error('plantage :', e && e.stack || e);
+  try { setMeta('crash', JSON.stringify({ t: Date.now(), msg: String(e && e.message || e).slice(0, 200), at: String(e && e.stack || '').split('\n')[1]?.trim().slice(0, 160) || '' })); } catch {}
+  process.exit(1);
+});
 const server = http.createServer(async (req, res) => {
   // Adresse lue sans jamais planter : « //%5c.. » et autres chemins piégés des robots d'attaque donnent une erreur 400
   let url; try { url = new URL('http://x' + (String(req.url || '/').startsWith('/') ? req.url : '/' + req.url)); } catch { res.writeHead(400, { 'Content-Type': 'text/plain' }); return res.end('Requête invalide'); }
@@ -2370,7 +2376,7 @@ const server = http.createServer(async (req, res) => {
           push: { subs: subs.n, urg: subs.urg || 0, near: subs.near || 0, queue: pushQueue.hi.length + pushQueue.lo.length, running: pushRunning,
             since: PSTATS.since, sent: PSTATS.sent, ok: PSTATS.ok, gone: PSTATS.gone, fail: PSTATS.fail, codes: PSTATS.codes, batches: PSTATS.batches.slice(0, 8), lastErr: PSTATS.lastErr || null },
           sys: { disk, mem, load: os.loadavg().map(x => Math.round(x * 100) / 100), cpus: os.cpus().length, uptime: Math.round(process.uptime()), rss: Math.round(process.memoryUsage().rss / 1e6) },
-          load: { lagMs: Math.round(lagMs), shed: shedCount, flood: floodCount, ips: FLOOD.size }, version: APP_VERSION });
+          load: { lagMs: Math.round(lagMs), shed: shedCount, flood: floodCount, ips: FLOOD.size }, crash: (() => { try { return JSON.parse(getMeta('crash') || 'null'); } catch { return null; } })(), up: Math.round(process.uptime()), version: APP_VERSION });
       }
       // --- File de modération : points contestés ou non fiables ---
       if (req.method === 'GET' && pathname === '/api/admin/moderation') {

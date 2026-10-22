@@ -1274,6 +1274,8 @@ async function loadLive() {
     ['Charge (1, 5, 15 min)', sy.load.join(' · ') + ` pour ${sy.cpus} cœurs`],
     ['Mémoire libre', sy.mem ? `${sy.mem.free} % (${fmtN(sy.mem.mb)} Mo)` : '—'], ['Mémoire de Cortège', sy.rss + ' Mo'],
     ['Disque libre', sy.disk ? `${sy.disk.free} % (${String(sy.disk.gb).replace('.', ',')} Go)` : '—'],
+    ['Serveur', (d.up != null ? `en marche depuis ${d.up < 3600 ? Math.round(d.up / 60) + ' min' : d.up < 172800 ? Math.round(d.up / 3600) + ' h' : Math.round(d.up / 86400) + ' j'}` : '—')
+      + (d.crash && Date.now() - d.crash.t < 7 * 864e5 ? ` · ⚠ dernier plantage le ${dayFr(d.crash.t)} à ${hhmm(d.crash.t)} : ${d.crash.msg}${d.crash.at ? ' (' + d.crash.at + ')' : ''}` : '')],
     ['Retard de Node', d.load ? `${d.load.lagMs} ms` + (d.load.lagMs > 500 ? ' (surchargé : seul l’essentiel passe)' : '') : '—'],
     ['Refusées depuis le démarrage', d.load ? `${fmtN(d.load.shed)} par surcharge · ${fmtN(d.load.flood)} rafales d’une même adresse` : '—'],
   ]);
