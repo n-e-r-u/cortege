@@ -222,7 +222,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <p class="fine" id="plState">—</p>
       <div class="bars" id="plCounts"></div>
       <div class="controls" style="margin-top:12px"><button type="button" id="plImport">Mettre à jour depuis OpenStreetMap</button></div>
-      <p class="fine">Les lieux sont lus dans la carte de France du serveur (données OpenStreetMap), sans aucune requête extérieure, à chaque nouvelle carte. Sans carte sur le serveur, ils viennent d’OpenStreetMap (Overpass) tous les 30 jours. Les lieux corrigés ou ajoutés ici sont gardés aux mises à jour ; un lieu masqué reste masqué.</p>
+      <p class="fine">Les lieux et les caméras de surveillance viennent d’une copie complète d’OpenStreetMap (Geofabrik, environ 4,5 Go pour la France), téléchargée une fois par mois puis triée sur le serveur avec osmium : un simple téléchargement de fichier, sans API. Le gros fichier est effacé juste après. Sans osmium, les lieux sont lus dans la carte du serveur (sans caméras), ou à défaut demandés à Overpass. Les lieux corrigés ou ajoutés ici sont gardés aux mises à jour ; un lieu masqué reste masqué.</p>
     </section>
     <section class="card">
       <h2>Chercher, corriger, masquer</h2>
@@ -1345,21 +1345,26 @@ async function loadPlaces(search = false) {
   }
   const L0 = d.last;
   const R0 = d.running || d.paused;
-  $('#plState').textContent = d.running && R0.src === 'carte' ? `Lecture de la carte du serveur : ${fmtN(R0.done || 0)} / ${R0.total ? fmtN(R0.total) : '?'} morceaux de carte (${R0.total ? Math.floor((R0.done || 0) / R0.total * 100) : 0} %), ${fmtN(R0.n || 0)} lieux trouvés.`
+  const GB = n => (n / 1e9).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' Go';
+  const osmStep = R => R.step === 'téléchargement' ? `téléchargement de la copie d’OpenStreetMap${R.parts > 1 ? ` (${R.part} / ${R.parts})` : ''} : ${GB(R.done || 0)}${R.total ? ' / ' + GB(R.total) + ` (${Math.floor((R.done || 0) / R.total * 100)} %)` : ''}`
+    : R.step === 'extraction' ? 'extraction des lieux et des caméras (quelques minutes, en priorité basse)' : `enregistrement : ${fmtN(R.n || 0)} lieux et caméras`;
+  $('#plState').textContent = d.running && R0.src === 'osm' ? `Mise à jour en cours, ${osmStep(R0)}.`
+    : d.paused && R0.src === 'osm' ? 'Mise à jour interrompue (redémarrage du serveur). Elle recommence toute seule dans les minutes qui suivent, ou avec le bouton.'
+    : d.running && R0.src === 'carte' ? `Lecture de la carte du serveur : ${fmtN(R0.done || 0)} / ${R0.total ? fmtN(R0.total) : '?'} morceaux de carte (${R0.total ? Math.floor((R0.done || 0) / R0.total * 100) : 0} %), ${fmtN(R0.n || 0)} lieux trouvés.`
     : d.running ? `Mise à jour en cours : ${R0.done || 0} / ${R0.total || '?'} zones, ${fmtN(R0.n || 0)} lieux trouvés${R0.errs ? `, ${R0.errs} zone(s) en échec` : ''}.`
       + (R0.cur ? ` Demande en cours à ${R0.cur.host} depuis ${Math.round((Date.now() - R0.cur.since) / 1000)} s.` : '') + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
     : d.paused ? `Mise à jour interrompue à ${R0.done} / ${R0.total} zones (redémarrage du serveur). Elle reprend toute seule dans les minutes qui suivent, ou avec le bouton.` + (R0.err ? ` Dernière erreur : ${R0.err}.` : '')
-    : L0 ? `Dernière mise à jour : ${dayFr(L0.t)} à ${hhmm(L0.t)} · ${fmtN(L0.n)} lieux${L0.src === 'carte' ? ' lus dans la carte du serveur' : ''}${L0.errs ? ` · ${L0.errs} zone(s) en échec (${L0.err || 'serveur OpenStreetMap indisponible'}), relance plus tard` : ''}.`
+    : L0 ? `Dernière mise à jour : ${dayFr(L0.t)} à ${hhmm(L0.t)} · ${fmtN(L0.n)} lieux${L0.src === 'carte' ? ' lus dans la carte du serveur' : L0.src === 'osm' ? ' et caméras, depuis la copie complète d’OpenStreetMap (Geofabrik)' : ''}${L0.errs && L0.src === 'osm' ? ` · échec : ${L0.err}` : L0.errs ? ` · ${L0.errs} zone(s) en échec (${L0.err || 'serveur OpenStreetMap indisponible'}), relance plus tard` : ''}.`
     : 'Pas encore importés.' + (d.auto ? ' Premier import automatique deux minutes après le démarrage.' : '');
   $('#plImport').disabled = !!d.running;
-  $('#plImport').textContent = d.paused ? 'Reprendre la mise à jour' : d.source === 'carte' ? 'Relire les lieux dans la carte du serveur' : 'Mettre à jour depuis OpenStreetMap';
+  $('#plImport').textContent = d.paused ? 'Reprendre la mise à jour' : d.source === 'carte' ? 'Relire les lieux dans la carte du serveur' : d.source === 'osm' ? 'Mettre à jour maintenant (téléchargement de plusieurs Go)' : 'Mettre à jour depuis OpenStreetMap';
   const bars = $('#plCounts'); bars.textContent = '';
   const max = Math.max(1, ...Object.values(d.counts));
   for (const k of d.kinds) {
     const n = d.counts[k.id] || 0, row = document.createElement('div'); row.className = 'bar';
     row.innerHTML = '<span class="lbl"></span><span class="track"><span class="fill"></span></span><span class="n"></span>';
     row.querySelector('.lbl').textContent = k.glyph + ' ' + k.label; row.querySelector('.n').textContent = fmtN(n);
-    row.querySelector('.fill').style.cssText = `width:${n / max * 100}%;--c:${k.grp === 'aide' ? '#3fcf86' : '#9b87e8'}`;
+    row.querySelector('.fill').style.cssText = `width:${n / max * 100}%;--c:${k.grp === 'aide' ? '#3fcf86' : k.grp === 'surv' ? '#e0383e' : '#9b87e8'}`;
     bars.append(row);
   }
   if (search) renderPlaces(d.list);

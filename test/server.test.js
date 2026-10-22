@@ -449,7 +449,7 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
   // Le serveur de test tourne déjà : on lance un second serveur pointé sur le faux Overpass
   const port = 20000 + Math.floor(Math.random() * 20000), B2 = 'http://127.0.0.1:' + port, D2 = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-l-'));
   const s2 = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore', env: { ...process.env, PORT: String(port), DATA_DIR: D2 + '/d', LIVE_DIR: D2 + '/l',
-    ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', OVERPASS_URL: 'http://127.0.0.1:' + fake.address().port + '/api/interpreter', OVERPASS_GAP: '0' } });
+    ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', PLACES_SOURCE: 'overpass', OVERPASS_URL: 'http://127.0.0.1:' + fake.address().port + '/api/interpreter', OVERPASS_GAP: '0' } });
   try {
     for (let i = 0; i < 100; i++) { try { if ((await fetch(B2 + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
     const A = (p, body, method = 'POST') => fetch(B2 + p, { method, headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }).then(async r => ({ s: r.status, j: await r.json() }));
@@ -475,6 +475,44 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
     const main3 = JSON.parse(fs.readFileSync(D2 + '/l/l/45_4.json', 'utf8')).p;
     assert.deepEqual(main3.map(x => x[1]).sort(), ['cra', 'mairie']);
     assert.ok(JSON.parse(fs.readFileSync(D2 + '/l/g.json', 'utf8')).pois);
+  } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
+});
+
+test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('child_process').spawnSync('osmium', ['--version']).status !== 0 && 'osmium absent' }, async () => {
+  const http = require('node:http'), { execFileSync } = require('child_process');
+  const D2 = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-g-'));
+  fs.writeFileSync(D2 + '/t.osm', `<?xml version="1.0" encoding="UTF-8"?><osm version="0.6">
+<node id="1" version="1" lat="48.8660" lon="2.3620"><tag k="man_made" v="surveillance"/><tag k="surveillance" v="public"/><tag k="camera:direction" v="90"/><tag k="camera:type" v="fixed"/><tag k="operator" v="Préfecture de police"/></node>
+<node id="2" version="1" lat="48.8665" lon="2.3625"><tag k="man_made" v="surveillance"/><tag k="surveillance" v="outdoor"/><tag k="camera:direction" v="SW"/></node>
+<node id="3" version="1" lat="48.8667" lon="2.3628"><tag k="man_made" v="surveillance"/><tag k="surveillance" v="indoor"/></node>
+<node id="5" version="1" lat="48.8670" lon="2.3640"><tag k="amenity" v="pharmacy"/><tag k="name" v="Pharmacie"/><tag k="phone" v="01 42 00 00 00"/></node>
+<node id="6" version="1" lat="48.8600" lon="2.3500"><tag k="shop" v="bakery"/></node>
+<node id="10" version="1" lat="48.8640" lon="2.3560"/><node id="11" version="1" lat="48.8640" lon="2.3580"/><node id="12" version="1" lat="48.8656" lon="2.3580"/><node id="13" version="1" lat="48.8656" lon="2.3560"/>
+<way id="100" version="1"><nd ref="10"/><nd ref="11"/><nd ref="12"/><nd ref="13"/><nd ref="10"/><tag k="amenity" v="townhall"/><tag k="name" v="Mairie du 3e"/><tag k="building" v="yes"/></way>
+</osm>`);
+  execFileSync('osmium', ['cat', D2 + '/t.osm', '-o', D2 + '/t.osm.pbf']);
+  const pbf = fs.readFileSync(D2 + '/t.osm.pbf');
+  const fake = http.createServer((req, res) => {
+    if (req.url === '/redir') { res.writeHead(302, { location: '/t.osm.pbf' }); return res.end(); }
+    res.writeHead(200, { 'content-length': pbf.length }); res.end(pbf);
+  }).listen(0);
+  await new Promise(r => fake.on('listening', r));
+  const port = 20000 + Math.floor(Math.random() * 20000), B2 = 'http://127.0.0.1:' + port;
+  const s2 = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore', env: { ...process.env, PORT: String(port), DATA_DIR: D2 + '/d', LIVE_DIR: D2 + '/l',
+    ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', PLACES_SOURCE: 'osm', OSM_MIN_FREE_GB: '0', GEOFABRIK_URLS: 'http://127.0.0.1:' + fake.address().port + '/redir' } });
+  try {
+    for (let i = 0; i < 100; i++) { try { if ((await fetch(B2 + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
+    const A = (p, body, method = 'POST') => fetch(B2 + p, { method, headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }).then(async r => ({ s: r.status, j: await r.json() }));
+    assert.equal((await A('/api/admin/places/import', {})).s, 202);
+    let st; for (let i = 0; i < 100; i++) { st = (await A('/api/admin/places', undefined, 'GET')).j; if (!st.running && st.last) break; await new Promise(r => setTimeout(r, 100)); }
+    assert.equal(st.source, 'osm'); assert.equal(st.last.err, null);
+    assert.deepEqual(st.counts, { cam: 2, mairie: 1, pharma: 1 }, 'caméra intérieure et boulangerie ignorées');
+    const cams = JSON.parse(fs.readFileSync(D2 + '/l/l/48_2-c.json', 'utf8')).p;
+    assert.deepEqual(cams.find(x => x[0] === 'n1'), ['n1', 'cam', 48.866, 2.362, 'Préfecture de police', 1, 90, 'f']);
+    assert.deepEqual(cams.find(x => x[0] === 'n2').slice(5), [0, 225, '']);
+    const main = JSON.parse(fs.readFileSync(D2 + '/l/l/48_2.json', 'utf8')).p;
+    assert.equal(main.length, 1); assert.equal(main[0][0], 'w100'); assert.ok(Math.abs(main[0][2] - 48.8648) < 1e-3, 'centre de la surface');
+    assert.deepEqual(fs.readdirSync(D2 + '/d/osm'), [], 'fichiers téléchargés effacés');
   } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
 });
 

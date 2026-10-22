@@ -510,6 +510,11 @@ body.contrast .leaflet-container { filter: contrast(1.15); }
 
 /* ---- 2.2 : lieux permanents ---- */
 .poi-wrap { background: none; border: 0; }
+/* Caméras de surveillance : rouge publique, orange privée ; cône de la direction filmée */
+.cam { overflow: visible; display: block; }
+.cam-dot { stroke: #fff; stroke-width: 1.5; }
+.cam-pub .cam-dot { fill: #e0383e; } .cam-pub .cam-cone { fill: rgba(224, 56, 62, .22); stroke: rgba(224, 56, 62, .55); stroke-width: 1; }
+.cam-priv .cam-dot { fill: #f08c1a; } .cam-priv .cam-cone { fill: rgba(240, 140, 26, .2); stroke: rgba(240, 140, 26, .5); stroke-width: 1; }
 .poi { position: relative; width: 30px; height: 30px; border-radius: 9px; background: #1c1c20; border: 2px solid #9b87e8;
   display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.55); }
 .poi-aide { border-color: #3fcf86; }

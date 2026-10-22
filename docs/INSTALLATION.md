@@ -41,7 +41,9 @@ Variables d'environnement :
 | `ONION_HOST` | vide | Adresse .onion de l'instance (affichée dans le menu) |
 | `PUSH_PARALLEL` | `48` | Notifications envoyées en même temps |
 | `PLACES_IMPORT` | `1` | `0` coupe l'import automatique des lieux permanents (le bouton de l'admin reste disponible) |
-| `PLACES_SOURCE` | auto | `overpass` : lieux pris chez Overpass même si la carte PMTiles est sur le serveur (par défaut, ils sont lus dans la carte) |
+| `PLACES_SOURCE` | auto | `osm` (copie Geofabrik triée par osmium, par défaut si `osmium` est installé), `carte` (lus dans le fichier PMTiles, sans caméras), `overpass` |
+| `GEOFABRIK_URLS` | France entière | Fichier(s) `.osm.pbf` de Geofabrik à télécharger chaque mois, séparés par des virgules (ex. une seule région pour un petit serveur) |
+| `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |
 | `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 
@@ -112,6 +114,14 @@ carte.exemple.org {
 ```
 
 Caddy ne garde aucun journal d'accès tant qu'on ne lui en demande pas. Ouvrir les ports TCP 80 et 443, et UDP 443 pour HTTP/3. Mise à jour : `cd /opt/cortege/app && sudo -u cortege git pull && systemctl restart cortege`.
+
+### Lieux et caméras de surveillance
+
+```bash
+apt install -y osmium-tool
+```
+
+Avec osmium, le serveur télécharge une fois par mois la copie d'OpenStreetMap de Geofabrik (environ 4,5 Go pour la France), en extrait les lieux et les caméras à basse priorité, puis efface le fichier. Compter environ 6 Go libres pendant l'opération et quelques minutes de calcul. Premier import deux minutes après le redémarrage, ou avec le bouton de l'onglet Lieux de l'admin.
 
 ### Sauvegarde chiffrée
 

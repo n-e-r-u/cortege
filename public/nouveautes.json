@@ -1,20 +1,29 @@
 {
-  "version": "2.3",
+  "version": "2.4",
   "items": [
     [
-      "🗺 Carte d’un créneau",
-      "Sur chaque bilan de manif (menu, « Bilans »), choisis un lieu et une plage horaire : une image avec les signalements de ce moment-là, à télécharger ou partager."
+      "📷 Caméras de surveillance",
+      "Nouvelle puce « Caméras » : en zoomant au plus près, les caméras qui filment la rue. Rouge : publique. Orange : privée. Le cône montre la direction filmée quand elle est connue. Recensement bénévole d’OpenStreetMap, donc incomplet : une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
     ],
     [
-      "⊘ Les retraits restent visibles",
-      "Dans ces images, un signalement retiré ou contesté reste affiché, en rond vide, avec la mention de qui l’a retiré."
-    ],
-    [
-      "🏛 Choisis tes lieux",
-      "Touche la puce « Lieux » : préfectures, mairies, commissariats, tribunaux, hôpitaux, pharmacies, eau potable, type par type. Ils apparaissent en zoomant."
+      "🏛 Lieux plus complets",
+      "Les vraies préfectures et les centres de rétention, avec les horaires, les téléphones et les services d’urgences des hôpitaux quand ils sont connus. Mise à jour chaque mois."
     ]
   ],
   "history": [
+    {
+      "version": "2.4",
+      "items": [
+        [
+          "📷 Caméras de surveillance",
+          "Nouvelle puce « Caméras » : en zoomant au plus près, les caméras qui filment la rue. Rouge : publique. Orange : privée. Le cône montre la direction filmée quand elle est connue. Recensement bénévole d’OpenStreetMap, donc incomplet : une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
+        ],
+        [
+          "🏛 Lieux plus complets",
+          "Les vraies préfectures et les centres de rétention, avec les horaires, les téléphones et les services d’urgences des hôpitaux quand ils sont connus. Mise à jour chaque mois."
+        ]
+      ]
+    },
     {
       "version": "2.3",
       "items": [

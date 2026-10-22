@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.4.0
+
+- Caméras de surveillance (`man_made=surveillance` d’OpenStreetMap) : puce « 📷 Caméras », visibles au zoom 17 et plus. Rouge pour les caméras publiques, orange pour les caméras privées qui filment la rue ; les caméras intérieures sont ignorées. Cône de la direction filmée quand elle est connue, fiche avec l’exploitant et la mention du recensement bénévole. Fichiers séparés `l/<zone>-c.json`, chargés seulement au zoom rue.
+- Lieux et caméras importés depuis une copie complète d’OpenStreetMap (Geofabrik, `GEOFABRIK_URLS`), triée sur le serveur avec osmium, une fois par mois : vraies préfectures, CRA, horaires, téléphones et urgences. Simple téléchargement de fichier, sans API ni quota ; le gros fichier est effacé juste après. Vérifie qu’il reste environ 6 Go libres. Sans osmium, la carte PMTiles puis Overpass restent utilisés.
+- Admin : avancement du téléchargement et de l’extraction, compteur des caméras.
+
 ## 2.3.15
 
 - Protection : l’installeur installe nftables s’il manque (Debian minimal).
