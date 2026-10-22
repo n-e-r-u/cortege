@@ -1288,7 +1288,7 @@ async function placesImportOsm() {
     q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
     setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 0, err: null, ms: Date.now() - t0, src: 'osm' }));
     q("DELETE FROM meta WHERE k='poisrun'").run();
-    placesPublish();
+    await placesPublish();
     console.log(`lieux : ${run.n} lieux et caméras importés en ${Math.round((Date.now() - t0) / 1000)} s`);
   } catch (e) {
     run.err = e.message; run.errs = 1; save(true);
@@ -1415,13 +1415,15 @@ const poiRow = x => { const d = JSON.parse(x.data || '{}');
   const row = [x.id, x.kind, x.lat, x.lng, d.n || '', d.h || '', d.p || '', d.e || d.s || 0];
   while (row.length > 4 && !row[row.length - 1]) row.pop(); return row; };
 // Publie les fichiers de lieux (toutes les régions, ou seulement celles indiquées)
-function placesPublish(regions = null) {
+const placesPublish = (regions = null) => placesPublishRun(regions).catch(e => console.error('lieux : publication', e.message));
+async function placesPublishRun(regions) {
   const dir = path.join(LIVE_DIR, 'l');
   fs.mkdirSync(dir, { recursive: true });
   const rgs = regions ? [...regions] : q('SELECT DISTINCT rg FROM pois').all().map(x => x.rg);
   const street = new Set(POI_KINDS.filter(k => k.street).map(k => k.id)), cams = new Set(POI_KINDS.filter(k => k.cam).map(k => k.id));
   const written = new Set();
   for (const rg of rgs) {
+    if (!regions) await new Promise(go => setImmediate(go)); // publication complète : on rend la main entre deux zones
     const rows = q('SELECT id, kind, lat, lng, data FROM pois WHERE rg=? AND hid=0').all(rg);
     for (const [suffix, list] of [['', rows.filter(x => !street.has(x.kind) && !cams.has(x.kind))], ['-s', rows.filter(x => street.has(x.kind))], ['-c', rows.filter(x => cams.has(x.kind))]]) {
       const f = path.join(dir, rg + suffix + '.json');
@@ -2095,10 +2097,14 @@ function floodOk(ip, now) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, e] of FLOOD) if (now - e.t > 60_000) FLOOD.delete(k); }, 60_000).unref();
 const LAG = require('perf_hooks').monitorEventLoopDelay({ resolution: 20 }); LAG.enable();
-let lagMs = 0;
-setInterval(() => { lagMs = LAG.percentile(99) / 1e6; LAG.reset(); }, 1000).unref();
-const LAG_SHED = Number(process.env.LAG_SHED) || 500;
+let lagMs = 0, lagHigh = 0;
+const LAG_SHED = Number(process.env.LAG_SHED) || 500, BOOT = Date.now();
+// Délestage seulement si Node est débordé plusieurs secondes d'affilée (pas pour un pic isolé : démarrage, import, sauvegarde)
+setInterval(() => { lagMs = LAG.percentile(99) / 1e6; LAG.reset(); lagHigh = lagMs > LAG_SHED && Date.now() - BOOT > 20_000 ? lagHigh + 1 : 0; }, 1000).unref();
+const shedding = () => lagHigh >= 3;
+// Jamais délestés : la page et ses fichiers (peu coûteux, et sans eux l'appli ne s'ouvre pas), les fichiers live, et les actions vitales
 const essential = (req, pathname) => pathname === '/api/health' || pathname === '/api/stream'
+  || (req.method === 'GET' && !pathname.startsWith('/api/') && !pathname.startsWith('/vt/'))
   || (req.method === 'POST' && (pathname === '/api/reports' || /^\/api\/reports\/[\w-]{1,16}\/(vote|note)$/.test(pathname)));
 let shedCount = 0, floodCount = 0;
 
@@ -2107,7 +2113,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const { pathname } = url;
   if (!floodOk(clientIp(req), Date.now())) { floodCount++; res.writeHead(429, { 'Retry-After': '60', 'Content-Type': 'text/plain' }); return res.end('Trop de requêtes'); }
-  if (lagMs > LAG_SHED && !essential(req, pathname)) { shedCount++; res.writeHead(503, { 'Retry-After': '5', 'Content-Type': 'text/plain' }); return res.end('Serveur chargé, réessaie'); }
+  if (shedding() && !essential(req, pathname)) { shedCount++; res.writeHead(503, { 'Retry-After': '5', 'Content-Type': 'text/plain' }); return res.end('Serveur chargé, réessaie'); }
   try { settings(); } catch {}
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');

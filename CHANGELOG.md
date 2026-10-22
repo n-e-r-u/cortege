@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.4.1
+
+- Correctif : la page de l’appli n’est plus jamais refusée quand le serveur est chargé (le délestage ne touche plus que les API non vitales et les tuiles), et seulement après 3 secondes de surcharge continue, jamais pendant les 20 secondes qui suivent un démarrage. Avant, un seul pic d’une seconde (démarrage, import des lieux) pouvait renvoyer une erreur 503 à l’ouverture, que le navigateur d’Instagram affiche comme « Page Web non disponible ».
+- Import des lieux : la publication des fichiers rend la main entre deux zones (pic de 1,3 s ramené à 60 ms sur 200 000 lieux).
+
 ## 2.4.0
 
 - Caméras de surveillance (`man_made=surveillance` d’OpenStreetMap) : puce « 📷 Caméras », visibles au zoom 17 et plus. Rouge pour les caméras publiques, orange pour les caméras privées qui filment la rue ; les caméras intérieures sont ignorées. Cône de la direction filmée quand elle est connue, fiche avec l’exploitant et la mention du recensement bénévole. Fichiers séparés `l/<zone>-c.json`, chargés seulement au zoom rue.
