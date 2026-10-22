@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Cortège · espace presse</title>
+<meta name="description" content="Cortège, la carte en direct des manifs, sans compte et sans pistage : présentation, fonctions, confidentialité, outils pour les rédactions et contact.">
+<meta property="og:title" content="Cortège · espace presse">
+<meta property="og:description" content="La carte en direct des manifs, sans compte et sans pistage. Outils pour les rédactions et contact.">
+<meta property="og:image" content="/og.png">
+<link rel="icon" href="/favicon.png" type="image/png">
+<style>
+:root {
+  --bg: #121214; --surface: #1c1c20; --line: #34343c; --fg: #f2f1f4; --muted: #a3a1ad; --accent: #ec9fa4;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font); }
+main { max-width: 760px; margin: 0 auto; padding: 28px 16px 64px; }
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+header img { width: 52px; height: 52px; object-fit: contain; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.kicker { color: var(--muted); font-size: 14px; margin: 0; }
+h2 { font-size: 19px; margin: 36px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+p, li { color: color-mix(in srgb, var(--fg) 90%, var(--bg)); max-width: 68ch; }
+ul { padding-left: 20px; }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+.lead { font-size: 18px; line-height: 1.55; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin: 14px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.grid .box { margin: 0; }
+.grid b { display: block; margin-bottom: 4px; }
+.grid p { margin: 0; font-size: 15px; }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; font: 700 15px var(--font); text-decoration: none; cursor: pointer;
+  background: linear-gradient(135deg, #ec9fa4, #a191d8 60%, #7d86dc); color: #17121f; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+code, textarea { font: 13px/1.5 ui-monospace, "JetBrains Mono", Menlo, monospace; }
+textarea { width: 100%; min-height: 76px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; resize: vertical; }
+blockquote { margin: 12px 0; padding: 10px 16px; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 12px 12px 0; }
+blockquote p { margin: 0; }
+.fine { color: var(--muted); font-size: 14px; }
+img.og { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/brand/logo.png" alt="" width="52" height="52">
+    <div>
+      <h1>Cortège · espace presse</h1>
+      <p class="kicker">La carte en direct des manifs, sans compte et sans pistage</p>
+    </div>
+  </header>
+
+  <p class="lead">Cortège est une carte collaborative en temps réel pour les manifestations. Les personnes sur place signalent ce qu’elles voient (forces de l’ordre, gaz lacrymogène, nasse, street medics, zones calmes) et tout le monde le voit en quelques secondes, partout en France. L’appli ne demande ni compte, ni numéro, ni e-mail, et ne garde aucune trace de qui signale quoi.</p>
+
+  <div class="btns">
+    <a class="btn" href="/">Ouvrir la carte</a>
+    <a class="btn ghost" href="/manif">Bilans des journées</a>
+    <a class="btn ghost" id="contactTop" href="#contact">Contact presse</a>
+  </div>
+
+  <img class="og" src="/og.png" alt="Cortège, la carte en direct des manifs" width="1200" height="630">
+
+  <h2>En bref</h2>
+  <ul>
+    <li><b>Créé par</b> Neru (@neru sur Instagram), créateur de contenu politique et développeur, seul sur le projet, à Montpellier.</li>
+    <li><b>Lancé</b> en octobre 2026, avant la mobilisation du 17 octobre.</li>
+    <li><b>Gratuit</b>, sans publicité, financé par des dons.</li>
+    <li><b>Code public</b> sous licence AGPL-3.0 : <a href="https://github.com/n-e-r-u/cortege" rel="noopener">github.com/n-e-r-u/cortege</a>.</li>
+    <li><b>Serveur hébergé en Suisse</b>, sans intermédiaire de type Cloudflare, aussi joignable par Tor.</li>
+    <li><b>Web app</b> : s’ouvre dans le navigateur, s’installe sur l’écran d’accueil, rien à télécharger sur un store.</li>
+  </ul>
+
+  <h2>Ce que fait l’appli</h2>
+  <div class="grid">
+    <div class="box"><b>🚨 Signalements en direct</b><p>Forces de l’ordre, charges, gaz, nasses, street medics, zones calmes. Chaque point est confirmé ou contesté par les personnes proches, et expire tout seul.</p></div>
+    <div class="box"><b>🔔 Alertes de proximité</b><p>Vibration propre à chaque danger quand il est signalé tout près, pour réagir sans sortir le téléphone.</p></div>
+    <div class="box"><b>🚫 Arrêtés et couvre-feux</b><p>Interdictions de manifester, périmètres, couvre-feux, transports coupés : un bandeau s’affiche dans la zone concernée, avec sa source.</p></div>
+    <div class="box"><b>⚖ Mes droits</b><p>Numéros des legal teams de la ville la plus proche, conseils en cas d’interpellation, disponibles même sans réseau.</p></div>
+    <div class="box"><b>🆘 SOS</b><p>Un SMS prérempli part vers un proche choisi à l’avance. Le numéro reste sur le téléphone et le message ne passe pas par le serveur.</p></div>
+    <div class="box"><b>📷 Caméras et lieux</b><p>Caméras de surveillance recensées sur OpenStreetMap, préfectures, commissariats, hôpitaux, pharmacies et points d’eau.</p></div>
+    <div class="box"><b>📅 Agenda</b><p>Manifs, blocus et rassemblements à venir, avec leur parcours quand il est connu.</p></div>
+    <div class="box"><b>📶 Réseau saturé</b><p>Mode léger quand le réseau rame, signalements gardés hors ligne et envoyés dès que ça capte.</p></div>
+  </div>
+
+  <h2>Confidentialité</h2>
+  <p>Cortège est conçu pour ne rien savoir de ses utilisateurs, y compris en cas de réquisition.</p>
+  <ul>
+    <li>Aucun compte, aucun numéro de téléphone, aucune adresse e-mail.</li>
+    <li>La position reste sur le téléphone. Le serveur reçoit seulement la zone affichée, arrondie à environ 5 km, et l’endroit d’un signalement quand quelqu’un en fait un.</li>
+    <li>Aucun outil de mesure d’audience ni traceur, aucune ressource chargée chez un tiers.</li>
+    <li>Le détail est public : <a href="/legal.html">mentions légales et confidentialité</a>, et le code.</li>
+  </ul>
+
+  <h2>Pour les rédactions</h2>
+  <h3>Intégrer la carte en direct</h3>
+  <p>La carte peut s’afficher dans un direct ou un article. Remplace les coordonnées par celles de la ville suivie.</p>
+  <textarea id="embedCode" readonly aria-label="Code d’intégration"></textarea>
+  <div class="btns"><button class="btn ghost" type="button" id="copyEmbed">Copier le code</button></div>
+  <h3>Carte d’un créneau</h3>
+  <p>Depuis chaque bilan de journée, l’outil « carte d’un créneau » fabrique une image des signalements autour d’un lieu, sur une plage horaire choisie. Les points retirés ou contestés restent visibles avec la mention. Les signalements viennent des participant·es et ne sont pas tous vérifiés : à recouper avant publication.</p>
+  <div class="btns"><a class="btn ghost" href="/manif">Choisir une journée</a></div>
+
+  <h2>Citations</h2>
+  <blockquote><p>« Une carte des manifs qui connaît ses utilisateurs, c’est un fichier de manifestants qui attend une réquisition. Cortège ne sait rien de toi, c’est le principe de départ. »</p></blockquote>
+  <blockquote><p>« L’info circule déjà dans les cortèges, de bouche à oreille et par messagerie. Cortège la met sur une carte, en quelques secondes, pour que tout le monde puisse se protéger. »</p></blockquote>
+  <p class="fine">Neru, créateur de Cortège.</p>
+
+  <h2>Visuels</h2>
+  <div class="btns">
+    <a class="btn ghost" href="/og.png" download>Visuel de présentation (PNG)</a>
+    <a class="btn ghost" href="/brand/logo.png" download>Logo (PNG)</a>
+  </div>
+  <p class="fine">Libres d’utilisation pour illustrer un article sur Cortège. D’autres captures sur demande.</p>
+
+  <h2 id="contact">Contact presse</h2>
+  <p id="contactMail" hidden>Par e-mail : <a id="contactLink" href="#"></a></p>
+  <p>Sur Instagram : <a href="https://www.instagram.com/neru/" rel="noopener">@neru</a> (messages privés).</p>
+  <p class="fine">Réponse dans la journée en période de mobilisation.</p>
+</main>
+<script src="/presse.js"></script>
+</body>
+</html>

@@ -2262,6 +2262,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && pathname === '/api/stream') return streamOpen(req, res, url);
+    if (req.method === 'GET' && (pathname === '/presse' || pathname === '/presse/')) return serveStatic(req, res, '/presse.html');
     if (req.method === 'GET' && (pathname === '/manif' || pathname === '/manif/')) return sendPage(res, pubIndex(req));
     const pubM = req.method === 'GET' && pathname.match(/^\/manif\/(\d{4}-\d{2}-\d{2})$/);
     if (pubM) { const d = getPub(pubM[1]); return d ? sendPage(res, pubPage(req, d)) : send(res, 404, 'Bilan non publié'); }

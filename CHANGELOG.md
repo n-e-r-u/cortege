@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.4.5
+
+- Espace presse (`/presse`) : présentation, fonctions, confidentialité, code d’intégration de la carte à copier, outil « carte d’un créneau », citations, visuels, contact (adresse lue dans `CONTACT_EMAIL`).
+
 ## 2.4.4
 
 - Arrêtés et restrictions : interdiction de manifester, périmètre interdit, couvre-feu, transports, consignes. Un bandeau s’affiche quand on regarde la zone (commune ou département, contour officiel) ou qu’on s’y trouve ; il donne les dates, chaque mesure et la source. Menu « Arrêtés » : ceux d’ici d’abord, puis le reste de la France, et « Voir la zone sur la carte ».
