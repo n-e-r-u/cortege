@@ -7,6 +7,9 @@
 #   sh tools/protection/installer.sh retirer   → enlève tout
 set -eu
 D=$(cd "$(dirname "$0")" && pwd)
+# Debian minimal : le pare-feu nftables n'est pas toujours installé
+command -v nft >/dev/null 2>&1 || { echo "Installation de nftables…"; apt-get install -y -q nftables >/dev/null; }
+NFT=$(command -v nft)
 case "${1:-essai}" in
   essai)
     nft -c -f "$D/cortege-protection.nft"
@@ -14,7 +17,7 @@ case "${1:-essai}" in
     modprobe nf_conntrack 2>/dev/null || true
     sysctl -q -p /etc/sysctl.d/90-cortege.conf || true
     nft -f "$D/cortege-protection.nft"
-    systemd-run --quiet --unit=cortege-protection-essai --on-active=180 /usr/sbin/nft delete table inet cortege_protection || true
+    systemd-run --quiet --unit=cortege-protection-essai --on-active=180 "$NFT" delete table inet cortege_protection || true
     echo "Règles actives pour 3 minutes. Ouvre une NOUVELLE connexion SSH pour vérifier que tu peux toujours entrer,"
     echo "et vérifie le site. Si tout va bien : sh $0 confirmer"
     ;;

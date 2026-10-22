@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.3.15
+
+- Protection : l’installeur installe nftables s’il manque (Debian minimal).
+
 ## 2.3.14
 
 - Protection contre la saturation, sans service extérieur : pare-feu du noyau prêt à installer (`tools/protection/`, essai de 3 minutes avec retrait automatique), plafond de requêtes par adresse dans Node, et délestage quand Node est débordé (signalements, votes et temps réel passent en priorité). L’onglet Direct affiche le retard de Node et les requêtes refusées.
