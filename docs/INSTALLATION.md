@@ -82,12 +82,16 @@ install -d -o cortege -g caddy -m 2750 /srv/cortege-live
 Service systemd (`/etc/systemd/system/cortege.service`) :
 
 ```ini
+[Unit]
+StartLimitIntervalSec=0
+
 [Service]
 User=cortege
 WorkingDirectory=/opt/cortege/app
 EnvironmentFile=/etc/cortege.env
 ExecStart=/usr/bin/node server.js
 Restart=always
+RestartSec=2
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/var/lib/cortege /srv/cortege-live /opt/cortege/app
