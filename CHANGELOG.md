@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.5.1
+
+- Espace presse aux couleurs NERU : fond pastel, titres en Anton (police hébergée sur le serveur, rien chargé chez Google), cartes façon sticker, chiffres du 17 octobre en grand. L’image de présentation garde ses proportions (elle était étirée).
+
 ## 2.5.0
 
 - Nouvelle navigation : barre d’onglets en bas (Carte, Infos, Signaler, Droits, Plus). « Infos » réunit les arrêtés qui concernent la zone, les annonces des orgas et l’agenda proche, avec une pastille quand il y a quelque chose à lire. « Droits » met la legal team et le SOS en premier. « Plus » regroupe le reste, avec le soutien Ko-fi et le compte Instagram en tête. Le bouton Ko-fi reste visible en haut de la carte.

@@ -11,40 +11,56 @@
 <meta property="og:image" content="/og.png">
 <link rel="icon" href="/favicon.png" type="image/png">
 <style>
+/* Identité NERU : fond pastel, lettrage Anton, cartes « sticker » (contour blanc, ombre dure décalée) */
+@font-face { font-family: Anton; font-weight: 400; font-display: swap; src: url(/vendor/fonts/anton-400.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 400; font-display: swap; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: Inter; font-weight: 700; font-display: swap; src: url(/vendor/fonts/inter-700.woff2) format('woff2'); }
 :root {
-  --bg: #121214; --surface: #1c1c20; --line: #34343c; --fg: #f2f1f4; --muted: #a3a1ad; --accent: #ec9fa4;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color-scheme: dark;
+  --neru-peach: #f6a29c; --neru-mauve: #9576a8; --neru-blue: #3a4db2;
+  --pastel-peach: #fdeceb; --pastel-mauve: #eae4ee; --pastel-blue: #d8dbf0;
+  --white: #ffffff; --shadow: #c9c9c9; --ink: #1c2156; --ink-muted: #4a4f7a;
+  --display: Anton, Impact, "Arial Narrow", sans-serif;
+  --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sticker: 6px -8px 0 0 var(--shadow);
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font); }
-main { max-width: 760px; margin: 0 auto; padding: 28px 16px 64px; }
-header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
-header img { width: 52px; height: 52px; object-fit: contain; }
-h1 { font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
-.kicker { color: var(--muted); font-size: 14px; margin: 0; }
-h2 { font-size: 19px; margin: 36px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
-p, li { color: color-mix(in srgb, var(--fg) 90%, var(--bg)); max-width: 68ch; }
+html { background: var(--pastel-blue); }
+body { margin: 0; min-height: 100vh; color: var(--ink); font: 16px/24px var(--sans);
+  background: linear-gradient(180deg, var(--pastel-peach), var(--pastel-mauve) 45%, var(--pastel-blue)); background-attachment: fixed; }
+main { max-width: 780px; margin: 0 auto; padding: 32px 16px 64px; }
+header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+header img { width: 72px; height: 72px; object-fit: contain; flex: none; }
+h1 { font: 400 clamp(40px, 9vw, 64px)/1 var(--display); text-transform: uppercase; margin: 0; letter-spacing: .01em; }
+.kicker { margin: 6px 0 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
+h2 { font: 400 32px/1.1 var(--display); text-transform: uppercase; margin: 48px 0 16px; }
+h3 { font-size: 16px; margin: 24px 0 8px; }
+p, li { max-width: 68ch; }
 ul { padding-left: 20px; }
-li { margin: 4px 0; }
-a { color: var(--accent); }
-.lead { font-size: 18px; line-height: 1.55; }
-.box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin: 14px 0; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.grid .box { margin: 0; }
-.grid b { display: block; margin-bottom: 4px; }
-.grid p { margin: 0; font-size: 15px; }
-.btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
-.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; font: 700 15px var(--font); text-decoration: none; cursor: pointer;
-  background: linear-gradient(135deg, #ec9fa4, #a191d8 60%, #7d86dc); color: #17121f; }
-.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-code, textarea { font: 13px/1.5 ui-monospace, "JetBrains Mono", Menlo, monospace; }
-textarea { width: 100%; min-height: 76px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; resize: vertical; }
-blockquote { margin: 12px 0; padding: 10px 16px; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 12px 12px 0; }
+li { margin: 6px 0; }
+a { color: var(--neru-blue); font-weight: 700; }
+.lead { font-size: 18px; line-height: 28px; margin: 24px 0; }
+.card { background: var(--white); border-radius: 16px; box-shadow: var(--sticker); padding: 24px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px 16px; margin-top: 8px; }
+.grid .card { margin: 0; padding: 16px 16px 18px; }
+.grid b { display: block; margin-bottom: 4px; font-size: 16px; }
+.grid p { margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border-radius: 16px; border: 0; font: 700 15px var(--sans); text-decoration: none; cursor: pointer;
+  background: var(--neru-blue); color: var(--white); }
+.btn.ghost { background: var(--white); color: var(--neru-blue); box-shadow: var(--sticker); }
+.btn:focus-visible, a:focus-visible { outline: 3px solid var(--neru-blue); outline-offset: 3px; }
+code, textarea { font: 13px/1.5 ui-monospace, Menlo, monospace; }
+textarea { width: 100%; min-height: 84px; background: var(--white); color: var(--ink); border: 2px solid var(--pastel-blue); border-radius: 8px; padding: 12px; resize: vertical; }
+blockquote { margin: 16px 0; padding: 24px; background: var(--white); border-radius: 16px; box-shadow: var(--sticker); font-size: 17px; line-height: 26px; }
 blockquote p { margin: 0; }
-.fine { color: var(--muted); font-size: 14px; }
-img.og { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; }
+.fine { color: var(--ink-muted); font-size: 13px; line-height: 18px; }
+.hero { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 16px; border: 6px solid var(--white); box-shadow: var(--sticker); margin: 24px 0 8px; background: var(--pastel-mauve); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 16px 0; }
+.stat { background: var(--white); border-radius: 16px; box-shadow: var(--sticker); padding: 16px; }
+.stat b { display: block; font: 400 40px/1 var(--display); color: var(--neru-blue); }
+.stat span { font-size: 13px; line-height: 18px; color: var(--ink-muted); }
 </style>
 </head>
 <body>
@@ -65,13 +81,20 @@ img.og { width: 100%; border-radius: 12px; border: 1px solid var(--line); displa
     <a class="btn ghost" id="contactTop" href="#contact">Contact presse</a>
   </div>
 
-  <img class="og" src="/og.png" alt="Cortège, la carte en direct des manifs" width="1200" height="630">
+  <img class="hero" src="/og.png" alt="Cortège, la carte en direct des manifs" width="1200" height="630">
+
+  <h2>Le 17 octobre</h2>
+  <div class="stats">
+    <div class="stat"><b>1 582</b><span>signalements sur la carte</span></div>
+    <div class="stat"><b>982</b><span>sur les forces de l’ordre</span></div>
+    <div class="stat"><b>318</b><span>dangers : gaz, charges, nasses</span></div>
+    <div class="stat"><b>672</b><span>confirmations par d’autres personnes sur place</span></div>
+  </div>
 
   <h2>En bref</h2>
-  <ul>
+  <ul class="card" style="padding-left:40px">
     <li><b>Créé par</b> Neru (@neru sur Instagram), créateur de contenu politique et développeur, seul sur le projet, à Montpellier.</li>
     <li><b>Lancé</b> en octobre 2026, avant la mobilisation du 17 octobre.</li>
-    <li><b>Le 17 octobre</b> : 1 582 signalements sur la carte, dont 982 sur les forces de l’ordre et 318 sur des dangers (gaz, charges, nasses), confirmés 672 fois par d’autres personnes sur place.</li>
     <li><b>Gratuit</b>, sans publicité, financé par des dons.</li>
     <li><b>Code public</b> sous licence AGPL-3.0 : <a href="https://github.com/n-e-r-u/cortege" rel="noopener">github.com/n-e-r-u/cortege</a>.</li>
     <li><b>Serveur hébergé en Suisse</b>, sans intermédiaire de type Cloudflare, aussi joignable par Tor.</li>
@@ -80,14 +103,14 @@ img.og { width: 100%; border-radius: 12px; border: 1px solid var(--line); displa
 
   <h2>Ce que fait l’appli</h2>
   <div class="grid">
-    <div class="box"><b>🚨 Signalements en direct</b><p>Forces de l’ordre, charges, gaz, nasses, street medics, zones calmes. Chaque point est confirmé ou contesté par les personnes proches, et expire tout seul.</p></div>
-    <div class="box"><b>🔔 Alertes de proximité</b><p>Vibration propre à chaque danger quand il est signalé tout près, pour réagir sans sortir le téléphone.</p></div>
-    <div class="box"><b>🚫 Arrêtés et couvre-feux</b><p>Interdictions de manifester, périmètres, couvre-feux, transports coupés : un bandeau s’affiche dans la zone concernée, avec sa source.</p></div>
-    <div class="box"><b>⚖ Mes droits</b><p>Numéros des legal teams de la ville la plus proche, conseils en cas d’interpellation, disponibles même sans réseau.</p></div>
-    <div class="box"><b>🆘 SOS</b><p>Un SMS prérempli part vers un proche choisi à l’avance. Le numéro reste sur le téléphone et le message ne passe pas par le serveur.</p></div>
-    <div class="box"><b>📷 Caméras et lieux</b><p>Caméras de surveillance recensées sur OpenStreetMap, préfectures, commissariats, hôpitaux, pharmacies et points d’eau.</p></div>
-    <div class="box"><b>📅 Agenda</b><p>Manifs, blocus et rassemblements à venir, avec leur parcours quand il est connu.</p></div>
-    <div class="box"><b>📶 Réseau saturé</b><p>Mode léger quand le réseau rame, signalements gardés hors ligne et envoyés dès que ça capte.</p></div>
+    <div class="card"><b>Signalements en direct</b><p>Forces de l’ordre, charges, gaz, nasses, street medics, zones calmes. Chaque point est confirmé ou contesté par les personnes proches, et expire tout seul.</p></div>
+    <div class="card"><b>Alertes de proximité</b><p>Vibration propre à chaque danger quand il est signalé tout près, pour réagir sans sortir le téléphone.</p></div>
+    <div class="card"><b>Arrêtés et couvre-feux</b><p>Interdictions de manifester, périmètres, couvre-feux, transports coupés : un bandeau s’affiche dans la zone concernée, avec sa source.</p></div>
+    <div class="card"><b>Mes droits</b><p>Numéros des legal teams de la ville la plus proche, conseils en cas d’interpellation, disponibles même sans réseau.</p></div>
+    <div class="card"><b>SOS</b><p>Un SMS prérempli part vers un proche choisi à l’avance. Le numéro reste sur le téléphone et le message ne passe pas par le serveur.</p></div>
+    <div class="card"><b>Caméras et lieux</b><p>Caméras de surveillance recensées sur OpenStreetMap, préfectures, commissariats, hôpitaux, pharmacies et points d’eau.</p></div>
+    <div class="card"><b>Agenda</b><p>Manifs, blocus et rassemblements à venir, avec leur parcours quand il est connu.</p></div>
+    <div class="card"><b>Réseau saturé</b><p>Mode léger quand le réseau rame, signalements gardés hors ligne et envoyés dès que ça capte.</p></div>
   </div>
 
   <h2>Confidentialité</h2>
