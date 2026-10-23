@@ -1,0 +1,116 @@
+# Traductions de l'interface : français (clé)	anglais	espagnol	arabe
+# Une ligne par texte, colonnes séparées par une tabulation. Les balises et {valeurs} doivent rester identiques.
+Carte de la manifestation	Protest map	Mapa de la manifestación	خريطة المظاهرة
+Soutenir Cortège sur Ko-fi	Support Cortège on Ko-fi	Apoya a Cortège en Ko-fi	ادعم Cortège على Ko-fi
+Installer l’appli	Install the app	Instalar la app	تثبيت التطبيق
+Chercher une ville	Search for a city	Buscar una ciudad	البحث عن مدينة
+Me localiser	Locate me	Ubicarme	تحديد موقعي
+Ce que montre la carte	What the map shows	Lo que muestra el mapa	ما تعرضه الخريطة
+Espace orga	Organiser space	Espacio de organización	مساحة المنظّمين
+Interpellation : prévenir un proche	Arrested: alert someone close	Detención: avisar a alguien cercano	اعتقال: أبلغ شخصًا مقرّبًا
+Navigation	Navigation	Navegación	التنقّل
+SOS : prévenir un proche	SOS: alert someone close	SOS: avisar a alguien cercano	SOS: أبلغ شخصًا مقرّبًا
+Fermer	Close	Cerrar	إغلاق
+Signalements affichés	Reports shown	Avisos mostrados	البلاغات المعروضة
+ex. : Montpellier, Lyon 7e, place de la République	e.g. Montpellier, Lyon 7e, place de la République	p. ej.: Montpellier, Lyon 7e, place de la République	مثال: Montpellier، Lyon 7e، place de la République
+QR code vers l’appli Cortège	QR code to the Cortège app	Código QR hacia la app Cortège	رمز QR لتطبيق Cortège
+ex. : Legal Team Montpellier	e.g. Legal Team Montpellier	p. ej.: Legal Team Montpellier	مثال: Legal Team Montpellier
+ex. : Montpellier	e.g. Montpellier	p. ej.: Montpellier	مثال: Montpellier
+adresse ou compte publié par le collectif, pas un contact perso	address or account published by the group, not a personal contact	dirección o cuenta publicada por el colectivo, no un contacto personal	عنوان أو حساب تنشره المجموعة، لا جهة اتصال شخصية
+ex. : 2019	e.g. 2019	p. ej.: 2019	مثال: 2019
+ex. : syndicat local	e.g. local union	p. ej.: sindicato local	مثال: نقابة محلية
+ex. : permanence jusqu’à 22 h	e.g. on call until 10 pm	p. ej.: guardia hasta las 22 h	مثال: مناوبة حتى الساعة 22
+Nom affiché, ex. : Legal Team Nîmes	Display name, e.g. Legal Team Nîmes	Nombre visible, p. ej.: Legal Team Nîmes	الاسم المعروض، مثال: Legal Team Nîmes
+Nom de l’orga invitée	Name of the invited organiser	Nombre de la organización invitada	اسم الجهة المدعوّة
+Zone	Area	Zona	المنطقة
+ex. : Blocus lycée Jean-Monnet	e.g. Jean-Monnet high school blockade	p. ej.: Bloqueo instituto Jean-Monnet	مثال: إغلاق ثانوية Jean-Monnet
+ex. : place de la Comédie	e.g. place de la Comédie	p. ej.: place de la Comédie	مثال: place de la Comédie
+ex. : Sam	e.g. Sam	p. ej.: Sam	مثال: سام
+Qui est interpellé·e ?	Who has been arrested?	¿Quién ha sido detenido/a?	من الذي اعتُقل؟
+Ajouter une précision (facultatif)	Add a detail (optional)	Añadir un detalle (opcional)	أضف تفصيلًا (اختياري)
+Cortège <span class="by">par <b class="handle">@neru</b></span>	Cortège <span class="by">by <b class="handle">@neru</b></span>	Cortège <span class="by">por <b class="handle">@neru</b></span>	Cortège <span class="by">من <b class="handle">@neru</b></span>
+<span class="dot"></span><span class="txt">Connexion…</span>	<span class="dot"></span><span class="txt">Connecting…</span>	<span class="dot"></span><span class="txt">Conectando…</span>	<span class="dot"></span><span class="txt">جارٍ الاتصال…</span>
+Soutenir	Support	Apoyar	ادعم
+Mode manif	Protest mode	Modo manifestación	وضع المظاهرة
+Quitter	Exit	Salir	خروج
+Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable.	Reports paused for a few minutes: a wave of fake reports is being cleaned up. You can still view the map.	Avisos en pausa unos minutos: se está limpiando una oleada de avisos falsos. El mapa sigue disponible.	البلاغات متوقفة لبضع دقائق: يجري تنظيف موجة من البلاغات الكاذبة. يمكنك متابعة الاطلاع على الخريطة.
+Touche la carte : le premier point est le rendez-vous, les suivants tracent le parcours (facultatif).	Tap the map: the first point is the meeting place, the next ones draw the route (optional).	Toca el mapa: el primer punto es el lugar de encuentro, los siguientes trazan el recorrido (opcional).	المس الخريطة: النقطة الأولى هي مكان التجمّع، والنقاط التالية ترسم المسار (اختياري).
+Aucun point	No point	Ningún punto	لا توجد نقاط
+↶ Retirer	↶ Undo	↶ Quitar	↶ تراجع
+Effacer	Clear	Borrar	مسح
+Terminé	Done	Hecho	تم
+Carte	Map	Mapa	الخريطة
+Infos	News	Info	أخبار
+Signaler	Report	Avisar	أبلِغ
+Droits	Rights	Derechos	الحقوق
+Plus	More	Más	المزيد
+Signalements	Reports	Avisos	البلاغات
+Sur la carte	On the map	En el mapa	على الخريطة
+Arrêtés et restrictions	Bans and restrictions	Decretos y restricciones	القرارات والقيود
+Tous les arrêtés en France	All bans in France	Todos los decretos en Francia	كل القرارات في فرنسا
+Annonces des orgas	Announcements from organisers	Anuncios de las organizaciones	إعلانات المنظّمين
+Agenda	Calendar	Agenda	المواعيد
+Rien d’annoncé à moins de 50 km.	Nothing announced within 50 km.	Nada anunciado a menos de 50 km.	لا شيء معلن في نطاق 50 كم.
+Tout l’agenda, proposer une manif	Full calendar, suggest a protest	Toda la agenda, proponer una manifestación	كل المواعيد، اقترح مظاهرة
+<span class="ico" aria-hidden="true">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span>	<span class="ico" aria-hidden="true">☰</span><span><b>Reports in this area</b><small>The list, nearest first</small></span>	<span class="ico" aria-hidden="true">☰</span><span><b>Avisos en la zona</b><small>La lista, del más cercano al más lejano</small></span>	<span class="ico" aria-hidden="true">☰</span><span><b>البلاغات في المنطقة</b><small>القائمة، من الأقرب إلى الأبعد</small></span>
+<b>Cortège est gratuit et sans pub.</b> Tes dons servent à l’améliorer.	<b>Cortège is free and ad-free.</b> Your donations help improve it.	<b>Cortège es gratis y sin publicidad.</b> Tus donaciones sirven para mejorarlo.	<b>Cortège مجاني ومن دون إعلانات.</b> تبرعاتك تساعد على تحسينه.
+Qu’est-ce qui se passe ici ?	What’s happening here?	¿Qué pasa aquí?	ماذا يحدث هنا؟
+Place le viseur au bon endroit sur la carte, puis choisis.	Put the crosshair in the right spot on the map, then choose.	Coloca el visor en el lugar correcto del mapa y elige.	ضع المؤشّر في المكان الصحيح على الخريطة، ثم اختر.
+Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class="inline-link" href="/legal.html#regles">Règles</a>	No names, no physical descriptions, no badge numbers. Report situations, not people. <a class="inline-link" href="/legal.html#regles">Rules</a>	Ni nombres, ni descripciones físicas, ni números de placa. Se avisan situaciones, no personas. <a class="inline-link" href="/legal.html#regles">Normas</a>	لا أسماء ولا أوصاف جسدية ولا أرقام تعريف. نبلّغ عن مواقف، لا عن أشخاص. <a class="inline-link" href="/legal.html#regles">القواعد</a>
+En attente de réseau	Waiting for signal	Esperando cobertura	بانتظار الشبكة
+Ces signalements partent dès que ton téléphone capte. S’ils ont dépassé leur durée de vie entre-temps, ils ne sont pas publiés.	These reports are sent as soon as your phone has signal. If they expire in the meantime, they are not published.	Estos avisos se envían en cuanto tu teléfono tenga cobertura. Si caducan mientras tanto, no se publican.	تُرسَل هذه البلاغات فور التقاط هاتفك للشبكة. إذا انتهت صلاحيتها في الأثناء، فلن تُنشر.
+Tout est parti.	Everything has been sent.	Todo se ha enviado.	أُرسل كل شيء.
+Réessayer maintenant	Try again now	Reintentar ahora	أعد المحاولة الآن
+Aller à une ville	Go to a city	Ir a una ciudad	الانتقال إلى مدينة
+Ville, quartier ou adresse	City, neighbourhood or address	Ciudad, barrio o dirección	مدينة أو حيّ أو عنوان
+Signalements dans la zone affichée	Reports in the area shown	Avisos en la zona mostrada	البلاغات في المنطقة المعروضة
+Rien de signalé pour l’instant. Appuie sur « Signaler » pour ajouter le premier point.	Nothing reported yet. Tap “Report” to add the first point.	Nada avisado por ahora. Pulsa «Avisar» para añadir el primer punto.	لا بلاغات حتى الآن. اضغط «أبلِغ» لإضافة أول نقطة.
+Soutenir Cortège	Support Cortège	Apoya a Cortège	ادعم Cortège
+Gratuit, sans pub, sans pistage. Tes dons servent à améliorer le projet.	Free, no ads, no tracking. Your donations help improve the project.	Gratis, sin publicidad, sin rastreo. Tus donaciones sirven para mejorar el proyecto.	مجاني، بلا إعلانات ولا تتبّع. تبرعاتك تساعد على تحسين المشروع.
+Faire un don sur Ko-fi	Donate on Ko-fi	Donar en Ko-fi	تبرّع على Ko-fi
+<b>Suivre <span class="handle">@neru</span> sur Instagram</b><small>Pas un accident. Un système. Une chronique chaque jour.</small>	<b>Follow <span class="handle">@neru</span> on Instagram</b><small>Not an accident. A system. A new video every day (in French).</small>	<b>Sigue a <span class="handle">@neru</span> en Instagram</b><small>No es un accidente. Es un sistema. Una crónica cada día (en francés).</small>	<b>تابع <span class="handle">@neru</span> على Instagram</b><small>ليست صدفة، بل نظام. حلقة جديدة كل يوم (بالفرنسية).</small>
+Suivre	Follow	Seguir	تابِع
+<b>Passer en mode manif</b><small>Carte, Signaler, SOS et legal team. Rien d’autre.</small>	<b>Switch to protest mode</b><small>Map, Report, SOS and legal team. Nothing else.</small>	<b>Pasar al modo manifestación</b><small>Mapa, Avisar, SOS y equipo legal. Nada más.</small>	<b>التحويل إلى وضع المظاهرة</b><small>الخريطة، الإبلاغ، SOS والفريق القانوني. لا شيء غير ذلك.</small>
+Avant de partir	Before you go	Antes de salir	قبل الخروج
+<span class="ico" aria-hidden="true">🎒</span><span><b>Se préparer</b><small>La checklist</small></span>	<span class="ico" aria-hidden="true">🎒</span><span><b>Get ready</b><small>The checklist</small></span>	<span class="ico" aria-hidden="true">🎒</span><span><b>Prepararse</b><small>La lista</small></span>	<span class="ico" aria-hidden="true">🎒</span><span><b>الاستعداد</b><small>قائمة التحقق</small></span>
+<span class="ico" aria-hidden="true">📶</span><span><b>Prêt pour la manif</b><small>Carte et numéros sans réseau</small></span>	<span class="ico" aria-hidden="true">📶</span><span><b>Ready for the protest</b><small>Map and numbers without signal</small></span>	<span class="ico" aria-hidden="true">📶</span><span><b>Listo para la mani</b><small>Mapa y números sin cobertura</small></span>	<span class="ico" aria-hidden="true">📶</span><span><b>جاهز للمظاهرة</b><small>الخريطة والأرقام دون شبكة</small></span>
+Installer l’appli sur mon téléphone	Install the app on my phone	Instalar la app en mi teléfono	ثبّت التطبيق على هاتفي
+Alertes	Alerts	Alertas	التنبيهات
+Notifications, vibrations et voix	Notifications, vibrations and voice	Notificaciones, vibraciones y voz	الإشعارات والاهتزاز والصوت
+Faire grandir Cortège	Help Cortège grow	Haz crecer Cortège	ساعد Cortège على الانتشار
+<b>Partager</b><small>QR code à scanner</small>	<b>Share</b><small>QR code to scan</small>	<b>Compartir</b><small>Código QR para escanear</small>	<b>مشاركة</b><small>رمز QR للمسح</small>
+<span class="ico" aria-hidden="true">🖨</span><span><b>Affiche</b><small>À imprimer pour ta ville</small></span>	<span class="ico" aria-hidden="true">🖨</span><span><b>Poster</b><small>To print for your city</small></span>	<span class="ico" aria-hidden="true">🖨</span><span><b>Cartel</b><small>Para imprimir en tu ciudad</small></span>	<span class="ico" aria-hidden="true">🖨</span><span><b>ملصق</b><small>للطباعة في مدينتك</small></span>
+<span class="ico" aria-hidden="true">🧩</span><span><b>Sur ton site</b><small>Intégrer la carte</small></span>	<span class="ico" aria-hidden="true">🧩</span><span><b>On your website</b><small>Embed the map</small></span>	<span class="ico" aria-hidden="true">🧩</span><span><b>En tu web</b><small>Integrar el mapa</small></span>	<span class="ico" aria-hidden="true">🧩</span><span><b>على موقعك</b><small>تضمين الخريطة</small></span>
+<b>Code ouvert</b><small>Sur GitHub</small>	<b>Open source</b><small>On GitHub</small>	<b>Código abierto</b><small>En GitHub</small>	<b>مفتوح المصدر</b><small>على GitHub</small>
+Legal team, street medics, collectif ?	Legal team, street medics, collective?	¿Equipo legal, street medics, colectivo?	فريق قانوني، مسعفو شارع، مجموعة؟
+Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone.	Become a certified organiser: you’ll be able to verify reports, remove fake ones and post announcements for your area.	Hazte organización certificada: podrás verificar avisos, retirar los falsos y publicar anuncios para tu zona.	كن جهة منظِّمة معتمدة: ستتمكن من التحقق من البلاغات وحذف الكاذبة منها ونشر إعلانات لمنطقتك.
+Demander un accès orga	Request organiser access	Solicitar acceso de organización	اطلب صلاحية المنظِّم
+Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule.	Every request is checked with the group through its public channels. Access is given to the group, never to a single person.	Cada solicitud se verifica con el colectivo a través de sus canales públicos. El acceso se entrega al colectivo, nunca a una sola persona.	يُتحقَّق من كل طلب مع المجموعة عبر قنواتها العلنية. تُمنح الصلاحية للمجموعة، لا لشخص واحد أبدًا.
+Comment ça marche	How it works	Cómo funciona	كيف يعمل
+<b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.	<b>Your location stays on your phone.</b> It is used to centre the map and to alert you. To load reports, the app only asks for those in your area, to within a few kilometres. The points you report are rounded to about ten metres.	<b>Tu ubicación se queda en tu teléfono.</b> Sirve para centrar el mapa y avisarte. Para cargar los avisos, la app solo pide los de tu zona, con unos kilómetros de margen. Los puntos que avisas se redondean a unos diez metros.	<b>موقعك يبقى على هاتفك.</b> يُستخدم لتوسيط الخريطة وتنبيهك. لتحميل البلاغات، لا يطلب التطبيق إلا بلاغات منطقتك بدقة بضعة كيلومترات. وتُقرَّب النقاط التي تبلّغ عنها إلى نحو عشرة أمتار.
+<b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor.	<b>No account.</b> Reports delete themselves when they expire. Like any website, the host may keep connection logs: in sensitive situations, use a VPN or Tor.	<b>Sin cuenta.</b> Los avisos se borran solos al caducar. Como cualquier web, el alojamiento puede guardar registros de conexión: en situaciones delicadas, usa una VPN o Tor.	<b>لا حساب.</b> تُحذف البلاغات تلقائيًا عند انتهاء صلاحيتها. وكأي موقع، قد يحتفظ المستضيف بسجلات الاتصال: في الظروف الحساسة استخدم VPN أو Tor.
+<b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer.	<b>Protesters check reports among themselves.</b> “Still there” extends a point; “Gone” casts doubt on it, then removes it once enough people on site say so. Certified organisers can verify or remove it.	<b>Los avisos se verifican entre manifestantes.</b> «Sigue ahí» prolonga un punto; «Ya no está» lo pone en duda y lo hace desaparecer cuando suficientes personas en el lugar lo dicen. Las organizaciones certificadas pueden verificarlo o retirarlo.	<b>يتحقق المتظاهرون من البلاغات فيما بينهم.</b> «ما زال هنا» يمدّد النقطة، و«لم يعد هنا» يشكّك فيها ثم يخفيها عندما يؤكد ذلك عدد كافٍ من الحاضرين. ويمكن للمنظّمين المعتمدين التحقق منها أو حذفها.
+<b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone.	<b>Network overloaded?</b> Open the app before you leave and tap “Ready for the protest”: your area’s map, legal team numbers and the calendar stay on your phone.	<b>¿Red saturada?</b> Abre la app antes de salir y pulsa «Listo para la mani»: el mapa de tu zona, los números del equipo legal y la agenda se quedan en tu teléfono.	<b>الشبكة مزدحمة؟</b> افتح التطبيق قبل الخروج واضغط «جاهز للمظاهرة»: تبقى خريطة منطقتك وأرقام الفريق القانوني والمواعيد على هاتفك.
+<b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone.	<b>Network overloaded?</b> Before you leave, scroll along the protest route on the map: the map pieces you view stay stored on your phone.	<b>¿Red saturada?</b> Antes de salir, recorre en el mapa el trayecto de la manifestación: los trozos de mapa mostrados se quedan guardados en tu teléfono.	<b>الشبكة مزدحمة؟</b> قبل الخروج، تصفّح مسار المظاهرة على الخريطة: تبقى أجزاء الخريطة المعروضة محفوظة على هاتفك.
+<b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.	<b>Write your legal team’s number</b> on your arm in pen. Phones get lost or confiscated.	<b>Apunta el número de tu equipo legal</b> con bolígrafo en el brazo. Un teléfono se pierde o se confisca.	<b>اكتب رقم فريقك القانوني</b> بالقلم على ذراعك. قد يضيع الهاتف أو يُصادَر.
+Avec Tor.	With Tor.	Con Tor.	عبر Tor.
+Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) :	Cortège also has a .onion address: your carrier can’t even see that you use the app. Open it in Tor Browser (computer or Android):	Cortège también tiene una dirección .onion: tu operador ni siquiera ve que usas la app. Ábrela en Tor Browser (ordenador o Android):	لدى Cortège أيضًا عنوان ‎.onion: لن يرى مزوّد الخدمة حتى أنك تستخدم التطبيق. افتحه في Tor Browser (حاسوب أو Android):
+copier	copy	copiar	نسخ
+<span class="ico" aria-hidden="true">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span>	<span class="ico" aria-hidden="true">📊</span><span><b>Reports</b><small>Past protests</small></span>	<span class="ico" aria-hidden="true">📊</span><span><b>Balances</b><small>Manifestaciones pasadas</small></span>	<span class="ico" aria-hidden="true">📊</span><span><b>الحصيلة</b><small>المظاهرات السابقة</small></span>
+Nouveautés	What’s new	Novedades	الجديد
+Version	Version	Versión	الإصدار
+Réglages	Settings	Ajustes	الإعدادات
+🔔 Alertes et notifications	🔔 Alerts and notifications	🔔 Alertas y notificaciones	🔔 التنبيهات والإشعارات
+🎒 Bien se préparer	🎒 Get ready	🎒 Prepararse bien	🎒 استعدّ جيدًا
+<b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span>	<b>Battery saver</b><span>Map updated every 20 s instead of 5, less precise GPS, compass off. To last through a long protest.</span>	<b>Ahorro de batería</b><span>Mapa actualizado cada 20 s en lugar de 5, GPS menos preciso, brújula apagada. Para aguantar una manifestación larga.</span>	<b>توفير البطارية</b><span>تحديث الخريطة كل 20 ثانية بدل 5، وGPS أقل دقة، وإيقاف البوصلة. لتصمد طوال مظاهرة طويلة.</span>
+<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>	<b>Larger text</b><span>Bigger buttons and text across the app.</span>	<b>Texto más grande</b><span>Botones y textos ampliados en toda la app.</span>	<b>نص أكبر</b><span>تكبير الأزرار والنصوص في كل التطبيق.</span>
+<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>	<b>Higher contrast</b><span>Whiter text and stronger borders, for bright sunlight.</span>	<b>Contraste reforzado</b><span>Textos más blancos y bordes más marcados, para pleno sol.</span>	<b>تباين أقوى</b><span>نصوص أكثر بياضًا وحواف أوضح، لضوء الشمس الساطع.</span>
+<span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>	<span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>Erase everything from this phone</b><small>Keep your finger pressed for 2 seconds</small></span>	<span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>Borrar todo de este teléfono</b><small>Mantén el dedo pulsado 2 segundos</small></span>	<span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>امسح كل شيء من هذا الهاتف</b><small>أبقِ إصبعك ضاغطًا لثانيتين</small></span>
+Efface le contact SOS, la checklist, le point de ralliement, les réglages, la carte gardée hors ligne et l’accès orga, puis ferme Cortège. L’historique du navigateur n’est pas effacé : vide-le aussi depuis ses réglages.	Erases the SOS contact, the checklist, the rally point, the settings, the offline map and organiser access, then closes Cortège. Your browser history is not erased: clear it too in the browser settings.	Borra el contacto SOS, la lista, el punto de encuentro, los ajustes, el mapa guardado sin conexión y el acceso de organización, y cierra Cortège. El historial del navegador no se borra: vacíalo también desde sus ajustes.	يمسح جهة اتصال SOS وقائمة التحقق ونقطة التجمّع والإعدادات والخريطة المحفوظة دون اتصال وصلاحية المنظِّم، ثم يغلق Cortège. لا يُمسح سجلّ المتصفح: امسحه أيضًا من إعداداته.
+<a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a>	<a class="inline-link" href="/legal.html">Legal notice, privacy and terms of use (in French)</a>	<a class="inline-link" href="/legal.html">Aviso legal, privacidad y normas de uso (en francés)</a>	<a class="inline-link" href="/legal.html">الإشعار القانوني والخصوصية وقواعد الاستخدام (بالفرنسية)</a>
+Cortège est un projet de <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a>	Cortège is a project by <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a>	Cortège es un proyecto de <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a>	Cortège مشروع من <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a>
+Fais scanner ce code	Let someone scan this code	Haz que escaneen este código	دع الآخرين يمسحون هذا الرمز
+Partager le lien	Share the link	Compartir el enlace	مشاركة الرابط
+Copier le lien	Copy the link	Copiar el enlace	نسخ الرابط
+Monte la luminosité de ton écran. Le code s’affiche même sans réseau ; la personne en face aura besoin de data pour ouvrir l’appli la première fois.	Turn up your screen brightness. The code shows even without signal; the other person will need data to open the app the first time.	Sube el brillo de la pantalla. El código se muestra incluso sin cobertura; la otra persona necesitará datos para abrir la app la primera vez.	ارفع سطوع شاشتك. يظهر الرمز حتى دون شبكة، لكن الشخص الآخر سيحتاج إلى بيانات لفتح التطبيق أول مرة.
+Cortège est un projet de	Cortège is a project by	Cortège es un proyecto de	Cortège مشروع من

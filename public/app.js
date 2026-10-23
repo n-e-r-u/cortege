@@ -1,5 +1,9 @@
 'use strict';
 (async function () {
+  // Langue : le dictionnaire est chargé (et la page traduite) avant tout le reste
+  await (window.I18N ? window.I18N.ready : null);
+  const I18N = window.I18N || { lang: 'fr', locale: I18N.locale, t: (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : s, tn: (n, a, b, v) => (n > 1 ? b : a).replace(/\{(\w+)\}/g, (m, k) => ({ n, ...v })[k] ?? m), set() {}, translate() {} };
+  const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
   const MIN = 60_000;
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'nasse', 'bac', 'crs', 'interpellation']);
@@ -10,6 +14,8 @@
   let pushSub = null;               // abonnement aux notifications (annonces urgentes)
   let evCache = { h: null, e: [] }; // agenda (événements publiés)
   let legalCache = { h: null, l: [] }; // annuaire permanent des legal teams (lignes validées par l'admin)
+  let voice = false; try { voice = localStorage.getItem('cortege-voice') === '1'; } catch {}
+  const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
   // Identifiant anonyme de ce téléphone (tiré au hasard, jamais lié à une personne) : sert seulement
   // à limiter le spam par appareil, car en 4G des centaines de personnes partagent la même adresse IP.
@@ -35,24 +41,26 @@
       throw e;
     } finally { clearTimeout(to); }
   })();
+  // Libellés venus du serveur (en français) : traduits ici une fois pour toutes
+  for (const list of [cfg.categories, cfg.groups, cfg.poiKinds, cfg.orderKinds, cfg.eventTypes]) for (const x of list || []) if (x.label) x.label = t(x.label);
   const CAT = Object.fromEntries(cfg.categories.map(c => [c.id, c]));
   let ALERT_RADIUS = cfg.alertRadius || 300;   // mètres (réglable par l'admin)
   const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
   const GROUP_COLOR = { fdo: 'var(--fdo)', danger: 'var(--danger)', soutien: 'var(--soutien)', info: 'var(--info)' };
-  function applyBanner() { const e = $('#eventName'); e.textContent = cfg.event; e.classList.toggle('on', !!cfg.banner); }
+  function applyBanner() { const e = $('#eventName'); e.textContent = t(cfg.event); e.classList.toggle('on', !!cfg.banner); }
   applyBanner();
   if (cfg.sourceUrl) $('#githubLink').href = cfg.sourceUrl;
   if (cfg.onion) {
     $('#onionTip').hidden = false; $('#onionAddr').textContent = cfg.onion;
-    $('#onionCopy').onclick = async () => { try { await navigator.clipboard.writeText('http://' + cfg.onion); toast('Adresse .onion copiée'); } catch { toast(cfg.onion); } };
+    $('#onionCopy').onclick = async () => { try { await navigator.clipboard.writeText('http://' + cfg.onion); toast(t('Adresse .onion copiée')); } catch { toast(cfg.onion); } };
   }
   if (cfg.violenceUrl) document.querySelectorAll('#violenceLink, .violence-inline').forEach(a => (a.href = cfg.violenceUrl));
   if (cfg.brand) {
     document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
     document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => (a.href = cfg.brand.instagram));
     $('#brandLink').href = cfg.brand.instagram;
-    if (cfg.brand.kofi) $('#kofiLink').href = $('#btnKofi').href = cfg.brand.kofi; else { $('#kofiLink').hidden = true; $('#btnKofi').hidden = true; }
+    document.querySelectorAll('a[href="https://ko-fi.com/neru"]').forEach(a => { if (cfg.brand.kofi) a.href = cfg.brand.kofi; else a.hidden = true; });
     const siteLabel = cfg.brand.site.replace(/^https?:\/\//, '').replace(/\/$/, '');
     document.querySelectorAll('a[href="https://neru.tv"]').forEach(a => { a.href = cfg.brand.site; if (!a.querySelector('svg')) a.textContent = siteLabel; });
   }
@@ -132,18 +140,20 @@
   let me = null, meMarker = null, watchId = null, meAcc = Infinity, meAt = 0;
 
   // ---- Utilitaires ----
-  const ago = t => { const m = Math.round((Date.now() - t) / MIN); return m < 1 ? 'à l’instant' : `il y a ${m} min`; };
-  const left = exp => { const m = Math.max(0, Math.round((exp - Date.now()) / MIN)); return `${m} min`; };
+  const ago = x => { const m = Math.round((Date.now() - x) / MIN); return m < 1 ? t('à l’instant') : t('il y a {m} min', { m }); };
+  const left = exp => { const m = Math.max(0, Math.round((exp - Date.now()) / MIN)); return t('{m} min', { m }); };
   const dist = (a, b) => map.distance(a, b);
   const fmtDist = m => m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
   function toast(msg) {
-    const el = $('#toast'); el.textContent = msg; el.hidden = false;
+    const el = $('#toast'); el.textContent = t(msg); el.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);
   }
+  // Les textes simples (enfants, placeholder, aria-label, title) sont traduits au passage
+  const TR_ATTRS = new Set(['placeholder', 'aria-label', 'title']);
   function el(tag, attrs = {}, ...kids) {
     const n = document.createElement(tag);
-    for (const [k, v] of Object.entries(attrs)) k === 'style' ? n.style.cssText = v : n.setAttribute(k, v);
-    for (const k of kids) n.append(k);
+    for (const [k, v] of Object.entries(attrs)) k === 'style' ? n.style.cssText = v : n.setAttribute(k, TR_ATTRS.has(k) ? t(v) : v);
+    for (const k of kids) n.append(typeof k === 'string' ? t(k) : k);
     return n;
   }
 
@@ -195,14 +205,14 @@
     const h = heading ?? gpsHeading, b = bearing(me, [calmTarget.r.lat, calmTarget.r.lng]);
     $('#calmArrow').style.transform = `rotate(${(b - (h ?? 0) + 360) % 360}deg)`;
     const m = calmTarget.d < 1000 ? Math.round(calmTarget.d / 10) * 10 + ' m' : (calmTarget.d / 1000).toFixed(1).replace('.', ',') + ' km';
-    $('#calmTxt').textContent = `🕊 Zone calme · ${m}${h == null ? ' (flèche : nord en haut)' : ''}`;
-    btn.setAttribute('aria-label', `Zone calme la plus proche à ${m}. Afficher sur la carte.`);
+    $('#calmTxt').textContent = '🕊 ' + t('Zone calme · {d}', { d: m }) + (h == null ? ' ' + t('(flèche : nord en haut)') : '');
+    btn.setAttribute('aria-label', t('Zone calme la plus proche à {d}. Afficher sur la carte.', { d: m }));
   }
   // « C'est calme ici » : compte comme un « Plus là » fait sur place pour chaque danger voisin
   async function calmHere(st) {
     const todo = st.ids.filter(id => !voted.has(id));
     for (const id of todo) await vote(id, -1, true, true);
-    toast('Merci : le danger voisin est signalé comme parti');
+    toast(t('Merci : le danger voisin est signalé comme parti'));
     map.closePopup(); sync();
   }
 
@@ -219,62 +229,62 @@
     const c = CAT[r.cat];
     const root = el('div');
     root.append(el('div', { class: 'pop-title' }, c.glyph + ' ', c.label));
-    const revu = r.last && r.last - r.t >= MIN ? ` · revu ${ago(r.last)}` : '';
-    const meta = `${ago(r.t)}${revu} · expire dans ${left(r.exp)}` + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
+    const revu = r.last && r.last - r.t >= MIN ? ' · ' + t('revu {ago}', { ago: ago(r.last) }) : '';
+    const meta = ago(r.t) + revu + ' · ' + t('expire dans {d}', { d: left(r.exp) }) + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
     root.append(el('div', { class: 'pop-meta' }, meta));
-    if (r.up > 0) root.append(el('div', { class: 'pop-count' }, `Signalé par ${r.up + 1} personnes`));
-    if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ Vérifié par ' + r.ver));
-    else if (r.f) root.append(el('div', { class: 'pop-fiable' }, '★ Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)'));
-    if (r.nf) root.append(el('div', { class: 'pop-contested' }, 'Non confirmé : signalé depuis un téléphone suspect. Confirme si tu le vois.'));
+    if (r.up > 0) root.append(el('div', { class: 'pop-count' }, t('Signalé par {n} personnes', { n: r.up + 1 })));
+    if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ ' + t('Vérifié par {who}', { who: r.ver === 'une orga' ? t('une orga') : r.ver })));
+    else if (r.f) root.append(el('div', { class: 'pop-fiable' }, '★ ' + t('Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)')));
+    if (r.nf) root.append(el('div', { class: 'pop-contested' }, t('Non confirmé : signalé depuis un téléphone suspect. Confirme si tu le vois.')));
     const cs = calmSt.get(r.id);
     if (cs) {
-      root.append(el('div', { class: 'pop-calm-warn' }, `⚠ ${CAT[cs.near.cat].glyph} ${CAT[cs.near.cat].label} à ${fmtDist(cs.d)}` + (cs.lvl === 'warn' ? ' (pas encore confirmé)' : '') + ' : zone pas sûre pour l’instant.'));
+      root.append(el('div', { class: 'pop-calm-warn' }, `⚠ ${CAT[cs.near.cat].glyph} ` + t(cs.lvl === 'warn' ? '{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant.' : '{what} à {d} : zone pas sûre pour l’instant.', { what: CAT[cs.near.cat].label, d: fmtDist(cs.d) })));
       if (onSite(r) === 'here' && cs.ids.some(id => !voted.has(id))) {
-        const b = el('button', { class: 'calm-here' }, '🕊️ C’est calme ici');
+        const b = el('button', { class: 'calm-here' }, '🕊️ ' + t('C’est calme ici'));
         b.onclick = () => { b.disabled = true; calmHere(cs); };
         root.append(b);
       }
     }
-    if (r.c) root.append(el('div', { class: 'pop-contested' }, `Contesté : ${r.down} personne${r.down > 1 ? 's disent' : ' dit'} que c’est parti. Confirme si c’est toujours là.`));
+    if (r.c) root.append(el('div', { class: 'pop-contested' }, tn(r.down, 'Contesté : {n} personne dit que c’est parti. Confirme si c’est toujours là.', 'Contesté : {n} personnes disent que c’est parti. Confirme si c’est toujours là.')));
     const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
     for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
     // Ajouter une précision à un point déjà signalé
-    const addBtn = el('button', { class: 'link-btn pop-add' }, '＋ Ajouter une précision');
+    const addBtn = el('button', { class: 'link-btn pop-add' }, '＋ ' + t('Ajouter une précision'));
     const form = el('form', { class: 'pop-note-form', hidden: '' });
-    const input = el('input', { maxlength: '120', placeholder: notePlaceholder(r.cat), 'aria-label': 'Précision' });
-    form.append(input, el('button', { type: 'submit' }, 'Ajouter'));
+    const input = el('input', { maxlength: '120', placeholder: notePlaceholder(r.cat), 'aria-label': t('Précision') });
+    form.append(input, el('button', { type: 'submit' }, t('Ajouter')));
     addBtn.onclick = () => { addBtn.hidden = true; form.hidden = false; input.focus(); };
     form.onsubmit = e => { e.preventDefault(); sendNote(r.id, input.value); };
     root.append(addBtn, form);
-    const yes = el('button', { class: 'yes' }, 'Toujours là');
+    const yes = el('button', { class: 'yes' }, t('Toujours là'));
     // « Plus là » : seulement pour qui est sur place (calculé sur le téléphone, la position ne part pas)
     const where = onSite(r);
-    const no = where === 'far' ? el('button', { class: 'no', disabled: '', title: 'Seulement sur place' }, 'Pas sur place') : el('button', { class: 'no' }, 'Plus là');
+    const no = where === 'far' ? el('button', { class: 'no', disabled: '', title: t('Seulement sur place') }, t('Pas sur place')) : el('button', { class: 'no' }, t('Plus là'));
     if (voted.has(r.id)) yes.disabled = no.disabled = true;
     yes.onclick = () => vote(r.id, 1);
     if (where !== 'far') no.onclick = () => vote(r.id, -1, where === 'here');
     root.append(el('div', { class: 'pop-actions' }, yes, no));
     root.append(el('p', { class: 'pop-hint' }, where === 'far'
-      ? `Tu es à ${fmtDist(dist(me, [r.lat, r.lng]))} : seules les personnes sur place peuvent dire que c’est parti.`
-      : 'Tu es sur place et tu ne vois plus rien\u00a0? Appuie sur «\u00a0Plus\u00a0là\u00a0».'));
+      ? t('Tu es à {d} : seules les personnes sur place peuvent dire que c’est parti.', { d: fmtDist(dist(me, [r.lat, r.lng])) })
+      : t('Tu es sur place et tu ne vois plus rien ? Appuie sur « Plus là ».')));
     if (orga) {
-      const ok = el('button', { class: 'yes' }, r.ver ? '✓ Vérifié' : '✓ Vérifier (orga)');
-      const rm = el('button', { class: 'danger' }, 'Retirer (faux)');
+      const ok = el('button', { class: 'yes' }, '✓ ' + t(r.ver ? 'Vérifié' : 'Vérifier (orga)'));
+      const rm = el('button', { class: 'danger' }, t('Retirer (faux)'));
       ok.disabled = !!r.ver;
       ok.onclick = () => orgaAction(r.id, 'verify');
-      rm.onclick = () => { if (rm.dataset.armed) orgaAction(r.id, 'remove'); else { rm.dataset.armed = '1'; rm.textContent = 'Confirmer le retrait'; } };
+      rm.onclick = () => { if (rm.dataset.armed) orgaAction(r.id, 'remove'); else { rm.dataset.armed = '1'; rm.textContent = t('Confirmer le retrait'); } };
       root.append(el('div', { class: 'pop-actions orga' }, ok, rm));
       // Son propre signalement : prolonger ou corriger (type, précision)
       if (mine.has(r.id) || orga.admin) {
-        const ext = el('button', { class: 'secondary' }, '⏱ Prolonger');
-        const edit = el('button', { class: 'secondary' }, '✎ Modifier');
+        const ext = el('button', { class: 'secondary' }, '⏱ ' + t('Prolonger'));
+        const edit = el('button', { class: 'secondary' }, '✎ ' + t('Modifier'));
         ext.onclick = () => ownAction(r.id, 'extend');
         const form = el('form', { class: 'pop-edit', hidden: '' });
-        const sel = el('select', { 'aria-label': 'Type' });
+        const sel = el('select', { 'aria-label': t('Type') });
         for (const c of cfg.categories.filter(c => !c.off)) { const o = el('option', { value: c.id }, c.glyph + ' ' + c.label); if (c.id === r.cat) o.selected = true; sel.append(o); }
         const mineNote = (r.notes || [])[0]?.x || '';
-        const inp = el('input', { maxlength: '120', placeholder: 'Précision (vide = aucune)', 'aria-label': 'Précision', value: mineNote });
-        form.append(sel, inp, el('button', { type: 'submit' }, 'Enregistrer'));
+        const inp = el('input', { maxlength: '120', placeholder: t('Précision (vide = aucune)'), 'aria-label': t('Précision'), value: mineNote });
+        form.append(sel, inp, el('button', { type: 'submit' }, t('Enregistrer')));
         edit.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) inp.focus(); };
         form.onsubmit = e => { e.preventDefault(); ownAction(r.id, 'edit', { cat: sel.value, note: inp.value }); };
         root.append(el('div', { class: 'pop-actions orga' }, ext, edit), form);
@@ -361,7 +371,7 @@
       if (show && !on) layer.addLayer(marker); else if (!show && on) layer.removeLayer(marker);
     }
   }
-  function refreshUI() { renderFilters(); renderNational(); if (!$('#sheetList').hidden) renderList(); }
+  function refreshUI() { renderFilters(); renderNational(); feedBadge(); if (!$('#sheetList').hidden) renderList(); }
   // Rafraîchit l'opacité des points vieillissants
   setInterval(() => {
     computeCalm([...reports.values()].map(x => x.data));
@@ -374,7 +384,7 @@
   let etag = null, firstSync = true, pollTimer = null, lastOk = 0;
   const stream = { es: null, ok: false, key: '', t: null };
   const status = $('#status');
-  const setStatus = (state, txt) => { status.dataset.state = state; status.querySelector('.txt').textContent = txt; };
+  const setStatus = (state, txt) => { status.dataset.state = state; status.querySelector('.txt').textContent = txt; $('#manifTop').dataset.state = state; };
   // Le serveur ne reçoit que des carrés arrondis (≈ 5 km au plus près), jamais la position exacte.
   function snap(s, w, n, e, g) {
     const f = x => Math.round(x * 1000) / 1000;
@@ -429,7 +439,7 @@
   function setLite(on) {
     net.lite = on;
     navigator.serviceWorker?.controller?.postMessage({ type: 'lite', on });
-    if (on && !net.told) { net.told = true; toast('Réseau faible : mode léger activé (seuls les signalements passent)'); }
+    if (on && !net.told) { net.told = true; toast(t('Réseau faible : mode léger activé (seuls les signalements passent)')); }
     freshness();
   }
   conn?.addEventListener?.('change', () => { if (slowHint() && !net.lite) setLite(true); });
@@ -659,24 +669,28 @@
     if (b === buildSeen || updating) return;
     updating = true;
     navigator.serviceWorker?.getRegistration?.().then(r => r && r.update()).catch(() => {});
-    const bar = el('div', { class: 'update-bar', role: 'status' }, 'Nouvelle version de Cortège');
-    const btn = el('button', {}, 'Mettre à jour');
+    const bar = el('div', { class: 'update-bar', role: 'status' }, t('Nouvelle version de Cortège'));
+    const btn = el('button', {}, t('Mettre à jour'));
     btn.onclick = reloadForUpdate; bar.append(btn); document.body.append(bar);
     // Dès que la personne ne fait rien de particulier (ou passe l'appli en arrière-plan), on met à jour
-    const tryNow = () => { if (document.hidden || !busyNow()) { bar.textContent = 'Mise à jour de Cortège…'; setTimeout(reloadForUpdate, 1200); return true; } return false; };
+    const tryNow = () => { if (document.hidden || !busyNow()) { bar.textContent = t('Mise à jour de Cortège…'); setTimeout(reloadForUpdate, 1200); return true; } return false; };
     if (!tryNow()) { const t = setInterval(() => { if (tryNow()) clearInterval(t); }, 4000); document.addEventListener('visibilitychange', () => { if (document.hidden) reloadForUpdate(); }); }
   }
 
+  // Bouton « Signaler » : onglet du bas et gros bouton du mode manif
+  function reportBtn(state) {
+    const lbl = t(state === 'paused' ? 'En pause' : state === 'active' ? 'Annuler' : 'Signaler');
+    $('#reportLbl').textContent = lbl; $('#mbReportLbl').textContent = lbl;
+    for (const b of [$('#btnReport'), $('#mbReport')]) { b.disabled = state === 'paused'; b.classList.toggle('active', state === 'active'); }
+  }
   // Pause décidée par l'admin (afflux de faux signalements) : on le dit et on bloque le bouton
   let pausedUntil = 0;
   function setPaused(until) {
     pausedUntil = until || 0;
     const on = pausedUntil > Date.now();
     $('#pauseBanner').hidden = !on;
-    const btn = $('#btnReport');
-    btn.disabled = on;
-    if (on) { closeReport(); btn.textContent = 'Signalements en pause'; }
-    else if ($('#crosshair').hidden) btn.textContent = 'Signaler';
+    if (on) { closeReport(); reportBtn('paused'); }
+    else if ($('#crosshair').hidden) reportBtn('idle');
   }
   let syncing = false, again = false;
   async function sync() {
@@ -690,18 +704,18 @@
         catch (e) { if (e.status === 404) { useApi = true; await syncApi(); } else throw e; }
       }
       failures = 0; lastOk = Date.now(); dataAt = lastOk; saveSnapshot();
-      setStatus('live', net.lite ? 'En direct · mode léger' : 'En direct'); freshness();
+      setStatus('live', t(net.lite ? 'En direct · mode léger' : 'En direct')); freshness();
       if (!$('#queueChip').hidden) setTimeout(() => flushQueue(), 0);
     } catch {
       // Retour au premier plan : le téléphone met souvent quelques secondes à rouvrir le réseau.
       // Pendant ce temps, on dit « reconnexion » au lieu de « hors ligne », et on réessaie vite.
       if (document.hidden || Date.now() - resumeAt < RESUME_GRACE) {
-        setStatus('live', 'Reconnexion…'); syncing = false;
+        setStatus('live', t('Reconnexion…')); syncing = false;
         if (!document.hidden) { clearTimeout(pollTimer); pollTimer = setTimeout(sync, 1500); }
         return;
       }
       failures++;
-      setStatus('offline', Date.now() - lastOk > 15000 ? 'Hors ligne — nouvel essai…' : 'Connexion instable…');
+      setStatus('offline', t(Date.now() - lastOk > 15000 ? 'Hors ligne, nouvel essai…' : 'Connexion instable…'));
       if (!fallbackTried) { fallbackTried = true; useFallback(); }
     }
     syncing = false;
@@ -767,13 +781,13 @@
     es.onmessage = () => { clearTimeout(stream.t); stream.t = setTimeout(() => { etag = null; lastActivity = Date.now(); sync(); }, 250); };
   }
   // Bandeau : mode léger, ou âge de la dernière situation connue
-  const agoTxt = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : `il y a ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };
+  const agoTxt = x => { const m = Math.round((Date.now() - x) / 60000); return m < 1 ? t('à l’instant') : m < 60 ? t('il y a {m} min', { m }) : t('il y a {h} h {m}', { h: Math.floor(m / 60), m: String(m % 60).padStart(2, '0') }); };
   function freshness() {
     const bar = $('#netBar'); if (!bar) return;
     const stale = dataAt && Date.now() - dataAt > 60000;
     if (stale && (document.hidden || Date.now() - resumeAt < RESUME_GRACE)) return; // retour de l'arrière-plan : le temps de se reconnecter
-    if (stale) { bar.hidden = false; bar.textContent = `${navigator.onLine === false || !net.lite ? '📴 Pas de réseau' : '📶 Réseau très faible'} · dernière situation connue ${agoTxt(dataAt)}`; }
-    else if (net.lite) { bar.hidden = false; bar.textContent = `📶 Réseau faible : mode léger · mis à jour ${dataAt ? agoTxt(dataAt) : '…'}`; }
+    if (stale) { bar.hidden = false; bar.textContent = (navigator.onLine === false || !net.lite ? '📴 ' + t('Pas de réseau') : '📶 ' + t('Réseau très faible')) + ' · ' + t('dernière situation connue {ago}', { ago: agoTxt(dataAt) }); }
+    else if (net.lite) { bar.hidden = false; bar.textContent = '📶 ' + t('Réseau faible : mode léger · mis à jour {ago}', { ago: dataAt ? agoTxt(dataAt) : '…' }); }
     else bar.hidden = true;
     bar.classList.toggle('stale', !!stale);
   }
@@ -798,8 +812,9 @@
     const c = CAT[r.cat];
     const box = $('#alert');
     box.className = 'alert' + (c.group === 'fdo' || somm ? ' fdo' : '');
-    box.textContent = somm ? `${c.glyph} Sommations à ${fmtDist(d)} : rester devient un délit. Éloigne-toi par une rue dégagée.` : `${c.glyph} ${c.label} à ${fmtDist(d)} de toi`;
+    box.textContent = c.glyph + ' ' + (somm ? t('Sommations à {d} : rester devient un délit. Éloigne-toi par une rue dégagée.', { d: fmtDist(d) }) : t('{what} à {d} de toi', { what: c.label, d: fmtDist(d) }));
     box.hidden = false;
+    say(somm ? t('Sommations à {d}. Éloigne-toi par une rue dégagée.', { d: spokenDist(d) }) : t('{what}, à {d}', { what: c.label.replace(/\s*\/\s*/g, ', '), d: spokenDist(d) }));
     box.onclick = () => { box.hidden = true; const m = markerOf(r.id); if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
     // Chaque danger a sa vibration (même motif que dans les notifications)
     try { navigator.vibrate?.((cfg.vibes && cfg.vibes[r.cat]) || [200, 100, 200]); } catch {}
@@ -814,7 +829,7 @@
     follow = on;
     btnLoc.dataset.state = !me ? (watchId != null ? 'searching' : 'off') : on ? 'follow' : 'free';
     btnLoc.setAttribute('aria-pressed', String(on));
-    btnLoc.title = on ? 'La carte te suit' : 'Me recentrer';
+    btnLoc.title = t(on ? 'La carte te suit' : 'Me recentrer');
   }
   function meIcon() {
     return L.divIcon({ className: '', iconSize: [64, 64], iconAnchor: [32, 32],
@@ -904,13 +919,13 @@
   async function runSearch() {
     const q = $('#searchInput').value.trim(), out = $('#searchResults');
     if (q.length < 2) { out.textContent = ''; return; }
-    out.textContent = 'Recherche…';
+    out.textContent = t('Recherche…');
     try {
       const res = await fetch('/api/geocode?q=' + encodeURIComponent(q));
       const list = await res.json();
       out.textContent = '';
-      if (!res.ok) { out.textContent = list.error || 'Recherche indisponible.'; return; }
-      if (!list.length) { out.textContent = 'Aucun lieu trouvé en France.'; return; }
+      if (!res.ok) { out.textContent = t(list.error || 'Recherche indisponible.'); return; }
+      if (!list.length) { out.textContent = t('Aucun lieu trouvé en France.'); return; }
       for (const p of list) {
         const b = el('button', { class: 'result' }, p.name);
         b.onclick = () => {
@@ -920,7 +935,7 @@
         };
         out.append(el('li', {}, b));
       }
-    } catch { out.textContent = 'Pas de réseau.'; }
+    } catch { out.textContent = t('Pas de réseau.'); }
   }
 
   // ---- Filtres ----
@@ -957,23 +972,23 @@
   };
   // Horaires OpenStreetMap (« Mo-Sa 09:00-19:30 ») en français lisible
   const DAYS = { Mo: 'lun', Tu: 'mar', We: 'mer', Th: 'jeu', Fr: 'ven', Sa: 'sam', Su: 'dim', PH: 'fériés' };
-  const hoursFr = h => h === '24/7' ? 'Ouvert 24 h/24, 7 j/7' : h.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, d => DAYS[d]).replace(/\boff\b/g, 'fermé')
-    .replace(/(\d\d):(\d\d)/g, (_, a, b) => b === '00' ? `${+a} h` : `${+a} h ${b}`).replace(/;\s*/g, ' · ').replace(/-/g, '–').replace(/,/g, ', ');
+  const hoursFr = h => h === '24/7' ? t('Ouvert 24 h/24, 7 j/7') : h.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, d => t(DAYS[d])).replace(/\boff\b/g, t('fermé'))
+    .replace(/(\d\d):(\d\d)/g, (_, a, b) => I18N.lang === 'fr' ? (b === '00' ? `${+a} h` : `${+a} h ${b}`) : `${a}:${b}`).replace(/;\s*/g, ' · ').replace(/-/g, '–').replace(/,/g, ', ');
   // Caméra : [id, 'cam', lat, lng, opérateur, publique, direction (-1 inconnue), type]
   const CAM_TYPE = { d: 'Caméra dôme (peut tourner dans tous les sens)', f: 'Caméra fixe', p: 'Caméra orientable' };
   function camPopup(x) {
     const [, , , , op, pub, dir, ct] = x;
     const root = el('div', { class: 'poi-pop' });
     root.append(el('div', { class: 'pop-title' }, '📷 ', pub ? 'Caméra publique' : 'Caméra privée'));
-    root.append(el('div', { class: 'pop-meta' }, (pub ? 'Vidéosurveillance de la voie publique' : 'Caméra privée qui filme la rue') + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
+    root.append(el('div', { class: 'pop-meta' }, t(pub ? 'Vidéosurveillance de la voie publique' : 'Caméra privée qui filme la rue') + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
     if (op) root.append(el('p', {}, 'Exploitée par : ', op));
-    if (ct && CAM_TYPE[ct]) root.append(el('p', {}, CAM_TYPE[ct] + (dir >= 0 && ct !== 'd' ? ', orientée vers ' + compassFr(dir) : '') + '.'));
-    else if (dir >= 0) root.append(el('p', {}, 'Orientée vers ' + compassFr(dir) + '.'));
+    if (ct && CAM_TYPE[ct]) root.append(el('p', {}, t(CAM_TYPE[ct]) + (dir >= 0 && ct !== 'd' ? t(', orientée vers {dir}', { dir: compassFr(dir) }) : '') + '.'));
+    else if (dir >= 0) root.append(el('p', {}, t('Orientée vers {dir}.', { dir: compassFr(dir) })));
     root.append(el('p', { class: 'poi-tip' }, 'Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.'));
     root.append(el('p', { class: 'fine' }, '© contributeurs OpenStreetMap'));
     return root;
   }
-  const compassFr = d => ['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'][Math.round(d / 45) % 8];
+  const compassFr = d => t(['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'][Math.round(d / 45) % 8]);
   function camIcon(x) {
     const [, , , , , pub, dir, ct] = x, S = 48, c = S / 2, col = pub ? 'cam-pub' : 'cam-priv';
     let cone = '';
@@ -986,7 +1001,7 @@
   }
   function poiPopup(x) {
     if (x[1] === 'cam') return camPopup(x);
-    const [, kind, , , name, hours, phone, flag] = x, k = PK[kind] || { label: 'Lieu', glyph: '📍' };
+    const [, kind, , , name, hours, phone, flag] = x, k = PK[kind] || { label: t('Lieu'), glyph: '📍' };
     const root = el('div', { class: 'poi-pop' });
     root.append(el('div', { class: 'pop-title' }, k.glyph + ' ', name || k.label));
     if (name) root.append(el('div', { class: 'pop-meta' }, k.label + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
@@ -1023,7 +1038,7 @@
     for (const [id, m] of poiDrawn) if (!keep.has(id) || m.options.lab !== labOf(keep.get(id) || []) || m.options.sig !== keep.get(id).join('|')) { poiLayer.removeLayer(m); poiDrawn.delete(id); }
     for (const [id, x] of keep) {
       if (poiDrawn.has(id)) continue;
-      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: x[1] === 'cam' ? (x[5] ? 'Caméra publique' : 'Caméra privée') : (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
+      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: x[1] === 'cam' ? t(x[5] ? 'Caméra publique' : 'Caméra privée') : (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
       m.bindPopup(() => poiPopup(x));
       poiLayer.addLayer(m); poiDrawn.set(id, m);
     }
@@ -1034,11 +1049,12 @@
   // « Prêt pour la manif » : garder aussi les lieux de la zone
   const poiPrefetch = () => Promise.all(poiFilesFor(map.getBounds().pad(0.3), true, true).slice(0, 15).map(f => getJ('/live/l/' + f).catch(() => null)));
 
+  // ---- Calques : ce que montre la carte (familles de signalements, agenda, lieux, caméras) ----
   function renderFilters() {
     const box = $('#filters'); box.textContent = '';
     for (const g of cfg.groups) {
       const n = mode === 'nat' ? natCache.r.reduce((s, z) => s + (z.g[g.id] || 0), 0) : [...reports.values()].filter(x => CAT[x.data.cat].group === g.id && !calmHidden(x.data)).length;
-      const b = el('button', { class: 'chip', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, ' ', el('span', { class: 'n' }, String(n)));
+      const b = el('button', { type: 'button', class: 'layer', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, el('span', { class: 'n' }, String(n)));
       b.onclick = () => {
         hidden.has(g.id) ? hidden.delete(g.id) : hidden.add(g.id);
         regroup();
@@ -1046,35 +1062,43 @@
       };
       box.append(b);
     }
-    // Agenda : manifs, blocus, AG… affichés sur la carte
-    const ev = el('button', { class: 'chip chip-ev', style: '--c:var(--accent)', 'aria-pressed': String(!evHidden), title: 'Afficher ou masquer les événements de l’agenda sur la carte' },
-      '📅 Agenda ', el('span', { class: 'n' }, String(evCount())));
-    ev.onclick = () => {
-      evHidden = !evHidden;
-      try { localStorage.setItem('cortege-ev-hidden', evHidden ? '1' : '0'); } catch {}
-      renderEvents(); renderFilters();
-      toast(evHidden ? 'Événements de l’agenda masqués sur la carte' : 'Événements de l’agenda affichés');
-    };
-    box.append(ev);
-    if (cfg.poiKinds) {
-      const pl = el('button', { class: 'chip chip-poi', style: '--c:#8e7bd8', 'aria-pressed': String(!poiHidden), title: 'Lieux permanents : préfectures, mairies, commissariats, tribunaux, hôpitaux… (zoome pour les voir)' }, '🏛 Lieux');
-      pl.onclick = () => openPoiSheet();
-      box.append(pl);
-      if (PK.cam) {
-        const camOn = !poiHidden && !poiOff.has('cam');
-        const cb = el('button', { class: 'chip chip-poi', style: '--c:#e0383e', 'aria-pressed': String(camOn), title: 'Caméras de surveillance recensées sur OpenStreetMap (zoome au plus près pour les voir)' }, '📷 Caméras');
-        cb.onclick = () => {
-          if (poiHidden) { poiHidden = false; try { localStorage.setItem('cortege-poi-hidden', '0'); } catch {} }
-          camOn ? poiOff.add('cam') : poiOff.delete('cam');
-          try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {}
-          renderPois(); renderFilters();
-          toast(camOn ? 'Caméras masquées' : map.getZoom() < POI_CAM_Z ? 'Caméras affichées : zoome au plus près pour les voir' : 'Caméras affichées. Recensement bénévole : il en manque.');
-        };
-        box.append(cb);
-      }
-    }
+    // Point sur le bouton Calques : quelque chose est masqué
+    $('#layersDot').hidden = !(hidden.size || evHidden);
   }
   renderFilters();
+  function layerSwitch(label, sub, on, change, extra) {
+    const cb = el('input', { type: 'checkbox' }); cb.checked = on;
+    cb.onchange = () => change(cb.checked);
+    const txt = el('span', { class: 'switch-txt' }, el('b', {}, label), el('span', {}, sub));
+    if (extra) txt.append(extra);
+    return el('label', { class: 'switch' }, cb, txt);
+  }
+  function renderToggles() {
+    const box = $('#layerToggles'); box.textContent = '';
+    box.append(layerSwitch('📅 Agenda', 'Manifs, blocus et rassemblements du moment, avec leur parcours', !evHidden, on => {
+      evHidden = !on;
+      try { localStorage.setItem('cortege-ev-hidden', evHidden ? '1' : '0'); } catch {}
+      renderEvents();
+    }));
+    if (cfg.poiKinds) {
+      const more = el('button', { type: 'button', class: 'link-btn' }, 'Choisir les types de lieux');
+      more.onclick = e => { e.preventDefault(); openPoiSheet(); };
+      box.append(layerSwitch('🏛 Lieux utiles', 'Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant.', !poiHidden, on => {
+        poiHidden = !on;
+        try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
+        renderPois(); renderToggles();
+      }, more));
+      if (PK.cam) box.append(layerSwitch('📷 Caméras de surveillance', 'Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque.', !poiHidden && !poiOff.has('cam'), on => {
+        if (on && poiHidden) { poiHidden = false; try { localStorage.setItem('cortege-poi-hidden', '0'); } catch {} }
+        on ? poiOff.delete('cam') : poiOff.add('cam');
+        try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {}
+        renderPois(); renderToggles();
+        if (on && map.getZoom() < POI_CAM_Z) toast('Caméras affichées : zoome au plus près pour les voir');
+      }));
+    }
+  }
+  $('#btnLayers').onclick = () => { closeReport(); closeSheets(); renderFilters(); renderToggles(); $('#sheetLayers').hidden = false; };
+  $('#lyClose').onclick = () => closeSheets();
   // Choix des lieux affichés : tout afficher ou masquer, et type par type
   function openPoiSheet() {
     closeReport(); closeSheets();
@@ -1083,7 +1107,7 @@
     for (const [key, label, kinds] of POI_FILTERS) {
       const z = Math.min(...kinds.map(k => POI_MINZ[k] || POI_STREET_Z));
       const cb = el('input', { type: 'checkbox' }); cb.checked = !poiOff.has(key); cb.disabled = poiHidden;
-      cb.onchange = () => { cb.checked ? poiOff.delete(key) : poiOff.add(key); try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {} renderPois(); renderFilters(); };
+      cb.onchange = () => { cb.checked ? poiOff.delete(key) : poiOff.add(key); try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {} renderPois(); };
       box.append(el('label', { class: 'switch' }, cb, el('span', { class: 'switch-txt' }, el('b', {}, label), el('span', {}, key === 'cam' ? 'Visible en zoomant au plus près. Rouge : publique. Orange : privée, filme la rue. Le cône montre la direction filmée quand elle est connue. Recensement bénévole et incomplet.' : z >= 16 ? 'Visible au zoom rue' : z >= 15 ? 'Visible au zoom quartier' : 'Visible au zoom ville'))));
     }
     $('#sheetPoi').hidden = false;
@@ -1092,18 +1116,29 @@
     poiHidden = !e.target.checked;
     try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
     $('#poiList').querySelectorAll('input').forEach(i => (i.disabled = poiHidden));
-    renderPois(); renderFilters();
+    renderPois();
   });
   $('#poiClose').onclick = () => closeSheets();
 
   // ---- Signaler ----
-  const sheets = ['#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew'];
+  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
+  // Pages des onglets (Infos, Droits, Plus) : plein écran au-dessus de la barre, sans fond assombri
+  const PAGES = { tabInfos: '#sheetFeed', tabRights: '#sheetRights', tabMore: '#sheetInfo' };
+  const isPage = s => Object.values(PAGES).includes(s);
+  function syncTabs() {
+    const open = Object.entries(PAGES).find(([, s]) => !$(s).hidden);
+    for (const id of ['tabMap', ...Object.keys(PAGES)]) {
+      const on = open ? open[0] === id : id === 'tabMap';
+      if (on) $('#' + id).setAttribute('aria-current', 'page'); else $('#' + id).removeAttribute('aria-current');
+    }
+  }
   const syncBackdrop = () => {
-    backdrop.hidden = !sheets.some(s => s !== '#sheetReport' && !$(s).hidden);
+    backdrop.hidden = !sheets.some(s => s !== '#sheetReport' && !isPage(s) && !$(s).hidden);
     if ($('#sheetEvent').hidden && !drawing) drawLayer.clearLayers();
+    syncTabs();
   };
   const sheetWatch = new MutationObserver(syncBackdrop);
   sheets.forEach(s => sheetWatch.observe($(s), { attributes: true, attributeFilter: ['hidden'] }));
@@ -1117,9 +1152,8 @@
     }
     closeSheets();
     $('#crosshair').hidden = false;
-    $('#btnReport').classList.add('active');
-    $('#btnReport').textContent = 'Annuler';
-    $('#srHint').textContent = me ? 'Le viseur est sur ta position. Déplace la carte si c’est ailleurs.' : 'Place le viseur au bon endroit sur la carte, puis choisis.';
+    reportBtn('active');
+    $('#srHint').textContent = t(me ? 'Le viseur est sur ta position. Déplace la carte si c’est ailleurs.' : 'Place le viseur au bon endroit sur la carte, puis choisis.');
     $('#sheetReport').hidden = false;
     // Le viseur se place au milieu de la zone de carte encore visible au-dessus de la feuille
     const y = aimY();
@@ -1135,8 +1169,8 @@
       const cat = b.dataset.cat, R = mergeR(cat);
       const hit = list.filter(r => r.cat === cat && r.exp > Date.now()).map(r => ({ r, d: dist(p, [r.lat, r.lng]) })).filter(x => x.d <= R).sort((a, b) => a.d - b.d)[0];
       b.classList.toggle('exists', !!hit);
-      b.querySelector('.sub').textContent = hit ? `déjà là · ${ago(hit.r.last || hit.r.t).replace('il y a ', '')} · confirmer` : '';
-      b.setAttribute('aria-label', CAT[cat].label + (hit ? ', déjà signalé, appuyer pour confirmer' : ''));
+      b.querySelector('.sub').textContent = hit ? t('déjà là · {ago} · confirmer', { ago: ago(hit.r.last || hit.r.t) }) : '';
+      b.setAttribute('aria-label', CAT[cat].label + (hit ? t(', déjà signalé, appuyer pour confirmer') : ''));
     });
   }
   map.on('move', () => { if (!$('#crosshair').hidden) { cancelAnimationFrame(catHints.f); catHints.f = requestAnimationFrame(catHints); } });
@@ -1146,9 +1180,9 @@
   }
   function closeReport() {
     $('#crosshair').hidden = true; $('#sheetReport').hidden = true;
-    $('#btnReport').classList.remove('active'); $('#btnReport').textContent = 'Signaler';
+    reportBtn(pausedUntil > Date.now() ? 'paused' : 'idle');
   }
-  $('#btnReport').onclick = () => ($('#crosshair').hidden ? openReport() : closeReport());
+  $('#btnReport').onclick = $('#mbReport').onclick = () => ($('#crosshair').hidden ? openReport() : closeReport());
   $('#srClose').onclick = closeReport;
 
   (function buildGrid() {
@@ -1201,14 +1235,14 @@
   }
   function resultText(it, { status, body }) {
     const label = CAT[it.cat].label;
-    if (status === 201) return body.mine ? `${label} signalé et vérifié (orga)` : `${label} signalé`;
-    if (status === 200 && body.merged) return body.self ? 'Tu l’avais déjà signalé : point mis à jour' : `Déjà signalé : ta confirmation est ajoutée (${body.up + 1} personnes)`;
-    return body.error || 'Envoi impossible. Réessaie.';
+    if (status === 201) return t(body.mine ? '{what} : signalé et vérifié (orga)' : '{what} : signalé', { what: label });
+    if (status === 200 && body.merged) return body.self ? t('Tu l’avais déjà signalé : point mis à jour') : t('Déjà signalé : ta confirmation est ajoutée ({n} personnes)', { n: body.up + 1 });
+    return t(body.error || 'Envoi impossible. Réessaie.');
   }
   async function updateQueueChip() {
     const n = (await queue.all()).length, chip = $('#queueChip');
     chip.hidden = !n; chip.textContent = `⏳ ${n}`;
-    chip.setAttribute('aria-label', `${n} signalement${n > 1 ? 's' : ''} en attente de réseau`);
+    chip.setAttribute('aria-label', tn(n, '{n} signalement en attente de réseau', '{n} signalements en attente de réseau'));
     if (!$('#sheetQueue').hidden) renderQueue();
     return n;
   }
@@ -1221,7 +1255,7 @@
       const cancel = el('button', { class: 'q-cancel', 'aria-label': 'Annuler ce signalement' }, 'Annuler');
       cancel.onclick = async () => { await queue.del(it.k); updateQueueChip(); };
       ol.append(el('li', {}, el('span', { class: 'g', style: `--c:${GROUP_COLOR[c.group]}` }, c.glyph),
-        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, expired ? 'Trop ancien, ne sera pas publié' : `fait ${ago(it.t)}`)), cancel));
+        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, expired ? 'Trop ancien, ne sera pas publié' : t('fait {ago}', { ago: ago(it.t) }))), cancel));
     }
   }
   let flushing = false;
@@ -1242,8 +1276,8 @@
     } finally { flushing = false; }
     const n = await updateQueueChip();
     const parts = [];
-    if (sent) parts.push(sent > 1 ? `${sent} signalements en attente envoyés` : 'Signalement en attente envoyé');
-    if (stale) parts.push(stale > 1 ? `${stale} trop anciens, pas publiés` : '1 trop ancien, pas publié');
+    if (sent) parts.push(tn(sent, 'Signalement en attente envoyé', '{n} signalements en attente envoyés'));
+    if (stale) parts.push(tn(stale, '1 trop ancien, pas publié', '{n} trop anciens, pas publiés'));
     if (parts.length || msg) toast(parts.join(' · ') || msg);
     if (sent) { lastActivity = Date.now(); sync(); }
     return n;
@@ -1271,7 +1305,7 @@
   // ---- Précisions ----
   const NOTE_HINTS = { fdo: 'ex. : une vingtaine, remontent vers la gare', danger: 'ex. : le nuage s’étend vers la place',
     soutien: 'ex. : sous l’abribus, côté nord', info: 'ex. : barrières, passage par la rue d’à côté' };
-  function notePlaceholder(cat) { return NOTE_HINTS[CAT[cat]?.group] || 'Ajouter une précision'; }
+  function notePlaceholder(cat) { return t(NOTE_HINTS[CAT[cat]?.group] || 'Ajouter une précision'); }
   async function sendNote(id, text) {
     text = String(text || '').trim();
     if (text.length < 2) return toast('Écris une précision.');
@@ -1338,15 +1372,29 @@
       const c = CAT[r.cat];
       const btn = el('button', { 'aria-label': c.label },
         el('span', { class: 'g', style: `--c:${GROUP_COLOR[c.group]}` }, c.glyph),
-        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, r.note || (r.up ? `${ago(r.last || r.t)} · ${r.up + 1} personnes` : ago(r.t)))),
-        el('span', { class: 'd' }, me ? fmtDist(dist(me, [r.lat, r.lng])) : ago(r.last || r.t).replace('il y a ', '')));
+        el('span', { class: 't' }, el('div', { class: 'l' }, c.label), el('div', { class: 's' }, r.note || (r.up ? ago(r.last || r.t) + ' · ' + t('{n} personnes', { n: r.up + 1 }) : ago(r.t)))),
+        el('span', { class: 'd' }, me ? fmtDist(dist(me, [r.lat, r.lng])) : ago(r.last || r.t)));
       btn.onclick = () => { closeSheets(); const m = markerOf(r.id); if (m) layer.zoomToShowLayer(m, () => m.openPopup()); };
       ol.append(el('li', {}, btn));
     }
   }
   $('#btnList').onclick = () => { closeReport(); closeSheets(); renderList(); $('#sheetList').hidden = false; };
   $('#slClose').onclick = () => closeSheets();
-  $('#btnInfo').onclick = () => { closeReport(); closeSheets(); $('#sheetInfo').hidden = false; };
+  // ---- Onglets ----
+  function openPage(sel) {
+    closeReport(); map.closePopup();
+    const wasOpen = !$(sel).hidden;
+    closeSheets();
+    if (wasOpen) return; // deuxième appui sur l'onglet : retour à la carte
+    if (sel === '#sheetFeed') renderFeed();
+    if (sel === '#sheetRights') renderLegal();
+    $(sel).hidden = false; $(sel).scrollTop = 0;
+  }
+  $('#tabMap').onclick = () => { closeReport(); closeSheets(); };
+  $('#tabInfos').onclick = () => openPage('#sheetFeed');
+  $('#tabRights').onclick = () => openPage('#sheetRights');
+  $('#tabMore').onclick = () => openPage('#sheetInfo');
+  $('#fdClose').onclick = () => closeSheets();
   $('#siClose').onclick = () => closeSheets();
 
   // ---- Installation sur l'écran d'accueil (PWA) ----
@@ -1361,7 +1409,7 @@
     if (withTool) $('#btnInstallTool').hidden = false;
   }
   function hideInstall() { $('#installBox').hidden = true; $('#btnInstallTool').hidden = true; }
-  function installHelp(html) { const p = $('#installHelp'); p.innerHTML = html; p.hidden = false; }
+  function installHelp(html) { const p = $('#installHelp'); p.innerHTML = t(html); p.hidden = false; }
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall(true); });
   window.addEventListener('appinstalled', () => { installEvent = null; hideInstall(); toast('Appli installée sur ton écran d’accueil'); });
   if (!standalone) showInstall(isIOS || inApp);
@@ -1395,12 +1443,12 @@
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer cette annonce' }, '×');
       close.onclick = () => { dismissed.add(a.id); try { localStorage.setItem('cortege-dismissed', JSON.stringify([...dismissed].slice(-200))); } catch {} renderAnns(announcements, false); };
       box.append(el('div', { class: 'ann ' + a.level },
-        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · toute la France' : '') + ' · ' + ago(a.t)),
+        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
         el('div', { class: 'ann-text' }, a.text),
         a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '', close));
       if (canAlert && !seenAnns.has(a.id) && a.level === 'urgent') { try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {} }
     }
-    if (shown.length > maxBanners) box.append(el('div', { class: 'ann-more' }, `+ ${shown.length - maxBanners} autre(s) annonce(s)`));
+    if (shown.length > maxBanners) box.append(el('div', { class: 'ann-more' }, tn(shown.length - maxBanners, '+ {n} autre annonce', '+ {n} autres annonces')));
     list.forEach(a => seenAnns.add(a.id));
     renderLegal();
     if (!$('#sheetOrga').hidden) renderOrgaList();
@@ -1410,8 +1458,8 @@
   // Deux sources : l'annuaire permanent (vérifié par l'admin) et les numéros publiés par les orgas pour une manif.
   // Regroupés par ville, la plus proche de toi (ou du centre de la carte) en premier ; les autres villes en dessous.
   const normCity = c => String(c || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
-  const dayFr = t => new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-  const kmTxt = m => m < 1000 ? 'ici' : m < 10000 ? 'à ' + (m / 1000).toFixed(1).replace('.', ',') + ' km' : 'à ' + Math.round(m / 1000) + ' km';
+  const dayFr = x => new Date(x).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  const kmTxt = m => m < 1000 ? t('ici') : t('à {d} km', { d: m < 10000 ? (m / 1000).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') : Math.round(m / 1000) });
   function legalGroups() {
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
     const rows = [
@@ -1423,7 +1471,7 @@
     for (const e of rows) {
       const d = map.distance(ref, [e.lat, e.lng]);
       const key = normCity(e.city) || '@' + e.id;
-      const g = groups.get(key) || { city: e.city || 'Autour de ce point', d: Infinity, items: [] };
+      const g = groups.get(key) || { city: e.city || t('Autour de ce point'), d: Infinity, items: [] };
       g.items.push({ ...e, d }); groups.set(key, g);
     }
     // Distance d'une ville : celle de l'annuaire s'il la connaît (un numéro de manif peut avoir été posé loin de sa ville)
@@ -1438,9 +1486,9 @@
     const copy = el('button', { class: 'legal-copy' }, 'Copier');
     copy.onclick = async () => { try { await navigator.clipboard.writeText(num); toast('Numéro copié'); } catch { toast(num); } };
     const meta = a.dir
-      ? el('span', { class: 'legal-meta' }, 'Annuaire' + (a.checked ? ' · vérifié le ' + dayFr(a.checked) : ''),
-          a.src ? el('a', { href: a.src, target: '_blank', rel: 'noopener noreferrer' }, ' · source') : '')
-      : el('span', { class: 'legal-meta' }, 'Pour la mobilisation · publié ' + ago(a.t));
+      ? el('span', { class: 'legal-meta' }, t('Annuaire') + (a.checked ? ' · ' + t('vérifié le {date}', { date: dayFr(a.checked) }) : ''),
+          a.src ? el('a', { href: a.src, target: '_blank', rel: 'noopener noreferrer' }, ' · ' + t('source')) : '')
+      : el('span', { class: 'legal-meta' }, t('Pour la mobilisation · publié {ago}', { ago: ago(a.t) }));
     return el('div', { class: 'legal-row' + (compact ? ' compact' : '') },
       el('div', { class: 'legal-who' }, el('b', {}, a.name), a.text ? el('span', {}, a.text) : '', meta),
       el('div', { class: 'legal-num' }, num, a.signal ? el('span', { class: 'legal-sig', title: 'Joignable sur Signal' }, 'Signal') : ''),
@@ -1451,19 +1499,18 @@
     const groups = legalGroups(), first = groups[0];
     $('#legalNone').hidden = !!first;
     $('#legalOther').hidden = groups.length < 2;
-    if (!first) { $('#legalTitle').textContent = 'Legal team'; return; }
+    if (!first) { $('#legalTitle').textContent = t('Legal team'); return; }
     const far = first.d > 80000;
-    $('#legalTitle').textContent = far ? `Aucune legal team connue près de toi · la plus proche : ${first.city} (${kmTxt(first.d)})`
-      : `Legal team · ${first.city}${first.d >= 5000 ? ' (' + kmTxt(first.d) + ')' : ''}`;
+    $('#legalTitle').textContent = far ? t('Aucune legal team connue près de toi · la plus proche : {city} ({d})', { city: first.city, d: kmTxt(first.d) })
+      : t('Legal team') + ' · ' + first.city + (first.d >= 5000 ? ' (' + kmTxt(first.d) + ')' : '');
     for (const a of first.items) box.append(legalRow(a, false));
-    $('#legalOtherSum').textContent = `Autres villes (${groups.length - 1})`;
+    $('#legalOtherSum').textContent = t('Autres villes ({n})', { n: groups.length - 1 });
     for (const g of groups.slice(1)) {
       other.append(el('div', { class: 'legal-city' }, g.city, el('span', {}, kmTxt(g.d))));
       for (const a of g.items) other.append(legalRow(a, true));
     }
   }
   const nearestLegal = () => legalGroups()[0]?.items[0] || null;
-  $('#btnRights').onclick = () => { closeReport(); closeSheets(); renderLegal(); $('#sheetRights').hidden = false; };
   $('#rgClose').onclick = () => closeSheets();
 
   // ---- Partage par QR code (généré sur le téléphone, marche hors ligne) ----
@@ -1481,9 +1528,8 @@
     try { navigator.wakeLock?.request('screen').catch(() => {}); } catch {}
   }
   $('#btnShare').onclick = openShare;
-  $('#btnShareTop').onclick = openShare;
   $('#shClose').onclick = () => closeSheets();
-  $('#btnNativeShare').onclick = () => navigator.share?.({ title: 'Cortège', text: 'La carte en direct des manifs, par @' + (cfg.brand?.handle || 'neru'), url: shareUrl }).catch(() => {});
+  $('#btnNativeShare').onclick = () => navigator.share?.({ title: 'Cortège', text: t('La carte en direct des manifs, par @{h}', { h: cfg.brand?.handle || 'neru' }), url: shareUrl }).catch(() => {});
   $('#btnCopyLink').onclick = async () => { try { await navigator.clipboard.writeText(shareUrl); toast('Lien copié'); } catch { toast(shareUrl); } };
 
   // ---- Espace orga / legal team ----
@@ -1503,10 +1549,10 @@
     orga = o;
     $('#btnOrga').hidden = !o;
     $('#orgaChip').hidden = !o;
-    if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : o.trial ? 'ORGA · essai' : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
+    if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : o.trial ? t('ORGA · essai') : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
     $('#orgaTrial').hidden = !(o && o.trial);
     $('#annNationalWrap').hidden = !(o && o.admin);
-    $('#btnPropose').textContent = o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif';
+    $('#btnPropose').textContent = t(o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif');
     $('#agFine').hidden = !!o;
   }
   (async () => {
@@ -1524,21 +1570,21 @@
         const res = await fetch('/api/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) { toast(body.error || 'Invitation impossible.'); }
-        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast(body.device ? 'Appareil ajouté à l’espace orga ' + body.label : 'Bienvenue ' + body.label + ' : ton accès orga est activé sur ce téléphone'); justJoined = !body.device; }
+        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast(body.device ? t('Appareil ajouté à l’espace orga {who}', { who: body.label }) : t('Bienvenue {who} : ton accès orga est activé sur ce téléphone', { who: body.label })); justJoined = !body.device; }
       } catch { toast('Pas de réseau : rouvre l’invitation quand ça capte.'); }
     }
     if (!orgaKey()) return;
     try {
       const who = await orgaFetch('/api/orga/me'); setOrga(who);
       // Premier accès : on ouvre l'espace orga pour que l'avertissement sur la perte d'accès soit lu
-      if (justJoined) setTimeout(() => $('#btnOrga').click(), 600); else toast('Mode orga : ' + who.label);
+      if (justJoined) setTimeout(() => $('#btnOrga').click(), 600); else toast(t('Mode orga : {who}', { who: who.label }));
     }
     catch (e) { toast(e.message); }
   })();
   async function ownAction(id, action, body = {}) {
     try {
       const out = await orgaFetch(`/api/reports/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
-      toast(action === 'extend' ? `Prolongé : expire dans ${left(out.exp)}` : 'Signalement corrigé');
+      toast(action === 'extend' ? t('Prolongé : expire dans {d}', { d: left(out.exp) }) : 'Signalement corrigé');
       map.closePopup(); etag = null; sync();
     } catch (e) { toast(e.message); }
   }
@@ -1559,7 +1605,7 @@
   function renderOrgaList() {
     const ol = $('#annList'); ol.textContent = '';
     const list = mineAnns || announcements;
-    $('#annListTitle').textContent = mineAnns ? (orga && orga.admin ? 'Toutes les annonces actives' : 'Tes annonces actives') : 'Annonces actives ici';
+    $('#annListTitle').textContent = t(mineAnns ? (orga && orga.admin ? 'Toutes les annonces actives' : 'Tes annonces actives') : 'Annonces actives ici');
     if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? 'Aucune annonce publiée.' : 'Aucune annonce active ici.')); return; }
     for (const a of list) {
       const mine = orga && (orga.admin || a.by === orga.label);
@@ -1569,38 +1615,38 @@
       ol.append(el('li', { class: 'ann-row' },
         el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
           el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible dans « Mes droits »'
-            : `${a.by} · ${a.national ? 'toute la France' : (a.kind === 'legal' ? 'visible partout, rangé par ville' : a.r + ' km')} · ${a.permanent ? 'permanent' : 'expire dans ' + left(a.exp)}`)), del));
+            : `${a.by} · ${a.national ? t('toute la France') : (a.kind === 'legal' ? t('visible partout, rangé par ville') : a.r + ' km')} · ${a.permanent ? t('permanent') : t('expire dans {d}', { d: left(a.exp) })}`)), del));
     }
   }
   $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); renderOrgaExtras(); loadMine(); $('#sheetOrga').hidden = false; };
   // ---- Parrainage, appareils, avertissement sur l'accès ----
-  const fmtExp = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const fmtExp = x => new Date(x).toLocaleString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   function showInviteOut(title, token, exp, fine) {
     const url = location.origin + '/?invite=' + token;
-    $('#inviteTitle').textContent = title + ' (valable jusqu’au ' + fmtExp(exp) + ', une seule fois)';
+    $('#inviteTitle').textContent = t(title) + ' ' + t('(valable jusqu’au {date}, une seule fois)', { date: fmtExp(exp) });
     $('#inviteUrl').textContent = url; $('#inviteQr').textContent = '';
     if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#inviteQr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
-    $('#inviteFine').textContent = fine;
+    $('#inviteFine').textContent = t(fine);
     $('#inviteShare').hidden = !navigator.share;
     $('#inviteOut').hidden = false; $('#inviteOut').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   $('#inviteCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#inviteUrl').textContent); toast('Lien copié'); } catch { toast($('#inviteUrl').textContent); } };
-  $('#inviteShare').onclick = () => navigator.share?.({ title: 'Cortège', text: 'Lien à usage unique, à ouvrir sur le bon appareil :', url: $('#inviteUrl').textContent }).catch(() => {});
+  $('#inviteShare').onclick = () => navigator.share?.({ title: 'Cortège', text: t('Lien à usage unique, à ouvrir sur le bon appareil :'), url: $('#inviteUrl').textContent }).catch(() => {});
   async function renderOrgaExtras() {
     $('#inviteOut').hidden = true;
     let me = orga;
     try { me = await orgaFetch('/api/orga/me'); setOrga({ ...orga, ...me }); } catch { return; }
     $('#orgaRecover').textContent = me.sponsor
-      ? `Pour retrouver un accès, il faudra une nouvelle invitation de ${me.sponsor} ou de l’admin, ce qui coupe l’ancien.`
-      : 'Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.';
+      ? t('Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien.', { who: me.sponsor })
+      : t('Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.');
     $('#orgaAccessWarn').hidden = !!me.admin;
     $('#orgaSponsored').hidden = !me.sponsored;
     if (me.sponsored) $('#orgaSponsored').textContent = `Orga parrainée par ${me.sponsor || 'une autre orga'} : surveillance renforcée jusqu’à ta confirmation. « Vérifier » compte comme une confirmation forte (le point reste contestable), 5 retraits par 5 minutes et 3 annonces par jour au maximum. Après 7 jours et 10 actions sans incident, ${me.sponsor || 'ta marraine'} ou l’admin pourra te confirmer.`;
     // Appareils
     $('#btnAddDevice').hidden = !me.canAddDevice;
     $('#deviceState').textContent = me.canAddDevice
-      ? `${me.devices || 1} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès.`
-      : 'Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil.';
+      ? t('{n} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès.', { n: me.devices || 1 })
+      : t('Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil.');
     // Invitations
     const box = $('#orgaInviteBox');
     box.hidden = !!me.trial;
@@ -1610,28 +1656,28 @@
   }
   async function renderFilleules(me) {
     const ul = $('#filleulList'); ul.textContent = '';
-    if (me && me.ban) ul.append(el('li', {}, '⛔ Invitations suspendues jusqu’au ' + fmtExp(me.ban) + ' : une orga que tu as invitée a été révoquée pour abus.'));
+    if (me && me.ban) ul.append(el('li', {}, '⛔ ' + t('Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus.', { date: fmtExp(me.ban) })));
     let d; try { d = await orgaFetch('/api/orga/filleules'); } catch (e) { return; }
     if (!d.orgas.length && !(me && me.ban)) { ul.append(el('li', { class: 'st' }, 'Aucune orga invitée pour l’instant.')); return; }
     for (const o of d.orgas) {
-      const status = !o.trial ? '✓ confirmée' : !o.active ? (o.invite ? 'invitation en attente' : 'invitation expirée') : o.ready ? 'prête à être confirmée' : `parrainée · ${o.days} j · ${o.actions} action(s)`;
+      const status = !o.trial ? '✓ ' + t('confirmée') : !o.active ? t(o.invite ? 'invitation en attente' : 'invitation expirée') : o.ready ? t('prête à être confirmée') : t('parrainée · {d} j · {n} action(s)', { d: o.days, n: o.actions });
       const li = el('li', {}, el('b', {}, o.label), el('span', { class: o.ready && o.trial ? 'ready' : 'st' }, status
         + (o.trial && o.active && !o.ready ? ` (il faut 7 j et 10 actions${o.bursts || o.restored ? ', et aucun incident : ' + (o.bursts ? o.bursts + ' rafale(s) bloquée(s) ' : '') + (o.restored ? o.restored + ' retrait(s) annulé(s) par l’admin' : '') : ''})` : '')));
       if (o.recent.length) {
         const det = el('details', {}, el('summary', {}, 'Dernières actions'));
-        for (const x of o.recent) det.append(el('div', {}, new Date(x.t).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' · ' + x.action + (x.cat && CAT[x.cat] ? ' ' + CAT[x.cat].glyph : '')));
+        for (const x of o.recent) det.append(el('div', {}, new Date(x.t).toLocaleString(I18N.locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' · ' + x.action + (x.cat && CAT[x.cat] ? ' ' + CAT[x.cat].glyph : '')));
         li.append(det);
       }
       const btns = el('div', { class: 'row-btns' });
       if (o.trial && o.ready) {
         const c = el('button', { class: 'secondary' }, 'Confirmer cette orga');
-        c.onclick = async () => { try { await orgaFetch(`/api/orga/filleules/${o.id}/confirm`, { method: 'POST', body: '{}' }); toast(o.label + ' est confirmée'); renderFilleules(me); } catch (e) { toast(e.message); } };
+        c.onclick = async () => { try { await orgaFetch(`/api/orga/filleules/${o.id}/confirm`, { method: 'POST', body: '{}' }); toast(t('{who} est confirmée', { who: o.label })); renderFilleules(me); } catch (e) { toast(e.message); } };
         btns.append(c);
       }
       const inv = el('button', { class: 'secondary' }, o.active ? 'Nouvelle invitation (accès perdu)' : 'Nouvelle invitation');
       inv.onclick = async () => {
-        if (o.active && !inv.dataset.armed) { inv.dataset.armed = '1'; inv.textContent = 'Confirmer : son accès actuel sera coupé'; return; }
-        try { const r = await orgaFetch(`/api/orga/filleules/${o.id}/invite`, { method: 'POST', body: '{}' }); showInviteOut('Invitation pour ' + r.label, r.invite, r.exp, 'Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé.'); renderFilleules(me); } catch (e) { toast(e.message); }
+        if (o.active && !inv.dataset.armed) { inv.dataset.armed = '1'; inv.textContent = t('Confirmer : son accès actuel sera coupé'); return; }
+        try { const r = await orgaFetch(`/api/orga/filleules/${o.id}/invite`, { method: 'POST', body: '{}' }); showInviteOut(t('Invitation pour {who}', { who: r.label }), r.invite, r.exp, 'Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé.'); renderFilleules(me); } catch (e) { toast(e.message); }
       };
       btns.append(inv); li.append(btns); ul.append(li);
     }
@@ -1641,7 +1687,7 @@
     try {
       const r = await orgaFetch('/api/orga/invite', { method: 'POST', body: JSON.stringify({ label: $('#orgaInviteLabel').value }) });
       $('#orgaInviteLabel').value = '';
-      showInviteOut('Invitation pour ' + r.label, r.invite, r.exp, 'L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.');
+      showInviteOut(t('Invitation pour {who}', { who: r.label }), r.invite, r.exp, 'L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.');
       renderFilleules(orga);
     } catch (err) { toast(err.message); }
   });
@@ -1697,7 +1743,7 @@
   });
   $('#btnOrgaLogout').onclick = () => {
     const b = $('#btnOrgaLogout');
-    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)'; setTimeout(() => { delete b.dataset.armed; b.textContent = 'Quitter le mode orga sur ce téléphone'; }, 6000); return; }
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = t('Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)'); setTimeout(() => { delete b.dataset.armed; b.textContent = t('Quitter le mode orga sur ce téléphone'); }, 6000); return; }
     try { localStorage.removeItem('cortege-orga'); } catch {} setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone');
   };
 
@@ -1706,26 +1752,26 @@
   const evLayer = L.layerGroup().addTo(map);
   const evMarkers = new Map();
   let selectedEv = null;
-  const fmtWhen = t => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  const fmtHour = t => new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const fmtWhen = x => new Date(x).toLocaleString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const fmtHour = x => new Date(x).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' });
   // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
   // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda
   const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
   evCount = () => evCache.e.filter(e => map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now()).length;
   map.on('zoomend', () => { const z = map.getZoom() >= 9; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
   function evPopup(e) {
-    const t = EVT[e.type] || { glyph: '📍', label: '' };
+    const ty = EVT[e.type] || { glyph: '📍', label: '' };
     const root = el('div');
-    root.append(el('div', { class: 'pop-title' }, t.glyph + ' ', e.title));
-    root.append(el('div', { class: 'pop-meta' }, `${t.label} · ${fmtWhen(e.start)}`));
+    root.append(el('div', { class: 'pop-title' }, ty.glyph + ' ', e.title));
+    root.append(el('div', { class: 'pop-meta' }, `${ty.label} · ${fmtWhen(e.start)}`));
     root.append(el('div', { class: 'pop-meta' }, '📍 ' + e.place + (me ? ' · ' + fmtDist(dist(me, [e.lat, e.lng])) : '')));
     if (e.note) root.append(el('p', { class: 'pop-note' }, e.note));
-    root.append(el('div', { class: 'pop-meta' }, 'Publié par ' + e.by));
+    root.append(el('div', { class: 'pop-meta' }, t('Publié par {who}', { who: e.by })));
     if (e.link) root.append(el('a', { class: 'ann-link', href: e.link, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la carte d’origine →'));
     if (orga && (orga.admin || e.by === orga.label)) {
       const rm = el('button', { class: 'danger' }, 'Retirer cet événement');
       rm.onclick = async () => {
-        if (!rm.dataset.armed) { rm.dataset.armed = '1'; rm.textContent = 'Confirmer le retrait'; return; }
+        if (!rm.dataset.armed) { rm.dataset.armed = '1'; rm.textContent = t('Confirmer le retrait'); return; }
         try { await orgaFetch('/api/events/' + e.id, { method: 'DELETE' }); toast('Événement retiré'); map.closePopup(); sync(); } catch (err) { toast(err.message); }
       };
       root.append(el('div', { class: 'pop-actions orga', style: 'grid-template-columns:1fr' }, rm));
@@ -1735,13 +1781,13 @@
   function renderEvents() {
     evLayer.clearLayers(); evMarkers.clear();
     for (const e of evCache.e.filter(evOnMap)) {
-      const t = EVT[e.type] || { glyph: '📍' };
+      const ty = EVT[e.type] || { glyph: '📍' };
       if (e.route) {
         L.polyline(e.route, { color: '#ec9fa4', weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
-        if (e.end) L.marker(e.route[e.route.length - 1], { icon: L.divIcon({ className: '', iconSize: [30, 30], html: '<div class="ev-end">🏁</div>' }), title: 'Dispersion prévue', keyboard: false })
-          .bindPopup(() => el('div', {}, 'Dispersion prévue : ' + e.title)).addTo(evLayer);
+        if (e.end) L.marker(e.route[e.route.length - 1], { icon: L.divIcon({ className: '', iconSize: [30, 30], html: '<div class="ev-end">🏁</div>' }), title: t('Dispersion prévue'), keyboard: false })
+          .bindPopup(() => el('div', {}, t('Dispersion prévue : {title}', { title: e.title }))).addTo(evLayer);
       }
-      const m = L.marker([e.lat, e.lng], { icon: L.divIcon({ className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -18], html: `<div class="ev-pin">${t.glyph}</div>` }),
+      const m = L.marker([e.lat, e.lng], { icon: L.divIcon({ className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -18], html: `<div class="ev-pin">${ty.glyph}</div>` }),
         title: e.title, zIndexOffset: 500 }).bindPopup(() => evPopup(e)).addTo(evLayer);
       evMarkers.set(e.id, m);
     }
@@ -1756,21 +1802,33 @@
     list.sort((a, b) => a.start - b.start);
     const ol = $('#agList'); ol.textContent = '';
     $('#agEmpty').hidden = list.length > 0;
-    $('#agEmpty').textContent = scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
-      : me ? 'Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».' : 'Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».';
+    $('#agEmpty').textContent = t(scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
+      : me ? 'Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».' : 'Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».');
     let day = '';
-    if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, `${list.length} événements : les 200 premiers`));
+    if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, t('{n} événements : les 200 premiers', { n: list.length })));
     for (const e of list.slice(0, 200)) {
-      const d = e.start < now ? 'En cours' : new Date(e.start).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const d = agDay(e, now);
       if (d !== day) { day = d; ol.append(el('li', { class: 'ag-day' }, d)); }
-      const t = EVT[e.type] || { glyph: '📍' };
-      const btn = el('button', { 'aria-label': e.title },
-        el('span', { class: 'g', style: '--c:var(--accent)' }, t.glyph),
-        el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`)),
-        el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
-      btn.onclick = () => showEvent(e);
-      ol.append(el('li', {}, btn));
+      ol.append(agRow(e, ref));
     }
+  }
+  const agDay = (e, now) => e.start < now ? t('En cours') : new Date(e.start).toLocaleDateString(I18N.locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  function agRow(e, ref) {
+    const ty = EVT[e.type] || { glyph: '📍' };
+    const btn = el('button', { 'aria-label': e.title },
+      el('span', { class: 'g', style: '--c:var(--accent)' }, ty.glyph),
+      el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`)),
+      el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
+    btn.onclick = () => showEvent(e);
+    return el('li', {}, btn);
+  }
+  // Infos : les 4 prochains événements à moins de 50 km
+  function feedAgenda(ref) {
+    const now = Date.now(), ol = $('#feedAg'); ol.textContent = '';
+    const list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now && dist(ref, [e.lat, e.lng]) <= 50_000).sort((a, b) => a.start - b.start).slice(0, 4);
+    $('#feedAgEmpty').hidden = list.length > 0;
+    let day = '';
+    for (const e of list) { const d = agDay(e, now); if (d !== day) { day = d; ol.append(el('li', { class: 'ag-day' }, d)); } ol.append(agRow(e, ref)); }
   }
   function showEvent(e) {
     closeSheets(); setFollow(false);
@@ -1786,15 +1844,15 @@
     const S = ordState = { h: null, o: [], hidden: new Set(), layer: L.layerGroup().addTo(map), timer: null, later: () => { clearTimeout(S.timer); S.timer = setTimeout(renderOrdBar, 400); } };
     try { S.hidden = new Set(JSON.parse(sessionStorage.getItem('cortege-ord-hidden') || '[]')); } catch {}
     const OK = Object.fromEntries((cfg.orderKinds || []).map(k => [k.id, k]));
-    const kindOf = k => OK[k] || { glyph: 'ℹ', label: 'Information' };
+    const kindOf = k => OK[k] || { glyph: 'ℹ', label: t('Information') };
     // Point dans une zone (anneaux GeoJSON [lng, lat], trous compris)
     const inRing = (lng, lat, r) => { let inside = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
     const inZone = (o, lat, lng) => !!o.b && lat >= o.b[0] && lat <= o.b[2] && lng >= o.b[1] && lng <= o.b[3] && o.p.some(poly => inRing(lng, lat, poly[0]) && !poly.slice(1).some(h => inRing(lng, lat, h)));
-    const day = t => new Date(t).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-    const hour = t => { const d = new Date(t); return d.getHours() + ' h' + (d.getMinutes() ? String(d.getMinutes()).padStart(2, '0') : ''); };
-    const fmtD = t => day(t) + ' à ' + hour(t);
-    const span = o => o.start <= Date.now() ? `jusqu’au ${fmtD(o.end)}` : day(o.start) === day(o.end) ? `${day(o.start)} de ${hour(o.start)} à ${hour(o.end)}` : `du ${fmtD(o.start)} au ${fmtD(o.end)}`;
-    const where = o => o.scope === 'dep' ? `${o.name} (tout le département)` : o.name;
+    const day = x => new Date(x).toLocaleDateString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short' });
+    const hour = x => { const d = new Date(x); return I18N.lang === 'fr' ? d.getHours() + ' h' + (d.getMinutes() ? String(d.getMinutes()).padStart(2, '0') : '') : d.toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }); };
+    const fmtD = x => t('{day} à {hour}', { day: day(x), hour: hour(x) });
+    const span = o => o.start <= Date.now() ? t('jusqu’au {date}', { date: fmtD(o.end) }) : day(o.start) === day(o.end) ? t('{day} de {from} à {to}', { day: day(o.start), from: hour(o.start), to: hour(o.end) }) : t('du {from} au {to}', { from: fmtD(o.start), to: fmtD(o.end) });
+    const where = o => o.scope === 'dep' ? t('{name} (tout le département)', { name: o.name }) : o.name;
     // Mesures à afficher : en cours ou qui commencent dans les 4 jours
     const current = () => { const now = Date.now(); return S.o.filter(o => o.end > now && o.start < now + 4 * 24 * 3600e3); };
     const here = () => {
@@ -1809,6 +1867,7 @@
       try { S.o = (await getJ('/live/ord.json')).o || []; S.h = h; renderOrdBar(); } catch {}
     };
     function renderOrdBar() {
+      feedBadge();
       const box = $('#ordBar'), list = here().filter(o => !S.hidden.has(o.id));
       box.textContent = ''; box.hidden = !list.length;
       if (!list.length) return;
@@ -1816,13 +1875,14 @@
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer ce bandeau' }, '×');
       close.onclick = e => { e.stopPropagation(); list.forEach(x => S.hidden.add(x.id)); try { sessionStorage.setItem('cortege-ord-hidden', JSON.stringify([...S.hidden])); } catch {} renderOrdBar(); };
       const bar = el('div', { class: 'ann ord' + (live ? ' live' : ''), role: 'button', tabindex: '0' },
-        el('div', { class: 'ann-meta' }, (live ? '⚠ Arrêté en vigueur · ' : '📅 Arrêté à venir · ') + where(o) + (list.length > 1 ? ` · +${list.length - 1} autre(s)` : '')),
+        el('div', { class: 'ann-meta' }, (live ? '⚠ ' + t('Arrêté en vigueur') : '📅 ' + t('Arrêté à venir')) + ' · ' + where(o) + (list.length > 1 ? ' · ' + tn(list.length - 1, '+{n} autre', '+{n} autres') : '')),
         el('div', { class: 'ann-text' }, o.items.map(x => kindOf(x.k).glyph + ' ' + x.text).join('  ·  ')),
-        el('div', { class: 'ann-meta' }, span(o) + ' · touche pour les détails'), close);
+        el('div', { class: 'ann-meta' }, span(o) + ' · ' + t('touche pour les détails')), close);
       bar.onclick = () => openOrders(list.map(x => x.id));
       bar.onkeydown = e => { if (e.key === 'Enter') bar.onclick(); };
       box.append(bar);
     }
+
     map.on('moveend', () => S.later());
     setInterval(renderOrdBar, 60_000);
     function showZone(o) {
@@ -1831,17 +1891,18 @@
       closeSheets(); map.fitBounds(shape.getBounds(), { padding: [30, 30] });
       setTimeout(() => S.layer.clearLayers(), 20_000);
     }
-    function orderCard(o) {
-      const card = el('article', { class: 'ord-card' },
+    function orderCard(o, isHere) {
+      const card = el('article', { class: 'ord-card' + (isHere ? ' here' : '') },
         el('h3', {}, (o.start <= Date.now() ? '⚠ ' : '📅 ') + where(o)),
         el('p', { class: 'fine' }, span(o)));
       const ul = el('ul', { class: 'ord-items' });
-      for (const x of o.items) { const k = kindOf(x.k); ul.append(el('li', {}, el('span', { 'aria-hidden': 'true' }, k.glyph), el('span', {}, el('b', {}, k.label + ' : '), x.text))); }
+      for (const x of o.items) { const k = kindOf(x.k); ul.append(el('li', {}, el('span', { 'aria-hidden': 'true' }, k.glyph), el('span', {}, el('b', {}, k.label + (I18N.lang === 'fr' ? ' : ' : ': ')), x.text))); }
       card.append(ul);
       const zone = el('button', { class: 'secondary' }, 'Voir la zone sur la carte'); zone.onclick = () => showZone(o);
-      card.append(el('p', { class: 'fine' }, 'Source : ', el('a', { href: o.src, target: '_blank', rel: 'noopener noreferrer' }, o.host || 'ouvrir'), o.ok ? ` · vérifié le ${new Date(o.ok).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}` : ''), zone);
+      card.append(el('p', { class: 'fine' }, t('Source :') + ' ', el('a', { href: o.src, target: '_blank', rel: 'noopener noreferrer' }, o.host || t('ouvrir')), o.ok ? ' · ' + t('vérifié le {date}', { date: new Date(o.ok).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'long' }) }) : ''), zone);
       return card;
     }
+    S.here = here; S.card = orderCard; S.count = () => current().length;
     function openOrders(ids) {
       closeReport(); closeSheets();
       const box = $('#ordList'); box.textContent = '';
@@ -1900,12 +1961,12 @@
   const drawLayer = L.layerGroup().addTo(map);
   (function buildEvTypes() {
     const box = $('#evTypes');
-    (cfg.eventTypes || []).forEach((t, i) => {
-      const input = el('input', { type: 'radio', name: 'evType', value: t.id }); input.checked = i === 0;
-      box.append(el('label', {}, input, ' ' + t.glyph + ' ' + t.label));
+    (cfg.eventTypes || []).forEach((ty, i) => {
+      const input = el('input', { type: 'radio', name: 'evType', value: ty.id }); input.checked = i === 0;
+      box.append(el('label', {}, input, ' ' + ty.glyph + ' ' + ty.label));
     });
   })();
-  const localInput = t => { const d = new Date(t); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+  const localInput = x => { const d = new Date(x); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
   function routeLength(r) { let m = 0; for (let i = 1; i < r.length; i++) m += map.distance(r[i - 1], r[i]); return m; }
   function redrawDraft() {
     drawLayer.clearLayers();
@@ -1913,16 +1974,16 @@
     if (n > 1) L.polyline(r, { color: '#ec9fa4', weight: 5, interactive: false }).addTo(drawLayer);
     r.forEach((p, i) => L.marker(p, { interactive: false, keyboard: false,
       icon: i === 0 ? L.divIcon({ className: '', iconSize: [38, 38], html: '<div class="ev-pin">📍</div>' }) : L.divIcon({ className: '', iconSize: [14, 14], html: '<div class="draw-pt"></div>' }) }).addTo(drawLayer));
-    $('#drawCount').textContent = !n ? 'Aucun point' : n === 1 ? 'Rendez-vous placé' : `Rendez-vous + ${n - 1} point${n > 2 ? 's' : ''} de parcours`;
-    $('#evRouteState').textContent = !n ? 'Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours.'
-      : n === 1 ? 'Rendez-vous placé, sans parcours.' : `Rendez-vous placé, parcours de ${fmtDist(routeLength(r))}.`;
-    $('#btnDraw').textContent = n ? 'Modifier sur la carte' : 'Placer le rendez-vous sur la carte';
+    $('#drawCount').textContent = !n ? t('Aucun point') : n === 1 ? t('Rendez-vous placé') : tn(n - 1, 'Rendez-vous + {n} point de parcours', 'Rendez-vous + {n} points de parcours');
+    $('#evRouteState').textContent = !n ? t('Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours.')
+      : n === 1 ? t('Rendez-vous placé, sans parcours.') : t('Rendez-vous placé, parcours de {d}.', { d: fmtDist(routeLength(r)) });
+    $('#btnDraw').textContent = t(n ? 'Modifier sur la carte' : 'Placer le rendez-vous sur la carte');
   }
   function openEventForm(asOrga) {
     closeReport(); closeSheets();
     evAsOrga = asOrga;
-    $('#evTitle').textContent = asOrga ? 'Publier un événement' : 'Proposer une mobilisation';
-    $('#evSubmit').textContent = asOrga ? 'Publier' : 'Envoyer la proposition';
+    $('#evTitle').textContent = t(asOrga ? 'Publier un événement' : 'Proposer une mobilisation');
+    $('#evSubmit').textContent = t(asOrga ? 'Publier' : 'Envoyer la proposition');
     if (!$('#evStart').value) { const d = new Date(Date.now() + 60 * MIN); d.setMinutes(0, 0, 0); $('#evStart').value = localInput(d); }
     redrawDraft();
     $('#sheetEvent').hidden = false;
@@ -1968,12 +2029,12 @@
   const sosGet = () => { try { return JSON.parse(localStorage.getItem('cortege-sos') || 'null'); } catch { return null; } };
   function sosMessage() {
     const who = document.querySelector('input[name="sosWho"]:checked').value;
-    const hour = fmtHour(Date.now()).replace(':', ' h ');
-    let s = who === 'me' ? `Je viens d’être interpellé·e (${hour})` : `Quelqu’un de mon groupe vient d’être interpellé·e (${hour})`;
-    if (me) { const la = me[0].toFixed(4), lo = me[1].toFixed(4); s += ` ici : https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=17/${la}/${lo}`; }
+    const hour = I18N.lang === 'fr' ? fmtHour(Date.now()).replace(':', ' h ') : fmtHour(Date.now());
+    let s = t(who === 'me' ? 'Je viens d’être interpellé·e ({hour})' : 'Quelqu’un de mon groupe vient d’être interpellé·e ({hour})', { hour });
+    if (me) { const la = me[0].toFixed(4), lo = me[1].toFixed(4); s += ' ' + t('ici : {url}', { url: `https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=17/${la}/${lo}` }); }
     const legal = nearestLegal();
-    s += legal && legal.d < 80000 ? `. Préviens la legal team : ${legal.phone} (${legal.name}).` : '. Préviens la legal team de la manif.';
-    s += ' Message envoyé avec Cortège.';
+    s += '. ' + (legal && legal.d < 80000 ? t('Préviens la legal team : {phone} ({name}).', { phone: legal.phone, name: legal.name }) : t('Préviens la legal team de la manif.'));
+    s += ' ' + t('Message envoyé avec Cortège.');
     return s;
   }
   function sosLink() {
@@ -2042,12 +2103,12 @@
   function openNews() {
     if (!news) return;
     closeReport(); closeSheets();
-    $('#nwTitle').textContent = 'Nouveautés';
+    $('#nwTitle').textContent = t('Nouveautés');
     const box = $('#newsList'); box.textContent = '';
     // Les dernières versions, la plus récente en premier
     for (const [i, v] of (news.history || [{ version: news.version, items: news.items }]).entries()) {
-      box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, 'Version ' + v.version));
-      for (const [t, d] of v.items) box.append(el('li', {}, el('b', {}, t), el('span', {}, d)));
+      box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, t('Version {v}', { v: v.version })));
+      for (const [ti, d] of v['items_' + I18N.lang] || v.items) box.append(el('li', {}, el('b', {}, ti), el('span', {}, d)));
     }
     $('#sheetNews').hidden = false;
     try { localStorage.setItem('cortege-news', news.version); } catch {}
@@ -2058,7 +2119,7 @@
   let returning = false; try { returning = !!localStorage.getItem('cortege-seen'); } catch {}
   loadNews().then(n => {
     if (!n) return;
-    $('#newsVersion').textContent = 'Version ' + (cfg.version || n.version);
+    $('#newsVersion').textContent = t('Version {v}', { v: cfg.version || n.version });
     let seen = null; try { seen = localStorage.getItem('cortege-news'); } catch {}
     if (seen === n.version) return;
     if (!returning) { try { localStorage.setItem('cortege-news', n.version); } catch {} return; }
@@ -2068,7 +2129,7 @@
   $('#btnEmbed').onclick = () => {
     closeReport(); closeSheets();
     const c = map.getCenter(), src = `${location.origin}/embed.html?lat=${c.lat.toFixed(3)}&lng=${c.lng.toFixed(3)}&z=${Math.min(15, Math.max(10, map.getZoom()))}`;
-    $('#embedCode').value = `<iframe src="${src}" width="100%" height="480" style="border:0;border-radius:12px" loading="lazy" title="Carte en direct des manifs (Cortège)"></iframe>`;
+    $('#embedCode').value = `<iframe src="${src}" width="100%" height="480" style="border:0;border-radius:12px" loading="lazy" title="${t('Carte en direct des manifs (Cortège)')}"></iframe>`;
     $('#embedOpen').href = src;
     $('#sheetEmbed').hidden = false;
   };
@@ -2076,7 +2137,7 @@
   $('#embedCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#embedCode').value); toast('Code copié'); } catch { $('#embedCode').select(); } };
   try {
     navigator.getBattery?.().then(b => {
-      const check = () => { if (!eco && !b.charging && b.level <= 0.2 && !check.done) { check.done = true; toast('Batterie faible : active l’économie de batterie dans « ? »'); } };
+      const check = () => { if (!eco && !b.charging && b.level <= 0.2 && !check.done) { check.done = true; toast('Batterie faible : active l’économie de batterie dans « Plus »'); } };
       check(); b.addEventListener('levelchange', check);
     }).catch(() => {});
   } catch {}
@@ -2090,7 +2151,7 @@
   const savePushOpts = () => { try { localStorage.setItem('cortege-push-opts', JSON.stringify(pushOpts)); } catch {} };
   function bellState() {
     const on = !!pushSub; $('#btnNotif').dataset.on = on ? '1' : '0';
-    $('#btnNotif .ico').textContent = on ? '🔔' : '🔕'; $('#notifSub').textContent = on ? 'Activées sur ce téléphone' : 'Pas encore activées';
+    $('#btnNotif .ico').textContent = on ? '🔔' : '🔕'; $('#notifSub').textContent = t(on ? 'Activées sur ce téléphone' : 'Pas encore activées');
   }
   // Le serveur ne reçoit qu'une zone arrondie à 0,1° (≈ 10 km), mise à jour quand tu changes de zone
   async function pushSend(sub, force) {
@@ -2103,20 +2164,20 @@
     if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || 'Abonnement impossible.'); }
     try { localStorage.setItem('cortege-push-zone', key); } catch {}
   }
-  if (isIOS && !standalone) $('#pushHelp').textContent += ' Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.';
+  if (isIOS && !standalone) $('#pushHelp').textContent += ' ' + t('Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.');
   function syncSwitches() { $('#optPush').checked = !!pushSub && pushOpts.urgent; $('#optNear').checked = !!pushSub && pushOpts.near; $('#pushTestBox').hidden = !pushSub; bellState(); }
   // Notification de test envoyée par le serveur : vérifie toute la chaîne, pas seulement le vibreur du téléphone
   $('#btnPushTest').onclick = async () => {
     const b = $('#btnPushTest'), msg = $('#pushTestMsg');
     if (!pushSub) return;
-    b.disabled = true; msg.textContent = 'Envoi…';
+    b.disabled = true; msg.textContent = t('Envoi…');
     try {
       await pushSend(pushSub, true).catch(() => {});
       const res = await fetch('/api/push/test', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ endpoint: pushSub.endpoint }) });
       const out = await res.json().catch(() => ({}));
-      msg.textContent = res.ok ? 'Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone.'
-        : (out.error || 'Envoi impossible.');
-    } catch { msg.textContent = 'Pas de réseau : réessaie quand ça capte.'; }
+      msg.textContent = res.ok ? t('Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone.')
+        : t(out.error || 'Envoi impossible.');
+    } catch { msg.textContent = t('Pas de réseau : réessaie quand ça capte.'); }
     setTimeout(() => { b.disabled = false; }, 4000);
   };
   if (pushOK) navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
@@ -2164,7 +2225,7 @@
     b.onclick = () => { try { navigator.vibrate?.(cfg.vibes?.[id] || [200]); } catch {} };
     $('#vibeList').append(el('li', {}, el('span', {}, CAT[id].glyph + ' ' + CAT[id].label, el('small', {}, VIBE_TXT[id])), ...(navigator.vibrate ? [b] : [])));
   }
-  if (!navigator.vibrate) $('#vibeNote').textContent = 'Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications.';
+  if (!navigator.vibrate) $('#vibeNote').textContent = t('Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications.');
   function openNotif() { closeReport(); closeSheets(); syncSwitches(); $('#sheetNotif').hidden = false; }
   $('#btnNotif').onclick = openNotif;
   $('#btnNotifInfo').onclick = openNotif;
@@ -2179,7 +2240,7 @@
     const st = prepGet();
     prepBoxes.forEach(b => (b.checked = !!st[b.dataset.k]));
     const done = prepBoxes.filter(b => b.checked).length;
-    $('#prepCount').textContent = `${done} / ${prepBoxes.length} prêt${done > 1 ? 's' : ''}`;
+    $('#prepCount').textContent = tn(done, '{n} / {total} prêt', '{n} / {total} prêts', { total: prepBoxes.length });
   }
   prepBoxes.forEach(b => b.addEventListener('change', () => {
     const st = prepGet(); st[b.dataset.k] = b.checked;
@@ -2201,7 +2262,7 @@
   const rallyLink = p => `https://www.openstreetmap.org/?mlat=${p[0].toFixed(5)}&mlon=${p[1].toFixed(5)}#map=18/${p[0].toFixed(5)}/${p[1].toFixed(5)}`;
   function rallyShare() {
     const p = rallyGet(); if (!p) return;
-    const text = `Point de ralliement si on se perd en manif : ${rallyLink(p)}`;
+    const text = t('Point de ralliement si on se perd en manif : {url}', { url: rallyLink(p) });
     if (navigator.share) navigator.share({ text }).catch(() => {});
     else navigator.clipboard?.writeText(text).then(() => toast('Lien copié : colle-le dans ton groupe'), () => toast(text));
   }
@@ -2221,7 +2282,7 @@
           return root;
         }).addTo(map);
     }
-    $('#rallyState').textContent = p ? `Point de ralliement placé${me ? ', à ' + fmtDist(dist(me, p)) + ' de toi' : ''}.` : 'Aucun point de ralliement.';
+    $('#rallyState').textContent = p ? (me ? t('Point de ralliement placé, à {d} de toi.', { d: fmtDist(dist(me, p)) }) : t('Point de ralliement placé.')) : t('Aucun point de ralliement.');
     $('#rallyShare').disabled = !p;
   }
   function startPick() {
@@ -2248,6 +2309,101 @@
   $('#pickCancel').onclick = () => endPick(false);
   rallyRender();
 
+  // ---- Infos : arrêtés ici, annonces des orgas, agenda proche ----
+  function annCard(a) {
+    return el('div', { class: 'ann ' + a.level },
+      el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
+      el('div', { class: 'ann-text' }, a.text),
+      a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '');
+  }
+  function renderFeed() {
+    const c = map.getCenter(), ref = me || [c.lat, c.lng];
+    $('#feedWhere').textContent = t(me ? 'Autour de ta position.' : 'Autour du centre de la carte. Active ta position pour voir ce qui te concerne.');
+    const ob = $('#feedOrd'); ob.textContent = '';
+    const ords = ordState && ordState.here ? ordState.here() : [];
+    for (const o of ords) ob.append(ordState.card(o, true));
+    if (!ords.length) ob.append(el('p', { class: 'empty' }, ordState && ordState.count && ordState.count() ? 'Aucun arrêté connu ici. D’autres sont en vigueur ailleurs en France.' : 'Aucun arrêté ni restriction connus en ce moment.'));
+    const ab = $('#feedAnn'); ab.textContent = '';
+    const anns = announcements.filter(a => a.kind === 'info').sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
+    for (const a of anns) ab.append(annCard(a));
+    if (!anns.length) ab.append(el('p', { class: 'empty' }, 'Aucune annonce d’orga dans cette zone pour l’instant.'));
+    feedAgenda(ref);
+    feedBadge();
+  }
+  // Pastille de l'onglet Infos : arrêtés qui concernent la zone, annonces urgentes
+  function feedBadge() {
+    const b = $('#infosBadge'); if (!b) return;
+    const n = (ordState && ordState.here ? ordState.here().length : 0) + announcements.filter(a => a.kind === 'info' && a.level === 'urgent').length;
+    b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
+    $('#tabInfos').setAttribute('aria-label', n ? `Infos, ${n} à lire` : 'Infos');
+  }
+
+  // ---- Mode manif : la carte, Signaler, SOS et Droits, rien d'autre ----
+  let manif = false; try { manif = localStorage.getItem('cortege-manif') === '1'; } catch {}
+  function setManif(on) {
+    manif = on; document.body.classList.toggle('manif', on);
+    try { localStorage.setItem('cortege-manif', on ? '1' : '0'); } catch {}
+    $('#manifTitle').textContent = t('Mode manif') + (cfg.banner && cfg.event ? ' · ' + t(cfg.event) : '');
+  }
+  $('#btnManif').onclick = () => { closeSheets(); setManif(true); if (watchId == null) locate(); toast('Mode manif. « Quitter » en haut pour revenir à l’appli complète.'); };
+  $('#manifExit').onclick = () => setManif(false);
+  $('#mbSos').onclick = openSos;
+  $('#mbLegal').onclick = () => openPage('#sheetRights');
+  setManif(manif);
+
+  // ---- Alerte vocale : la voix du téléphone lit les dangers proches (rien ne part sur Internet) ----
+  function say(text) {
+    if (!voice || !canSpeak) return;
+    try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = I18N.locale; u.rate = 1.05; speechSynthesis.speak(u); } catch {}
+  }
+  function spokenDist(m) {
+    return m < 1000 ? t('{n} mètres', { n: Math.round(m / 10) * 10 }) : t('{n} kilomètres', { n: (m / 1000).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') });
+  }
+  $('#optVoice').checked = voice;
+  $('#btnVoiceTest').hidden = !voice;
+  if (!canSpeak) { $('#optVoice').disabled = true; $('#optVoice').closest('label').append(el('span', { class: 'fine' }, 'Ce navigateur ne sait pas lire à voix haute.')); }
+  $('#optVoice').addEventListener('change', e => {
+    voice = e.target.checked;
+    try { localStorage.setItem('cortege-voice', voice ? '1' : '0'); } catch {}
+    $('#btnVoiceTest').hidden = !voice;
+    if (voice) say(t('Alerte vocale activée'));
+  });
+  $('#btnVoiceTest').onclick = () => say(t('{what}, à {d}', { what: CAT.charge ? CAT.charge.label : t('Charge'), d: spokenDist(120) }));
+
+  // ---- Langue ----
+  $('#optLang').value = I18N.lang;
+  $('#optLang').addEventListener('change', e => { I18N.set(e.target.value); reloadForUpdate(); });
+
+  // ---- Tout effacer d'un geste : appui long de 2 secondes (au clavier : deux fois Entrée) ----
+  async function wipeAll() {
+    document.querySelectorAll('[data-wipe] b').forEach(b => (b.textContent = t('Effacement…')));
+    try { await Promise.race([pushDisable(), new Promise(r => setTimeout(r, 1500))]); } catch {}
+    try { localStorage.clear(); } catch {}
+    try { sessionStorage.clear(); } catch {}
+    try { indexedDB.deleteDatabase('cortege'); } catch {}
+    try { for (const k of await caches.keys()) await caches.delete(k); } catch {}
+    try { for (const r of (await navigator.serviceWorker?.getRegistrations?.()) || []) await r.unregister(); } catch {}
+    location.replace('about:blank');
+  }
+  document.querySelectorAll('[data-wipe]').forEach(b => {
+    const small = b.querySelector('small'), hint = small.textContent;
+    let timer = null;
+    const stop = () => { clearTimeout(timer); timer = null; b.classList.remove('holding'); };
+    b.addEventListener('pointerdown', e => {
+      if (e.button > 0) return;
+      e.preventDefault(); b.classList.add('holding');
+      timer = setTimeout(() => { timer = null; wipeAll(); }, 2000);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => { if (timer) stop(); }));
+    b.addEventListener('contextmenu', e => e.preventDefault());
+    b.addEventListener('click', e => {
+      if (e.detail !== 0) { if (!b.classList.contains('holding')) toast('Garde le doigt appuyé 2 secondes pour tout effacer'); return; }
+      if (b.dataset.armed) return wipeAll();
+      b.dataset.armed = '1'; b.classList.add('armed'); small.textContent = t('Appuie encore une fois pour tout effacer');
+      setTimeout(() => { delete b.dataset.armed; b.classList.remove('armed'); small.textContent = hint; }, 5000);
+    });
+  });
+
   // Premier lancement : on montre les réflexes (et la carte @neru) une fois
   try { if (!localStorage.getItem('cortege-seen')) { $('#sheetInfo').hidden = false; localStorage.setItem('cortege-seen', '1'); } } catch {}
 
@@ -2266,7 +2422,7 @@
     const tip = $('.tip-browse'); if (tip) tip.hidden = false;
   }
   const readyInfo = () => { try { return JSON.parse(localStorage.getItem('cortege-ready') || 'null'); } catch { return null; } };
-  const showReady = () => { const r = readyInfo(); if (r) $('#prefetchState').textContent = `Dernière préparation : ${new Date(r.at).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}${r.city ? ', ' + r.city : ''}.`; };
+  const showReady = () => { const r = readyInfo(); if (r) $('#prefetchState').textContent = t('Dernière préparation : {date}', { date: new Date(r.at).toLocaleString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (r.city ? ', ' + r.city : '') }) + '.'; };
   showReady();
   $('#btnPrefetch').onclick = async () => {
     const state = $('#prefetchState'), btn = $('#btnPrefetch');
@@ -2282,13 +2438,13 @@
           const se = map.project(b.getSouthEast(), z).divideBy(256).floor();
           for (let x = nw.x; x <= se.x; x++) for (let y = nw.y; y <= se.y; y++) urls.push(vec ? `/vt/${z}/${x}/${y}.mvt` : `/tiles/${z}/${x}/${y}.png`);
         }
-        if (urls.length > 2500) { state.textContent = 'Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie.'; return; }
+        if (urls.length > 2500) { state.textContent = t('Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie.'); return; }
         for (let i = 0; i < urls.length; i += 6) {
           await Promise.all(urls.slice(i, i + 6).map(u => fetch(u).then(async r => { if (r.ok || r.status === 204) { tiles++; bytes += (await r.arrayBuffer()).byteLength; } else failed++; }).catch(() => failed++)));
-          state.textContent = `Carte : ${tiles} / ${urls.length} morceaux…`;
+          state.textContent = t('Carte : {n} / {total} morceaux…', { n: tiles, total: urls.length });
         }
       }
-      state.textContent = 'Numéros, annonces, agenda et lieux…';
+      state.textContent = t('Numéros, annonces, agenda et lieux…');
       await poiPrefetch().catch(() => {});
       const [legal, ann] = await Promise.all([getJ('/live/legal.json').catch(() => ({ l: [] })), getJ('/live/ann.json').catch(() => ({ a: [] })), getJ('/live/events.json').catch(() => null)]);
       if (legal && legal.l) legalCache = { h: legalCache.h, l: legal.l };
@@ -2296,10 +2452,10 @@
       await navigator.serviceWorker?.ready?.catch?.(() => {});
       const n = legalCache.l.length + annCache.a.filter(a => a.kind === 'legal').length;
       const near = nearestLegal();
-      const size = bytes < 1048576 ? Math.max(1, Math.round(bytes / 1024)) + ' Ko' : (bytes / 1048576).toFixed(1).replace('.', ',') + ' Mo';
-      state.textContent = (cfg.offlineTiles ? `Prêt : carte de la zone gardée (${size})` : 'Prêt')
-        + `, ${n} numéro${n > 1 ? 's' : ''} de legal team${near && near.d < 80000 ? ' (le plus proche : ' + near.phone + ')' : ''}, annonces et agenda. `
-        + (failed ? `${failed} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau.` : 'Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos.');
+      const size = bytes < 1048576 ? Math.max(1, Math.round(bytes / 1024)) + ' ' + t('Ko') : (bytes / 1048576).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') + ' ' + t('Mo');
+      state.textContent = (cfg.offlineTiles ? t('Prêt : carte de la zone gardée ({size})', { size }) : t('Prêt'))
+        + ', ' + tn(n, '{n} numéro de legal team', '{n} numéros de legal team') + (near && near.d < 80000 ? ' ' + t('(le plus proche : {phone})', { phone: near.phone }) : '') + ', ' + t('annonces et agenda.') + ' '
+        + (failed ? t('{n} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau.', { n: failed }) : t('Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos.'));
       try { localStorage.setItem('cortege-ready', JSON.stringify({ at: Date.now(), city: legalGroups()[0]?.d < 30000 ? legalGroups()[0].city : '' })); } catch {}
     } finally { delete btn.dataset.busy; }
   };

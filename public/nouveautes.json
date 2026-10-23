@@ -1,20 +1,185 @@
 {
-  "version": "2.4",
+  "version": "2.5",
   "items": [
     [
-      "🚫 Arrêtés et couvre-feux",
-      "Manif interdite, couvre-feu, transports coupés : un bandeau s’affiche quand tu regardes la zone concernée ou que tu t’y trouves, avec la source officielle. Tu peux en signaler un depuis le menu « Arrêtés », avec un lien vers la source : il est vérifié avant d’apparaître."
+      "🧭 Nouvelle navigation",
+      "Une barre en bas : Carte, Infos, Signaler, Droits et Plus. Les arrêtés, les annonces des orgas et l’agenda sont réunis dans « Infos ». Le bouton Calques choisit ce que montre la carte (types de signalements, agenda, lieux, caméras)."
     ],
     [
-      "📷 Caméras de surveillance",
-      "Nouvelle puce « Caméras » : en zoomant au plus près, les caméras qui filment la rue. Rouge : publique. Orange : privée. Le cône montre la direction filmée quand elle est connue. Recensement bénévole d’OpenStreetMap, donc incomplet : une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
+      "✊ Mode manif",
+      "Dans « Plus » : la carte, un gros bouton Signaler, le SOS et la legal team, rien d’autre. Pour le jour J."
     ],
     [
-      "🏛 Lieux plus complets",
-      "Les vraies préfectures et les centres de rétention, avec les horaires, les téléphones et les services d’urgences des hôpitaux quand ils sont connus. Mise à jour chaque mois."
+      "🌍 English, español, العربية",
+      "L’appli parle aussi anglais, espagnol et arabe. Elle choisit la langue du téléphone ; tu peux la changer dans « Plus », Réglages."
+    ],
+    [
+      "🔊 Alerte vocale",
+      "Un danger signalé près de toi peut être lu à voix haute, pratique avec des écouteurs. À activer dans Alertes."
+    ],
+    [
+      "🧹 Tout effacer d’un geste",
+      "Dans « Droits » et « Plus » : garde le doigt appuyé 2 secondes et Cortège efface tout ce qu’il garde sur ton téléphone."
+    ]
+  ],
+  "items_en": [
+    [
+      "🧭 New navigation",
+      "A bar at the bottom: Map, News, Report, Rights and More. Bans, organiser announcements and the calendar are gathered under “News”. The layers button chooses what the map shows (types of reports, calendar, places, cameras)."
+    ],
+    [
+      "✊ Protest mode",
+      "In “More”: the map, a big Report button, SOS and the legal team, nothing else. For the day itself."
+    ],
+    [
+      "🌍 English, español, العربية",
+      "The app now speaks English, Spanish and Arabic. It uses your phone’s language; you can change it in “More”, Settings."
+    ],
+    [
+      "🔊 Voice alert",
+      "A danger reported near you can be read out loud, handy with earphones. Turn it on in Alerts."
+    ],
+    [
+      "🧹 Erase everything in one gesture",
+      "In “Rights” and “More”: keep your finger pressed for 2 seconds and Cortège erases everything it keeps on your phone."
+    ]
+  ],
+  "items_es": [
+    [
+      "🧭 Nueva navegación",
+      "Una barra abajo: Mapa, Info, Avisar, Derechos y Más. Los decretos, los anuncios de las organizaciones y la agenda están juntos en «Info». El botón de capas elige lo que muestra el mapa (tipos de avisos, agenda, lugares, cámaras)."
+    ],
+    [
+      "✊ Modo manifestación",
+      "En «Más»: el mapa, un gran botón Avisar, el SOS y el equipo legal, nada más. Para el día de la mani."
+    ],
+    [
+      "🌍 English, español, العربية",
+      "La app ya habla inglés, español y árabe. Usa el idioma del teléfono; puedes cambiarlo en «Más», Ajustes."
+    ],
+    [
+      "🔊 Alerta de voz",
+      "Un peligro avisado cerca de ti puede leerse en voz alta, práctico con auriculares. Actívala en Alertas."
+    ],
+    [
+      "🧹 Borrarlo todo de un gesto",
+      "En «Derechos» y «Más»: mantén el dedo pulsado 2 segundos y Cortège borra todo lo que guarda en tu teléfono."
+    ]
+  ],
+  "items_ar": [
+    [
+      "🧭 تنقّل جديد",
+      "شريط في الأسفل: الخريطة، أخبار، أبلِغ، الحقوق، المزيد. القرارات وإعلانات المنظّمين والمواعيد مجمّعة في «أخبار». وزرّ الطبقات يحدد ما تعرضه الخريطة (أنواع البلاغات، المواعيد، الأماكن، الكاميرات)."
+    ],
+    [
+      "✊ وضع المظاهرة",
+      "في «المزيد»: الخريطة وزرّ إبلاغ كبير وSOS والفريق القانوني، لا شيء غير ذلك. ليوم المظاهرة."
+    ],
+    [
+      "🌍 English, español, العربية",
+      "أصبح التطبيق يتحدث الإنجليزية والإسبانية والعربية. يستخدم لغة هاتفك، ويمكنك تغييرها في «المزيد»، الإعدادات."
+    ],
+    [
+      "🔊 تنبيه صوتي",
+      "يمكن قراءة الخطر المُبلَّغ عنه قربك بصوت عالٍ، وهذا مفيد مع السماعات. فعّله في التنبيهات."
+    ],
+    [
+      "🧹 امسح كل شيء بحركة واحدة",
+      "في «الحقوق» و«المزيد»: أبقِ إصبعك ضاغطًا لثانيتين ويمسح Cortège كل ما يحفظه على هاتفك."
     ]
   ],
   "history": [
+    {
+      "version": "2.5",
+      "items": [
+        [
+          "🧭 Nouvelle navigation",
+          "Une barre en bas : Carte, Infos, Signaler, Droits et Plus. Les arrêtés, les annonces des orgas et l’agenda sont réunis dans « Infos ». Le bouton Calques choisit ce que montre la carte (types de signalements, agenda, lieux, caméras)."
+        ],
+        [
+          "✊ Mode manif",
+          "Dans « Plus » : la carte, un gros bouton Signaler, le SOS et la legal team, rien d’autre. Pour le jour J."
+        ],
+        [
+          "🌍 English, español, العربية",
+          "L’appli parle aussi anglais, espagnol et arabe. Elle choisit la langue du téléphone ; tu peux la changer dans « Plus », Réglages."
+        ],
+        [
+          "🔊 Alerte vocale",
+          "Un danger signalé près de toi peut être lu à voix haute, pratique avec des écouteurs. À activer dans Alertes."
+        ],
+        [
+          "🧹 Tout effacer d’un geste",
+          "Dans « Droits » et « Plus » : garde le doigt appuyé 2 secondes et Cortège efface tout ce qu’il garde sur ton téléphone."
+        ]
+      ],
+      "items_en": [
+        [
+          "🧭 New navigation",
+          "A bar at the bottom: Map, News, Report, Rights and More. Bans, organiser announcements and the calendar are gathered under “News”. The layers button chooses what the map shows (types of reports, calendar, places, cameras)."
+        ],
+        [
+          "✊ Protest mode",
+          "In “More”: the map, a big Report button, SOS and the legal team, nothing else. For the day itself."
+        ],
+        [
+          "🌍 English, español, العربية",
+          "The app now speaks English, Spanish and Arabic. It uses your phone’s language; you can change it in “More”, Settings."
+        ],
+        [
+          "🔊 Voice alert",
+          "A danger reported near you can be read out loud, handy with earphones. Turn it on in Alerts."
+        ],
+        [
+          "🧹 Erase everything in one gesture",
+          "In “Rights” and “More”: keep your finger pressed for 2 seconds and Cortège erases everything it keeps on your phone."
+        ]
+      ],
+      "items_es": [
+        [
+          "🧭 Nueva navegación",
+          "Una barra abajo: Mapa, Info, Avisar, Derechos y Más. Los decretos, los anuncios de las organizaciones y la agenda están juntos en «Info». El botón de capas elige lo que muestra el mapa (tipos de avisos, agenda, lugares, cámaras)."
+        ],
+        [
+          "✊ Modo manifestación",
+          "En «Más»: el mapa, un gran botón Avisar, el SOS y el equipo legal, nada más. Para el día de la mani."
+        ],
+        [
+          "🌍 English, español, العربية",
+          "La app ya habla inglés, español y árabe. Usa el idioma del teléfono; puedes cambiarlo en «Más», Ajustes."
+        ],
+        [
+          "🔊 Alerta de voz",
+          "Un peligro avisado cerca de ti puede leerse en voz alta, práctico con auriculares. Actívala en Alertas."
+        ],
+        [
+          "🧹 Borrarlo todo de un gesto",
+          "En «Derechos» y «Más»: mantén el dedo pulsado 2 segundos y Cortège borra todo lo que guarda en tu teléfono."
+        ]
+      ],
+      "items_ar": [
+        [
+          "🧭 تنقّل جديد",
+          "شريط في الأسفل: الخريطة، أخبار، أبلِغ، الحقوق، المزيد. القرارات وإعلانات المنظّمين والمواعيد مجمّعة في «أخبار». وزرّ الطبقات يحدد ما تعرضه الخريطة (أنواع البلاغات، المواعيد، الأماكن، الكاميرات)."
+        ],
+        [
+          "✊ وضع المظاهرة",
+          "في «المزيد»: الخريطة وزرّ إبلاغ كبير وSOS والفريق القانوني، لا شيء غير ذلك. ليوم المظاهرة."
+        ],
+        [
+          "🌍 English, español, العربية",
+          "أصبح التطبيق يتحدث الإنجليزية والإسبانية والعربية. يستخدم لغة هاتفك، ويمكنك تغييرها في «المزيد»، الإعدادات."
+        ],
+        [
+          "🔊 تنبيه صوتي",
+          "يمكن قراءة الخطر المُبلَّغ عنه قربك بصوت عالٍ، وهذا مفيد مع السماعات. فعّله في التنبيهات."
+        ],
+        [
+          "🧹 امسح كل شيء بحركة واحدة",
+          "في «الحقوق» و«المزيد»: أبقِ إصبعك ضاغطًا لثانيتين ويمسح Cortège كل ما يحفظه على هاتفك."
+        ]
+      ]
+    },
     {
       "version": "2.4",
       "items": [

@@ -2,6 +2,15 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.5.0
+
+- Nouvelle navigation : barre d’onglets en bas (Carte, Infos, Signaler, Droits, Plus). « Infos » réunit les arrêtés qui concernent la zone, les annonces des orgas et l’agenda proche, avec une pastille quand il y a quelque chose à lire. « Droits » met la legal team et le SOS en premier. « Plus » regroupe le reste, avec le soutien Ko-fi et le compte Instagram en tête. Le bouton Ko-fi reste visible en haut de la carte.
+- Calques : les puces de filtre sont remplacées par un bouton qui ouvre « Ce que montre la carte » (familles de signalements avec leur nombre, agenda, lieux utiles, caméras).
+- Mode manif : écran réduit à la carte, un gros bouton Signaler, le SOS et Droits. Gardé sur le téléphone jusqu’à « Quitter ».
+- Langues : anglais, espagnol et arabe (de droite à gauche), en plus du français. Langue du téléphone par défaut, choix dans Plus, Réglages. Traductions dans `i18n/*.tsv`, compilées par `node tools/i18n-build.js` vers `public/lang/`. Le texte français sert de clé ; les libellés et messages d’erreur du serveur sont traduits sur le téléphone. Les notifications, les annonces et arrêtés publiés et les pages annexes (mentions légales, bilans, presse) restent en français.
+- Alerte vocale : un danger proche peut être lu à voix haute par la synthèse vocale du téléphone (rien ne part sur Internet). À activer dans Alertes.
+- Tout effacer d’un geste : appui long de 2 secondes (ou deux fois Entrée au clavier) dans Droits ou Plus. Efface le stockage local, la file d’attente, les caches, l’abonnement aux notifications et le service worker, puis quitte la page.
+
 ## 2.4.5
 
 - Espace presse (`/presse`) : présentation, fonctions, confidentialité, code d’intégration de la carte à copier, outil « carte d’un créneau », citations, visuels, contact (adresse lue dans `CONTACT_EMAIL`).

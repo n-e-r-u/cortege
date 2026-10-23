@@ -1,0 +1,357 @@
+Adresse .onion copiée	.onion address copied	Dirección .onion copiada	تم نسخ عنوان ‎.onion
+à l’instant	just now	ahora mismo	الآن
+il y a {m} min	{m} min ago	hace {m} min	قبل {m} د
+{m} min	{m} min	{m} min	{m} د
+Zone calme · {d}	Calm area · {d}	Zona tranquila · {d}	منطقة هادئة · {d}
+(flèche : nord en haut)	(arrow: north is up)	(flecha: norte arriba)	(السهم: الشمال للأعلى)
+Zone calme la plus proche à {d}. Afficher sur la carte.	Nearest calm area {d} away. Show on the map.	Zona tranquila más cercana a {d}. Mostrar en el mapa.	أقرب منطقة هادئة على بعد {d}. اعرضها على الخريطة.
+Merci : le danger voisin est signalé comme parti	Thanks: the nearby danger is marked as gone	Gracias: el peligro cercano queda marcado como ido	شكرًا: سُجِّل أن الخطر القريب قد زال
+revu {ago}	seen again {ago}	visto de nuevo {ago}	شوهد مجددًا {ago}
+expire dans {d}	expires in {d}	caduca en {d}	ينتهي بعد {d}
+Signalé par {n} personnes	Reported by {n} people	Avisado por {n} personas	أبلغ عنه {n} أشخاص
+Vérifié par {who}	Verified by {who}	Verificado por {who}	تحقّق منه {who}
+une orga	an organiser	una organización	جهة منظِّمة
+Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)	Reported by a phone that’s reliable today (its reports are often confirmed)	Avisado por un teléfono fiable hoy (sus avisos suelen confirmarse)	أبلغ عنه هاتف موثوق اليوم (بلاغاته تتأكد غالبًا)
+Non confirmé : signalé depuis un téléphone suspect. Confirme si tu le vois.	Unconfirmed: reported from a suspicious phone. Confirm if you see it.	Sin confirmar: avisado desde un teléfono sospechoso. Confírmalo si lo ves.	غير مؤكَّد: أُبلغ عنه من هاتف مشبوه. أكّده إن رأيته.
+{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant.	{what} {d} away (not yet confirmed): area not safe for now.	{what} a {d} (sin confirmar aún): zona no segura por ahora.	{what} على بعد {d} (غير مؤكَّد بعد): المنطقة غير آمنة حاليًا.
+{what} à {d} : zone pas sûre pour l’instant.	{what} {d} away: area not safe for now.	{what} a {d}: zona no segura por ahora.	{what} على بعد {d}: المنطقة غير آمنة حاليًا.
+C’est calme ici	It’s calm here	Aquí está tranquilo	الوضع هادئ هنا
+Contesté : {n} personne dit que c’est parti. Confirme si c’est toujours là.	Disputed: {n} person says it’s gone. Confirm if it’s still there.	Cuestionado: {n} persona dice que ya no está. Confirma si sigue ahí.	مُتنازَع عليه: شخص واحد يقول إنه زال. أكّد إن كان لا يزال موجودًا.
+Contesté : {n} personnes disent que c’est parti. Confirme si c’est toujours là.	Disputed: {n} people say it’s gone. Confirm if it’s still there.	Cuestionado: {n} personas dicen que ya no está. Confirma si sigue ahí.	مُتنازَع عليه: {n} أشخاص يقولون إنه زال. أكّد إن كان لا يزال موجودًا.
+Précision	Detail	Detalle	تفصيل
+Toujours là	Still there	Sigue ahí	ما زال هنا
+Seulement sur place	Only on site	Solo en el lugar	في الميدان فقط
+Pas sur place	Not on site	No estás ahí	لست في المكان
+Plus là	Gone	Ya no está	لم يعد هنا
+Tu es à {d} : seules les personnes sur place peuvent dire que c’est parti.	You are {d} away: only people on site can say it’s gone.	Estás a {d}: solo quienes están en el lugar pueden decir que ya no está.	أنت على بعد {d}: وحدهم الحاضرون في المكان يمكنهم القول إنه زال.
+Tu es sur place et tu ne vois plus rien ? Appuie sur « Plus là ».	You’re on site and see nothing any more? Tap “Gone”.	¿Estás en el lugar y ya no ves nada? Pulsa «Ya no está».	أنت في المكان ولم تعد ترى شيئًا؟ اضغط «لم يعد هنا».
+Vérifié	Verified	Verificado	موثَّق
+Vérifier (orga)	Verify (organiser)	Verificar (organización)	تحقّق (منظِّم)
+Retirer (faux)	Remove (fake)	Retirar (falso)	حذف (كاذب)
+Confirmer le retrait	Confirm removal	Confirmar la retirada	تأكيد الحذف
+Prolonger	Extend	Prolongar	تمديد
+Modifier	Edit	Modificar	تعديل
+Précision (vide = aucune)	Detail (empty = none)	Detalle (vacío = ninguno)	تفصيل (فارغ = لا شيء)
+Réseau faible : mode léger activé (seuls les signalements passent)	Weak network: light mode on (only reports get through)	Red débil: modo ligero activado (solo pasan los avisos)	شبكة ضعيفة: تفعيل الوضع الخفيف (تمر البلاغات فقط)
+Nouvelle version de Cortège	New version of Cortège	Nueva versión de Cortège	إصدار جديد من Cortège
+Mettre à jour	Update	Actualizar	تحديث
+Mise à jour de Cortège…	Updating Cortège…	Actualizando Cortège…	جارٍ تحديث Cortège…
+En pause	Paused	En pausa	متوقف
+En direct · mode léger	Live · light mode	En directo · modo ligero	مباشر · الوضع الخفيف
+En direct	Live	En directo	مباشر
+Reconnexion…	Reconnecting…	Reconectando…	جارٍ إعادة الاتصال…
+Hors ligne, nouvel essai…	Offline, retrying…	Sin conexión, reintentando…	غير متصل، إعادة المحاولة…
+Connexion instable…	Unstable connection…	Conexión inestable…	اتصال غير مستقر…
+il y a {h} h {m}	{h} h {m} ago	hace {h} h {m}	قبل {h} س {m}
+Pas de réseau	No network	Sin red	لا شبكة
+Réseau très faible	Very weak network	Red muy débil	شبكة ضعيفة جدًا
+dernière situation connue {ago}	last known situation {ago}	última situación conocida {ago}	آخر وضع معروف {ago}
+Réseau faible : mode léger · mis à jour {ago}	Weak network: light mode · updated {ago}	Red débil: modo ligero · actualizado {ago}	شبكة ضعيفة: الوضع الخفيف · حُدِّث {ago}
+Sommations à {d} : rester devient un délit. Éloigne-toi par une rue dégagée.	Dispersal warnings {d} away: staying becomes an offence. Move away down a clear street.	Avisos de dispersión a {d}: quedarse pasa a ser delito. Aléjate por una calle despejada.	إنذارات تفريق على بعد {d}: البقاء يصبح جنحة. ابتعد عبر شارع خالٍ.
+{what} à {d} de toi	{what} {d} from you	{what} a {d} de ti	{what} على بعد {d} منك
+Sommations à {d}. Éloigne-toi par une rue dégagée.	Dispersal warnings {d} away. Move away down a clear street.	Avisos de dispersión a {d}. Aléjate por una calle despejada.	إنذارات تفريق على بعد {d}. ابتعد عبر شارع خالٍ.
+{what}, à {d}	{what}, {d} away	{what}, a {d}	{what}، على بعد {d}
+La carte te suit	The map is following you	El mapa te sigue	الخريطة تتبعك
+Me recentrer	Re-centre on me	Recentrarme	أعد التوسيط عليّ
+Géolocalisation indisponible sur cet appareil.	Location not available on this device.	Geolocalización no disponible en este dispositivo.	تحديد الموقع غير متاح على هذا الجهاز.
+Localisation refusée. Tu peux quand même signaler avec le viseur.	Location refused. You can still report with the crosshair.	Ubicación denegada. Aun así puedes avisar con el visor.	رُفض تحديد الموقع. يمكنك مع ذلك الإبلاغ باستخدام المؤشّر.
+Recherche de ta position…	Finding your location…	Buscando tu ubicación…	جارٍ البحث عن موقعك…
+Recherche…	Searching…	Buscando…	جارٍ البحث…
+Recherche indisponible.	Search unavailable.	Búsqueda no disponible.	البحث غير متاح.
+Aucun lieu trouvé en France.	No place found in France.	No se ha encontrado ningún lugar en Francia.	لم يُعثر على أي مكان في فرنسا.
+Pas de réseau.	No network.	Sin red.	لا شبكة.
+🏢 Préfectures et sous-préfectures	🏢 Prefectures and sub-prefectures	🏢 Prefecturas y subprefecturas	🏢 المحافظات والمحافظات الفرعية
+🏛 Mairies	🏛 Town halls	🏛 Ayuntamientos	🏛 البلديات
+👮 Commissariats et gendarmeries	👮 Police stations	👮 Comisarías y cuarteles de gendarmería	👮 مراكز الشرطة والدرك
+🔨 Tribunaux	🔨 Courts	🔨 Tribunales	🔨 المحاكم
+🔒 Centres de rétention	🔒 Detention centres	🔒 Centros de internamiento	🔒 مراكز الاحتجاز الإداري
+🏥 Hôpitaux	🏥 Hospitals	🏥 Hospitales	🏥 المستشفيات
+💊 Pharmacies	💊 Pharmacies	💊 Farmacias	💊 الصيدليات
+🚰 Eau potable	🚰 Drinking water	🚰 Agua potable	🚰 مياه الشرب
+📷 Caméras de surveillance	📷 Surveillance cameras	📷 Cámaras de vigilancia	📷 كاميرات المراقبة
+lun	Mon	lun	الإثنين
+mar	Tue	mar	الثلاثاء
+mer	Wed	mié	الأربعاء
+jeu	Thu	jue	الخميس
+ven	Fri	vie	الجمعة
+sam	Sat	sáb	السبت
+dim	Sun	dom	الأحد
+fériés	public holidays	festivos	العطل الرسمية
+Ouvert 24 h/24, 7 j/7	Open 24/7	Abierto 24 h, 7 días	مفتوح 24/7
+fermé	closed	cerrado	مغلق
+Caméra dôme (peut tourner dans tous les sens)	Dome camera (can turn in any direction)	Cámara domo (puede girar en todas direcciones)	كاميرا قبّة (يمكنها الدوران في كل الاتجاهات)
+Caméra fixe	Fixed camera	Cámara fija	كاميرا ثابتة
+Caméra orientable	Adjustable camera	Cámara orientable	كاميرا قابلة للتوجيه
+Caméra publique	Public camera	Cámara pública	كاميرا عامة
+Caméra privée	Private camera	Cámara privada	كاميرا خاصة
+Vidéosurveillance de la voie publique	CCTV of the public street	Videovigilancia de la vía pública	مراقبة بالفيديو للطريق العام
+Caméra privée qui filme la rue	Private camera filming the street	Cámara privada que graba la calle	كاميرا خاصة تصوّر الشارع
+Exploitée par :	Operated by:	Gestionada por:	يديرها:
+, orientée vers {dir}	, facing {dir}	, orientada hacia {dir}	، موجّهة نحو {dir}
+Orientée vers {dir}.	Facing {dir}.	Orientada hacia {dir}.	موجّهة نحو {dir}.
+Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.	Mapped by OpenStreetMap volunteers: it’s incomplete. A street with no camera on the map isn’t necessarily a street without cameras.	Recuento hecho por voluntarios de OpenStreetMap: está incompleto. Una calle sin cámara en el mapa no es necesariamente una calle sin cámaras.	إحصاء أجراه متطوعو OpenStreetMap وهو غير مكتمل. الشارع الخالي من الكاميرات على الخريطة ليس بالضرورة خاليًا منها.
+© contributeurs OpenStreetMap	© OpenStreetMap contributors	© colaboradores de OpenStreetMap	© مساهمو OpenStreetMap
+le nord	the north	el norte	الشمال
+le nord-est	the north-east	el noreste	الشمال الشرقي
+l’est	the east	el este	الشرق
+le sud-est	the south-east	el sureste	الجنوب الشرقي
+le sud	the south	el sur	الجنوب
+le sud-ouest	the south-west	el suroeste	الجنوب الغربي
+l’ouest	the west	el oeste	الغرب
+le nord-ouest	the north-west	el noroeste	الشمال الغربي
+Lieu	Place	Lugar	مكان
+Pharmacie de garde (nuit, dimanche, jour férié) : appelle le	Pharmacy on duty (night, Sunday, public holiday): call	Farmacia de guardia (noche, domingo, festivo): llama al	صيدلية مناوبة (ليلًا، الأحد، العطل): اتصل بالرقم
+🚑 Service d’urgences	🚑 Emergency department	🚑 Servicio de urgencias	🚑 قسم الطوارئ
+Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.	Emergency department: not stated. In an emergency, call 15 or 112.	Urgencias: no indicado. En caso de urgencia, llama al 15 o al 112.	الطوارئ: غير محدد. في حالة الطوارئ اتصل بـ 15 أو 112.
+Fontaine saisonnière : peut être coupée en hiver.	Seasonal fountain: may be off in winter.	Fuente estacional: puede estar cortada en invierno.	نافورة موسمية: قد تكون مقطوعة شتاءً.
+Lieu permanent · © contributeurs OpenStreetMap	Permanent place · © OpenStreetMap contributors	Lugar permanente · © colaboradores de OpenStreetMap	مكان دائم · © مساهمو OpenStreetMap
+📅 Agenda	📅 Calendar	📅 Agenda	📅 المواعيد
+Manifs, blocus et rassemblements du moment, avec leur parcours	Current protests, blockades and gatherings, with their route	Manifestaciones, bloqueos y concentraciones del momento, con su recorrido	المظاهرات والإغلاقات والتجمعات الحالية، مع مساراتها
+Choisir les types de lieux	Choose types of places	Elegir los tipos de lugares	اختر أنواع الأماكن
+🏛 Lieux utiles	🏛 Useful places	🏛 Lugares útiles	🏛 أماكن مفيدة
+Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant.	Prefectures, police stations, courts, hospitals, pharmacies, drinking water. They appear as you zoom in.	Prefecturas, comisarías, tribunales, hospitales, farmacias, agua potable. Aparecen al hacer zoom.	المحافظات، مراكز الشرطة، المحاكم، المستشفيات، الصيدليات، مياه الشرب. تظهر عند التكبير.
+Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque.	Visible when fully zoomed in. Mapped by OpenStreetMap volunteers, some are missing.	Visibles al hacer el máximo zoom. Recuento voluntario de OpenStreetMap, faltan algunas.	تظهر عند التكبير الأقصى. إحصاء تطوعي من OpenStreetMap وبعضها ناقص.
+Caméras affichées : zoome au plus près pour les voir	Cameras shown: zoom all the way in to see them	Cámaras mostradas: haz el máximo zoom para verlas	تم إظهار الكاميرات: كبّر إلى الحد الأقصى لرؤيتها
+Visible en zoomant au plus près. Rouge : publique. Orange : privée, filme la rue. Le cône montre la direction filmée quand elle est connue. Recensement bénévole et incomplet.	Visible when fully zoomed in. Red: public. Orange: private, filming the street. The cone shows the direction filmed when known. Volunteer mapping, incomplete.	Visible al hacer el máximo zoom. Rojo: pública. Naranja: privada, graba la calle. El cono muestra la dirección grabada cuando se conoce. Recuento voluntario e incompleto.	تظهر عند التكبير الأقصى. الأحمر: عامة. البرتقالي: خاصة تصوّر الشارع. يُظهر المخروط اتجاه التصوير عند معرفته. إحصاء تطوعي وغير مكتمل.
+Visible au zoom rue	Visible at street zoom	Visible con zoom de calle	تظهر عند تكبير الشارع
+Visible au zoom quartier	Visible at neighbourhood zoom	Visible con zoom de barrio	تظهر عند تكبير الحي
+Visible au zoom ville	Visible at city zoom	Visible con zoom de ciudad	تظهر عند تكبير المدينة
+Zoome sur l’endroit exact (ou active ta position) avant de signaler.	Zoom in on the exact spot (or turn on your location) before reporting.	Haz zoom en el lugar exacto (o activa tu ubicación) antes de avisar.	كبّر على المكان بدقة (أو فعّل موقعك) قبل الإبلاغ.
+Le viseur est sur ta position. Déplace la carte si c’est ailleurs.	The crosshair is on your location. Move the map if it’s somewhere else.	El visor está en tu ubicación. Mueve el mapa si es en otro sitio.	المؤشّر على موقعك. حرّك الخريطة إن كان الأمر في مكان آخر.
+déjà là · {ago} · confirmer	already there · {ago} · confirm	ya está · {ago} · confirmar	موجود · {ago} · أكّد
+, déjà signalé, appuyer pour confirmer	, already reported, tap to confirm	, ya avisado, pulsa para confirmar	، مُبلَّغ عنه سابقًا، اضغط للتأكيد
+{what} : signalé et vérifié (orga)	{what}: reported and verified (organiser)	{what}: avisado y verificado (organización)	{what}: تم الإبلاغ والتحقق (منظِّم)
+{what} : signalé	{what}: reported	{what}: avisado	{what}: تم الإبلاغ
+Tu l’avais déjà signalé : point mis à jour	You had already reported it: point updated	Ya lo habías avisado: punto actualizado	سبق أن أبلغت عنه: تم تحديث النقطة
+Déjà signalé : ta confirmation est ajoutée ({n} personnes)	Already reported: your confirmation was added ({n} people)	Ya avisado: se ha añadido tu confirmación ({n} personas)	مُبلَّغ عنه سابقًا: أُضيف تأكيدك ({n} أشخاص)
+Envoi impossible. Réessaie.	Couldn’t send. Try again.	No se ha podido enviar. Inténtalo de nuevo.	تعذّر الإرسال. أعد المحاولة.
+{n} signalement en attente de réseau	{n} report waiting for signal	{n} aviso esperando cobertura	بلاغ واحد بانتظار الشبكة
+{n} signalements en attente de réseau	{n} reports waiting for signal	{n} avisos esperando cobertura	{n} بلاغات بانتظار الشبكة
+Annuler ce signalement	Cancel this report	Cancelar este aviso	إلغاء هذا البلاغ
+Trop ancien, ne sera pas publié	Too old, won’t be published	Demasiado antiguo, no se publicará	قديم جدًا، لن يُنشر
+fait {ago}	made {ago}	hecho {ago}	أُنشئ {ago}
+Toujours pas de réseau.	Still no network.	Sigue sin haber red.	لا شبكة حتى الآن.
+Signalement en attente envoyé	Waiting report sent	Aviso pendiente enviado	أُرسل البلاغ المعلّق
+{n} signalements en attente envoyés	{n} waiting reports sent	{n} avisos pendientes enviados	أُرسلت {n} بلاغات معلّقة
+1 trop ancien, pas publié	1 too old, not published	1 demasiado antiguo, no publicado	واحد قديم جدًا، لم يُنشر
+{n} trop anciens, pas publiés	{n} too old, not published	{n} demasiado antiguos, no publicados	{n} قديمة جدًا، لم تُنشر
+Pas de réseau : signalement gardé, il partira dès que ça capte.	No network: report saved, it will be sent as soon as there’s signal.	Sin red: aviso guardado, se enviará en cuanto haya cobertura.	لا شبكة: حُفظ البلاغ وسيُرسل فور توفر الشبكة.
+ex. : une vingtaine, remontent vers la gare	e.g. about twenty, heading up towards the station	p. ej.: unos veinte, subiendo hacia la estación	مثال: نحو عشرين، يتجهون نحو المحطة
+ex. : le nuage s’étend vers la place	e.g. the cloud is spreading towards the square	p. ej.: la nube se extiende hacia la plaza	مثال: السحابة تمتد نحو الساحة
+ex. : sous l’abribus, côté nord	e.g. under the bus shelter, north side	p. ej.: bajo la marquesina, lado norte	مثال: تحت مظلة الحافلات، الجهة الشمالية
+ex. : barrières, passage par la rue d’à côté	e.g. barriers, go through the next street	p. ej.: vallas, pasar por la calle de al lado	مثال: حواجز، المرور عبر الشارع المجاور
+Écris une précision.	Write a detail.	Escribe un detalle.	اكتب تفصيلًا.
+Envoi impossible.	Couldn’t send.	No se ha podido enviar.	تعذّر الإرسال.
+Précision ajoutée	Detail added	Detalle añadido	أُضيف التفصيل
+Vote impossible.	Couldn’t vote.	No se ha podido votar.	تعذّر التصويت.
+Merci, signalement prolongé	Thanks, report extended	Gracias, aviso prolongado	شكرًا، تم تمديد البلاغ
+Merci, c’est noté	Thanks, noted	Gracias, anotado	شكرًا، تم التسجيل
+{n} personnes	{n} people	{n} personas	{n} أشخاص
+Appli installée sur ton écran d’accueil	App installed on your home screen	App instalada en tu pantalla de inicio	تم تثبيت التطبيق على شاشتك الرئيسية
+Tu es dans le navigateur d’une appli (Instagram, TikTok…), qui ne peut pas installer Cortège. Touche le menu <b>⋯</b> en haut à droite puis <b>Ouvrir dans le navigateur</b>, et recommence depuis là.	You’re in an app’s built-in browser (Instagram, TikTok…), which can’t install Cortège. Tap the <b>⋯</b> menu at the top right, then <b>Open in browser</b>, and start again from there.	Estás en el navegador de una app (Instagram, TikTok…), que no puede instalar Cortège. Toca el menú <b>⋯</b> arriba a la derecha y luego <b>Abrir en el navegador</b>, y vuelve a empezar desde ahí.	أنت داخل متصفح تطبيق (Instagram أو TikTok…) لا يمكنه تثبيت Cortège. المس القائمة <b>⋯</b> في الأعلى ثم <b>فتح في المتصفح</b>، وابدأ من هناك.
+Sur iPhone, dans <b>Safari</b> : touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>.	On iPhone, in <b>Safari</b>: tap the <b>Share</b> button (the square with an arrow pointing up), then <b>Add to Home Screen</b>, then <b>Add</b>.	En iPhone, en <b>Safari</b>: toca el botón <b>Compartir</b> (el cuadrado con una flecha hacia arriba), luego <b>Añadir a pantalla de inicio</b> y después <b>Añadir</b>.	على iPhone، في <b>Safari</b>: المس زر <b>مشاركة</b> (المربع مع سهم للأعلى)، ثم <b>إضافة إلى الشاشة الرئيسية</b>، ثم <b>إضافة</b>.
+Ouvre le menu de ton navigateur (<b>⋮</b>) puis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>.	Open your browser menu (<b>⋮</b>), then <b>Install app</b> or <b>Add to Home screen</b>.	Abre el menú de tu navegador (<b>⋮</b>) y luego <b>Instalar aplicación</b> o <b>Añadir a pantalla de inicio</b>.	افتح قائمة المتصفح (<b>⋮</b>) ثم <b>تثبيت التطبيق</b> أو <b>إضافة إلى الشاشة الرئيسية</b>.
+Masquer cette annonce	Hide this announcement	Ocultar este anuncio	إخفاء هذا الإعلان
+toute la France	all of France	toda Francia	كل فرنسا
+En savoir plus →	Find out more →	Saber más →	اعرف المزيد ←
++ {n} autre annonce	+ {n} more announcement	+ {n} anuncio más	+ إعلان آخر
++ {n} autres annonces	+ {n} more announcements	+ {n} anuncios más	+ {n} إعلانات أخرى
+ici	here	aquí	هنا
+à {d} km	{d} km away	a {d} km	على بعد {d} كم
+Autour de ce point	Around this point	Alrededor de este punto	حول هذه النقطة
+Appeler	Call	Llamar	اتصال
+Copier	Copy	Copiar	نسخ
+Numéro copié	Number copied	Número copiado	تم نسخ الرقم
+Annuaire	Directory	Directorio	الدليل
+vérifié le {date}	checked on {date}	verificado el {date}	تم التحقق في {date}
+source	source	fuente	المصدر
+Pour la mobilisation · publié {ago}	For the protest · posted {ago}	Para la movilización · publicado {ago}	للتحرك · نُشر {ago}
+Joignable sur Signal	Reachable on Signal	Disponible en Signal	متاح على Signal
+Aucune legal team connue près de toi · la plus proche : {city} ({d})	No known legal team near you · nearest: {city} ({d})	Ningún equipo legal conocido cerca de ti · el más cercano: {city} ({d})	لا فريق قانوني معروف قربك · الأقرب: {city} ({d})
+Autres villes ({n})	Other cities ({n})	Otras ciudades ({n})	مدن أخرى ({n})
+La carte en direct des manifs, par @{h}	The live protest map, by @{h}	El mapa en directo de las manifestaciones, por @{h}	خريطة المظاهرات المباشرة، من @{h}
+Lien copié	Link copied	Enlace copiado	تم نسخ الرابط
+Action impossible.	Action not possible.	Acción imposible.	تعذّر تنفيذ الإجراء.
+ORGA · essai	ORGA · trial	ORGA · prueba	ORGA · تجربة
+Publier une manif ou un blocus	Post a protest or blockade	Publicar una manifestación o un bloqueo	انشر مظاهرة أو إغلاقًا
+Invitation impossible.	Invitation not possible.	Invitación imposible.	تعذّرت الدعوة.
+Appareil ajouté à l’espace orga {who}	Device added to the organiser space {who}	Dispositivo añadido al espacio de organización {who}	أُضيف الجهاز إلى مساحة المنظِّم {who}
+Bienvenue {who} : ton accès orga est activé sur ce téléphone	Welcome {who}: your organiser access is active on this phone	Bienvenida {who}: tu acceso de organización está activado en este teléfono	أهلًا {who}: تم تفعيل صلاحية المنظِّم على هذا الهاتف
+Pas de réseau : rouvre l’invitation quand ça capte.	No network: open the invitation again when there’s signal.	Sin red: vuelve a abrir la invitación cuando haya cobertura.	لا شبكة: أعد فتح الدعوة عند توفر الشبكة.
+Mode orga : {who}	Organiser mode: {who}	Modo organización: {who}	وضع المنظِّم: {who}
+Prolongé : expire dans {d}	Extended: expires in {d}	Prolongado: caduca en {d}	تم التمديد: ينتهي بعد {d}
+Signalement corrigé	Report corrected	Aviso corregido	تم تصحيح البلاغ
+Signalement marqué vérifié	Report marked as verified	Aviso marcado como verificado	تم تعليم البلاغ كموثَّق
+Signalement retiré	Report removed	Aviso retirado	تم حذف البلاغ
+Pris en compte : vaut deux « Plus là » (période d’essai)	Noted: counts as two “Gone” votes (trial period)	Registrado: cuenta como dos «Ya no está» (periodo de prueba)	تم الأخذ به: يُحتسب كصوتين «لم يعد هنا» (فترة تجريبية)
+Toutes les annonces actives	All active announcements	Todos los anuncios activos	كل الإعلانات النشطة
+Tes annonces actives	Your active announcements	Tus anuncios activos	إعلاناتك النشطة
+Annonces actives ici	Active announcements here	Anuncios activos aquí	الإعلانات النشطة هنا
+Aucune annonce publiée.	No announcements posted.	Ningún anuncio publicado.	لا إعلانات منشورة.
+Aucune annonce active ici.	No active announcements here.	Ningún anuncio activo aquí.	لا إعلانات نشطة هنا.
+Retirer	Remove	Retirar	حذف
+Annonce retirée	Announcement removed	Anuncio retirado	تم حذف الإعلان
+En attente de validation par l’admin : pas encore visible dans « Mes droits »	Waiting for admin approval: not yet visible under “Rights”	Pendiente de validación por la administración: aún no visible en «Derechos»	بانتظار موافقة المشرف: غير ظاهر بعد في «الحقوق»
+visible partout, rangé par ville	visible everywhere, sorted by city	visible en todas partes, ordenado por ciudad	ظاهر في كل مكان، مرتّب حسب المدينة
+permanent	permanent	permanente	دائم
+(valable jusqu’au {date}, une seule fois)	(valid until {date}, single use)	(válido hasta el {date}, un solo uso)	(صالح حتى {date}، لمرة واحدة)
+Lien à usage unique, à ouvrir sur le bon appareil :	Single-use link, to open on the right device:	Enlace de un solo uso, para abrir en el dispositivo correcto:	رابط لاستخدام واحد، افتحه على الجهاز الصحيح:
+Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien.	To get access back, you’ll need a new invitation from {who} or the admin, which cancels the old one.	Para recuperar el acceso, hará falta una nueva invitación de {who} o de la administración, que anula el anterior.	لاستعادة الصلاحية، ستحتاج إلى دعوة جديدة من {who} أو من المشرف، مما يلغي الصلاحية القديمة.
+{n} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès.	{n} device(s) have access to this organiser space (5 at most). Adding a device creates a link valid for 10 minutes, to open on the other device (computer, second phone…). This device keeps its access.	{n} dispositivo(s) tienen acceso a este espacio de organización (5 como máximo). Añadir un dispositivo crea un enlace válido 10 minutos, para abrir en el otro dispositivo (ordenador, segundo teléfono…). Este dispositivo conserva su acceso.	لدى {n} جهاز/أجهزة صلاحية الوصول إلى مساحة المنظِّم هذه (5 كحد أقصى). إضافة جهاز تنشئ رابطًا صالحًا 10 دقائق لفتحه على الجهاز الآخر (حاسوب، هاتف ثانٍ…). يحتفظ هذا الجهاز بصلاحيته.
+Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil.	Your access is set directly in the server settings: ask the admin for another device.	Tu acceso está definido directamente en los ajustes del servidor: pide otro dispositivo a la administración.	صلاحيتك محددة مباشرة في إعدادات الخادم: اطلب من المشرف جهازًا آخر.
+Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus.	Invitations suspended until {date}: an organisation you invited was revoked for abuse.	Invitaciones suspendidas hasta el {date}: una organización que invitaste fue revocada por abuso.	الدعوات موقوفة حتى {date}: أُلغيت جهة دعوتَها بسبب الإساءة.
+Aucune orga invitée pour l’instant.	No organisations invited yet.	Ninguna organización invitada por ahora.	لم تدعُ أي جهة حتى الآن.
+confirmée	confirmed	confirmada	مؤكَّدة
+invitation en attente	invitation pending	invitación pendiente	دعوة معلّقة
+invitation expirée	invitation expired	invitación caducada	دعوة منتهية
+prête à être confirmée	ready to be confirmed	lista para confirmar	جاهزة للتأكيد
+parrainée · {d} j · {n} action(s)	sponsored · {d} d · {n} action(s)	apadrinada · {d} d · {n} acción(es)	مزكّاة · {d} يوم · {n} إجراء
+Dernières actions	Latest actions	Últimas acciones	آخر الإجراءات
+Confirmer cette orga	Confirm this organisation	Confirmar esta organización	تأكيد هذه الجهة
+{who} est confirmée	{who} is confirmed	{who} está confirmada	تم تأكيد {who}
+Nouvelle invitation (accès perdu)	New invitation (access lost)	Nueva invitación (acceso perdido)	دعوة جديدة (فُقدت الصلاحية)
+Nouvelle invitation	New invitation	Nueva invitación	دعوة جديدة
+Confirmer : son accès actuel sera coupé	Confirm: their current access will be cut	Confirmar: su acceso actual se cortará	تأكيد: ستُقطع صلاحيتها الحالية
+Invitation pour {who}	Invitation for {who}	Invitación para {who}	دعوة لـ {who}
+Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé.	Send it through an encrypted messenger (Signal). This organisation’s old access has been cut.	Envíala por una mensajería cifrada (Signal). El acceso anterior de esta organización queda cortado.	أرسلها عبر تطبيق مراسلة مشفّر (Signal). قُطعت الصلاحية القديمة لهذه الجهة.
+L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.	The organisation scans this QR code or opens the link on its phone. Send the link through an encrypted messenger (Signal), never publicly.	La organización escanea este código QR o abre el enlace en su teléfono. Envía el enlace por una mensajería cifrada (Signal), nunca públicamente.	تمسح الجهة رمز QR هذا أو تفتح الرابط على هاتفها. أرسل الرابط عبر تطبيق مراسلة مشفّر (Signal)، وليس علنًا أبدًا.
+Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga.	Scan this QR code with the other device (or open the link there). Don’t send it to anyone else: it gives access to your organiser space.	Escanea este código QR con el otro dispositivo (o abre allí el enlace). No se lo envíes a nadie más: da acceso a tu espacio de organización.	امسح رمز QR هذا بالجهاز الآخر (أو افتح الرابط عليه). لا ترسله لأي شخص آخر: إنه يمنح الوصول إلى مساحتك كمنظِّم.
+Envoi impossible, réessaie.	Couldn’t send, try again.	No se ha podido enviar, inténtalo de nuevo.	تعذّر الإرسال، أعد المحاولة.
+Demande envoyée : on te recontacte par le canal du collectif	Request sent: you’ll be contacted through the group’s channel	Solicitud enviada: te contactaremos por el canal del colectivo	أُرسل الطلب: سيُتواصل معك عبر قناة المجموعة
+Pas de réseau : réessaie plus tard	No network: try again later	Sin red: inténtalo más tarde	لا شبكة: أعد المحاولة لاحقًا
+Numéro envoyé : il s’affichera après validation par l’admin	Number sent: it will show after the admin approves it	Número enviado: se mostrará tras la validación de la administración	أُرسل الرقم: سيظهر بعد موافقة المشرف
+Annonce publiée	Announcement posted	Anuncio publicado	نُشر الإعلان
+Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)	Confirm: access will be lost on this device (you’ll need a new invitation)	Confirmar: se perderá el acceso en este dispositivo (hará falta una nueva invitación)	تأكيد: ستُفقد الصلاحية على هذا الجهاز (ستحتاج إلى دعوة جديدة)
+Mode orga désactivé sur ce téléphone	Organiser mode turned off on this phone	Modo organización desactivado en este teléfono	تم إيقاف وضع المنظِّم على هذا الهاتف
+Publié par {who}	Posted by {who}	Publicado por {who}	نشره {who}
+Voir la carte d’origine →	See the original map →	Ver el mapa original →	عرض الخريطة الأصلية ←
+Retirer cet événement	Remove this event	Retirar este evento	حذف هذه الفعالية
+Événement retiré	Event removed	Evento retirado	تم حذف الفعالية
+Dispersion prévue	Planned dispersal	Dispersión prevista	تفرّق متوقَّع
+Dispersion prévue : {title}	Planned dispersal: {title}	Dispersión prevista: {title}	تفرّق متوقَّع: {title}
+Aucune mobilisation annoncée pour l’instant.	No protests announced yet.	Ninguna movilización anunciada por ahora.	لا تحركات معلنة حاليًا.
+Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».	Nothing announced within 50 km of you. Look at “All of France”.	Nada anunciado a menos de 50 km de ti. Mira «Toda Francia».	لا شيء معلن في نطاق 50 كم منك. انظر «كل فرنسا».
+Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».	Nothing announced within 50 km of the map centre. Turn on your location or look at “All of France”.	Nada anunciado a menos de 50 km del centro del mapa. Activa tu ubicación o mira «Toda Francia».	لا شيء معلن في نطاق 50 كم من وسط الخريطة. فعّل موقعك أو انظر «كل فرنسا».
+{n} événements : les 200 premiers	{n} events: the first 200	{n} eventos: los 200 primeros	{n} فعالية: أول 200
+En cours	Ongoing	En curso	جارٍ
+Information	Information	Información	معلومة
+{day} à {hour}	{day} at {hour}	{day} a las {hour}	{day} الساعة {hour}
+jusqu’au {date}	until {date}	hasta el {date}	حتى {date}
+{day} de {from} à {to}	{day} from {from} to {to}	{day} de {from} a {to}	{day} من {from} إلى {to}
+du {from} au {to}	from {from} to {to}	del {from} al {to}	من {from} إلى {to}
+{name} (tout le département)	{name} (whole département)	{name} (todo el departamento)	{name} (كل المقاطعة)
+Masquer ce bandeau	Hide this banner	Ocultar este aviso	إخفاء هذا الشريط
+Arrêté en vigueur	Ban in force	Decreto en vigor	قرار ساري المفعول
+Arrêté à venir	Upcoming ban	Decreto próximo	قرار قادم
++{n} autre	+{n} more	+{n} más	+{n} آخر
++{n} autres	+{n} more	+{n} más	+{n} أخرى
+touche pour les détails	tap for details	toca para ver detalles	المس للتفاصيل
+Voir la zone sur la carte	See the area on the map	Ver la zona en el mapa	عرض المنطقة على الخريطة
+Source :	Source:	Fuente:	المصدر:
+ouvrir	open	abrir	فتح
+Ici	Here	Aquí	هنا
+Ailleurs en France	Elsewhere in France	En otros lugares de Francia	في أماكن أخرى من فرنسا
+En France	In France	En Francia	في فرنسا
+Choisir…	Choose…	Elegir…	اختر…
+Type de mesure	Type of measure	Tipo de medida	نوع الإجراء
+ex. : la manifestation de samedi est interdite	e.g. Saturday’s protest is banned	p. ej.: la manifestación del sábado está prohibida	مثال: مظاهرة السبت ممنوعة
+Mesure	Measure	Medida	الإجراء
+Décris au moins une mesure.	Describe at least one measure.	Describe al menos una medida.	صِف إجراءً واحدًا على الأقل.
+Indique le début et la fin.	Enter the start and end.	Indica el inicio y el final.	حدّد البداية والنهاية.
+Merci ! L’arrêté apparaîtra une fois la source vérifiée.	Thanks! The ban will appear once the source is checked.	¡Gracias! El decreto aparecerá cuando se verifique la fuente.	شكرًا! سيظهر القرار بعد التحقق من المصدر.
+Pas de réseau : réessaie plus tard.	No network: try again later.	Sin red: inténtalo más tarde.	لا شبكة: أعد المحاولة لاحقًا.
+Rendez-vous placé	Meeting point placed	Punto de encuentro colocado	تم وضع مكان التجمّع
+Rendez-vous + {n} point de parcours	Meeting point + {n} route point	Punto de encuentro + {n} punto de recorrido	مكان التجمّع + نقطة مسار واحدة
+Rendez-vous + {n} points de parcours	Meeting point + {n} route points	Punto de encuentro + {n} puntos de recorrido	مكان التجمّع + {n} نقاط مسار
+Rendez-vous placé, sans parcours.	Meeting point placed, no route.	Punto de encuentro colocado, sin recorrido.	تم وضع مكان التجمّع، دون مسار.
+Rendez-vous placé, parcours de {d}.	Meeting point placed, route of {d}.	Punto de encuentro colocado, recorrido de {d}.	تم وضع مكان التجمّع، مسار بطول {d}.
+Modifier sur la carte	Edit on the map	Modificar en el mapa	التعديل على الخريطة
+Proposer une mobilisation	Suggest a protest	Proponer una movilización	اقترح تحركًا
+Envoyer la proposition	Send the suggestion	Enviar la propuesta	إرسال الاقتراح
+Place d’abord le rendez-vous sur la carte.	First place the meeting point on the map.	Coloca primero el punto de encuentro en el mapa.	ضع مكان التجمّع على الخريطة أولًا.
+Choisis la date et l’heure.	Choose the date and time.	Elige la fecha y la hora.	اختر التاريخ والوقت.
+Événement publié	Event posted	Evento publicado	نُشرت الفعالية
+Proposition envoyée : elle apparaîtra après vérification	Suggestion sent: it will appear after checking	Propuesta enviada: aparecerá tras la verificación	أُرسل الاقتراح: سيظهر بعد التحقق
+Pas de réseau. Rien n’est parti.	No network. Nothing was sent.	Sin red. No se ha enviado nada.	لا شبكة. لم يُرسل شيء.
+Je viens d’être interpellé·e ({hour})	I’ve just been arrested ({hour})	Me acaban de detener ({hour})	تم اعتقالي للتو ({hour})
+Quelqu’un de mon groupe vient d’être interpellé·e ({hour})	Someone in my group has just been arrested ({hour})	Acaban de detener a alguien de mi grupo ({hour})	تم اعتقال شخص من مجموعتي للتو ({hour})
+ici : {url}	here: {url}	aquí: {url}	هنا: {url}
+Préviens la legal team : {phone} ({name}).	Tell the legal team: {phone} ({name}).	Avisa al equipo legal: {phone} ({name}).	أبلغ الفريق القانوني: {phone} ({name}).
+Préviens la legal team de la manif.	Tell the protest’s legal team.	Avisa al equipo legal de la manifestación.	أبلغ الفريق القانوني للمظاهرة.
+Message envoyé avec Cortège.	Message sent with Cortège.	Mensaje enviado con Cortège.	رسالة مرسلة عبر Cortège.
+Numéro invalide.	Invalid number.	Número no válido.	رقم غير صالح.
+Impossible d’enregistrer sur ce téléphone.	Can’t save on this phone.	No se puede guardar en este teléfono.	تعذّر الحفظ على هذا الهاتف.
+Contact enregistré sur ce téléphone	Contact saved on this phone	Contacto guardado en este teléfono	حُفظت جهة الاتصال على هذا الهاتف
+Message copié : colle-le dans ta messagerie	Message copied: paste it into your messaging app	Mensaje copiado: pégalo en tu mensajería	نُسخت الرسالة: الصقها في تطبيق المراسلة
+Économie de batterie	Battery saver	Ahorro de batería	توفير البطارية
+Économie de batterie activée	Battery saver on	Ahorro de batería activado	تم تفعيل توفير البطارية
+Économie de batterie désactivée	Battery saver off	Ahorro de batería desactivado	تم إيقاف توفير البطارية
+Version {v}	Version {v}	Versión {v}	الإصدار {v}
+Carte en direct des manifs (Cortège)	Live protest map (Cortège)	Mapa en directo de las manifestaciones (Cortège)	خريطة المظاهرات المباشرة (Cortège)
+Code copié	Code copied	Código copiado	تم نسخ الرمز
+Batterie faible : active l’économie de batterie dans « Plus »	Low battery: turn on battery saver in “More”	Batería baja: activa el ahorro de batería en «Más»	البطارية ضعيفة: فعّل توفير البطارية في «المزيد»
+Activées sur ce téléphone	On for this phone	Activadas en este teléfono	مفعّلة على هذا الهاتف
+Pas encore activées	Not turned on yet	Aún no activadas	غير مفعّلة بعد
+Abonnement impossible.	Couldn’t subscribe.	No se ha podido suscribir.	تعذّر الاشتراك.
+Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.	On iPhone, first install the app on your home screen, then turn on alerts from the installed app.	En iPhone, instala primero la app en la pantalla de inicio y luego activa las alertas desde la app instalada.	على iPhone، ثبّت التطبيق أولًا على الشاشة الرئيسية، ثم فعّل التنبيهات من التطبيق المثبّت.
+Envoi…	Sending…	Enviando…	جارٍ الإرسال…
+Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone.	Sent by the server. It arrives within seconds (lock the phone to see it as during a protest). Nothing? Check that your browser’s notifications are allowed in the phone settings.	Enviada por el servidor. Llega en unos segundos (bloquea el teléfono para verla como durante una manifestación). ¿Nada? Comprueba que las notificaciones de tu navegador están permitidas en los ajustes del teléfono.	أرسلها الخادم. تصل خلال ثوانٍ (اقفل الهاتف لتراها كما في المظاهرة). لا شيء؟ تحقق من السماح بإشعارات المتصفح في إعدادات الهاتف.
+Pas de réseau : réessaie quand ça capte.	No network: try again when there’s signal.	Sin red: inténtalo cuando haya cobertura.	لا شبكة: أعد المحاولة عند توفر الشبكة.
+Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.	On iPhone: first install the app on your home screen.	En iPhone: instala primero la app en la pantalla de inicio.	على iPhone: ثبّت التطبيق أولًا على الشاشة الرئيسية.
+Notifications non prises en charge par ce navigateur.	Notifications not supported by this browser.	Este navegador no admite notificaciones.	هذا المتصفح لا يدعم الإشعارات.
+Notifications refusées : autorise-les dans les réglages du téléphone.	Notifications refused: allow them in the phone settings.	Notificaciones denegadas: permítelas en los ajustes del teléfono.	رُفضت الإشعارات: اسمح بها في إعدادات الهاتف.
+Notifications désactivées	Notifications off	Notificaciones desactivadas	تم إيقاف الإشعارات
+Alertes « danger près de toi » activées	“Danger near you” alerts on	Alertas «peligro cerca de ti» activadas	تم تفعيل تنبيهات «خطر قربك»
+Annonces urgentes activées	Urgent announcements on	Anuncios urgentes activados	تم تفعيل الإعلانات العاجلة
+Activé	On	Activado	مفعّل
+Désactivé	Off	Desactivado	متوقف
+Activation impossible.	Couldn’t turn on.	No se ha podido activar.	تعذّر التفعيل.
+rafale de petites vibrations	burst of short vibrations	ráfaga de vibraciones cortas	سلسلة اهتزازات قصيرة
+deux longues	two long	dos largas	اهتزازتان طويلتان
+trois longues	three long	tres largas	ثلاث اهتزازات طويلة
+deux moyennes	two medium	dos medias	اهتزازتان متوسطتان
+trois moyennes	three medium	tres medias	ثلاث اهتزازات متوسطة
+deux courtes puis une longue	two short then one long	dos cortas y una larga	اهتزازتان قصيرتان ثم طويلة
+deux courtes	two short	dos cortas	اهتزازتان قصيرتان
+trois courtes	three short	tres cortas	ثلاث اهتزازات قصيرة
+Essayer	Try	Probar	جرّب
+Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications.	This phone doesn’t allow custom vibrations (iPhones don’t). On iPhone, first install the app on your home screen to receive notifications.	Este teléfono no permite vibraciones personalizadas (es el caso de los iPhone). En iPhone, instala primero la app en la pantalla de inicio para recibir notificaciones.	هذا الهاتف لا يسمح باهتزازات مخصّصة (وهذا حال أجهزة iPhone). على iPhone، ثبّت التطبيق أولًا على الشاشة الرئيسية لاستلام الإشعارات.
+{n} / {total} prêt	{n} / {total} ready	{n} / {total} listo	{n} / {total} جاهز
+{n} / {total} prêts	{n} / {total} ready	{n} / {total} listos	{n} / {total} جاهزة
+Checklist remise à zéro	Checklist reset	Lista reiniciada	تمت إعادة تعيين القائمة
+Point de ralliement si on se perd en manif : {url}	Rally point if we get separated at the protest: {url}	Punto de encuentro si nos perdemos en la manifestación: {url}	نقطة التجمّع إذا افترقنا في المظاهرة: {url}
+Lien copié : colle-le dans ton groupe	Link copied: paste it in your group	Enlace copiado: pégalo en tu grupo	نُسخ الرابط: الصقه في مجموعتك
+Point de ralliement	Rally point	Punto de encuentro	نقطة التجمّع
+🚩 Point de ralliement	🚩 Rally point	🚩 Punto de encuentro	🚩 نقطة التجمّع
+Visible seulement sur ton téléphone	Only visible on your phone	Visible solo en tu teléfono	ظاهرة على هاتفك فقط
+Partager	Share	Compartir	مشاركة
+Point de ralliement placé, à {d} de toi.	Rally point placed, {d} from you.	Punto de encuentro colocado, a {d} de ti.	تم وضع نقطة التجمّع، على بعد {d} منك.
+Point de ralliement placé.	Rally point placed.	Punto de encuentro colocado.	تم وضع نقطة التجمّع.
+Point de ralliement enregistré	Rally point saved	Punto de encuentro guardado	حُفظت نقطة التجمّع
+Autour de ta position.	Around your location.	Alrededor de tu ubicación.	حول موقعك.
+Autour du centre de la carte. Active ta position pour voir ce qui te concerne.	Around the map centre. Turn on your location to see what affects you.	Alrededor del centro del mapa. Activa tu ubicación para ver lo que te afecta.	حول وسط الخريطة. فعّل موقعك لترى ما يعنيك.
+Aucun arrêté connu ici. D’autres sont en vigueur ailleurs en France.	No known ban here. Others are in force elsewhere in France.	Ningún decreto conocido aquí. Hay otros en vigor en otros lugares de Francia.	لا قرار معروف هنا. توجد قرارات أخرى سارية في أماكن أخرى من فرنسا.
+Aucune annonce d’orga dans cette zone pour l’instant.	No announcements from organisers in this area yet.	Ningún anuncio de organizaciones en esta zona por ahora.	لا إعلانات من المنظّمين في هذه المنطقة حاليًا.
+Mode manif. « Quitter » en haut pour revenir à l’appli complète.	Protest mode. “Exit” at the top to return to the full app.	Modo manifestación. «Salir» arriba para volver a la app completa.	وضع المظاهرة. «خروج» في الأعلى للعودة إلى التطبيق الكامل.
+{n} mètres	{n} metres	{n} metros	{n} مترًا
+{n} kilomètres	{n} kilometres	{n} kilómetros	{n} كيلومتر
+Ce navigateur ne sait pas lire à voix haute.	This browser can’t read out loud.	Este navegador no puede leer en voz alta.	هذا المتصفح لا يستطيع القراءة بصوت عالٍ.
+Alerte vocale activée	Voice alert on	Alerta de voz activada	تم تفعيل التنبيه الصوتي
+Charge	Charge	Carga	هجوم
+Effacement…	Erasing…	Borrando…	جارٍ المسح…
+Garde le doigt appuyé 2 secondes pour tout effacer	Keep your finger pressed for 2 seconds to erase everything	Mantén el dedo pulsado 2 segundos para borrarlo todo	أبقِ إصبعك ضاغطًا لثانيتين لمسح كل شيء
+Appuie encore une fois pour tout effacer	Press once more to erase everything	Pulsa una vez más para borrarlo todo	اضغط مرة أخرى لمسح كل شيء
+Dernière préparation : {date}	Last prepared: {date}	Última preparación: {date}	آخر تحضير: {date}
+Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie.	Area too large: zoom in on your city or the route, then try again.	Zona demasiado grande: haz zoom en tu ciudad o en el recorrido y vuelve a intentarlo.	المنطقة كبيرة جدًا: كبّر على مدينتك أو على المسار ثم أعد المحاولة.
+Carte : {n} / {total} morceaux…	Map: {n} / {total} pieces…	Mapa: {n} / {total} trozos…	الخريطة: {n} / {total} جزء…
+Numéros, annonces, agenda et lieux…	Numbers, announcements, calendar and places…	Números, anuncios, agenda y lugares…	الأرقام والإعلانات والمواعيد والأماكن…
+Ko	KB	KB	ك.ب
+Mo	MB	MB	م.ب
+Prêt : carte de la zone gardée ({size})	Ready: area map saved ({size})	Listo: mapa de la zona guardado ({size})	جاهز: حُفظت خريطة المنطقة ({size})
+Prêt	Ready	Listo	جاهز
+{n} numéro de legal team	{n} legal team number	{n} número de equipo legal	رقم واحد لفريق قانوني
+{n} numéros de legal team	{n} legal team numbers	{n} números de equipo legal	{n} أرقام لفرق قانونية
+(le plus proche : {phone})	(nearest: {phone})	(el más cercano: {phone})	(الأقرب: {phone})
+annonces et agenda.	announcements and calendar.	anuncios y agenda.	الإعلانات والمواعيد.
+{n} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau.	{n} map pieces couldn’t be saved, try again with a better connection.	No se han podido guardar {n} trozos de mapa, inténtalo con mejor red.	تعذّر حفظ {n} أجزاء من الخريطة، أعد المحاولة بشبكة أفضل.
+Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos.	If the network goes down, the app will still open with this information.	Si se cae la red, la app se abrirá igualmente con esta información.	إذا انقطعت الشبكة، سيفتح التطبيق رغم ذلك بهذه المعلومات.

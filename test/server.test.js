@@ -570,3 +570,13 @@ test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace'
     assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n, 0, t + ' vide');
   assert.notEqual(fs.readFileSync(DIR + '/d/secret', 'utf8'), before, 'nouvelle clé');
 });
+
+test('traductions : fichiers valides, mêmes textes dans chaque langue', () => {
+  const out = require('node:child_process').execFileSync(process.execPath, [path.join(ROOT, 'tools', 'i18n-build.js')], { encoding: 'utf8' });
+  assert.match(out, /textes traduits/);
+  const L = l => JSON.parse(require('node:fs').readFileSync(path.join(ROOT, 'public', 'lang', l + '.json'), 'utf8'));
+  const en = L('en'), es = L('es'), ar = L('ar');
+  assert.deepEqual(Object.keys(es).sort(), Object.keys(en).sort());
+  assert.deepEqual(Object.keys(ar).sort(), Object.keys(en).sort());
+  for (const k of ['Signaler', 'Droits', 'Mode manif', 'Garde à vue']) assert.ok(en[k] && es[k] && ar[k], k);
+});

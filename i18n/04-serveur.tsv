@@ -1,0 +1,111 @@
+# Libellés et messages d'erreur envoyés par le serveur (en français)
+CRS / Gendarmes mobiles	Riot police (CRS / gendarmes)	Antidisturbios (CRS / gendarmes)	شرطة مكافحة الشغب (CRS / درك)
+Police	Police	Policía	الشرطة
+BAC / BRAV-M	Plain-clothes / motorbike units (BAC, BRAV-M)	Policía de paisano / en moto (BAC, BRAV-M)	وحدات بلباس مدني أو دراجات (BAC، BRAV-M)
+Nasse / encerclement	Kettling / encirclement	Encapsulamiento / cerco	تطويق / حصار
+Interpellations	Arrests	Detenciones	اعتقالات
+Lacrymo	Tear gas	Gas lacrimógeno	غاز مسيل للدموع
+Canon à eau	Water cannon	Cañón de agua	مدفع مياه
+Point chaud	Hot spot	Punto caliente	نقطة ساخنة
+Sommations	Dispersal warnings	Avisos de dispersión	إنذارات تفريق
+Street medic	Street medic	Street medic	مسعفو الشارع
+Legal team / observateurs	Legal team / observers	Equipo legal / observadores	فريق قانوني / مراقبون
+Presse	Press	Prensa	صحافة
+Zone calme / repli	Calm area / fallback	Zona tranquila / repliegue	منطقة هادئة / انسحاب
+Eau / sérum phy	Water / saline	Agua / suero	ماء / محلول ملحي
+Tête de cortège	Front of the march	Cabeza de la manifestación	مقدّمة المسيرة
+Rue bloquée	Street blocked	Calle cortada	شارع مغلق
+Blocus (lycée / fac)	Blockade (school / uni)	Bloqueo (instituto / universidad)	إغلاق (ثانوية / جامعة)
+Manifestation	Protest	Manifestación	مظاهرة
+Rassemblement	Gathering	Concentración	تجمّع
+Assemblée générale	General assembly	Asamblea general	جمعية عامة
+Forces de l’ordre	Police	Fuerzas del orden	قوات الأمن
+Danger	Danger	Peligro	خطر
+Soutien	Support	Apoyo	دعم
+Infos cortège	March info	Info de la marcha	معلومات المسيرة
+Mairie	Town hall	Ayuntamiento	البلدية
+Préfecture	Prefecture	Prefectura	المحافظة
+Sous-préfecture	Sub-prefecture	Subprefectura	محافظة فرعية
+Commissariat	Police station	Comisaría	مركز شرطة
+Gendarmerie	Gendarmerie	Gendarmería	الدرك
+Tribunal	Court	Tribunal	محكمة
+Centre de rétention (CRA)	Detention centre (CRA)	Centro de internamiento (CRA)	مركز احتجاز إداري (CRA)
+Hôpital	Hospital	Hospital	مستشفى
+Pharmacie	Pharmacy	Farmacia	صيدلية
+Eau potable	Drinking water	Agua potable	مياه الشرب
+Caméra de surveillance	Surveillance camera	Cámara de vigilancia	كاميرا مراقبة
+Manifestation interdite	Protest banned	Manifestación prohibida	مظاهرة ممنوعة
+Périmètre interdit	No-go perimeter	Perímetro prohibido	محيط محظور
+Couvre-feu	Curfew	Toque de queda	حظر التجوّل
+Transports	Transport	Transporte	النقل
+Consigne	Instruction	Consigna	تعليمات
+Écris le message de l’annonce.	Write the announcement message.	Escribe el mensaje del anuncio.	اكتب نص الإعلان.
+Numéro de téléphone invalide.	Invalid phone number.	Número de teléfono no válido.	رقم هاتف غير صالح.
+Indique la ville de la legal team.	Enter the legal team’s city.	Indica la ciudad del equipo legal.	حدّد مدينة الفريق القانوني.
+Position invalide.	Invalid location.	Ubicación no válida.	موقع غير صالح.
+Indique le nom du collectif.	Enter the group’s name.	Indica el nombre del colectivo.	حدّد اسم المجموعة.
+Indique la ville ou le secteur.	Enter the city or area.	Indica la ciudad o la zona.	حدّد المدينة أو المنطقة.
+Donne le lien public du collectif (site, Instagram…), en https://	Give the group’s public link (website, Instagram…), starting with https://	Da el enlace público del colectivo (web, Instagram…), con https://	أعطِ الرابط العلني للمجموعة (موقع، Instagram…) بصيغة https://
+Indique le canal officiel du collectif où te confirmer la demande.	Enter the group’s official channel where we can confirm the request.	Indica el canal oficial del colectivo donde confirmarte la solicitud.	حدّد القناة الرسمية للمجموعة لتأكيد الطلب.
+Trop de demandes en attente, réessaie dans quelques jours.	Too many pending requests, try again in a few days.	Demasiadas solicitudes pendientes, inténtalo en unos días.	طلبات معلّقة كثيرة، أعد المحاولة بعد أيام.
+Date invalide.	Invalid date.	Fecha no válida.	تاريخ غير صالح.
+Donne un titre (ex. : Blocus lycée Jean-Monnet).	Give a title (e.g. Jean-Monnet high school blockade).	Pon un título (p. ej.: Bloqueo instituto Jean-Monnet).	أعطِ عنوانًا (مثال: إغلاق ثانوية Jean-Monnet).
+Indique le lieu de rendez-vous.	Enter the meeting place.	Indica el lugar de encuentro.	حدّد مكان التجمّع.
+Date invalide (dans les 3 prochains mois).	Invalid date (must be within the next 3 months).	Fecha no válida (dentro de los próximos 3 meses).	تاريخ غير صالح (خلال الأشهر الثلاثة القادمة).
+Parcours invalide.	Invalid route.	Recorrido no válido.	مسار غير صالح.
+Trop d’envois d’un coup. Réessaie dans quelques minutes.	Too many sent at once. Try again in a few minutes.	Demasiados envíos de golpe. Inténtalo en unos minutos.	إرسالات كثيرة دفعة واحدة. أعد المحاولة بعد دقائق.
+Tu as déjà 3 propositions en attente de validation.	You already have 3 suggestions waiting for approval.	Ya tienes 3 propuestas pendientes de validación.	لديك 3 اقتراحات بانتظار الموافقة.
+Trop de propositions en attente, réessaie plus tard.	Too many pending suggestions, try again later.	Demasiadas propuestas pendientes, inténtalo más tarde.	اقتراحات معلّقة كثيرة، أعد المحاولة لاحقًا.
+Introuvable.	Not found.	No encontrado.	غير موجود.
+Carte indisponible.	Map unavailable.	Mapa no disponible.	الخريطة غير متاحة.
+Requête refusée.	Request refused.	Solicitud rechazada.	رُفض الطلب.
+Trop de demandes : réessaie dans quelques minutes.	Too many requests: try again in a few minutes.	Demasiadas solicitudes: inténtalo en unos minutos.	طلبات كثيرة: أعد المحاولة بعد دقائق.
+Trop de demandes d’un coup. Réessaie plus tard.	Too many requests at once. Try again later.	Demasiadas solicitudes de golpe. Inténtalo más tarde.	طلبات كثيرة دفعة واحدة. أعد المحاولة لاحقًا.
+Service de notification non pris en charge.	Notification service not supported.	Servicio de notificaciones no compatible.	خدمة الإشعارات غير مدعومة.
+Abonnement invalide.	Invalid subscription.	Suscripción no válida.	اشتراك غير صالح.
+Trop de demandes, réessaie plus tard.	Too many requests, try again later.	Demasiadas solicitudes, inténtalo más tarde.	طلبات كثيرة، أعد المحاولة لاحقًا.
+Trop d’abonnements, réessaie plus tard.	Too many subscriptions, try again later.	Demasiadas suscripciones, inténtalo más tarde.	اشتراكات كثيرة، أعد المحاولة لاحقًا.
+Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications.	This phone isn’t subscribed on the server. Turn notifications off and on again.	Este teléfono no está suscrito en el servidor. Desactiva y vuelve a activar las notificaciones.	هذا الهاتف غير مشترك على الخادم. أوقف الإشعارات ثم فعّلها مجددًا.
+Trois essais au plus toutes les 5 minutes.	Three tries at most every 5 minutes.	Tres intentos como máximo cada 5 minutos.	ثلاث محاولات كحد أقصى كل 5 دقائق.
+Tape au moins 2 lettres.	Type at least 2 letters.	Escribe al menos 2 letras.	اكتب حرفين على الأقل.
+Trop de recherches, patiente un peu.	Too many searches, wait a moment.	Demasiadas búsquedas, espera un poco.	عمليات بحث كثيرة، انتظر قليلًا.
+Recherche indisponible pour l’instant.	Search unavailable for now.	Búsqueda no disponible por ahora.	البحث غير متاح حاليًا.
+Signalement expiré.	Report expired.	Aviso caducado.	انتهت صلاحية البلاغ.
+Annonce déjà retirée.	Announcement already removed.	Anuncio ya retirado.	الإعلان محذوف سابقًا.
+Événement introuvable.	Event not found.	Evento no encontrado.	الفعالية غير موجودة.
+Déjà expiré.	Already expired.	Ya caducado.	منتهي الصلاحية سابقًا.
+Annonce introuvable.	Announcement not found.	Anuncio no encontrado.	الإعلان غير موجود.
+Catégorie inconnue.	Unknown category.	Categoría desconocida.	فئة غير معروفة.
+Ce type de signalement est désactivé pour l’instant.	This type of report is turned off for now.	Este tipo de aviso está desactivado por ahora.	هذا النوع من البلاغات معطّل حاليًا.
+Signalement trop ancien, il n’a pas été publié.	Report too old, it wasn’t published.	Aviso demasiado antiguo, no se ha publicado.	البلاغ قديم جدًا، لم يُنشر.
+Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.	Reports are paused for a few minutes (wave of fake reports). Try again soon.	Los avisos están en pausa unos minutos (oleada de avisos falsos). Inténtalo pronto.	البلاغات متوقفة لبضع دقائق (موجة بلاغات كاذبة). أعد المحاولة قريبًا.
+Trop de signalements d’un coup. Réessaie dans quelques minutes.	Too many reports at once. Try again in a few minutes.	Demasiados avisos de golpe. Inténtalo en unos minutos.	بلاغات كثيرة دفعة واحدة. أعد المحاولة بعد دقائق.
+Un danger est signalé à moins de 100 m : la zone ne peut pas être marquée calme.	A danger is reported less than 100 m away: the area can’t be marked calm.	Hay un peligro avisado a menos de 100 m: la zona no puede marcarse como tranquila.	يوجد خطر مُبلَّغ عنه على أقل من 100 م: لا يمكن وسم المنطقة بالهادئة.
+Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent.	Too many reports from your network in this area. Confirm the existing ones instead.	Demasiados avisos desde tu red en esta zona. Confirma mejor los que ya existen.	بلاغات كثيرة من شبكتك في هذه المنطقة. أكّد البلاغات الموجودة بدلًا من ذلك.
+Zone saturée, réessaie dans quelques minutes.	Area overloaded, try again in a few minutes.	Zona saturada, inténtalo en unos minutos.	المنطقة مزدحمة، أعد المحاولة بعد دقائق.
+Carte saturée, réessaie plus tard.	Map overloaded, try again later.	Mapa saturado, inténtalo más tarde.	الخريطة مزدحمة، أعد المحاولة لاحقًا.
+Lien orga invalide ou expiré.	Organiser link invalid or expired.	Enlace de organización no válido o caducado.	رابط المنظِّم غير صالح أو منتهٍ.
+Trop d’envois, patiente un peu.	Too many sent, wait a moment.	Demasiados envíos, espera un poco.	إرسالات كثيرة، انتظر قليلًا.
+Déjà pris en compte.	Already counted.	Ya registrado.	تم احتسابه سابقًا.
+Trop de votes, patiente un peu.	Too many votes, wait a moment.	Demasiados votos, espera un poco.	أصوات كثيرة، انتظر قليلًا.
+Trop d’essais, réessaie dans quelques minutes.	Too many tries, try again in a few minutes.	Demasiados intentos, inténtalo en unos minutos.	محاولات كثيرة، أعد المحاولة بعد دقائق.
+Invitation invalide.	Invalid invitation.	Invitación no válida.	دعوة غير صالحة.
+Lien expiré ou déjà utilisé. Demande-en un nouveau.	Link expired or already used. Ask for a new one.	Enlace caducado o ya usado. Pide uno nuevo.	الرابط منتهٍ أو مستخدم سابقًا. اطلب رابطًا جديدًا.
+Seules les orgas confirmées peuvent inviter.	Only confirmed organisers can invite.	Solo las organizaciones confirmadas pueden invitar.	وحدها الجهات المؤكَّدة يمكنها الدعوة.
+Donne un nom à l’orga invitée.	Give the invited organisation a name.	Pon un nombre a la organización invitada.	أعطِ اسمًا للجهة المدعوّة.
+Orga introuvable parmi tes invitées.	Organisation not found among those you invited.	Organización no encontrada entre tus invitadas.	الجهة غير موجودة بين من دعوتهم.
+Déjà confirmée.	Already confirmed.	Ya confirmada.	مؤكَّدة سابقًا.
+Pas encore prête : il faut au moins 7 jours, 10 actions et aucun incident. Seul·e l’admin peut la confirmer avant.	Not ready yet: it takes at least 7 days, 10 actions and no incidents. Only the admin can confirm it sooner.	Aún no está lista: hacen falta al menos 7 días, 10 acciones y ningún incidente. Solo la administración puede confirmarla antes.	ليست جاهزة بعد: يلزم 7 أيام على الأقل و10 إجراءات ودون أي حادث. وحده المشرف يمكنه تأكيدها قبل ذلك.
+Pas possible pour un accès défini par l’admin dans les réglages du serveur.	Not possible for access set by the admin in the server settings.	No es posible para un acceso definido por la administración en los ajustes del servidor.	غير ممكن لصلاحية حدّدها المشرف في إعدادات الخادم.
+Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info ».	Urgent announcements aren’t possible during the trial period. Post it as “info”.	Durante el periodo de prueba no se pueden publicar anuncios urgentes. Publícalo como «info».	لا يمكن نشر إعلانات عاجلة خلال الفترة التجريبية. انشره كـ«معلومة».
+Événement déjà retiré.	Event already removed.	Evento ya retirado.	الفعالية محذوفة سابقًا.
+Seule l’orga qui l’a publié peut le retirer.	Only the organiser who posted it can remove it.	Solo la organización que lo publicó puede retirarlo.	وحدها الجهة التي نشرته يمكنها حذفه.
+Seul·e l’auteur·ice peut retirer cette annonce.	Only the author can remove this announcement.	Solo quien lo escribió puede retirar este anuncio.	وحده كاتب الإعلان يمكنه حذفه.
+Seule l’orga qui l’a signalé peut le modifier.	Only the organiser who reported it can edit it.	Solo la organización que lo avisó puede modificarlo.	وحدها الجهة التي أبلغت عنه يمكنها تعديله.
+Déjà prolongé au maximum.	Already extended to the maximum.	Ya prolongado al máximo.	ممدَّد إلى الحد الأقصى سابقًا.
+Déjà confirmé.	Already confirmed.	Ya confirmado.	مؤكَّد سابقًا.
+Trop de retraits d’un coup : le retrait est suspendu quelques minutes.	Too many removals at once: removal is suspended for a few minutes.	Demasiadas retiradas de golpe: la retirada queda suspendida unos minutos.	عمليات حذف كثيرة دفعة واحدة: الحذف موقوف لبضع دقائق.
+Trop de retraits d’un coup : le retrait est suspendu quelques minutes. L’admin est prévenu·e.	Too many removals at once: removal is suspended for a few minutes. The admin has been informed.	Demasiadas retiradas de golpe: la retirada queda suspendida unos minutos. Se ha avisado a la administración.	عمليات حذف كثيرة دفعة واحدة: الحذف موقوف لبضع دقائق. تم إبلاغ المشرف.
+Une orga porte déjà ce nom.	An organisation already has this name.	Ya hay una organización con este nombre.	توجد جهة تحمل هذا الاسم.
+Orga introuvable.	Organisation not found.	Organización no encontrada.	الجهة غير موجودة.
+Carte des mobilisations	Protest map	Mapa de las movilizaciones	خريطة التحركات

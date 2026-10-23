@@ -87,6 +87,15 @@ Dans l'onglet Digest, « Fabriquer les stories » produit 7 visuels 1080 × 1920
 - **Carte à intégrer** (`/embed.html?lat=…&lng=…&z=…`) : lecture seule, sans géolocalisation des visiteur·ices, dans une iframe. C'est la seule page autorisée dans un autre site.
 - **Nouveautés** : `public/nouveautes.json`, affiché une fois après chaque nouvelle version ; historique dans [`CHANGELOG.md`](../CHANGELOG.md).
 
+## Langues
+
+L’interface existe en français, anglais, espagnol et arabe (affichage de droite à gauche). Le téléphone choisit la langue de son système ; on la change dans Plus, Réglages. Le français est le texte d’origine et sert de clé.
+
+- Les traductions sont dans `i18n/*.tsv` : une ligne par texte, `français<TAB>anglais<TAB>espagnol<TAB>arabe`. Les balises HTML et les valeurs entre accolades (`{n}`, `{d}`…) doivent rester identiques.
+- `node tools/i18n-build.js` vérifie les fichiers et écrit `public/lang/en.json`, `es.json` et `ar.json`. À relancer après chaque modification, et à chaque nouveau texte ajouté à l’interface.
+- Dans le navigateur, `public/i18n.js` charge le fichier de la langue choisie (un seul, gardé pour le hors-ligne), traduit la page, puis l’appli traduit ses messages avec `t('texte français', { valeurs })`. Un texte absent du dictionnaire reste en français.
+- Restent en français : les notifications envoyées par le serveur, les textes publiés par les orgas et les arrêtés, et les pages annexes (mentions légales, bilans, presse, affiche).
+
 ## Ce que le serveur sait et ne sait pas
 
 - Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base hors du dossier web et supprimés à expiration.
