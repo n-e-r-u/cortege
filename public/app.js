@@ -164,7 +164,7 @@
   // Une zone vérifiée par une orga résiste mieux : simple avertissement ('warn') pour un danger isolé, barrée sinon.
   const CALM_M = 100;
   const calmSt = new Map();   // id de la zone calme -> { lvl, near: danger le plus proche, d: distance, ids: dangers voisins }
-  const isDangerCat = cat => CAT[cat] && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
+  const isDangerCat = cat => CAT[cat] && cat !== 'militaires' && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
   function computeCalm(list) {
     calmSt.clear();
     const now = Date.now();

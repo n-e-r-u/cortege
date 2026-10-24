@@ -51,6 +51,8 @@ const CATEGORIES = [
   { id: 'crs',            group: 'fdo',     label: 'CRS / Gendarmes mobiles', glyph: '🛡️', ttl: 20 },
   { id: 'police',         group: 'fdo',     label: 'Police',                  glyph: '🚓', ttl: 20 },
   { id: 'bac',            group: 'fdo',     label: 'BAC / BRAV-M',            glyph: '🏍️', ttl: 15 },
+  // Militaires de l'opération Sentinelle : garde statique de bâtiments, pas de maintien de l'ordre (pas d'alerte, ne suspend pas les zones calmes)
+  { id: 'militaires',     group: 'fdo',     label: 'Militaires (Sentinelle)', glyph: '🪖', ttl: 60 },
   { id: 'inter',          group: 'fdo',     label: 'Unités d’intervention (BRI, RAID, GIGN)', glyph: '🚨', ttl: 15 },
   { id: 'blinde',         group: 'fdo',     label: 'Blindé (Centaure, VBRG)', glyph: '🚛', ttl: 20 },
   { id: 'nasse',          group: 'fdo',     label: 'Nasse / encerclement',    glyph: '⭕', ttl: 20 },
@@ -69,8 +71,6 @@ const CATEGORIES = [
   { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 15 },
   { id: 'bloque',         group: 'info',    label: 'Rue bloquée',             glyph: '⛔', ttl: 30 },
   { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
-  // Militaires de l'opération Sentinelle : garde statique de bâtiments, pas de maintien de l'ordre (pas d'alerte)
-  { id: 'militaires',     group: 'info',    label: 'Militaires (Sentinelle)', glyph: '🪖', ttl: 60 },
 ];
 // Agenda : types d'événements publiés par les orgas (ou proposés puis validés par l'admin)
 const EVENT_TYPES = [
@@ -110,7 +110,7 @@ const VIBES = {
   inter: [150, 80, 150, 80, 150, 80, 600],             // trois courtes, une longue
   blinde: [700, 150, 250],                             // une longue, une courte
 };
-const isDanger = cat => Object.hasOwn(CAT, cat) && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
+const isDanger = cat => Object.hasOwn(CAT, cat) && cat !== 'militaires' && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
 const distM = (a, b) => {
   const k = Math.PI / 180, x = (b.lng - a.lng) * k * Math.cos((a.lat + b.lat) / 2 * k), y = (b.lat - a.lat) * k;
   return Math.sqrt(x * x + y * y) * 6371000;

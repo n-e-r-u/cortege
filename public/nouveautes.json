@@ -1,9 +1,9 @@
 {
-  "version": "2.5.5",
+  "version": "2.5.6",
   "items": [
     [
       "🚨 Nouveaux signalements",
-      "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) à part, sans alerte : ils gardent des bâtiments."
+      "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) dans les forces de l’ordre, sans alerte : ils gardent des bâtiments."
     ],
     [
       "✓ Pas encore confirmé",
@@ -13,7 +13,7 @@
   "items_en": [
     [
       "🚨 New reports",
-      "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) separately, with no alert: they guard buildings."
+      "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) under police forces, with no alert: they guard buildings."
     ],
     [
       "✓ Not confirmed yet",
@@ -23,7 +23,7 @@
   "items_es": [
     [
       "🚨 Nuevos avisos",
-      "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) aparte, sin alerta: vigilan edificios."
+      "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) en fuerzas del orden, sin alerta: vigilan edificios."
     ],
     [
       "✓ Aún sin confirmar",
@@ -33,7 +33,7 @@
   "items_ar": [
     [
       "🚨 بلاغات جديدة",
-      "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) على حدة ودون تنبيه: مهمتهم حراسة المباني."
+      "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) ضمن قوات الأمن ودون تنبيه: مهمتهم حراسة المباني."
     ],
     [
       "✓ لم يتأكد بعد",
@@ -42,11 +42,11 @@
   ],
   "history": [
     {
-      "version": "2.5.5",
+      "version": "2.5.6",
       "items": [
         [
           "🚨 Nouveaux signalements",
-          "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) à part, sans alerte : ils gardent des bâtiments."
+          "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) dans les forces de l’ordre, sans alerte : ils gardent des bâtiments."
         ],
         [
           "✓ Pas encore confirmé",
@@ -56,7 +56,7 @@
       "items_en": [
         [
           "🚨 New reports",
-          "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) separately, with no alert: they guard buildings."
+          "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) under police forces, with no alert: they guard buildings."
         ],
         [
           "✓ Not confirmed yet",
@@ -66,7 +66,7 @@
       "items_es": [
         [
           "🚨 Nuevos avisos",
-          "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) aparte, sin alerta: vigilan edificios."
+          "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) en fuerzas del orden, sin alerta: vigilan edificios."
         ],
         [
           "✓ Aún sin confirmar",
@@ -76,7 +76,7 @@
       "items_ar": [
         [
           "🚨 بلاغات جديدة",
-          "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) على حدة ودون تنبيه: مهمتهم حراسة المباني."
+          "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) ضمن قوات الأمن ودون تنبيه: مهمتهم حراسة المباني."
         ],
         [
           "✓ لم يتأكد بعد",
