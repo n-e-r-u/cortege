@@ -82,8 +82,11 @@
   // Ouverture depuis une notification « danger près de toi » : /?at=lat,lng
   const atParam = s => { const m = /[?&]at=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(s || ''); return m && Math.abs(+m[1]) <= 90 && Math.abs(+m[2]) <= 180 ? [+m[1], +m[2]] : null; };
   { const at = atParam(location.search); if (at) { savedView = { c: at, z: 17 }; history.replaceState(null, '', location.pathname); } }
+  // Mention obligatoire de la licence OpenStreetMap (ODbL), toujours visible sur la carte
+  const OSM_ATTR = `© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">${t('contributeurs OpenStreetMap')}</a>`;
   const map = L.map('map', { zoomControl: false, attributionControl: true, maxZoom: 19 })
     .setView(savedView ? savedView.c : cfg.center, savedView ? savedView.z : (cfg.zoom || 6));
+  map.attributionControl.setPrefix(false); // mention courte : rien ne passe sous le bouton Signaler
   // Regroupement des points quand on dézoome (bulle = nombre de signalements, couleur = le plus grave)
   const SEVERITY = ['fdo', 'danger', 'info', 'soutien'];
   const layer = L.markerClusterGroup({
@@ -99,7 +102,7 @@
   // Fond de carte : tuiles vectorielles hébergées sur le serveur (PMTiles) si l'instance en a, sinon OpenStreetMap via le proxy
   function rasterMap() {
     document.body.classList.add('raster');
-    L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+    L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: OSM_ATTR }).addTo(map);
   }
   if (cfg.vector) {
     const sc = document.createElement('script');
@@ -114,10 +117,10 @@
             const b = this._tileCoordsToBounds(c);
             return !zones.some(([so, no, we, ea]) => b.getSouth() >= so && b.getNorth() <= no && b.getWest() >= we && b.getEast() <= ea);
           } });
-          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: '© OpenStreetMap' }).addTo(map);
+          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: OSM_ATTR }).addTo(map);
         }
         const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
-          attribution: '© <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Protomaps' };
+          attribution: OSM_ATTR + ' · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
         vl.addTo(map);
         window.cortegeMapFonts?.().then(() => vl.redraw?.());

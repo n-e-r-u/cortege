@@ -7,7 +7,7 @@
   const cfg = await fetch('/api/config').then(r => r.json()).catch(() => ({}));
   const center = [num('lat', (cfg.center || [46.6])[0], -90, 90), num('lng', (cfg.center || [0, 2.4])[1], -180, 180)];
   const map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 18 }).setView(center, num('z', 13, 5, 18));
-  const raster = () => { document.body.classList.add('raster'); L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map); };
+  const raster = () => { document.body.classList.add('raster'); L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a>' }).addTo(map); };
   if (cfg.vector) {
     const sc = document.createElement('script'); sc.src = '/vendor/protomaps-leaflet.js';
     sc.onload = () => {
@@ -16,9 +16,9 @@
         if (zones.length) {
           const Fallback = L.TileLayer.extend({ _isValidTile(c) { if (!L.TileLayer.prototype._isValidTile.call(this, c)) return false; const b = this._tileCoordsToBounds(c);
             return !zones.some(([s, n, w, e]) => b.getSouth() >= s && b.getNorth() <= n && b.getWest() >= w && b.getEast() <= e); } });
-          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: '© OpenStreetMap' }).addTo(map);
+          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a>' }).addTo(map);
         }
-        const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom, attribution: '© OpenStreetMap · Protomaps' };
+        const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
         vl.addTo(map); window.cortegeMapFonts?.().then(() => vl.redraw?.());
       } catch { raster(); }

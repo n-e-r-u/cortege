@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.5.7
+
+- Mention « © contributeurs OpenStreetMap » toujours visible sur la carte, au-dessus de la barre d’onglets et des gros boutons du mode manif, avec un lien vers la page de droits d’auteur d’OpenStreetMap (elle était cachée par la barre du bas). Même lien sur la carte à intégrer et la carte d’un créneau.
+
 ## 2.5.6
 
 - Militaires (Sentinelle) rangés dans « Forces de l’ordre » au lieu de « Infos cortège ». Toujours sans alerte de proximité, et ils ne suspendent pas les zones calmes voisines (garde statique de bâtiments).

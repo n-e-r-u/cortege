@@ -32,10 +32,10 @@
   const box = L.latLngBounds(rows.map(r => [r.lat, r.lng]));
   const map = L.map('map', { zoomControl: true, attributionControl: true }).fitBounds(box.pad(0.1), { maxZoom: 13 });
   map.attributionControl.setPrefix(false);
-  const raster = () => { document.body.classList.add('raster'); L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map); };
+  const raster = () => { document.body.classList.add('raster'); L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a>' }).addTo(map); };
   try {
     if (cfg.vector && window.protomapsL && window.cortegeVectorLayer)
-      window.cortegeVectorLayer(window.protomapsL, { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom, attribution: '© OpenStreetMap · Protomaps' }).addTo(map);
+      window.cortegeVectorLayer(window.protomapsL, { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> · Protomaps' }).addTo(map);
     else raster();
   } catch { raster(); }
   const dots = L.layerGroup().addTo(map), renderer = L.canvas();
