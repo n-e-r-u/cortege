@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.5.9
+
+- Correctif notifications iPhone : Apple refusait les envois avec « 403 ExpiredProviderToken » dès que le jeton d’identification du serveur (VAPID) avait plus d’une heure. Le jeton dure maintenant 1 h et il est renouvelé toutes les 30 minutes, pour tous les services de notification.
+
 ## 2.5.8
 
 - Correctif : la mention OpenStreetMap n’apparaît plus en double (la carte de secours hors zone ajoutait la sienne à celle de la carte principale).

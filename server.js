@@ -990,17 +990,19 @@ function encryptPush(sub, payload) {
   const head = Buffer.alloc(21); salt.copy(head); head.writeUInt32BE(4096, 16); head[20] = asPub.length;
   return Buffer.concat([head, asPub, body]);
 }
+// Jeton VAPID par service : valable 1 h, renouvelé au bout de 30 min. Apple (web.push.apple.com) refuse
+// un jeton émis depuis plus d'une heure (403 ExpiredProviderToken), même si son « exp » n'est pas dépassé.
 const jwtCache = new Map();
 function vapidAuth(endpoint) {
   const aud = new URL(endpoint).origin;
-  const hit = jwtCache.get(aud);
-  if (hit && hit.exp - Date.now() > 3600_000) return hit.h;
-  const exp = Math.floor(Date.now() / 1000) + 12 * 3600;
+  const hit = jwtCache.get(aud), now = Date.now();
+  if (hit && now - hit.at < 30 * 60_000) return hit.h;
+  const exp = Math.floor(now / 1000) + 3600;
   const enc = o => Buffer.from(JSON.stringify(o)).toString('base64url');
   const data = enc({ typ: 'JWT', alg: 'ES256' }) + '.' + enc({ aud, exp, sub: CONTACT_EMAIL ? 'mailto:' + CONTACT_EMAIL : PUBLIC_URL });
   const sig = crypto.sign('sha256', Buffer.from(data), { key: VAPID_KEY, dsaEncoding: 'ieee-p1363' }).toString('base64url');
   const h = `vapid t=${data}.${sig}, k=${VAPID.pub}`;
-  jwtCache.set(aud, { h, exp: exp * 1000 });
+  jwtCache.set(aud, { h, at: now });
   return h;
 }
 // File d'envoi commune : connexions réutilisées vers les services de notification (Google, Mozilla, Apple),
