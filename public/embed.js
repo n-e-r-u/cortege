@@ -16,7 +16,7 @@
         if (zones.length) {
           const Fallback = L.TileLayer.extend({ _isValidTile(c) { if (!L.TileLayer.prototype._isValidTile.call(this, c)) return false; const b = this._tileCoordsToBounds(c);
             return !zones.some(([s, n, w, e]) => b.getSouth() >= s && b.getNorth() <= n && b.getWest() >= w && b.getEast() <= e); } });
-          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback', attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a>' }).addTo(map);
+          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback' }).addTo(map);
         }
         const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
