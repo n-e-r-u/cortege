@@ -51,11 +51,14 @@ const CATEGORIES = [
   { id: 'crs',            group: 'fdo',     label: 'CRS / Gendarmes mobiles', glyph: '🛡️', ttl: 20 },
   { id: 'police',         group: 'fdo',     label: 'Police',                  glyph: '🚓', ttl: 20 },
   { id: 'bac',            group: 'fdo',     label: 'BAC / BRAV-M',            glyph: '🏍️', ttl: 15 },
+  { id: 'inter',          group: 'fdo',     label: 'Unités d’intervention (BRI, RAID, GIGN)', glyph: '🚨', ttl: 15 },
+  { id: 'blinde',         group: 'fdo',     label: 'Blindé (Centaure, VBRG)', glyph: '🚛', ttl: 20 },
   { id: 'nasse',          group: 'fdo',     label: 'Nasse / encerclement',    glyph: '⭕', ttl: 20 },
   { id: 'interpellation', group: 'fdo',     label: 'Interpellations',         glyph: '⛓️', ttl: 20 },
   { id: 'lacrymo',        group: 'danger',  label: 'Lacrymo',                 glyph: '💨', ttl: 15 },
   { id: 'canon',          group: 'danger',  label: 'Canon à eau',             glyph: '🌊', ttl: 15 },
   { id: 'charge',         group: 'danger',  label: 'Charge',                  glyph: '⚡', ttl: 10 },
+  { id: 'tirs',           group: 'danger',  label: 'Tirs LBD / grenades',     glyph: '💥', ttl: 10 },
   { id: 'chaud',          group: 'danger',  label: 'Point chaud',             glyph: '🔥', ttl: 20 },
   { id: 'sommations',     group: 'danger',  label: 'Sommations',              glyph: '📢', ttl: 20 },
   { id: 'medic',          group: 'soutien', label: 'Street medic',            glyph: '⛑️', ttl: 45 },
@@ -66,6 +69,8 @@ const CATEGORIES = [
   { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 15 },
   { id: 'bloque',         group: 'info',    label: 'Rue bloquée',             glyph: '⛔', ttl: 30 },
   { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
+  // Militaires de l'opération Sentinelle : garde statique de bâtiments, pas de maintien de l'ordre (pas d'alerte)
+  { id: 'militaires',     group: 'info',    label: 'Militaires (Sentinelle)', glyph: '🪖', ttl: 60 },
 ];
 // Agenda : types d'événements publiés par les orgas (ou proposés puis validés par l'admin)
 const EVENT_TYPES = [
@@ -82,6 +87,7 @@ const CAT = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 // « move » : le point glisse vers le signalement le plus récent (unités qui se déplacent).
 const MERGE = {
   crs: { r: 100, move: true }, police: { r: 100, move: true }, bac: { r: 100, move: true }, canon: { r: 100, move: true },
+  inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 },
   nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
   medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
   cortege: { r: 200, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
@@ -89,7 +95,7 @@ const MERGE = {
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;
 // Dangers qui déclenchent une alerte de proximité (dans l'appli et en notification)
-const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'nasse', 'bac', 'crs', 'interpellation']);
+const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
 // Vibrations par type : on reconnaît le danger sans sortir le téléphone
 const VIBES = {
   charge: [100, 60, 100, 60, 100, 60, 100, 60, 100],   // rafale courte : ça arrive vite
@@ -100,6 +106,9 @@ const VIBES = {
   bac: [150, 80, 150, 80, 600],                        // deux courtes, une longue
   crs: [200, 100, 200],                                // deux courtes
   interpellation: [200, 100, 200, 100, 200],           // trois courtes
+  tirs: [60, 40, 60, 40, 60, 40, 60, 40, 60, 40, 60],  // rafale très rapide : tirs
+  inter: [150, 80, 150, 80, 150, 80, 600],             // trois courtes, une longue
+  blinde: [700, 150, 250],                             // une longue, une courte
 };
 const isDanger = cat => Object.hasOwn(CAT, cat) && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
 const distM = (a, b) => {

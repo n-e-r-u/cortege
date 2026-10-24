@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.5.5
+
+- Nouveaux types de signalement, d’après les moyens annoncés par le ministère de l’Intérieur pour le 24 octobre : unités d’intervention (BRI, RAID, GIGN) et blindés (Centaure, VBRG) dans « Forces de l’ordre », tirs LBD / grenades dans « Danger », avec alerte de proximité et vibration propre. Militaires de l’opération Sentinelle dans « Infos cortège », sans alerte : leur mission est la garde statique de bâtiments, pas le maintien de l’ordre.
+- Mode manif renforcé : un signalement fait par un téléphone que le serveur ne connaît pas encore ce jour-là n’est plus présenté comme venant d’un « téléphone suspect », mais simplement « pas encore confirmé ». La protection reste la même (pas d’alerte de proximité tant que personne ne l’a confirmé).
+
 ## 2.5.1
 
 - Espace presse aux couleurs NERU : fond pastel, titres en Anton (police hébergée sur le serveur, rien chargé chez Google), cartes façon sticker, chiffres du 17 octobre en grand. L’image de présentation garde ses proportions (elle était étirée).

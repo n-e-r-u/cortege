@@ -1,94 +1,89 @@
 {
-  "version": "2.5",
+  "version": "2.5.5",
   "items": [
     [
-      "🧭 Nouvelle navigation",
-      "Une barre en bas : Carte, Infos, Signaler, Droits et Plus. Les arrêtés, les annonces des orgas et l’agenda sont réunis dans « Infos ». Le bouton Calques choisit ce que montre la carte (types de signalements, agenda, lieux, caméras)."
+      "🚨 Nouveaux signalements",
+      "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) à part, sans alerte : ils gardent des bâtiments."
     ],
     [
-      "✊ Mode manif",
-      "Dans « Plus » : la carte, un gros bouton Signaler, le SOS et la legal team, rien d’autre. Pour le jour J."
-    ],
-    [
-      "🌍 English, español, العربية",
-      "L’appli parle aussi anglais, espagnol et arabe. Elle choisit la langue du téléphone ; tu peux la changer dans « Plus », Réglages."
-    ],
-    [
-      "🔊 Alerte vocale",
-      "Un danger signalé près de toi peut être lu à voix haute, pratique avec des écouteurs. À activer dans Alertes."
-    ],
-    [
-      "🧹 Tout effacer d’un geste",
-      "Dans « Droits » et « Plus » : garde le doigt appuyé 2 secondes et Cortège efface tout ce qu’il garde sur ton téléphone."
+      "✓ Pas encore confirmé",
+      "Un signalement tout frais n’est plus marqué « téléphone suspect » : il attend simplement qu’une autre personne le confirme."
     ]
   ],
   "items_en": [
     [
-      "🧭 New navigation",
-      "A bar at the bottom: Map, News, Report, Rights and More. Bans, organiser announcements and the calendar are gathered under “News”. The layers button chooses what the map shows (types of reports, calendar, places, cameras)."
+      "🚨 New reports",
+      "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) separately, with no alert: they guard buildings."
     ],
     [
-      "✊ Protest mode",
-      "In “More”: the map, a big Report button, SOS and the legal team, nothing else. For the day itself."
-    ],
-    [
-      "🌍 English, español, العربية",
-      "The app now speaks English, Spanish and Arabic. It uses your phone’s language; you can change it in “More”, Settings."
-    ],
-    [
-      "🔊 Voice alert",
-      "A danger reported near you can be read out loud, handy with earphones. Turn it on in Alerts."
-    ],
-    [
-      "🧹 Erase everything in one gesture",
-      "In “Rights” and “More”: keep your finger pressed for 2 seconds and Cortège erases everything it keeps on your phone."
+      "✓ Not confirmed yet",
+      "A brand-new report is no longer labelled “suspicious phone”: it just waits for someone else to confirm it."
     ]
   ],
   "items_es": [
     [
-      "🧭 Nueva navegación",
-      "Una barra abajo: Mapa, Info, Avisar, Derechos y Más. Los decretos, los anuncios de las organizaciones y la agenda están juntos en «Info». El botón de capas elige lo que muestra el mapa (tipos de avisos, agenda, lugares, cámaras)."
+      "🚨 Nuevos avisos",
+      "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) aparte, sin alerta: vigilan edificios."
     ],
     [
-      "✊ Modo manifestación",
-      "En «Más»: el mapa, un gran botón Avisar, el SOS y el equipo legal, nada más. Para el día de la mani."
-    ],
-    [
-      "🌍 English, español, العربية",
-      "La app ya habla inglés, español y árabe. Usa el idioma del teléfono; puedes cambiarlo en «Más», Ajustes."
-    ],
-    [
-      "🔊 Alerta de voz",
-      "Un peligro avisado cerca de ti puede leerse en voz alta, práctico con auriculares. Actívala en Alertas."
-    ],
-    [
-      "🧹 Borrarlo todo de un gesto",
-      "En «Derechos» y «Más»: mantén el dedo pulsado 2 segundos y Cortège borra todo lo que guarda en tu teléfono."
+      "✓ Aún sin confirmar",
+      "Un aviso recién hecho ya no se marca como «teléfono sospechoso»: solo espera a que otra persona lo confirme."
     ]
   ],
   "items_ar": [
     [
-      "🧭 تنقّل جديد",
-      "شريط في الأسفل: الخريطة، أخبار، أبلِغ، الحقوق، المزيد. القرارات وإعلانات المنظّمين والمواعيد مجمّعة في «أخبار». وزرّ الطبقات يحدد ما تعرضه الخريطة (أنواع البلاغات، المواعيد، الأماكن، الكاميرات)."
+      "🚨 بلاغات جديدة",
+      "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) على حدة ودون تنبيه: مهمتهم حراسة المباني."
     ],
     [
-      "✊ وضع المظاهرة",
-      "في «المزيد»: الخريطة وزرّ إبلاغ كبير وSOS والفريق القانوني، لا شيء غير ذلك. ليوم المظاهرة."
-    ],
-    [
-      "🌍 English, español, العربية",
-      "أصبح التطبيق يتحدث الإنجليزية والإسبانية والعربية. يستخدم لغة هاتفك، ويمكنك تغييرها في «المزيد»، الإعدادات."
-    ],
-    [
-      "🔊 تنبيه صوتي",
-      "يمكن قراءة الخطر المُبلَّغ عنه قربك بصوت عالٍ، وهذا مفيد مع السماعات. فعّله في التنبيهات."
-    ],
-    [
-      "🧹 امسح كل شيء بحركة واحدة",
-      "في «الحقوق» و«المزيد»: أبقِ إصبعك ضاغطًا لثانيتين ويمسح Cortège كل ما يحفظه على هاتفك."
+      "✓ لم يتأكد بعد",
+      "لم يعد البلاغ الجديد يُوسَم بـ«هاتف مشبوه»: إنه ينتظر فقط أن يؤكده شخص آخر."
     ]
   ],
   "history": [
+    {
+      "version": "2.5.5",
+      "items": [
+        [
+          "🚨 Nouveaux signalements",
+          "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) à part, sans alerte : ils gardent des bâtiments."
+        ],
+        [
+          "✓ Pas encore confirmé",
+          "Un signalement tout frais n’est plus marqué « téléphone suspect » : il attend simplement qu’une autre personne le confirme."
+        ]
+      ],
+      "items_en": [
+        [
+          "🚨 New reports",
+          "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) separately, with no alert: they guard buildings."
+        ],
+        [
+          "✓ Not confirmed yet",
+          "A brand-new report is no longer labelled “suspicious phone”: it just waits for someone else to confirm it."
+        ]
+      ],
+      "items_es": [
+        [
+          "🚨 Nuevos avisos",
+          "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) aparte, sin alerta: vigilan edificios."
+        ],
+        [
+          "✓ Aún sin confirmar",
+          "Un aviso recién hecho ya no se marca como «teléfono sospechoso»: solo espera a que otra persona lo confirme."
+        ]
+      ],
+      "items_ar": [
+        [
+          "🚨 بلاغات جديدة",
+          "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) على حدة ودون تنبيه: مهمتهم حراسة المباني."
+        ],
+        [
+          "✓ لم يتأكد بعد",
+          "لم يعد البلاغ الجديد يُوسَم بـ«هاتف مشبوه»: إنه ينتظر فقط أن يؤكده شخص آخر."
+        ]
+      ]
+    },
     {
       "version": "2.5",
       "items": [
@@ -236,23 +231,6 @@
         [
           "📣 Journées de mobilisation",
           "Les grandes journées sont annoncées la veille au soir et affichées en haut de la carte le jour J."
-        ]
-      ]
-    },
-    {
-      "version": "2.1",
-      "items": [
-        [
-          "🕊 Flèche vers la zone calme",
-          "Quand une zone calme est signalée à moins de 2 km, une flèche t’y guide, même sans réseau."
-        ],
-        [
-          "📊 Bilans des manifs",
-          "Chaque grosse journée a sa page publique : villes, types de signalements, heures. Dans le menu, « Bilans »."
-        ],
-        [
-          "🖨 Affiche à imprimer",
-          "Une affiche A4 avec le QR code de l’appli et les numéros de legal team de ta ville."
         ]
       ]
     }

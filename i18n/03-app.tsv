@@ -12,7 +12,6 @@ Signalé par {n} personnes	Reported by {n} people	Avisado por {n} personas	أب�
 Vérifié par {who}	Verified by {who}	Verificado por {who}	تحقّق منه {who}
 une orga	an organiser	una organización	جهة منظِّمة
 Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)	Reported by a phone that’s reliable today (its reports are often confirmed)	Avisado por un teléfono fiable hoy (sus avisos suelen confirmarse)	أبلغ عنه هاتف موثوق اليوم (بلاغاته تتأكد غالبًا)
-Non confirmé : signalé depuis un téléphone suspect. Confirme si tu le vois.	Unconfirmed: reported from a suspicious phone. Confirm if you see it.	Sin confirmar: avisado desde un teléfono sospechoso. Confírmalo si lo ves.	غير مؤكَّد: أُبلغ عنه من هاتف مشبوه. أكّده إن رأيته.
 {what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant.	{what} {d} away (not yet confirmed): area not safe for now.	{what} a {d} (sin confirmar aún): zona no segura por ahora.	{what} على بعد {d} (غير مؤكَّد بعد): المنطقة غير آمنة حاليًا.
 {what} à {d} : zone pas sûre pour l’instant.	{what} {d} away: area not safe for now.	{what} a {d}: zona no segura por ahora.	{what} على بعد {d}: المنطقة غير آمنة حاليًا.
 C’est calme ici	It’s calm here	Aquí está tranquilo	الوضع هادئ هنا
@@ -355,3 +354,7 @@ Prêt	Ready	Listo	جاهز
 annonces et agenda.	announcements and calendar.	anuncios y agenda.	الإعلانات والمواعيد.
 {n} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau.	{n} map pieces couldn’t be saved, try again with a better connection.	No se han podido guardar {n} trozos de mapa, inténtalo con mejor red.	تعذّر حفظ {n} أجزاء من الخريطة، أعد المحاولة بشبكة أفضل.
 Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos.	If the network goes down, the app will still open with this information.	Si se cae la red, la app se abrirá igualmente con esta información.	إذا انقطعت الشبكة، سيفتح التطبيق رغم ذلك بهذه المعلومات.
+Pas encore confirmé. Confirme si tu le vois.	Not confirmed yet. Confirm if you see it.	Aún sin confirmar. Confírmalo si lo ves.	لم يتأكد بعد. أكّده إن رأيته.
+rafale très rapide	very fast burst	ráfaga muy rápida	سلسلة سريعة جدًا
+trois courtes puis une longue	three short then one long	tres cortas y una larga	ثلاث قصيرة ثم طويلة
+une longue puis une courte	one long then one short	una larga y una corta	طويلة ثم قصيرة

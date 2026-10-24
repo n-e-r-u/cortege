@@ -6,7 +6,7 @@
   const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
   const MIN = 60_000;
-  const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'nasse', 'bac', 'crs', 'interpellation']);
+  const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
   let announcements = [];
   // Économie de batterie : rafraîchissement espacé, GPS moins précis, boussole coupée
@@ -235,7 +235,7 @@
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, t('Signalé par {n} personnes', { n: r.up + 1 })));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ ' + t('Vérifié par {who}', { who: r.ver === 'une orga' ? t('une orga') : r.ver })));
     else if (r.f) root.append(el('div', { class: 'pop-fiable' }, '★ ' + t('Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)')));
-    if (r.nf) root.append(el('div', { class: 'pop-contested' }, t('Non confirmé : signalé depuis un téléphone suspect. Confirme si tu le vois.')));
+    if (r.nf) root.append(el('div', { class: 'pop-unconf' }, t('Pas encore confirmé. Confirme si tu le vois.')));
     const cs = calmSt.get(r.id);
     if (cs) {
       root.append(el('div', { class: 'pop-calm-warn' }, `⚠ ${CAT[cs.near.cat].glyph} ` + t(cs.lvl === 'warn' ? '{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant.' : '{what} à {d} : zone pas sûre pour l’instant.', { what: CAT[cs.near.cat].label, d: fmtDist(cs.d) })));
@@ -2218,7 +2218,8 @@
   $('#optNear').addEventListener('change', e => pushToggle('near', e.target.checked));
   // Légende des vibrations, avec un bouton pour les essayer
   const VIBE_TXT = { charge: 'rafale de petites vibrations', nasse: 'deux longues', sommations: 'trois longues', lacrymo: 'deux moyennes',
-    canon: 'trois moyennes', bac: 'deux courtes puis une longue', crs: 'deux courtes', interpellation: 'trois courtes' };
+    canon: 'trois moyennes', bac: 'deux courtes puis une longue', crs: 'deux courtes', interpellation: 'trois courtes',
+    tirs: 'rafale très rapide', inter: 'trois courtes puis une longue', blinde: 'une longue puis une courte' };
   for (const id of Object.keys(VIBE_TXT)) {
     if (!CAT[id]) continue;
     const b = el('button', { type: 'button' }, 'Essayer');
