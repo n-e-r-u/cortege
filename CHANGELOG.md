@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.6.1
+
+- Correctif : les bilans publics affichaient le code INSEE des communes (75056, 34172…) au lieu de leur nom. Les bilans déjà publiés sont corrigés automatiquement à l’affichage.
+
 ## 2.6.0
 
 - Bilans justes : le digest, les bilans publics, les stories et la comparaison sur 15 jours ne comptent plus que la France (métropole et outre-mer). Les signalements envoyés d’ailleurs restent sur la carte en direct ; leur nombre est indiqué à part (« N signalements hors de France »), et la carte du digest se cadre sur la France.

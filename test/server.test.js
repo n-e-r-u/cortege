@@ -604,6 +604,14 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
     let st; for (let i = 0; i < 100; i++) { st = (await A('/api/admin/places', undefined, 'GET')).j; if (!st.running && st.last) break; await new Promise(r => setTimeout(r, 100)); }
     assert.equal(st.source, 'osm'); assert.equal(st.last.err, null);
     assert.equal(st.last.communes, 1, 'contour de commune extrait pendant le même passage');
+    // Bilan : la commune est nommée (pas son code INSEE)
+    await fetch(B2 + '/api/reports', { method: 'POST', headers: { 'content-type': 'application/json', 'x-device': 'dev-commune'.padEnd(24, 'x') }, body: JSON.stringify({ cat: 'nasse', lat: 48.866, lng: 2.36 }) });
+    const dg = (await A('/api/digest', undefined, 'GET')).j;
+    assert.equal(dg.zones['75056'].name, 'Paris');
+    const day = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+    assert.equal((await A('/api/admin/publish/' + day, {})).s, 200);
+    const page = await fetch(B2 + '/manif/' + day).then(r => r.text());
+    assert.match(page, />Paris</); assert.ok(!page.includes('75056'), 'pas de code INSEE dans le bilan');
     assert.deepEqual(st.counts, { cam: 2, mairie: 1, pharma: 1 }, 'caméra intérieure et boulangerie ignorées');
     const cams = JSON.parse(fs.readFileSync(D2 + '/l/l/48_2-c.json', 'utf8')).p;
     assert.deepEqual(cams.find(x => x[0] === 'n1'), ['n1', 'cam', 48.866, 2.362, 'Préfecture de police', 1, 90, 'f']);

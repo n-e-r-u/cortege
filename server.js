@@ -887,16 +887,19 @@ const dayCountFr = d => dedupeRows(readArchiveDay(d)).filter(r => inFrance(r.lat
 // Publiées à la main par l'admin. On fige alors un résumé agrégé (la page n'affiche que le centre de chaque ville et des totaux),
 // plus les points arrondis à ~100 m pour la carte d'un créneau, gardés même quand l'archive détaillée est effacée.
 db.exec('CREATE TABLE IF NOT EXISTS pub(date TEXT PRIMARY KEY, t INTEGER, data TEXT)');
-const getPub = date => { const x = q('SELECT data FROM pub WHERE date=?').get(date); return x ? JSON.parse(x.data) : null; };
+// Bilans figés par la 2.6.0 avec le code INSEE à la place du nom de la commune : nom retrouvé à la lecture
+const INSEE_RE = /^\d[\dAB]\d{3}$/;
+const fixPubNames = d => { if (d && Array.isArray(d.cities)) for (const c of d.cities) if (INSEE_RE.test(c.name)) { const x = q('SELECT name FROM communes WHERE insee=?').get(c.name); if (x) c.name = x.name; } return d; };
+const getPub = date => { const x = q('SELECT data FROM pub WHERE date=?').get(date); return x ? fixPubNames(JSON.parse(x.data)) : null; };
 const REMOVED_O = new Set(['cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old']);
 function pubSnapshot(date) {
-  const { rows: all, abroad } = dayRows(date);
+  const { rows: all, abroad, zones } = dayRows(date);
   const rows = all.filter(r => CAT[r.c]);
   if (!rows.length) return null;
   const cats = {}, fam = {}, hours = Array(24).fill(0), cities = {};
   for (const r of rows) {
     cats[r.c] = (cats[r.c] || 0) + 1; const g = CAT[r.c].group; fam[g] = (fam[g] || 0) + 1; hours[parisHour(r.t) % 24]++;
-    const c = (cities[r.z] ||= { name: r.z, n: 0, lat: 0, lng: 0 }); c.n++; c.lat += r.lat; c.lng += r.lng;
+    const c = (cities[r.z] ||= { name: zones[r.z] ? zones[r.z].name : r.z, n: 0, lat: 0, lng: 0 }); c.n++; c.lat += r.lat; c.lng += r.lng;
   }
   const ts = rows.map(r => r.t);
   return { date, total: rows.length, fam, hours,
