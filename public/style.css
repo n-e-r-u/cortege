@@ -625,7 +625,12 @@ body.drawing .tabbar, body.drawing .manif-bar { display: none; }
 .feed-anns .ann { box-shadow: none; padding-right: 14px; }
 #feedOrd .ord-card { background: var(--surface); }
 #feedOrd .ord-card.here { border-color: #f0a020; background: color-mix(in srgb, #f0a020 10%, var(--surface)); }
-#btnOrders, #btnAgenda { margin-top: 8px; }
+#btnOrders { margin-top: 8px; }
+.ag-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.ag-actions button { font-size: 14px; padding: 0 8px; line-height: 1.2; }
+@media (max-width: 360px) { .ag-actions { grid-template-columns: 1fr; } }
+.ag-actions button { margin: 0; width: 100%; }
+#btnOrganize { margin-bottom: 10px; }
 .kofi-nudge { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 16px; text-decoration: none; color: var(--fg); font-size: 13px; line-height: 1.4;
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), color-mix(in srgb, var(--accent-2) 16%, var(--surface))); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); }
 .kofi-nudge svg { flex: none; color: var(--accent); }

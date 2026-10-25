@@ -1,46 +1,153 @@
 {
-  "version": "2.5.6",
+  "version": "2.6",
   "items": [
     [
-      "🚨 Nouveaux signalements",
-      "Unités d’intervention (BRI, RAID, GIGN), blindés (Centaure, VBRG) et tirs LBD / grenades, avec alerte et vibration propre. Militaires (Sentinelle) dans les forces de l’ordre, sans alerte : ils gardent des bâtiments."
+      "📣 Annoncer une manif",
+      "Un bouton dans l’onglet Infos, sous l’agenda, et « Organiser une manif » dans Plus : le formulaire s’ouvre directement."
     ],
     [
-      "✓ Pas encore confirmé",
-      "Un signalement tout frais n’est plus marqué « téléphone suspect » : il attend simplement qu’une autre personne le confirme."
+      "⛔ Nouveaux arrêtés",
+      "Une alerte quand un arrêté (manif interdite, périmètre, couvre-feu) est ajouté pour ta zone. Réglable dans Alertes."
+    ],
+    [
+      "🌍 Dans ta langue",
+      "Les notifications arrivent dans la langue de l’appli : français, anglais, espagnol ou arabe."
+    ],
+    [
+      "📊 Bilans plus justes",
+      "Les bilans comptent seulement la France, commune par commune. Les points envoyés d’ailleurs restent sur la carte en direct."
     ]
   ],
   "items_en": [
     [
-      "🚨 New reports",
-      "Intervention units (BRI, RAID, GIGN), armoured vehicles (Centaure, VBRG) and LBD / grenade fire, with their own alert and vibration. Soldiers (Sentinelle) under police forces, with no alert: they guard buildings."
+      "📣 Announce a protest",
+      "A button in the Info tab, under the calendar, and “Organise a protest” in More: the form opens right away."
     ],
     [
-      "✓ Not confirmed yet",
-      "A brand-new report is no longer labelled “suspicious phone”: it just waits for someone else to confirm it."
+      "⛔ New orders",
+      "An alert when an order (banned protest, perimeter, curfew) is added for your area. You can turn it on or off in Alerts."
+    ],
+    [
+      "🌍 In your language",
+      "Notifications now come in the app’s language: French, English, Spanish or Arabic."
+    ],
+    [
+      "📊 More accurate reports",
+      "Daily reports only count France, town by town. Points sent from elsewhere stay on the live map."
     ]
   ],
   "items_es": [
     [
-      "🚨 Nuevos avisos",
-      "Unidades de intervención (BRI, RAID, GIGN), blindados (Centaure, VBRG) y disparos de LBD / granadas, con su propia alerta y vibración. Militares (Sentinelle) en fuerzas del orden, sin alerta: vigilan edificios."
+      "📣 Anunciar una manifestación",
+      "Un botón en la pestaña Infos, bajo la agenda, y «Organizar una manifestación» en Más: el formulario se abre directamente."
     ],
     [
-      "✓ Aún sin confirmar",
-      "Un aviso recién hecho ya no se marca como «teléfono sospechoso»: solo espera a que otra persona lo confirme."
+      "⛔ Nuevas órdenes",
+      "Una alerta cuando se añade una orden (manifestación prohibida, perímetro, toque de queda) para tu zona. Se ajusta en Alertas."
+    ],
+    [
+      "🌍 En tu idioma",
+      "Las notificaciones llegan en el idioma de la app: francés, inglés, español o árabe."
+    ],
+    [
+      "📊 Balances más justos",
+      "Los balances solo cuentan Francia, municipio por municipio. Los puntos enviados desde otros lugares siguen en el mapa en directo."
     ]
   ],
   "items_ar": [
     [
-      "🚨 بلاغات جديدة",
-      "وحدات التدخّل (BRI، RAID، GIGN)، والمدرّعات (Centaure، VBRG)، وإطلاق LBD / القنابل، مع تنبيه واهتزاز خاص بكل منها. والعسكريون (Sentinelle) ضمن قوات الأمن ودون تنبيه: مهمتهم حراسة المباني."
+      "📣 أعلن عن مظاهرة",
+      "زر في تبويب المعلومات تحت المواعيد، و«نظّم مظاهرة» في المزيد: يُفتح النموذج مباشرة."
     ],
     [
-      "✓ لم يتأكد بعد",
-      "لم يعد البلاغ الجديد يُوسَم بـ«هاتف مشبوه»: إنه ينتظر فقط أن يؤكده شخص آخر."
+      "⛔ قرارات جديدة",
+      "تنبيه عند إضافة قرار (مظاهرة ممنوعة، محيط، حظر تجوّل) يخص منطقتك. يمكن ضبطه في التنبيهات."
+    ],
+    [
+      "🌍 بلغتك",
+      "تصل الإشعارات الآن بلغة التطبيق: الفرنسية أو الإنجليزية أو الإسبانية أو العربية."
+    ],
+    [
+      "📊 حصائل أدق",
+      "تحسب الحصائل فرنسا وحدها، بلدية ببلدية. وتبقى النقاط المرسلة من أماكن أخرى على الخريطة المباشرة."
     ]
   ],
   "history": [
+    {
+      "version": "2.6",
+      "items": [
+        [
+          "📣 Annoncer une manif",
+          "Un bouton dans l’onglet Infos, sous l’agenda, et « Organiser une manif » dans Plus : le formulaire s’ouvre directement."
+        ],
+        [
+          "⛔ Nouveaux arrêtés",
+          "Une alerte quand un arrêté (manif interdite, périmètre, couvre-feu) est ajouté pour ta zone. Réglable dans Alertes."
+        ],
+        [
+          "🌍 Dans ta langue",
+          "Les notifications arrivent dans la langue de l’appli : français, anglais, espagnol ou arabe."
+        ],
+        [
+          "📊 Bilans plus justes",
+          "Les bilans comptent seulement la France, commune par commune. Les points envoyés d’ailleurs restent sur la carte en direct."
+        ]
+      ],
+      "items_en": [
+        [
+          "📣 Announce a protest",
+          "A button in the Info tab, under the calendar, and “Organise a protest” in More: the form opens right away."
+        ],
+        [
+          "⛔ New orders",
+          "An alert when an order (banned protest, perimeter, curfew) is added for your area. You can turn it on or off in Alerts."
+        ],
+        [
+          "🌍 In your language",
+          "Notifications now come in the app’s language: French, English, Spanish or Arabic."
+        ],
+        [
+          "📊 More accurate reports",
+          "Daily reports only count France, town by town. Points sent from elsewhere stay on the live map."
+        ]
+      ],
+      "items_es": [
+        [
+          "📣 Anunciar una manifestación",
+          "Un botón en la pestaña Infos, bajo la agenda, y «Organizar una manifestación» en Más: el formulario se abre directamente."
+        ],
+        [
+          "⛔ Nuevas órdenes",
+          "Una alerta cuando se añade una orden (manifestación prohibida, perímetro, toque de queda) para tu zona. Se ajusta en Alertas."
+        ],
+        [
+          "🌍 En tu idioma",
+          "Las notificaciones llegan en el idioma de la app: francés, inglés, español o árabe."
+        ],
+        [
+          "📊 Balances más justos",
+          "Los balances solo cuentan Francia, municipio por municipio. Los puntos enviados desde otros lugares siguen en el mapa en directo."
+        ]
+      ],
+      "items_ar": [
+        [
+          "📣 أعلن عن مظاهرة",
+          "زر في تبويب المعلومات تحت المواعيد، و«نظّم مظاهرة» في المزيد: يُفتح النموذج مباشرة."
+        ],
+        [
+          "⛔ قرارات جديدة",
+          "تنبيه عند إضافة قرار (مظاهرة ممنوعة، محيط، حظر تجوّل) يخص منطقتك. يمكن ضبطه في التنبيهات."
+        ],
+        [
+          "🌍 بلغتك",
+          "تصل الإشعارات الآن بلغة التطبيق: الفرنسية أو الإنجليزية أو الإسبانية أو العربية."
+        ],
+        [
+          "📊 حصائل أدق",
+          "تحسب الحصائل فرنسا وحدها، بلدية ببلدية. وتبقى النقاط المرسلة من أماكن أخرى على الخريطة المباشرة."
+        ]
+      ]
+    },
     {
       "version": "2.5.6",
       "items": [

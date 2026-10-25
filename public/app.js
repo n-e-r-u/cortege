@@ -2,7 +2,7 @@
 (async function () {
   // Langue : le dictionnaire est chargé (et la page traduite) avant tout le reste
   await (window.I18N ? window.I18N.ready : null);
-  const I18N = window.I18N || { lang: 'fr', locale: I18N.locale, t: (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : s, tn: (n, a, b, v) => (n > 1 ? b : a).replace(/\{(\w+)\}/g, (m, k) => ({ n, ...v })[k] ?? m), set() {}, translate() {} };
+  const I18N = window.I18N || { lang: 'fr', locale: 'fr-FR', t: (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : s, tn: (n, a, b, v) => (n > 1 ? b : a).replace(/\{(\w+)\}/g, (m, k) => ({ n, ...v })[k] ?? m), set() {}, translate() {} };
   const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
   const MIN = 60_000;
@@ -2005,6 +2005,8 @@
   $('#drawDone').onclick = stopDraw;
   $('#evClose').onclick = () => closeSheets();
   $('#btnPropose').onclick = () => openEventForm(!!orga);
+  $('#btnAnnounce').onclick = () => openEventForm(!!orga);
+  $('#btnOrganize').onclick = () => openEventForm(!!orga);
   $('#btnOrgaEvent').onclick = () => openEventForm(true);
   $('#evForm').addEventListener('submit', async ev => {
     ev.preventDefault();
@@ -2150,7 +2152,7 @@
   const b64u = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
   let pushZone = null; try { pushZone = localStorage.getItem('cortege-push-zone'); } catch {}
   // Réglages : annonces urgentes (oui par défaut, comme avant) et dangers près de toi
-  let pushOpts = { urgent: true, near: false }; try { pushOpts = { ...pushOpts, ...JSON.parse(localStorage.getItem('cortege-push-opts') || '{}') }; } catch {}
+  let pushOpts = { urgent: true, near: false, orders: true }; try { pushOpts = { ...pushOpts, ...JSON.parse(localStorage.getItem('cortege-push-opts') || '{}') }; } catch {}
   const savePushOpts = () => { try { localStorage.setItem('cortege-push-opts', JSON.stringify(pushOpts)); } catch {} };
   function bellState() {
     const on = !!pushSub; $('#btnNotif').dataset.on = on ? '1' : '0';
@@ -2159,16 +2161,16 @@
   // Le serveur ne reçoit qu'une zone arrondie à 0,1° (≈ 10 km), mise à jour quand tu changes de zone
   async function pushSend(sub, force) {
     const c = map.getCenter(), ref = me || [c.lat, c.lng];
-    const z = ref.map(x => Math.round(x * 10) / 10), key = z.join(',') + (pushOpts.urgent ? 'u' : '') + (pushOpts.near ? 'n' : '');
+    const z = ref.map(x => Math.round(x * 10) / 10), key = z.join(',') + (pushOpts.urgent ? 'u' : '') + (pushOpts.near ? 'n' : '') + (pushOpts.orders ? 'o' : '') + I18N.lang;
     if (!force && key === pushZone) return;
     pushZone = key;
     const res = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1], urgent: pushOpts.urgent, near: pushOpts.near }) });
+      body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1], urgent: pushOpts.urgent, near: pushOpts.near, orders: pushOpts.orders, lang: I18N.lang }) });
     if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || 'Abonnement impossible.'); }
     try { localStorage.setItem('cortege-push-zone', key); } catch {}
   }
   if (isIOS && !standalone) $('#pushHelp').textContent += ' ' + t('Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.');
-  function syncSwitches() { $('#optPush').checked = !!pushSub && pushOpts.urgent; $('#optNear').checked = !!pushSub && pushOpts.near; $('#pushTestBox').hidden = !pushSub; bellState(); }
+  function syncSwitches() { $('#optPush').checked = !!pushSub && pushOpts.urgent; $('#optNear').checked = !!pushSub && pushOpts.near; $('#optOrd').checked = !!pushSub && pushOpts.orders; $('#pushTestBox').hidden = !pushSub; bellState(); }
   // Notification de test envoyée par le serveur : vérifie toute la chaîne, pas seulement le vibreur du téléphone
   $('#btnPushTest').onclick = async () => {
     const b = $('#btnPushTest'), msg = $('#pushTestMsg');
@@ -2207,11 +2209,11 @@
   }
   async function pushToggle(which, on) {
     const before = { ...pushOpts };
-    if (!pushSub) pushOpts = { urgent: false, near: false }; // première activation : seulement ce qui a été choisi
+    if (!pushSub) pushOpts = { urgent: false, near: false, orders: false }; // première activation : seulement ce qui a été choisi
     pushOpts[which] = on;
     try {
-      if (!pushOpts.urgent && !pushOpts.near) { await pushDisable(); toast('Notifications désactivées'); }
-      else if (!pushSub) { await pushEnable(); toast(which === 'near' ? 'Alertes « danger près de toi » activées' : 'Annonces urgentes activées'); }
+      if (!pushOpts.urgent && !pushOpts.near && !pushOpts.orders) { await pushDisable(); toast('Notifications désactivées'); }
+      else if (!pushSub) { await pushEnable(); toast(which === 'near' ? 'Alertes « danger près de toi » activées' : which === 'orders' ? 'Alertes « nouvel arrêté » activées' : 'Annonces urgentes activées'); }
       else { await pushSend(pushSub, true); toast(on ? 'Activé' : 'Désactivé'); }
       savePushOpts();
     } catch (err) { pushOpts = before; toast(err.message || 'Activation impossible.'); }
@@ -2219,6 +2221,7 @@
   }
   $('#optPush').addEventListener('change', e => pushToggle('urgent', e.target.checked));
   $('#optNear').addEventListener('change', e => pushToggle('near', e.target.checked));
+  $('#optOrd').addEventListener('change', e => pushToggle('orders', e.target.checked));
   // Légende des vibrations, avec un bouton pour les essayer
   const VIBE_TXT = { charge: 'rafale de petites vibrations', nasse: 'deux longues', sommations: 'trois longues', lacrymo: 'deux moyennes',
     canon: 'trois moyennes', bac: 'deux courtes puis une longue', crs: 'deux courtes', interpellation: 'trois courtes',

@@ -9,7 +9,7 @@ Le détail des fonctions, de l'administration et des protections. Pour installer
 - **Import du 17 octobre** : toutes les 15 min, le serveur importe dans l’agenda les manifestations et rassemblements annoncés sur la carte participative 17octobregiletjaune.net (réutilisation autorisée). Les blocages de stations, raffineries, péages ne sont pas importés. Un événement importé retiré par l'administration ne revient pas. Variables : `IMPORT_17OCT=0` pour couper, `IMPORT_17OCT_UNTIL` (défaut `2026-11-01`).
 - **SOS** : en cas d’interpellation, un SMS pré-rempli (heure, position, numéro de la legal team de la zone) part vers un proche choisi à l’avance. Le contact reste sur le téléphone, le SMS ne passe pas par le serveur.
 - **Économie de batterie** (réglage dans « ? ») : synchro toutes les 20 s, GPS moins précis, boussole coupée.
-- **Notifications** (bouton 🔔) : les annonces urgentes et, en option, les dangers signalés près de toi (au plus une alerte toutes les 3 min) arrivent même appli fermée (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification et une zone arrondie à ~10 km. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
+- **Notifications** (bouton 🔔) : les annonces urgentes, les nouveaux arrêtés de ta zone et, en option, les dangers signalés près de toi (au plus une alerte toutes les 3 min) arrivent même appli fermée, dans la langue de l’appli (Web Push chiffré, clés générées au premier démarrage, sans dépendance). Le serveur ne garde que l’adresse de notification, une zone arrondie à ~10 km, les choix et la langue de l’appli. Sur iPhone : seulement une fois l’appli installée sur l’écran d’accueil (iOS 16.4+).
 - **Annonces nationales** : réservées à l’administration. Les numéros de legal team sont permanents jusqu’à leur retrait.
 - **Mes droits** : les numéros de legal team de la ville la plus proche (de ta position, sinon du centre de la carte) en premier, puis les autres villes. Deux sources : l’annuaire permanent, tenu par l’administration (chaque ligne indique sa date de vérification et sa source), et les numéros publiés par les orgas pour une mobilisation. Les derniers numéros connus restent disponibles hors ligne.
 - **Menu** : un panneau qui s’ouvre depuis la droite (☰) rassemble Mes droits, la liste, l’agenda, les alertes, la préparation, le partage et les réglages. Sur la carte restent seulement : localiser, chercher, le menu et l’installation à droite ; SOS, soutien et espace orga à gauche.
@@ -54,7 +54,7 @@ Avec la clé `ADMIN_KEY` :
 - **Effacement d'urgence** (onglet Urgences) : efface d'un coup toutes les traces liées aux personnes et change la clé de hachage. Les orgas et l'agenda sont gardés.
 - **Digest** : bilan anonyme par jour.
 - **Direct** : signalements par minute, téléphones connectés en temps réel, notifications envoyées, reçues, expirées ou refusées (avec la dernière erreur du service de notification), charge, mémoire et disque du serveur. Actualisé toutes les 10 s.
-- **Modération** : les points contestés ou venus d'un téléphone suspect, avec « Garder », « Vérifier » ou « Retirer ».
+- **Modération** : le plus urgent en haut (dangers contestés, puis dangers d'une série près des zones calmes, puis points isolés à plus de 500 km de toute autre activité, « Plus là » isolés et points hors de France). Chaque point dit pourquoi il est là, en clair. Filtres par ville et par type ; les simples « pas encore confirmé » du mode renforcé sont cachés par défaut (et ne comptent pas dans le badge). Boutons « C’est vrai » (efface les contestations), « Vérifier » ou « Retirer ».
 - **Journées** : une journée de mobilisation prévue envoie une notification la veille à 20 h aux abonné·es aux annonces urgentes, affiche son titre en bandeau et lance le mode renforcé le jour J (7 h → 2 h), puis propose le lendemain de publier le bilan public.
 - **Lieux** : lieux permanents (préfectures, sous-préfectures, mairies, commissariats, gendarmeries, tribunaux, centres de rétention, hôpitaux, pharmacies, eau potable). Avec les caméras, ils viennent d'une copie complète d'OpenStreetMap (Geofabrik), téléchargée une fois par mois puis triée sur le serveur par osmium, à basse priorité ; le gros fichier est effacé ensuite. Sans osmium : lus dans la carte PMTiles du serveur (sans caméras ni horaires), ou à défaut chez Overpass. Recherche, correction, masquage et ajout ; les corrections sont gardées aux imports suivants.
 - **Réglages** : bandeau en haut de la carte (avec dates de début et de fin), vue d'ouverture, types de signalement (activés ou non, durée de vie), rayon de l'alerte de proximité et distance des notifications « danger près de toi ». Appliqués sans redémarrer ; les clés et les liens restent dans les variables du serveur.
@@ -73,7 +73,7 @@ Le bouton « Demander un accès orga » ouvre un formulaire dans l'appli (nom du
 
 ## Digest
 
-Onglet Digest de l'administration : chiffres clés, carte du jour, moments clés (premier danger de chaque type par ville), répartition par type, par heure (par famille) et par ville avec les horaires d'activité, devenir de chaque signalement (expiré, contesté, retiré par une orga ou l'admin…), fiabilité (confirmations, vérifications, durée de visibilité), activité des orgas et de l'anti-abus, comparaison sur 15 jours, résumé prêt à copier et export CSV. Les signalements retirés ou contestés sont gardés et peuvent être inclus ou exclus d'un clic. L'archive ne garde que la catégorie, les heures de début et de fin à la minute, une position arrondie à ~100 m et des compteurs, jamais le texte des précisions ni d'empreinte.
+Onglet Digest de l'administration. Seuls les signalements faits en France (métropole et outre-mer) sont comptés, dans le digest comme dans les bilans publics et les stories : ceux envoyés d'ailleurs restent sur la carte en direct, et leur nombre est indiqué à part. Chaque point est rattaché à sa commune grâce aux contours des communes d'OpenStreetMap, extraits pendant l'import mensuel des lieux (aucun service extérieur) ; avant le premier import, à la ville ou l'agglomération la plus proche. Chiffres clés, carte du jour, moments clés (premier danger de chaque type par ville), répartition par type, par heure (par famille) et par ville avec les horaires d'activité, devenir de chaque signalement (expiré, contesté, retiré par une orga ou l'admin…), fiabilité (confirmations, vérifications, durée de visibilité), activité des orgas et de l'anti-abus, comparaison sur 15 jours, résumé prêt à copier et export CSV. Les signalements retirés ou contestés sont gardés et peuvent être inclus ou exclus d'un clic. L'archive ne garde que la catégorie, les heures de début et de fin à la minute, une position arrondie à ~100 m et des compteurs, jamais le texte des précisions ni d'empreinte.
 
 ## Stories du digest
 
@@ -81,11 +81,18 @@ Dans l'onglet Digest, « Fabriquer les stories » produit 7 visuels 1080 × 1920
 
 ## Pages publiques, affiche et carte à intégrer
 
-- **Bilans** (`/manif`, `/manif/AAAA-MM-JJ`) : publiés depuis l'onglet Digest. Un résumé agrégé est figé à la publication (totaux par ville avec seulement le centre de la ville, types, heures, vérification). Il reste en ligne même quand l'archive détaillée est effacée.
+- **Agenda et bilans** (`/manif`, `/manif/AAAA-MM-JJ`) : `/manif` liste les prochaines mobilisations de l'agenda (aussi en données structurées pour les moteurs de recherche), puis les bilans publiés depuis l'onglet Digest. Un résumé agrégé est figé à la publication (totaux par ville avec seulement le centre de la ville, types, heures, vérification). Il reste en ligne même quand l'archive détaillée est effacée.
 - **Carte d'un créneau** (`/manif/AAAA-MM-JJ/carte`, lien en bas de chaque bilan) : tout le monde choisit un lieu, un rayon (2 km au plus) et une plage horaire (6 h au plus), et obtient une image à télécharger ou partager. L'image est fabriquée dans le navigateur de la personne ; le serveur n'envoie qu'un fichier de points figé à la publication, mis en cache (catégorie, heures à la minute, position arrondie à ~100 m, confirmations, vérifié ou non, et ce qu'est devenu le point). Les signalements retirés ou contestés restent affichés, en rond vide avec la mention (retiré par une orga, par l'admin, contesté…) : un retrait ne fait pas disparaître ce qui a été signalé, avec une limite de demandes par réseau. L'admin a le même outil dans l'onglet Digest, avec en plus le CSV.
 - **Affiche A4** (`/affiche.html?ville=…`) : QR code de l'appli et numéros de legal team de la ville (annuaire et numéros publiés par les orgas), à imprimer.
 - **Carte à intégrer** (`/embed.html?lat=…&lng=…&z=…`) : lecture seule, sans géolocalisation des visiteur·ices, dans une iframe. C'est la seule page autorisée dans un autre site.
 - **Nouveautés** : `public/nouveautes.json`, affiché une fois après chaque nouvelle version ; historique dans [`CHANGELOG.md`](../CHANGELOG.md).
+
+## Référencement
+
+- `/robots.txt` et `/sitemap.xml` (accueil, agenda et bilans, presse, affiche, mentions légales, chaque bilan publié) sont fabriqués par le serveur.
+- L'admin, le digest, la carte à intégrer et la carte d'un créneau sont exclus des moteurs (`X-Robots-Tag: noindex`).
+- Données structurées schema.org : l'appli (gratuite) sur l'accueil, les événements de l'agenda sur `/manif`.
+- Validation Google Search Console par fichier : `GOOGLE_SITE_VERIFICATION=google0123456789abcdef.html` (le nom du fichier donné par Google), sans toucher aux pages.
 
 ## Langues
 
@@ -94,7 +101,8 @@ L’interface existe en français, anglais, espagnol et arabe (affichage de droi
 - Les traductions sont dans `i18n/*.tsv` : une ligne par texte, `français<TAB>anglais<TAB>espagnol<TAB>arabe`. Les balises HTML et les valeurs entre accolades (`{n}`, `{d}`…) doivent rester identiques.
 - `node tools/i18n-build.js` vérifie les fichiers et écrit `public/lang/en.json`, `es.json` et `ar.json`. À relancer après chaque modification, et à chaque nouveau texte ajouté à l’interface.
 - Dans le navigateur, `public/i18n.js` charge le fichier de la langue choisie (un seul, gardé pour le hors-ligne), traduit la page, puis l’appli traduit ses messages avec `t('texte français', { valeurs })`. Un texte absent du dictionnaire reste en français.
-- Restent en français : les notifications envoyées par le serveur, les textes publiés par les orgas et les arrêtés, et les pages annexes (mentions légales, bilans, presse, affiche).
+- Les notifications suivent la langue de l’appli (envoyée au serveur avec l’abonnement) et utilisent les mêmes fichiers de traduction.
+- Restent en français : les textes écrits par les orgas et l’admin (annonces, titres de journée), le texte des arrêtés, et les pages annexes (mentions légales, bilans, presse, affiche).
 
 ## Ce que le serveur sait et ne sait pas
 

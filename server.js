@@ -550,6 +550,39 @@ function calmSeries(dev, net, now) {
   const n = q("SELECT COUNT(DISTINCT ref) n FROM abuse WHERE kind='danger près zone calme' AND net=? AND t>?").get(net, now - SERIES.win).n;
   return d >= SERIES.dev || n >= SERIES.net;
 }
+// File de modération, la plus urgente d'abord :
+// 1 danger contesté (« Plus là »), 2 danger d'une série près de zones calmes, 3 point isolé (à plus de 500 km de toute autre activité)
+// ou autre point contesté, 4 « Plus là » isolés ou point hors de France, 5 simple « pas encore confirmé » (téléphone récent, mode renforcé),
+// caché par défaut dans l'admin.
+const ISOLATED_KM = 500;
+function modQueue(now = Date.now()) {
+  const act = q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT 5000').all(now);
+  const cells = new Map();
+  for (const x of act) { const k = Math.floor(x.lat) + '_' + Math.floor(x.lng); if (!cells.has(k)) cells.set(k, []); cells.get(k).push(x); }
+  const isolated = x => {
+    if (act.length < 10 || cells.get(Math.floor(x.lat) + '_' + Math.floor(x.lng)).length > 1) return false;
+    return !act.some(y => y !== x && distKm(x.lat, x.lng, y.lat, y.lng) <= ISOLATED_KM);
+  };
+  const out = [];
+  for (const x of act) {
+    const danger = isDanger(x.cat), why = [];
+    if (x.ct > 0) why.push('contested'); else if (x.down > 0) why.push('down');
+    let series = false;
+    if (x.fl === -1 && !x.up) {
+      series = danger && nearby('calme', x.lat, x.lng, CALM_KILL_M, now).some(c => !c.r.ct);
+      why.push(series ? 'series' : 'new');
+    }
+    const abroad = !inFrance(x.lat, x.lng), iso = isolated(x);
+    if (iso) why.push('isolated');
+    if (abroad) why.push('abroad');
+    if (!why.length) continue;
+    const prio = x.ct > 0 && danger ? 1 : series ? 2 : iso || x.ct > 0 ? 3 : x.down > 0 || abroad ? 4 : 5;
+    out.push({ ...publicView(toReport(x)), dw: x.dw || 0, fl: x.fl || 0, ct: x.ct || 0, place: abroad ? 'Hors de France' : whereOf(x.lat, x.lng).name,
+      group: CAT[x.cat] ? CAT[x.cat].group : '', why, prio, low: prio === 5 });
+  }
+  out.sort((a, b) => a.prio - b.prio || b.t - a.t);
+  return out.slice(0, 400);
+}
 // Copie du point tel qu'il était avant d'être contesté : l'admin peut le remettre pendant 1 h
 function snapshotContested(r, now) {
   q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, VOTES.id, VOTES.label, JSON.stringify({ ...r, left: r.exp - now }));
@@ -750,6 +783,80 @@ function placeOf(lat, lng) {
   return name;
 }
 
+// ---- Communes : contours OpenStreetMap (limites administratives de niveau 8), extraits pendant l'import mensuel ----
+// Gardés dans la base (simplifiés à ~50 m) : un point est rattaché à la commune qui le contient, sans aucun service extérieur.
+db.exec('CREATE TABLE IF NOT EXISTS communes(id TEXT PRIMARY KEY, insee TEXT, name TEXT, minlat REAL, minlng REAL, maxlat REAL, maxlng REAL, data TEXT, seen INTEGER)');
+let COMM = null;
+const commPolys = new Map(), commCache = new Map();
+function commIndex() {
+  if (COMM) return COMM;
+  const rows = q('SELECT id, insee, name, minlat, minlng, maxlat, maxlng FROM communes').all();
+  const b = new Float64Array(rows.length * 4);
+  rows.forEach((r, i) => { b[i * 4] = r.minlat; b[i * 4 + 1] = r.minlng; b[i * 4 + 2] = r.maxlat; b[i * 4 + 3] = r.maxlng; });
+  return (COMM = { rows, b });
+}
+const commReset = () => { COMM = null; commPolys.clear(); commCache.clear(); frCache.clear(); };
+// Point dans un contour (coordonnées [lng, lat]), puis dans une surface avec ses trous
+function ringHas(ring, x, y) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+const polyHas = (p, lat, lng) => p.some(poly => ringHas(poly[0], lng, lat) && !poly.slice(1).some(h => ringHas(h, lng, lat)));
+function communeOf(lat, lng) {
+  const key = lat.toFixed(3) + ',' + lng.toFixed(3);
+  if (commCache.has(key)) return commCache.get(key);
+  const { rows, b } = commIndex();
+  let hit = null;
+  for (let i = 0; i < rows.length && !hit; i++) {
+    if (lat < b[i * 4] || lat > b[i * 4 + 2] || lng < b[i * 4 + 1] || lng > b[i * 4 + 3]) continue;
+    const r = rows[i];
+    let p = commPolys.get(r.id);
+    if (!p) {
+      const x = q('SELECT data FROM communes WHERE id=?').get(r.id);
+      p = x ? JSON.parse(x.data) : [];
+      if (commPolys.size > 500) commPolys.delete(commPolys.keys().next().value);
+      commPolys.set(r.id, p);
+    }
+    if (polyHas(p, lat, lng)) hit = { id: r.insee || r.id, name: r.name, fr: !!r.insee };
+  }
+  if (commCache.size > 50000) commCache.clear();
+  commCache.set(key, hit);
+  return hit;
+}
+// En France ou non : départements (contours IGN), outre-mer (boîtes), commune française connue, ou ville française à moins de 6 km
+const FR_CC = new Set(['FR', 'GP', 'MQ', 'GF', 'RE', 'YT', 'PM', 'BL', 'MF', 'NC', 'PF', 'WF']);
+const OUTRE_MER = [[15.8, -61.9, 16.55, -60.95], [14.35, -61.25, 14.9, -60.8], [2.1, -54.65, 5.8, -51.6], [-21.4, 55.2, -20.85, 55.85], [-13.05, 44.95, -12.6, 45.35],
+  [46.7, -56.45, 47.15, -56.1], [17.85, -63.17, 18.13, -62.78], [-22.8, 163.5, -19.5, 168.2], [-28, -155, -7, -134], [-14.4, -178.3, -13.1, -176]];
+const frCache = new Map();
+function inFrance(lat, lng) {
+  const key = lat.toFixed(3) + ',' + lng.toFixed(3);
+  let v = frCache.get(key);
+  if (v !== undefined) return v;
+  v = OUTRE_MER.some(([a, b, c, d]) => lat >= a && lat <= c && lng >= b && lng <= d)
+    || DEPS.some(d => d.p && d.b && lat >= d.b[0] - 0.01 && lat <= d.b[2] + 0.01 && lng >= d.b[1] - 0.01 && lng <= d.b[3] + 0.01 && polyHas(d.p, lat, lng));
+  if (!v) { const c = communeOf(lat, lng); if (c && c.fr) v = true; }
+  if (!v) {
+    const k = Math.cos(lat * Math.PI / 180); let best = Infinity, cc = null;
+    for (const [, la, lo, , c] of PLACES) {
+      const dy = (la - lat) * 111; if (dy > 6 || dy < -6) continue;
+      const dd = Math.hypot(dy, (lo - lng) * 111 * k); if (dd < best) { best = dd; cc = c; }
+    }
+    v = best <= 6 && FR_CC.has(cc);
+  }
+  if (frCache.size > 50000) frCache.clear();
+  frCache.set(key, v);
+  return v;
+}
+// Nom de lieu d'un point : sa commune si les contours sont importés, sinon la ville ou l'agglomération la plus proche
+function whereOf(lat, lng) {
+  const c = communeOf(lat, lng);
+  return c ? { id: c.id, name: c.name } : { id: placeOf(lat, lng), name: placeOf(lat, lng) };
+}
+
 // ---- Lignes d'une journée (digest et pages publiques) ----
 const readArchiveDay = d => { try { return fs.readFileSync(path.join(ARCHIVE_DIR, d + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { return []; } };
 // Un point restauré puis expiré apparaît deux fois : on garde sa dernière ligne
@@ -758,15 +865,23 @@ function dayRows(date) {
   // Lignes sans heure de fin (anciens formats, imports) : fin = début + durée normale du type
   const rows = dedupeRows(readArchiveDay(date)).map(r => ({ ...r, o: r.o || (r.d ? 'old' : 'exp'), e: r.e || r.t + ((CAT[r.c] && BASE_TTL[r.c]) || 20) * MIN }));
   for (const r of activeReports(Date.now(), 5000)) if (parisDay(r.t) === date) rows.push({ ...archLine(r, 'active'), e: null });
-  // Villes : chaque point est rattaché à sa ville ou à son agglomération (liste de villes embarquée, sans service extérieur)
-  const zones = {};
-  for (const r of rows) {
-    const name = placeOf(r.lat, r.lng);
-    r.z = name; const z = (zones[name] ||= { name, lat: 0, lng: 0, n: 0 }); z.n++; z.lat += r.lat; z.lng += r.lng;
+  // Les bilans ne comptent que la France (métropole et outre-mer) : les points envoyés d'ailleurs restent sur la carte en direct,
+  // mais ne faussent ni les totaux ni les cartes. On garde seulement leur nombre.
+  const fr = [], abroad = [];
+  for (const r of rows) (inFrance(r.lat, r.lng) ? fr : abroad).push(r);
+  // Villes : chaque point est rattaché à sa commune (contours OSM) ou, à défaut, à sa ville ou à son agglomération
+  const zones = {}, names = {};
+  for (const r of fr) {
+    const w = whereOf(r.lat, r.lng);
+    r.z = w.id; const z = (zones[w.id] ||= { name: w.name, lat: 0, lng: 0, n: 0 }); z.n++; z.lat += r.lat; z.lng += r.lng;
   }
-  for (const z of Object.values(zones)) { z.lat = Math.round(z.lat / z.n * 1000) / 1000; z.lng = Math.round(z.lng / z.n * 1000) / 1000; }
-  return { rows, zones };
+  for (const [id, z] of Object.entries(zones)) { z.lat = Math.round(z.lat / z.n * 1000) / 1000; z.lng = Math.round(z.lng / z.n * 1000) / 1000; (names[z.name] ||= []).push(id); }
+  // Deux communes du même nom (Saint-Denis…) : on ajoute le département
+  for (const ids of Object.values(names)) if (ids.length > 1) for (const id of ids) if (/^\d[\dAB]\d{3}$/.test(id)) zones[id].name += ` (${id.startsWith('97') ? id.slice(0, 3) : id.slice(0, 2)})`;
+  return { rows: fr, zones, abroad: abroad.length };
 }
+// Nombre de signalements en France d'un jour archivé (comparaison sur 14 jours)
+const dayCountFr = d => dedupeRows(readArchiveDay(d)).filter(r => inFrance(r.lat, r.lng)).length;
 
 // ---- Pages publiques par manif (/manif/AAAA-MM-JJ) ----
 // Publiées à la main par l'admin. On fige alors un résumé agrégé (la page n'affiche que le centre de chaque ville et des totaux),
@@ -775,7 +890,7 @@ db.exec('CREATE TABLE IF NOT EXISTS pub(date TEXT PRIMARY KEY, t INTEGER, data T
 const getPub = date => { const x = q('SELECT data FROM pub WHERE date=?').get(date); return x ? JSON.parse(x.data) : null; };
 const REMOVED_O = new Set(['cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old']);
 function pubSnapshot(date) {
-  const { rows: all } = dayRows(date);
+  const { rows: all, abroad } = dayRows(date);
   const rows = all.filter(r => CAT[r.c]);
   if (!rows.length) return null;
   const cats = {}, fam = {}, hours = Array(24).fill(0), cities = {};
@@ -788,7 +903,7 @@ function pubSnapshot(date) {
     cats: Object.entries(cats).map(([id, n]) => ({ id, label: CAT[id].label, glyph: CAT[id].glyph, group: CAT[id].group, n })).sort((a, b) => b.n - a.n),
     cities: Object.values(cities).map(c => ({ name: c.name, n: c.n, lat: Math.round(c.lat / c.n * 100) / 100, lng: Math.round(c.lng / c.n * 100) / 100 })).sort((a, b) => b.n - a.n),
     first: Math.min(...ts), last: Math.max(...ts), confirmed: rows.filter(r => r.up > 0).length, confs: rows.reduce((t, r) => t + (r.up || 0), 0),
-    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length, pts: pubPts(rows), ptsV: PTS_V };
+    verified: rows.filter(r => r.v).length, removed: rows.filter(r => REMOVED_O.has(r.o)).length, abroad, communes: commIndex().rows.length > 0, pts: pubPts(rows), ptsV: PTS_V };
 }
 // Points de la journée pour la carte d'un créneau (page publique) : position arrondie à ~100 m, heures à la minute,
 // nombre de confirmations, vérifié ou non, et ce qu'est devenu le point. Les points retirés ou contestés restent,
@@ -845,16 +960,28 @@ svg{width:100%;height:auto;display:block}.row{display:grid;grid-template-columns
 .hours{display:flex;gap:3px;align-items:flex-end;height:160px;border-bottom:1px solid #5a5866}.hours div{flex:1;background:#5b66c4;border-radius:3px 3px 0 0;min-height:1px}.hours .pk{background:#ec9fa4}.ticks{display:flex;gap:3px;color:#a3a1ad;font-size:11px}.ticks span{flex:1;text-align:center}
 .fine{color:#a3a1ad;font-size:13px}.cta{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:18px}.cta a{display:block;text-align:center;padding:14px;border-radius:14px;background:#26262c;border:1px solid #34343c;color:#f2f1f4;text-decoration:none;font-weight:700}
 .cta a.main{background:linear-gradient(135deg,#ec9fa4,#a191d8 60%,#7d86dc);color:#17121f;border:0}ul.days{list-style:none;padding:0}ul.days li{margin:8px 0}ul.days a{display:flex;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#1c1c20;border:1px solid #34343c;color:#f2f1f4;text-decoration:none}`;
-function pubShell(req, { title, desc, body }) {
-  const base = PUBLIC_URL_REAL(req);
+function pubShell(req, { title, desc, body, ld }) {
+  const base = PUBLIC_URL_REAL(req), here = base + String(req.url || '/').split('?')[0].replace(/\/$/, '');
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${htmlEsc(title)}</title><meta name="description" content="${htmlEsc(desc)}">
+<title>${htmlEsc(title)}</title><meta name="description" content="${htmlEsc(desc)}"><link rel="canonical" href="${htmlEsc(here || base + '/')}">${ld ? jsonLd(ld) : ''}
 <meta property="og:title" content="${htmlEsc(title)}"><meta property="og:description" content="${htmlEsc(desc)}"><meta property="og:type" content="article">
 <meta property="og:image" content="${base}/icon-512.png"><meta name="twitter:card" content="summary"><link rel="icon" href="/favicon.png"><style>${PUB_CSS}</style></head>
 <body><main><a class="top" href="/"><img src="/brand/logo.png" alt=""><span><b>Cortège</b><span>La carte en direct des manifs${BRAND.handle ? ' · par @' + htmlEsc(BRAND.handle) : ''}</span></span></a>${body}
 <div class="cta"><a class="main" href="/">Ouvrir la carte</a><a href="${htmlEsc(BRAND.instagram || '/')}" rel="noopener">${BRAND.handle ? 'Suivre @' + htmlEsc(BRAND.handle) : 'Suivre le projet'}</a></div>
 <p class="fine">Signalements anonymes envoyés par les manifestant·es : ce ne sont pas des faits vérifiés, ils sont confirmés ou contestés par les autres sur place. Aucune position précise n’est publiée ici, seulement des totaux par ville.</p></main></body></html>`;
 }
+const GOOGLE_VERIFY = /^google[\w-]{6,60}\.html$/.test(process.env.GOOGLE_SITE_VERIFICATION || '') ? process.env.GOOGLE_SITE_VERIFICATION : '';
+function sitemapXml(req) {
+  const base = PUBLIC_URL_REAL(req), day = t => new Date(t).toISOString().slice(0, 10);
+  const pubs = q('SELECT date, t FROM pub ORDER BY date DESC').all();
+  const urls = [['/', day(Date.now()), 'always', '1.0'], ['/manif', pubs[0] ? day(pubs[0].t) : null, 'daily', '0.8'], ['/presse', null, 'monthly', '0.6'],
+    ['/affiche.html', null, 'monthly', '0.4'], ['/legal.html', null, 'yearly', '0.2'], ...pubs.map(x => ['/manif/' + x.date, day(x.t), 'monthly', '0.7'])];
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + urls.map(([u, m, f, p]) => `<url><loc>${htmlEsc(base + u)}</loc>${m ? `<lastmod>${m}</lastmod>` : ''}<changefreq>${f}</changefreq><priority>${p}</priority></url>`).join('\n')
+    + '\n</urlset>\n';
+}
+// Données structurées (schema.org) : rien n'est exécuté, c'est seulement lu par les moteurs de recherche
+const jsonLd = o => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>`;
 const PUBLIC_URL_REAL = req => (process.env.PUBLIC_URL || ('https://' + String(req.headers.host || 'localhost').replace(/[^\w.:-]/g, ''))).replace(/\/$/, '');
 function pubPage(req, d) {
   const maxC = d.cats[0].n, maxH = Math.max(...d.hours), peak = d.hours.indexOf(maxH), top = d.cities.slice(0, 12), maxV = top[0].n;
@@ -864,7 +991,8 @@ function pubPage(req, d) {
 <div class="kpis"><div class="kpi"><b>${d.total}</b><span>signalements</span></div><div class="kpi"><b>${d.cities.length}</b><span>villes</span></div>
 <div class="kpi"><b>${frHour(d.first)}</b><span>premier signalement</span></div><div class="kpi"><b>${frHour(d.last)}</b><span>dernier signalement</span></div></div>
 <section><h2>Par ville</h2>${mapSvg(d.cities)}${top.map(c => `<div class="row"><span>${htmlEsc(c.name)}</span><span class="bar" style="width:${Math.max(2, c.n / maxV * 100)}%;background:linear-gradient(90deg,#ec9fa4,#a191d8)"></span><span class="n">${c.n}</span></div>`).join('')}
-${d.cities.length > 12 ? `<p class="fine">+ ${d.cities.length - 12} autres villes. Chaque ville compte aussi les communes voisines de son agglomération.</p>` : ''}</section>
+${d.cities.length > 12 ? `<p class="fine">+ ${d.cities.length - 12} autres ${d.communes ? 'communes' : 'villes. Chaque ville compte aussi les communes voisines de son agglomération'}.</p>` : ''}
+${d.abroad ? `<p class="fine">${d.abroad} ${d.abroad > 1 ? 'signalements envoyés' : 'signalement envoyé'} hors de France, non ${d.abroad > 1 ? 'comptés' : 'compté'} ici.</p>` : ''}</section>
 <section><h2>Par type</h2><p class="fine">${Object.entries(d.fam).map(([g, n]) => `<span style="color:${GROUP_COL[g]}">●</span> ${GROUP_FR[g]} ${n}`).join(' · ')}</p>
 ${d.cats.map(c => `<div class="row"><span>${htmlEsc(c.label)}</span><span class="bar" style="width:${Math.max(1.5, c.n / maxC * 100)}%;background:${GROUP_COL[c.group]}"></span><span class="n">${c.n}</span></div>`).join('')}</section>
 <section><h2>Par heure</h2><p class="fine">Le plus d’envois entre ${peak} h et ${(peak + 1) % 24} h (${maxH}).</p><div class="hours" role="img" aria-label="Signalements par heure">${d.hours.map((n, i) => `<div class="${i === peak ? 'pk' : ''}" style="height:${n / maxH * 100}%" title="${i} h : ${n}"></div>`).join('')}</div>
@@ -877,9 +1005,18 @@ ${d.cats.map(c => `<div class="row"><span>${htmlEsc(c.label)}</span><span class=
 }
 function pubIndex(req) {
   const list = q('SELECT date, data FROM pub ORDER BY date DESC').all().map(x => { const d = JSON.parse(x.data); return { date: x.date, total: d.total, cities: d.cities.length }; });
-  const body = `<h1>Bilans des manifs</h1><p class="lead">Ce que les manifestant·es ont signalé sur Cortège, journée par journée.</p>
-${list.length ? `<ul class="days">${list.map(x => `<li><a href="/manif/${x.date}"><span>${htmlEsc(frDay(x.date))}</span><span>${x.total} signalements · ${x.cities} villes</span></a></li>`).join('')}</ul>` : '<p class="fine">Aucun bilan publié pour l’instant.</p>'}`;
-  return pubShell(req, { title: 'Bilans des manifs · Cortège', desc: 'Les bilans des mobilisations signalées sur Cortège, la carte en direct des manifs.', body });
+  // Agenda : les mobilisations à venir annoncées sur Cortège (déjà publiques dans l'appli), aussi en données structurées
+  const now = Date.now(), base = PUBLIC_URL_REAL(req);
+  const next = listEvents().filter(e => e.status !== 'pending' && e.lat != null && e.start > now - 2 * 3600e3).slice(0, 40);
+  const when = t => new Date(t).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
+  const body = `<h1>Agenda et bilans des manifs</h1><p class="lead">Les prochaines mobilisations annoncées sur Cortège, puis ce que les manifestant·es ont signalé, journée par journée.</p>
+${next.length ? `<section><h2>À venir</h2><ul class="days">${next.map(e => `<li><a href="/?at=${e.lat},${e.lng}"><span>${htmlEsc((EVT[e.type] || EVT.manif).glyph + ' ' + e.title)}${e.place ? `<br><small class="fine">${htmlEsc(e.place)}</small>` : ''}</span><span>${htmlEsc(when(e.start))}</span></a></li>`).join('')}</ul></section>` : ''}
+<section><h2>Bilans</h2>${list.length ? `<ul class="days">${list.map(x => `<li><a href="/manif/${x.date}"><span>${htmlEsc(frDay(x.date))}</span><span>${x.total} signalements · ${x.cities} villes</span></a></li>`).join('')}</ul>` : '<p class="fine">Aucun bilan publié pour l’instant.</p>'}</section>`;
+  const ld = next.length ? { '@context': 'https://schema.org', '@graph': next.map(e => ({ '@type': 'Event', name: e.title, startDate: new Date(e.start).toISOString(),
+    eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true,
+    location: { '@type': 'Place', name: e.place || e.title, ...(e.place ? { address: e.place } : {}), geo: { '@type': 'GeoCoordinates', latitude: e.lat, longitude: e.lng } },
+    url: `${base}/?at=${e.lat},${e.lng}`, description: (EVT[e.type] || EVT.manif).label + (e.place ? ' · ' + e.place : '') })) } : null;
+  return pubShell(req, { title: 'Agenda et bilans des manifs · Cortège', desc: 'Les prochaines manifs annoncées et les bilans des mobilisations signalées sur Cortège, la carte en direct des manifs.', body, ld });
 }
 function sendPage(res, html) {
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300',
@@ -966,6 +1103,21 @@ db.exec('CREATE TABLE IF NOT EXISTS push(id TEXT PRIMARY KEY, e TEXT NOT NULL, k
 try { db.exec('ALTER TABLE push ADD COLUMN urg INTEGER DEFAULT 1'); } catch {}
 try { db.exec('ALTER TABLE push ADD COLUMN near INTEGER DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE push ADD COLUMN last INTEGER'); } catch {}
+// lang : langue de l'appli sur ce téléphone (textes des notifications) ; ord : nouveaux arrêtés dans la zone
+try { db.exec("ALTER TABLE push ADD COLUMN lang TEXT DEFAULT 'fr'"); } catch {}
+try { db.exec('ALTER TABLE push ADD COLUMN ord INTEGER DEFAULT 1'); } catch {}
+// Textes des notifications dans la langue du téléphone : mêmes traductions que l'appli (public/lang/*.json, le français sert de clé)
+const PUSH_LANGS = ['fr', 'en', 'es', 'ar'];
+const LANG_DICT = {};
+for (const l of PUSH_LANGS.slice(1)) {
+  LANG_DICT[l] = {};
+  try { for (const [k, v] of Object.entries(JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'lang', l + '.json'), 'utf8')))) LANG_DICT[l][k.replace(/\s+/g, ' ').trim()] = v; } catch {}
+}
+function tr(lang, s, v) {
+  const d = LANG_DICT[lang], out = (d && d[String(s).replace(/\s+/g, ' ').trim()]) || s;
+  return v ? out.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : out;
+}
+const LOCALE = { fr: 'fr-FR', en: 'en-GB', es: 'es-ES', ar: 'ar-u-nu-latn' };
 try { // reprise de l'ancien fichier push.json, une seule fois
   if (fs.existsSync(PUSH_FILE)) {
     const old = JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8'));
@@ -1077,10 +1229,12 @@ function pushStat(kind, codes) {
 }
 async function pushSendAll(targets, payload, urgent = false, kind = 'envoi') {
   const dead = [];
-  const base = JSON.parse(payload);
+  // payload : texte JSON, ou fonction (langue) → texte JSON, écrit une fois par langue
+  const mk = typeof payload === 'function' ? payload : () => payload, byLang = new Map();
+  const base = l => { if (!byLang.has(l)) byLang.set(l, JSON.parse(mk(l))); return byLang.get(l); };
   // Les abonné·es d'une même zone (arrondie à ~10 km) reçoivent les mêmes données : calculées une seule fois
   const memo = new Map(), dataFor = s => { const k = s.lat + ',' + s.lng; if (!memo.has(k)) memo.set(k, pushData(s.lat, s.lng)); return memo.get(k); };
-  const codes = await Promise.all(targets.map(s => pushOne(s, JSON.stringify({ ...base, d: dataFor(s) }), urgent)));
+  const codes = await Promise.all(targets.map(s => pushOne(s, JSON.stringify({ ...base(PUSH_LANGS.includes(s.lang) ? s.lang : 'fr'), d: dataFor(s) }), urgent)));
   codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(targets[j].id); });
   pushStat(kind, codes);
   if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
@@ -1096,7 +1250,7 @@ async function pushNear(r) {
   // On réserve l'envoi (plusieurs processus peuvent tourner en même temps)
   const targets = tx(() => cand.filter(s => q('UPDATE push SET last=? WHERE id=? AND (last IS NULL OR last<?)').run(now, s.id, now - NEAR_GAP).changes));
   if (!targets.length) return;
-  const payload = JSON.stringify({ title: `${c.glyph} ${c.label} près de ta zone`, body: 'Signalé à l’instant. Ouvre Cortège pour voir où exactement.',
+  const payload = l => JSON.stringify({ title: `${c.glyph} ${tr(l, '{x} près de ta zone', { x: tr(l, c.label) })}`, body: tr(l, 'Signalé à l’instant. Ouvre Cortège pour voir où exactement.'),
     tag: 'near-' + r.cat, url: `/?at=${r.lat},${r.lng}`, vibrate: VIBES[r.cat] || [200, 100, 200] });
   await pushSendAll(targets, payload, false, 'danger');
 }
@@ -1104,7 +1258,7 @@ const pushNearLater = r => setImmediate(() => pushNear(r).catch(e => console.err
 async function pushBroadcast(a) {
   const targets = pushAll().filter(s => s.urg !== 0).filter(s => a.national || (s.lat != null && distKm(s.lat, s.lng, a.lat, a.lng) <= a.r + 8)).map(s => [s.id, s]);
   if (!targets.length) return;
-  const payload = JSON.stringify({ title: (a.national ? '⚠ National · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/', vibrate: [300, 100, 300, 100, 300] });
+  const payload = l => JSON.stringify({ title: (a.national ? '⚠ ' + tr(l, 'National') + ' · ' : '⚠ ') + a.by, body: a.text, tag: 'ann-' + a.id, url: '/', vibrate: [300, 100, 300, 100, 300] });
   await pushSendAll(targets.map(([, s]) => s), payload, true, 'annonce');
 }
 
@@ -1268,6 +1422,7 @@ async function placesImportOsm() {
     kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
     rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
   const clean = () => { for (const f of fs.readdirSync(dir)) try { fs.unlinkSync(path.join(dir, f)); } catch {} };
+  const upComm = q('INSERT OR REPLACE INTO communes(id,insee,name,minlat,minlng,maxlat,maxlng,data,seen) VALUES(?,?,?,?,?,?,?,?,?)');
   try {
     for (const [i, url] of GEOFABRIK.entries()) {
       run.part = i + 1; run.step = 'téléchargement'; run.done = run.total = 0; save(true);
@@ -1276,17 +1431,30 @@ async function placesImportOsm() {
       const src = path.join(dir, 'source.osm.pbf'), flt = path.join(dir, 'lieux.osm.pbf'), out = path.join(dir, 'lieux.geojsonseq');
       await download(url, src, (d, tot) => { run.done = d; run.total = tot; save(); });
       run.step = 'extraction'; save(true); console.log('lieux : extraction avec osmium…');
-      await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison', 'nwr/office=government', '-o', flt, '--overwrite']);
+      // Les limites des communes (niveau administratif 8) sortent dans le même passage : elles servent aux bilans par commune
+      await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison', 'nwr/office=government',
+        'r/admin_level=8', '-o', flt, '--overwrite']);
       fs.unlinkSync(src); // le gros fichier ne sert plus
       await osmium(['export', flt, '-f', 'geojsonseq', '-o', out, '--overwrite', '-a', 'type,id', '-x', 'print_record_separator=false']);
       run.step = 'enregistrement'; save(true);
       const rl = require('readline').createInterface({ input: fs.createReadStream(out), crlfDelay: Infinity });
-      let batch = []; const seenIds = new Set();
+      let batch = [], comm = []; const seenIds = new Set();
       const flush = () => { const b = batch; batch = []; tx(() => { for (const r of b) up.run(...r); }); };
+      const flushComm = () => { const b = comm; comm = []; tx(() => { for (const r of b) upComm.run(...r); }); };
       for await (const line of rl) {
         if (!line.trim()) continue;
         let f; try { f = JSON.parse(line.replace(/^\x1e/, '')); } catch { continue; }
-        const t = f.properties || {}, kind = poiKind(t), c = kind && geoCenter(f.geometry);
+        const t = f.properties || {};
+        if (t.boundary === 'administrative' && String(t.admin_level) === '8' && t.name && f.geometry && /Polygon$/.test(f.geometry.type)) {
+          const id = String(t['@type'] || 'r')[0] + t['@id'];
+          if (seenIds.has(id)) continue;
+          seenIds.add(id);
+          const z = geoPoly(f.geometry, 0.0005), insee = /^\d[\dAB]\d{3}$/.test(t['ref:INSEE'] || '') ? t['ref:INSEE'] : null;
+          if (z) { comm.push([id, insee, poiStr(t.name, 80), z.b[0], z.b[1], z.b[2], z.b[3], JSON.stringify(z.p), t0]); run.communes = (run.communes || 0) + 1; }
+          if (comm.length >= 200) flushComm();
+          continue;
+        }
+        const kind = poiKind(t), c = kind && geoCenter(f.geometry);
         if (!c || !validLatLng(c[1], c[0])) continue;
         const lat = Math.round(c[1] * 1e5) / 1e5, lng = Math.round(c[0] * 1e5) / 1e5;
         const id = String(t['@type'] || 'n')[0] + t['@id'];
@@ -1295,11 +1463,13 @@ async function placesImportOsm() {
         batch.push([id, kind, lat, lng, poiRg(lat, lng), JSON.stringify(poiData(t, kind)), t0]); run.n++;
         if (batch.length >= 2000) { flush(); save(); await new Promise(go => setImmediate(go)); }
       }
-      flush();
+      flush(); flushComm();
     }
+    // Communes : on ne remplace les anciens contours que si l'import en a trouvé
+    if (run.communes) { q('DELETE FROM communes WHERE seen<?').run(t0); commReset(); console.log(`communes : ${run.communes} contours importés`); }
     // Lieux disparus (et ceux des anciennes sources) : retirés, sauf ceux corrigés ou ajoutés dans l'admin
     q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
-    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 0, err: null, ms: Date.now() - t0, src: 'osm' }));
+    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, communes: run.communes || 0, errs: 0, err: null, ms: Date.now() - t0, src: 'osm' }));
     q("DELETE FROM meta WHERE k='poisrun'").run();
     await placesPublish();
     console.log(`lieux : ${run.n} lieux et caméras importés en ${Math.round((Date.now() - t0) / 1000)} s`);
@@ -1476,8 +1646,10 @@ function cleanMob(b, old = {}) {
 async function mobEve(m) {
   const targets = pushAll().filter(s => s.urg !== 0);
   if (!targets.length) return;
-  const d = new Date(parisMs(m.date, '12:00')).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
-  const payload = JSON.stringify({ title: '📣 Demain : ' + m.title, body: m.eve || `Journée de mobilisation ${d}. Ouvre Cortège pour voir l’agenda et les numéros utiles.`,
+  // Le titre et le texte de la journée sont écrits par l'admin (en français) ; le reste suit la langue du téléphone
+  const day = l => new Date(parisMs(m.date, '12:00')).toLocaleDateString(LOCALE[l], { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
+  const payload = l => JSON.stringify({ title: '📣 ' + tr(l, 'Demain : {t}', { t: m.title }),
+    body: m.eve || tr(l, 'Journée de mobilisation {d}. Ouvre Cortège pour voir l’agenda et les numéros utiles.', { d: day(l) }),
     tag: 'mob-' + m.id, url: '/', vibrate: [300, 100, 300] });
   await pushSendAll(targets, payload, true, 'veille de mobilisation');
 }
@@ -1728,7 +1900,7 @@ async function createOrder(b, { admin = false, dev = null, ipH = null } = {}) {
   }
   let zone; try { zone = await orderZone(o); } catch (e) { return [400, { error: 'Zone : ' + e.message }]; }
   const p = { id: crypto.randomBytes(6).toString('base64url'), ...o, zone, status: 'ok', by: 'admin', t: now, ok: now };
-  saveOrder(p);
+  saveOrder(p); orderPushLater(p);
   return [201, orderView(p)];
 }
 async function approveOrder(id) {
@@ -1736,8 +1908,47 @@ async function approveOrder(id) {
   if (!o) return [404, { error: 'Introuvable.' }];
   let zone; try { zone = await orderZone(o); } catch (e) { return [400, { error: 'Zone : ' + e.message }]; }
   const p = { ...o, zone, status: 'ok', ok: Date.now() }; delete p.dev;
-  saveOrder(p);
+  saveOrder(p); if (o.status !== 'ok') orderPushLater(p);
   return [200, orderView(p)];
+}
+// Nouvel arrêté validé : notification aux abonné·es dont la zone (arrondie à ~10 km) touche la zone de l'arrêté.
+// Les arrêtés validés à quelques secondes d'écart (import de plusieurs arrêtés) partent ensemble : une seule notification.
+const ORDER_PUSH_WAIT = +(process.env.ORDER_PUSH_WAIT_MS || 60_000);
+let orderPushQ = [], orderPushT = null;
+function orderPushLater(o) {
+  orderPushQ.push(o.id);
+  clearTimeout(orderPushT);
+  orderPushT = setTimeout(() => { const ids = orderPushQ; orderPushQ = []; orderPush(ids).catch(e => console.error('push arrêtés', e.message)); }, ORDER_PUSH_WAIT);
+}
+// La zone de l'abonné·e est arrondie à 0,1° : on compte aussi les arrêtés à moins de ~8 km de ce point
+function orderTouches(o, lat, lng) {
+  const z = o.zone, m = 0.07;
+  if (!z || !z.b || lat < z.b[0] - m || lat > z.b[2] + m || lng < z.b[1] - m * 1.5 || lng > z.b[3] + m * 1.5) return false;
+  if (polyHas(z.p, lat, lng)) return true;
+  for (const [dy, dx] of [[m, 0], [-m, 0], [0, m * 1.5], [0, -m * 1.5]]) if (polyHas(z.p, lat + dy, lng + dx)) return true;
+  return z.scope === 'commune' && distKm(lat, lng, (z.b[0] + z.b[2]) / 2, (z.b[1] + z.b[3]) / 2) <= 8;
+}
+async function orderPush(ids) {
+  const now = Date.now(), list = ids.map(getOrder).filter(o => o && o.status === 'ok' && o.end > now && o.zone && o.zone.p);
+  if (!list.length) return;
+  const groups = new Map();
+  for (const s of q('SELECT * FROM push WHERE ord=1 AND lat IS NOT NULL').all()) {
+    const mine = list.filter(o => orderTouches(o, s.lat, s.lng));
+    if (!mine.length) continue;
+    const k = mine.map(o => o.id).join(',');
+    if (!groups.has(k)) groups.set(k, { mine, subs: [] });
+    groups.get(k).subs.push(s);
+  }
+  for (const { mine, subs } of groups.values()) {
+    const o = mine[0], k = ORDER_KIND[o.items[0].k] || ORDER_KIND.autre, z = o.zone;
+    const when = l => new Date(o.start).toLocaleDateString(LOCALE[l], { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
+    const payload = l => JSON.stringify(mine.length === 1
+      ? { title: `${k.glyph} ${tr(l, k.label)} · ${z.name}`, body: tr(l, 'Nouvel arrêté à partir du {d}. Ouvre Cortège pour voir la zone et la source.', { d: when(l) }),
+          tag: 'ord-' + o.id, url: `/?at=${((z.b[0] + z.b[2]) / 2).toFixed(4)},${((z.b[1] + z.b[3]) / 2).toFixed(4)}`, vibrate: [200, 100, 200] }
+      : { title: '⛔ ' + tr(l, '{n} nouveaux arrêtés dans ta zone', { n: mine.length }), body: [...new Set(mine.map(x => x.zone.name))].slice(0, 4).join(', '),
+          tag: 'ord-' + o.id, url: '/', vibrate: [200, 100, 200] });
+    await pushSendAll(subs, payload, false, 'arrêté');
+  }
 }
 
 
@@ -1986,6 +2197,8 @@ function cspFor(buf) {
 // Fichiers de l'appli gardés en mémoire avec une empreinte : un téléphone qui a déjà la bonne version
 // reçoit une réponse vide « pas modifié » (304) au lieu de tout retélécharger.
 const staticCache = new Map();
+// Pages d'outils, jamais dans les moteurs de recherche (l'admin, le digest, la carte à intégrer, l'image d'un créneau)
+const NOINDEX = new Set(['/admin.html', '/digest.html', '/embed.html', '/creneau.html']);
 function serveStatic(req, res, pathname) {
   const file = path.normalize(path.join(PUBLIC, pathname === '/' ? 'index.html' : pathname));
   if (!file.startsWith(PUBLIC + path.sep)) return send(res, 403, 'Forbidden');
@@ -1995,6 +2208,7 @@ function serveStatic(req, res, pathname) {
     const reply = () => {
       const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: c.etag,
         'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
+      if (NOINDEX.has(pathname)) headers['X-Robots-Tag'] = 'noindex, nofollow';
       if (file.endsWith('.html')) {
         // La carte à intégrer (embed.html) peut s'afficher dans le site d'un média ou d'un collectif ; les autres pages, jamais
         if (pathname === '/embed.html') headers['Content-Security-Policy'] = cspFor(c.buf).replace("frame-ancestors 'none'", 'frame-ancestors *');
@@ -2274,6 +2488,11 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && pathname === '/api/stream') return streamOpen(req, res, url);
     if (req.method === 'GET' && (pathname === '/presse' || pathname === '/presse/')) return serveStatic(req, res, '/presse.html');
+    // Référencement : robots.txt, plan du site, et fichier de validation de Google Search Console (GOOGLE_SITE_VERIFICATION=google0123….html)
+    if (req.method === 'GET' && pathname === '/robots.txt')
+      return send(res, 200, `User-agent: *\nDisallow: /api/\nAllow: /\n\nSitemap: ${PUBLIC_URL_REAL(req)}/sitemap.xml\n`, { 'Cache-Control': 'public, max-age=3600' });
+    if (req.method === 'GET' && pathname === '/sitemap.xml') return send(res, 200, sitemapXml(req), { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+    if (req.method === 'GET' && GOOGLE_VERIFY && pathname === '/' + GOOGLE_VERIFY) return send(res, 200, 'google-site-verification: ' + GOOGLE_VERIFY);
     if (req.method === 'GET' && (pathname === '/manif' || pathname === '/manif/')) return sendPage(res, pubIndex(req));
     const pubM = req.method === 'GET' && pathname.match(/^\/manif\/(\d{4}-\d{2}-\d{2})$/);
     if (pubM) { const d = getPub(pubM[1]); return d ? sendPage(res, pubPage(req, d)) : send(res, 404, 'Bilan non publié'); }
@@ -2321,10 +2540,11 @@ const server = http.createServer(async (req, res) => {
         // limite par réseau : empêche de remplir la liste avec de faux abonnements
         if (!bump('push:' + clientHash(req), 'vote', 10, Date.now())) return 'rate';
         if (!q('SELECT 1 FROM push WHERE id=?').get(id) && pushCount() >= PUSH_MAX) return false;
-        const urg = b.urgent === false ? 0 : 1, near = b.near === true && hasZone ? 1 : 0;
-        q(`INSERT INTO push(id,e,k,a,lat,lng,t,urg,near) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET e=excluded.e, k=excluded.k, a=excluded.a,
-           lat=excluded.lat, lng=excluded.lng, t=excluded.t, urg=excluded.urg, near=excluded.near`).run(id, endpoint, k, a,
-          hasZone ? Math.round(lat * 10) / 10 : null, hasZone ? Math.round(lng * 10) / 10 : null, Date.now(), urg, near);
+        const urg = b.urgent === false ? 0 : 1, near = b.near === true && hasZone ? 1 : 0, ord = b.orders === false || !hasZone ? 0 : 1;
+        const lang = PUSH_LANGS.includes(b.lang) ? b.lang : 'fr';
+        q(`INSERT INTO push(id,e,k,a,lat,lng,t,urg,near,lang,ord) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET e=excluded.e, k=excluded.k, a=excluded.a,
+           lat=excluded.lat, lng=excluded.lng, t=excluded.t, urg=excluded.urg, near=excluded.near, lang=excluded.lang, ord=excluded.ord`).run(id, endpoint, k, a,
+          hasZone ? Math.round(lat * 10) / 10 : null, hasZone ? Math.round(lng * 10) / 10 : null, Date.now(), urg, near, lang, ord);
         return true;
       });
       if (out === 'rate') return send(res, 429, { error: 'Trop de demandes, réessaie plus tard.' });
@@ -2338,7 +2558,8 @@ const server = http.createServer(async (req, res) => {
       const row = endpoint && q('SELECT * FROM push WHERE id=?').get(sha(endpoint).slice(0, 24));
       if (!row) return send(res, 404, { error: 'Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications.' });
       if (!tx(() => bump('ptest:' + deviceHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trois essais au plus toutes les 5 minutes.' });
-      const code = await pushOne(row, JSON.stringify({ title: '🔔 Test Cortège', body: 'Les notifications marchent : tu seras prévenu·e ici.', tag: 'test', url: '/',
+      const l = PUSH_LANGS.includes(row.lang) ? row.lang : 'fr';
+      const code = await pushOne(row, JSON.stringify({ title: '🔔 ' + tr(l, 'Test Cortège'), body: tr(l, 'Les notifications marchent : tu seras prévenu·e ici.'), tag: 'test', url: '/',
         vibrate: [200, 100, 200, 100, 600] }), true);
       pushStat('test', [code]);
       if (code === 404 || code === 410) q('DELETE FROM push WHERE id=?').run(row.id);
@@ -2461,7 +2682,7 @@ const server = http.createServer(async (req, res) => {
           reports: activeReports(now).map(publicView),
           announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
           pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length, ordersPending: q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n,
-          pushSubs: pushCount(), moderation: q('SELECT COUNT(*) n FROM reports WHERE exp>? AND (ct>0 OR fl=-1)').get(now).n, toPublish: mobsToPublish(now) });
+          pushSubs: pushCount(), moderation: modQueue(now).filter(x => !x.low).length, toPublish: mobsToPublish(now) });
       }
       // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---
       if (req.method === 'GET' && pathname === '/api/admin/settings')
@@ -2516,8 +2737,7 @@ const server = http.createServer(async (req, res) => {
       // --- File de modération : points contestés ou non fiables ---
       if (req.method === 'GET' && pathname === '/api/admin/moderation') {
         const now = Date.now();
-        return send(res, 200, { list: q('SELECT * FROM reports WHERE exp>? AND (ct>0 OR fl=-1 OR down>0) ORDER BY t DESC LIMIT 300').all(now)
-          .map(x => ({ ...publicView(toReport(x)), dw: x.dw || 0, fl: x.fl || 0, ct: x.ct || 0, place: placeOf(x.lat, x.lng) })) });
+        return send(res, 200, { list: modQueue(now) });
       }
       const modR = pathname.match(/^\/api\/admin\/reports\/([\w-]{1,16})\/(keep|verify)$/);
       if (modR && req.method === 'POST') {
@@ -2818,7 +3038,7 @@ const server = http.createServer(async (req, res) => {
       const date = String(url.searchParams.get('date') || parisDay(Date.now()));
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return send(res, 400, { error: 'Date invalide.' });
       sweep(); // archive ce qui vient d'expirer
-      const { rows, zones } = dayRows(date);
+      const { rows, zones, abroad } = dayRows(date);
       // Activité des orgas et anti-abus ce jour-là
       const day0 = Date.parse(date + 'T00:00:00+02:00'), lo = day0 - 2 * 3600e3, hi = day0 + 26 * 3600e3;
       const logs = q('SELECT t, oid, action, detail FROM orga_log WHERE t BETWEEN ? AND ?').all(lo, hi).filter(x => parisDay(x.t) === date);
@@ -2830,9 +3050,9 @@ const server = http.createServer(async (req, res) => {
       for (const x of q('SELECT t, kind FROM abuse WHERE t BETWEEN ? AND ?').all(lo, hi)) if (parisDay(x.t) === date) abuse[x.kind] = (abuse[x.kind] || 0) + 1;
       // Comparaison : les 14 jours précédents
       const history = [];
-      for (let i = 14; i >= 0; i--) { const d = parisDay(Date.parse(date + 'T12:00:00+02:00') - i * 86400e3); history.push({ date: d, total: i ? dedupeRows(readArchiveDay(d)).length : rows.length }); }
+      for (let i = 14; i >= 0; i--) { const d = parisDay(Date.parse(date + 'T12:00:00+02:00') - i * 86400e3); history.push({ date: d, total: i ? dayCountFr(d) : rows.length }); }
       const events = listEvents().filter(e => parisDay(e.start) === date && e.status !== 'pending').map(e => ({ title: e.title, type: e.type, place: e.place, start: e.start }));
-      return send(res, 200, { date, rows, zones, orga, abuse, history, events, published: !!getPub(date),
+      return send(res, 200, { date, rows, zones, abroad, communes: commIndex().rows.length > 0, orga, abuse, history, events, published: !!getPub(date),
         categories: CATEGORIES.map(({ id, label, glyph, group, ttl }) => ({ id, label, glyph, group, ttl })), groups: GROUPS,
         days: fs.readdirSync(ARCHIVE_DIR).map(f => f.slice(0, 10)).sort().reverse() });
     }

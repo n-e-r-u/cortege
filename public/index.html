@@ -6,11 +6,12 @@
 <meta name="theme-color" content="#121214">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
-<title>Cortège</title>
+<title>Cortège · Carte des manifs en direct, sans compte</title>
+<link rel="canonical" href="https://cortege.neru.tv/">
 <meta name="description" content="La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Sans compte, sans pistage, partout en France. Par @neru.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Cortège">
-<meta property="og:title" content="Cortège — la carte en direct des manifs">
+<meta property="og:title" content="Cortège · la carte en direct des manifs">
 <meta property="og:description" content="Signale et évite CRS, lacrymo, nasses ; trouve street medics et legal team. Sans compte, sans pistage. Par @neru.">
 <meta property="og:url" content="https://cortege.neru.tv/">
 <meta property="og:image" content="https://cortege.neru.tv/og.png">
@@ -27,6 +28,7 @@
 <link rel="stylesheet" href="/vendor/MarkerCluster.css">
 <link rel="stylesheet" href="/style.css">
 <script src="/i18n.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Cortège","alternateName":"Cortège, la carte en direct des manifs","url":"https://cortege.neru.tv/","description":"La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Signalements anonymes, sans compte et sans pistage, partout en France.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web, Android, iOS","browserRequirements":"Navigateur récent","inLanguage":["fr","en","es","ar"],"isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://cortege.neru.tv/og.png","author":{"@type":"Person","name":"Neru","url":"https://neru.tv","sameAs":["https://www.instagram.com/neru/","https://github.com/n-e-r-u"]}}</script>
 </head>
 <body>
 <div id="map" aria-label="Carte de la manifestation"></div>
@@ -158,7 +160,10 @@
   <h3 class="menu-group">Agenda</h3>
   <ol id="feedAg" class="list ag-list"></ol>
   <p class="empty" id="feedAgEmpty" hidden>Rien d’annoncé à moins de 50 km.</p>
-  <button type="button" class="secondary" id="btnAgenda">Tout l’agenda, proposer une manif</button>
+  <div class="ag-actions">
+    <button type="button" class="secondary" id="btnAgenda">Tout l’agenda</button>
+    <button type="button" class="secondary" id="btnAnnounce">＋ Annoncer une manif</button>
+  </div>
   <h3 class="menu-group">Sur la carte</h3>
   <button type="button" class="tile wide" id="btnList"><span class="ico" aria-hidden="true">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span></button>
   <a class="kofi-nudge" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer">
@@ -248,6 +253,7 @@
   <button class="tile wide bell" id="btnNotif" data-on="0"><span class="ico" aria-hidden="true">🔕</span><span><b>Alertes</b><small id="notifSub">Notifications, vibrations et voix</small></span></button>
 
   <h3 class="menu-group">Faire grandir Cortège</h3>
+  <button class="tile wide" id="btnOrganize"><span class="ico" aria-hidden="true">📣</span><span><b>Organiser une manif</b><small>L’annoncer dans l’agenda de Cortège</small></span></button>
   <div class="tiles">
     <button class="tile" id="btnShare"><span class="ico" aria-hidden="true">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"></path></svg></span><span><b>Partager</b><small>QR code à scanner</small></span></button>
@@ -583,6 +589,10 @@
   <label class="switch">
     <input type="checkbox" id="optNear">
     <span class="switch-txt"><b>Dangers signalés près de toi</b><span>Charge, tirs, nasse, lacrymo, canon à eau, sommations, BAC, unités d’intervention, blindés… signalés dans ta zone. Au plus une alerte toutes les 3 minutes.</span></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="optOrd">
+    <span class="switch-txt"><b>Nouveaux arrêtés dans ta zone</b><span>Manif interdite, périmètre interdit, couvre-feu… dès qu’un arrêté de ta zone est ajouté à Cortège.</span></span>
   </label>
   <div class="push-test" id="pushTestBox" hidden>
     <button type="button" class="secondary" id="btnPushTest">Recevoir une notification de test</button>

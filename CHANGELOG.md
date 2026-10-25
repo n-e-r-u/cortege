@@ -2,6 +2,16 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.6.0
+
+- Bilans justes : le digest, les bilans publics, les stories et la comparaison sur 15 jours ne comptent plus que la France (métropole et outre-mer). Les signalements envoyés d’ailleurs restent sur la carte en direct ; leur nombre est indiqué à part (« N signalements hors de France »), et la carte du digest se cadre sur la France.
+- Une commune par signalement : les contours des communes d’OpenStreetMap sont extraits pendant l’import mensuel des lieux (même passage d’osmium, aucun service extérieur), et chaque point est rattaché à la commune qui le contient. Avant le premier import, l’ancien rattachement à la ville ou l’agglomération la plus proche reste utilisé.
+- Annoncer une manif : bouton « Annoncer une manif » sous l’agenda dans l’onglet Infos, et « Organiser une manif » dans Plus. Les deux ouvrent directement le formulaire.
+- Modération repensée : le plus urgent en haut (dangers contestés, séries de dangers près des zones calmes, points isolés à plus de 500 km de toute autre activité, points hors de France), une explication en clair pour chaque point, filtres par ville et par type. Les simples « pas encore confirmé » du mode renforcé sont cachés par défaut et ne gonflent plus le badge. « Garder » devient « C’est vrai ».
+- Notifications dans la langue de l’appli (français, anglais, espagnol, arabe) : la langue est envoyée avec l’abonnement.
+- Nouvelle alerte « Nouveaux arrêtés dans ta zone » : quand un arrêté est validé, les abonné·es de sa zone sont prévenu·es. Plusieurs arrêtés validés d’affilée partent en une seule notification. Réglable dans Alertes.
+- Référencement : `robots.txt`, plan du site, titres et descriptions sans tiret long, données structurées (appli gratuite, auteur, événements de l’agenda), adresse canonique, pages d’outils exclues des moteurs, validation Google Search Console par fichier (`GOOGLE_SITE_VERIFICATION`). `/manif` liste aussi les prochaines manifs de l’agenda.
+
 ## 2.5.9
 
 - Correctif notifications iPhone : Apple refusait les envois avec « 403 ExpiredProviderToken » dès que le jeton d’identification du serveur (VAPID) avait plus d’une heure. Le jeton dure maintenant 1 h et il est renouvelé toutes les 30 minutes, pour tous les services de notification.

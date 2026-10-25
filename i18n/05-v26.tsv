@@ -1,0 +1,16 @@
+# Version 2.6 : annoncer une manif, alertes « nouvel arrêté », notifications dans la langue du téléphone
+Cortège · Carte des manifs en direct, sans compte	Cortège · Live protest map, no account needed	Cortège · Mapa de manifestaciones en directo, sin cuenta	Cortège · خريطة المظاهرات مباشرة، بلا حساب
+Tout l’agenda	Full calendar	Toda la agenda	كل المواعيد
+＋ Annoncer une manif	＋ Announce a protest	＋ Anunciar una manifestación	＋ أعلن عن مظاهرة
+<span class="ico" aria-hidden="true">📣</span><span><b>Organiser une manif</b><small>L’annoncer dans l’agenda de Cortège</small></span>	<span class="ico" aria-hidden="true">📣</span><span><b>Organise a protest</b><small>Announce it in the Cortège calendar</small></span>	<span class="ico" aria-hidden="true">📣</span><span><b>Organizar una manifestación</b><small>Anunciarla en la agenda de Cortège</small></span>	<span class="ico" aria-hidden="true">📣</span><span><b>نظّم مظاهرة</b><small>أعلن عنها في مواعيد Cortège</small></span>
+<b>Nouveaux arrêtés dans ta zone</b><span>Manif interdite, périmètre interdit, couvre-feu… dès qu’un arrêté de ta zone est ajouté à Cortège.</span>	<b>New orders in your area</b><span>Banned protest, no-go perimeter, curfew… as soon as an order for your area is added to Cortège.</span>	<b>Nuevas órdenes en tu zona</b><span>Manifestación prohibida, perímetro prohibido, toque de queda… en cuanto se añade a Cortège una orden de tu zona.</span>	<b>قرارات جديدة في منطقتك</b><span>مظاهرة ممنوعة، محيط ممنوع، حظر تجوّل… فور إضافة قرار يخص منطقتك إلى Cortège.</span>
+Alertes « nouvel arrêté » activées	“New order” alerts on	Alertas de «nueva orden» activadas	تنبيهات «قرار جديد» مفعّلة
+{x} près de ta zone	{x} near your area	{x} cerca de tu zona	{x} قرب منطقتك
+Signalé à l’instant. Ouvre Cortège pour voir où exactement.	Just reported. Open Cortège to see exactly where.	Avisado ahora mismo. Abre Cortège para ver dónde exactamente.	أُبلغ عنه للتو. افتح Cortège لترى المكان بالضبط.
+National	Nationwide	Nacional	وطني
+Demain : {t}	Tomorrow: {t}	Mañana: {t}	غدًا: {t}
+Journée de mobilisation {d}. Ouvre Cortège pour voir l’agenda et les numéros utiles.	Day of action on {d}. Open Cortège to see the calendar and useful numbers.	Jornada de movilización el {d}. Abre Cortège para ver la agenda y los números útiles.	يوم تعبئة {d}. افتح Cortège لترى المواعيد والأرقام المفيدة.
+Test Cortège	Cortège test	Prueba de Cortège	اختبار Cortège
+Les notifications marchent : tu seras prévenu·e ici.	Notifications work: you’ll be alerted here.	Las notificaciones funcionan: recibirás los avisos aquí.	الإشعارات تعمل: ستصلك التنبيهات هنا.
+Nouvel arrêté à partir du {d}. Ouvre Cortège pour voir la zone et la source.	New order from {d}. Open Cortège to see the area and the source.	Nueva orden a partir del {d}. Abre Cortège para ver la zona y la fuente.	قرار جديد ابتداءً من {d}. افتح Cortège لترى المنطقة والمصدر.
+{n} nouveaux arrêtés dans ta zone	{n} new orders in your area	{n} nuevas órdenes en tu zona	{n} قرارات جديدة في منطقتك

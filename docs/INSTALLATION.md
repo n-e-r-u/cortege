@@ -42,7 +42,8 @@ Variables d'environnement :
 | `PUSH_PARALLEL` | `48` | Notifications envoyées en même temps |
 | `PLACES_IMPORT` | `1` | `0` coupe l'import automatique des lieux permanents (le bouton de l'admin reste disponible) |
 | `PLACES_SOURCE` | auto | `osm` (copie Geofabrik triée par osmium, par défaut si `osmium` est installé), `carte` (lus dans le fichier PMTiles, sans caméras), `overpass` |
-| `GEOFABRIK_URLS` | France entière | Fichier(s) `.osm.pbf` de Geofabrik à télécharger chaque mois, séparés par des virgules (ex. une seule région pour un petit serveur) |
+| `GEOFABRIK_URLS` | France entière | Fichier(s) `.osm.pbf` de Geofabrik à télécharger chaque mois, séparés par des virgules (ex. une seule région pour un petit serveur). Les contours des communes (bilans par commune) sortent du même fichier |
+| `GOOGLE_SITE_VERIFICATION` | vide | Nom du fichier de validation Google Search Console (ex. `google0123456789abcdef.html`) : le serveur le sert à la racine |
 | `GEO_API` | geo.api.gouv.fr | API Géo de l'État : contour officiel d'une commune, demandé par le serveur à la validation d'un arrêté |
 | `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |

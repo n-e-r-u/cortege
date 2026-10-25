@@ -29,7 +29,7 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', ORDER_PUSH_WAIT_MS: '200', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
@@ -295,6 +295,49 @@ test('digest : villes regroupées par agglomération, sans service extérieur', 
   assert.ok(!names.includes('Clichy'));
 });
 
+test('bilans : seulement la France, les points d’ailleurs sont comptés à part', async () => {
+  await post('/api/reports', { cat: 'police', lat: 40.4168, lng: -3.7038 }); // Madrid
+  await post('/api/reports', { cat: 'police', lat: 46.2044, lng: 6.1432 }); // Genève (frontière)
+  await post('/api/reports', { cat: 'police', lat: 47.2184, lng: -1.5536 }); // Nantes
+  await post('/api/reports', { cat: 'police', lat: 16.2411, lng: -61.5331 }); // Guadeloupe
+  const d = await fetch(B + '/api/digest', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  assert.ok(d.abroad >= 2, 'Madrid et Genève à part');
+  assert.ok(!d.rows.some(r => (r.lat > 40 && r.lat < 41 && r.lng < -3) || (r.lat > 46.1 && r.lat < 46.3 && r.lng > 6.1)), 'aucun point étranger dans les lignes');
+  assert.ok(d.rows.some(r => r.lat > 47.2 && r.lat < 47.3) && d.rows.some(r => r.lat > 16 && r.lat < 17), 'Nantes et l’outre-mer comptés');
+});
+
+test('modération : le plus urgent d’abord, simples « pas encore confirmé » à part, points isolés signalés', async () => {
+  assert.equal((await admin('/api/admin/strict', { minutes: 30 })).s, 200);
+  const fresh = (await post('/api/reports', { cat: 'bac', ...place() })).j;
+  await admin('/api/admin/strict', { minutes: 0 });
+  const danger = (await post('/api/reports', { cat: 'charge', ...place() })).j;
+  db.prepare('UPDATE reports SET ct=?, down=3 WHERE id=?').run(Date.now(), danger.id);
+  const far = (await post('/api/reports', { cat: 'police', lat: -33.86, lng: 151.21 })).j; // Sydney
+  const mod = await fetch(B + '/api/admin/moderation', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  const by = id => mod.list.find(x => x.id === id);
+  assert.equal(by(danger.id).prio, 1); assert.deepEqual(by(danger.id).why, ['contested']);
+  assert.equal(by(fresh.id).low, true); assert.deepEqual(by(fresh.id).why, ['new']);
+  assert.ok(by(far.id).why.includes('isolated'));
+  assert.equal(mod.list[0].prio, 1, 'trié par urgence');
+  const b = await fetch(B + '/api/admin/reports', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.equal(b.moderation, mod.list.filter(x => !x.low).length, 'le badge ignore les « pas encore confirmé »');
+});
+
+test('référencement : robots.txt, plan du site, pages d’outils hors des moteurs', async () => {
+  const robots = await fetch(B + '/robots.txt').then(r => r.text());
+  assert.match(robots, /Disallow: \/api\//); assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
+  const sm = await fetch(B + '/sitemap.xml');
+  assert.match(sm.headers.get('content-type'), /xml/);
+  const xml = await sm.text();
+  for (const u of ['/manif', '/presse', '/legal.html']) assert.ok(xml.includes(u + '</loc>'), u);
+  for (const u of ['/admin.html', '/embed.html', '/digest.html']) assert.equal((await fetch(B + u)).headers.get('x-robots-tag'), 'noindex, nofollow', u);
+  assert.equal((await fetch(B + '/')).headers.get('x-robots-tag'), null);
+  const idx = await fetch(B + '/').then(r => r.text());
+  assert.ok(!/<title>[^<]*—/.test(idx), 'pas de tiret long dans le titre');
+  assert.match(idx, /application\/ld\+json/);
+  assert.match(await fetch(B + '/manif').then(r => r.text()), /rel="canonical"/);
+});
+
 test('santé : disque et mémoire exposés pour la surveillance', async () => {
   const h = await fetch(B + '/api/health').then(r => r.json());
   assert.equal(h.ok, true);
@@ -491,6 +534,10 @@ test('arrêtés : proposition avec source, validation par l’admin, zone offici
   const base = { dep: '34', commune: 'Montpellier', start: day(1) + ' 22:00', end: day(3) + ' 06:00', items: [['manif', 'La manifestation de samedi est interdite.'], ['couvre', 'Couvre-feu des mineurs dès 22 h.']], src: 'https://www.herault.gouv.fr/arrete' };
   assert.equal((await post('/api/orders', { ...base, src: 'pas un lien' })).s, 400, 'source obligatoire');
   assert.equal((await post('/api/orders', { ...base, dep: '99' })).s, 400, 'département inconnu');
+  // Abonné·e à Montpellier, appli en espagnol : prévenu·e quand l'arrêté est validé
+  const sub = { endpoint: 'https://fcm.googleapis.com/fcm/send/ord-' + Date.now(), keys: { p256dh: require('node:crypto').createECDH('prime256v1').generateKeys().toString('base64url'), auth: require('node:crypto').randomBytes(16).toString('base64url') } };
+  assert.equal((await post('/api/push/subscribe', { sub, lat: 43.6, lng: 3.9, urgent: true, lang: 'es' })).s, 200);
+  assert.deepEqual({ ...db.prepare('SELECT lang, ord FROM push WHERE e=?').get(sub.endpoint) }, { lang: 'es', ord: 1 });
   const p = await post('/api/orders', base);
   assert.equal(p.s, 201); assert.equal(p.j.status, 'pending');
   const ord = () => JSON.parse(fs.readFileSync(DIR + '/l/ord.json', 'utf8')).o;
@@ -498,6 +545,8 @@ test('arrêtés : proposition avec source, validation par l’admin, zone offici
   assert.ok(!fs.existsSync(DIR + '/l/ord.json') || !ord().length, 'rien avant validation');
   const ok = await admin('/api/admin/orders/' + p.j.id + '/approve', {});
   assert.equal(ok.s, 200); assert.equal(ok.j.zone.name, 'Montpellier'); assert.equal(ok.j.zone.insee, '34172');
+  let sent; for (let i = 0; i < 60 && !sent; i++) { await new Promise(r => setTimeout(r, 250)); sent = (await fetch(B + '/api/admin/live', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json())).push.batches.find(x => x.kind === 'arrêté'); }
+  assert.ok(sent && sent.n >= 1, 'une notification « nouvel arrêté » envoyée à l’abonné·e de la zone');
   // Import : département entier (contour livré avec l'appli), commune introuvable refusée, outre-mer sans commune refusé
   const blk = [{ departement: '34', debut: day(1) + ' 06:00', fin: day(1) + ' 23:00', source: 'https://x.fr/a', mesures: [{ type: 'transport', texte: 'Pas de tram samedi.' }] },
     { departement: '34', commune: 'Inconnue', debut: day(1) + ' 06:00', fin: day(1) + ' 23:00', source: 'https://x.fr/a', mesures: [{ type: 'autre', texte: 'Test' }] },
@@ -534,8 +583,11 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
 <node id="6" version="1" lat="48.8600" lon="2.3500"><tag k="shop" v="bakery"/></node>
 <node id="10" version="1" lat="48.8640" lon="2.3560"/><node id="11" version="1" lat="48.8640" lon="2.3580"/><node id="12" version="1" lat="48.8656" lon="2.3580"/><node id="13" version="1" lat="48.8656" lon="2.3560"/>
 <way id="100" version="1"><nd ref="10"/><nd ref="11"/><nd ref="12"/><nd ref="13"/><nd ref="10"/><tag k="amenity" v="townhall"/><tag k="name" v="Mairie du 3e"/><tag k="building" v="yes"/></way>
+<node id="20" version="1" lat="48.8500" lon="2.3400"/><node id="21" version="1" lat="48.8500" lon="2.3800"/><node id="22" version="1" lat="48.8800" lon="2.3800"/><node id="23" version="1" lat="48.8800" lon="2.3400"/>
+<way id="200" version="1"><nd ref="20"/><nd ref="21"/><nd ref="22"/><nd ref="23"/><nd ref="20"/></way>
+<relation id="300" version="1"><member type="way" ref="200" role="outer"/><tag k="type" v="boundary"/><tag k="boundary" v="administrative"/><tag k="admin_level" v="8"/><tag k="name" v="Paris"/><tag k="ref:INSEE" v="75056"/></relation>
 </osm>`);
-  execFileSync('osmium', ['cat', D2 + '/t.osm', '-o', D2 + '/t.osm.pbf']);
+  execFileSync('osmium', ['sort', D2 + '/t.osm', '-o', D2 + '/t.osm.pbf']);
   const pbf = fs.readFileSync(D2 + '/t.osm.pbf');
   const fake = http.createServer((req, res) => {
     if (req.url === '/redir') { res.writeHead(302, { location: '/t.osm.pbf' }); return res.end(); }
@@ -551,6 +603,7 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
     assert.equal((await A('/api/admin/places/import', {})).s, 202);
     let st; for (let i = 0; i < 100; i++) { st = (await A('/api/admin/places', undefined, 'GET')).j; if (!st.running && st.last) break; await new Promise(r => setTimeout(r, 100)); }
     assert.equal(st.source, 'osm'); assert.equal(st.last.err, null);
+    assert.equal(st.last.communes, 1, 'contour de commune extrait pendant le même passage');
     assert.deepEqual(st.counts, { cam: 2, mairie: 1, pharma: 1 }, 'caméra intérieure et boulangerie ignorées');
     const cams = JSON.parse(fs.readFileSync(D2 + '/l/l/48_2-c.json', 'utf8')).p;
     assert.deepEqual(cams.find(x => x[0] === 'n1'), ['n1', 'cam', 48.866, 2.362, 'Préfecture de police', 1, 90, 'f']);
