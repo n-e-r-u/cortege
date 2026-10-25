@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.6.3
+
+- Nouveau signalement « Milice / groupe fasciste » (☠️), demandé par les manifestant·es après les attaques d’extrême droite contre des cortèges : famille Danger, alerte « danger près de toi » et alerte vocale, vibration propre (une longue, deux courtes, une longue), suspend les zones calmes voisines. Visible 20 min, fusion à 150 m, le point suit le groupe. Aide de la précision : « Combien, direction, armes visibles. Pas de nom ni de photo. »
+- Onglet Droits : « Attaque d’un groupe fasciste », que faire (rester groupé·e, aller vers le service d’ordre ou les street medics, signaler sur la carte, 15 ou 112, porter plainte).
+
 ## 2.6.2
 
 - Carte « Par ville » des bilans publics et des stories lisible : les communes d’une même agglomération (moins de 15 km) sont regroupées sous le nom de la plus active, les cercles sont plus petits et plafonnés, et les étiquettes se placent autour de leur cercle (8 positions essayées) sans chevaucher une autre étiquette ni un autre cercle. Les 5 villes les plus actives ont toujours leur étiquette : s’il n’y a pas de place, elle s’écarte un peu ou passe au-dessus des petits cercles voisins. Le détail par commune reste dans la liste sous la carte.

@@ -6,7 +6,7 @@
   const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
   const MIN = 60_000;
-  const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
+  const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
   let announcements = [];
   // Économie de batterie : rafraîchissement espacé, GPS moins précis, boussole coupée
@@ -1308,7 +1308,9 @@
   // ---- Précisions ----
   const NOTE_HINTS = { fdo: 'ex. : une vingtaine, remontent vers la gare', danger: 'ex. : le nuage s’étend vers la place',
     soutien: 'ex. : sous l’abribus, côté nord', info: 'ex. : barrières, passage par la rue d’à côté' };
-  function notePlaceholder(cat) { return t(NOTE_HINTS[CAT[cat]?.group] || 'Ajouter une précision'); }
+  // Groupe fasciste : on décrit la situation, jamais les personnes
+  const NOTE_HINTS_CAT = { facho: 'Combien, direction, armes visibles. Pas de nom ni de photo.' };
+  function notePlaceholder(cat) { return t(NOTE_HINTS_CAT[cat] || NOTE_HINTS[CAT[cat]?.group] || 'Ajouter une précision'); }
   async function sendNote(id, text) {
     text = String(text || '').trim();
     if (text.length < 2) return toast('Écris une précision.');
@@ -2225,7 +2227,7 @@
   // Légende des vibrations, avec un bouton pour les essayer
   const VIBE_TXT = { charge: 'rafale de petites vibrations', nasse: 'deux longues', sommations: 'trois longues', lacrymo: 'deux moyennes',
     canon: 'trois moyennes', bac: 'deux courtes puis une longue', crs: 'deux courtes', interpellation: 'trois courtes',
-    tirs: 'rafale très rapide', inter: 'trois courtes puis une longue', blinde: 'une longue puis une courte' };
+    tirs: 'rafale très rapide', facho: 'une longue, deux courtes, une longue', inter: 'trois courtes puis une longue', blinde: 'une longue puis une courte' };
   for (const id of Object.keys(VIBE_TXT)) {
     if (!CAT[id]) continue;
     const b = el('button', { type: 'button' }, 'Essayer');

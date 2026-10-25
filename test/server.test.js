@@ -338,6 +338,16 @@ test('référencement : robots.txt, plan du site, pages d’outils hors des mote
   assert.match(await fetch(B + '/manif').then(r => r.text()), /rel="canonical"/);
 });
 
+test('milice / groupe fasciste : danger avec alerte, le point suit le groupe', async () => {
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  const c = cfg.categories.find(x => x.id === 'facho');
+  assert.equal(c.group, 'danger'); assert.equal(c.glyph, '☠️');
+  assert.ok(cfg.alertCats.includes('facho') && cfg.vibes.facho, 'alerte et vibration');
+  const p = place(), a = (await post('/api/reports', { cat: 'facho', ...p })).j;
+  const b = (await post('/api/reports', { cat: 'facho', lat: p.lat + 0.001, lng: p.lng })).j;
+  assert.equal(b.id, a.id, 'fusion à ~110 m'); assert.ok(Math.abs(b.lat - (p.lat + 0.001)) < 1e-6, 'le point suit le groupe');
+});
+
 test('santé : disque et mémoire exposés pour la surveillance', async () => {
   const h = await fetch(B + '/api/health').then(r => r.json());
   assert.equal(h.ok, true);

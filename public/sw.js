@@ -1,5 +1,5 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v46', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v47', TILES = 'cortege-tiles-v1';
 const ASSETS = ['/', '/style.css', '/i18n.js', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/vendor/protomaps-leaflet.js', '/map-style.js', '/vendor/fonts/inter-400.woff2', '/vendor/fonts/inter-700.woff2', '/favicon.png', '/brand/logo.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
