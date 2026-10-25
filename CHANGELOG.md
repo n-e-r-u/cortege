@@ -4,7 +4,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 
 ## 2.6.2
 
-- Carte « Par ville » des bilans publics et des stories lisible : les communes d’une même agglomération (moins de 15 km) sont regroupées sous le nom de la plus active, les cercles sont plus petits et plafonnés, et les étiquettes se placent autour de leur cercle (8 positions essayées) sans chevaucher une autre étiquette ni un autre cercle. Le détail par commune reste dans la liste sous la carte.
+- Carte « Par ville » des bilans publics et des stories lisible : les communes d’une même agglomération (moins de 15 km) sont regroupées sous le nom de la plus active, les cercles sont plus petits et plafonnés, et les étiquettes se placent autour de leur cercle (8 positions essayées) sans chevaucher une autre étiquette ni un autre cercle. Les 5 villes les plus actives ont toujours leur étiquette : s’il n’y a pas de place, elle s’écarte un peu ou passe au-dessus des petits cercles voisins. Le détail par commune reste dans la liste sous la carte.
 
 ## 2.6.1
 

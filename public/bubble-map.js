@@ -56,12 +56,20 @@
     const dots = cl.map(c => `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${c.r.toFixed(1)}" fill="url(#gr)" fill-opacity=".8" stroke="#121214" stroke-width="2">`
       + `<title>${esc(c.name)}${c.k > 1 ? ' et ' + (c.k - 1) + ' commune' + (c.k > 2 ? 's' : '') + ' voisine' + (c.k > 2 ? 's' : '') : ''} : ${fmt(c.n)}</title></circle>`).join('');
     const placed = [], labels = [];
-    for (const c of cl.slice(0, o.labels || 12)) {
-      const txt = c.name + ' ' + fmt(c.n), w = txt.length * cw + 6, g = c.r + 5, d = g * 0.72;
-      const opts = [[c.x + g, c.y - h / 2, 'start'], [c.x - g - w, c.y - h / 2, 'end'], [c.x - w / 2, c.y - g - h, 'middle'], [c.x - w / 2, c.y + g, 'middle'],
-        [c.x + d, c.y - d - h, 'start'], [c.x - d - w, c.y - d - h, 'end'], [c.x + d, c.y + d, 'start'], [c.x - d - w, c.y + d, 'end']];
-      const ok = opts.find(([bx, by]) => { const q = [bx, by, w, h];
-        return bx > 2 && by > 2 && bx + w < m.w - 2 && by + h < m.h - 2 && !placed.some(p => hitsRect(q, p)) && !cl.some(o2 => o2 !== c && hitsCircle(q, o2, 2)); });
+    // Les villes les plus actives ont toujours leur étiquette : si tout est pris, on s'éloigne un peu du cercle,
+    // puis on accepte de passer au-dessus des petits cercles voisins (jamais d'une autre étiquette ni d'un plus gros cercle)
+    const must = o.mustLabel || 5;
+    for (const [rank, c] of cl.slice(0, o.labels || 12).entries()) {
+      const txt = c.name + ' ' + fmt(c.n), w = txt.length * cw + 6;
+      const spots = gap => { const g = c.r + gap, d = g * 0.72;
+        return [[c.x + g, c.y - h / 2, 'start'], [c.x - g - w, c.y - h / 2, 'end'], [c.x - w / 2, c.y - g - h, 'middle'], [c.x - w / 2, c.y + g, 'middle'],
+          [c.x + d, c.y - d - h, 'start'], [c.x - d - w, c.y - d - h, 'end'], [c.x + d, c.y + d, 'start'], [c.x - d - w, c.y + d, 'end']]; };
+      const free = (bx, by, small) => { const q = [bx, by, w, h];
+        return bx > 2 && by > 2 && bx + w < m.w - 2 && by + h < m.h - 2 && !placed.some(p => hitsRect(q, p))
+          && !cl.some(o2 => o2 !== c && (!small || o2.r > c.r * 0.6) && hitsCircle(q, o2, 2)); };
+      const tries = [[5, false]].concat(rank < must ? [[18, false], [5, true], [18, true]] : []);
+      let ok = null;
+      for (const [gap, small] of tries) { ok = spots(gap).find(([bx, by]) => free(bx, by, small)); if (ok) break; }
       if (!ok) continue;
       const [bx, by, anchor] = ok; placed.push([bx, by, w, h]);
       const tx = anchor === 'start' ? bx + 3 : anchor === 'end' ? bx + w - 3 : bx + w / 2;
