@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.6.2
+
+- Carte « Par ville » des bilans publics et des stories lisible : les communes d’une même agglomération (moins de 15 km) sont regroupées sous le nom de la plus active, les cercles sont plus petits et plafonnés, et les étiquettes se placent autour de leur cercle (8 positions essayées) sans chevaucher une autre étiquette ni un autre cercle. Le détail par commune reste dans la liste sous la carte.
+
 ## 2.6.1
 
 - Correctif : les bilans publics affichaient le code INSEE des communes (75056, 34172…) au lieu de leur nom. Les bilans déjà publiés sont corrigés automatiquement à l’affichage.

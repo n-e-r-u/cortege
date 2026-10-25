@@ -929,25 +929,13 @@ function pubWithPts(date) {
   return d;
 }
 let storyMap = null;
+const BubbleMap = require('./public/bubble-map.js');
 function mapSvg(cities) {
   try { storyMap ||= JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'story-map.json'), 'utf8')); } catch { return ''; }
-  const m = storyMap, rad = Math.PI / 180, p0 = 44 * rad, p1 = 49 * rad, tany = y => Math.tan((Math.PI / 2 + y) / 2);
-  const n = Math.log(Math.cos(p0) / Math.cos(p1)) / Math.log(tany(p1) / tany(p0)), f = Math.cos(p0) * Math.pow(tany(p0), n) / n;
-  const P = (lon, lat) => { const x = (lon - 3) * rad, r = f / Math.pow(tany(lat * rad), n); return [r * Math.sin(n * x) * m.k + m.t[0], m.t[1] - (f - r * Math.cos(n * x)) * m.k]; };
-  const R = v => 4 + Math.sqrt(v) * 3.3;
-  const dots = cities.map(c => { const [x, y] = P(c.lng, c.lat); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R(c.n).toFixed(1)}" fill="url(#gr)" fill-opacity=".8" stroke="#121214" stroke-width="2"><title>${htmlEsc(c.name)} : ${c.n}</title></circle>`; }).join('');
-  const placed = [], labels = [];
-  for (const c of cities.slice(0, 10)) {
-    const [x, y] = P(c.lng, c.lat), r = R(c.n) + 10, w = (c.name.length + String(c.n).length + 1) * 16.5, h = 34;
-    const opts = [[x + r, y - h / 2, 'start'], [x - r - w, y - h / 2, 'end'], [x - w / 2, y - r - h, 'middle'], [x - w / 2, y + r, 'middle']];
-    const ok = opts.find(([bx, by]) => bx > 0 && by > 0 && bx + w < m.w && by + h < m.h && !placed.some(q2 => bx < q2[0] + q2[2] && bx + w > q2[0] && by < q2[1] + q2[3] && by + h > q2[1]));
-    if (!ok) continue;
-    const [bx, by, anchor] = ok; placed.push([bx, by, w, h]);
-    const tx = anchor === 'start' ? bx : anchor === 'end' ? bx + w : bx + w / 2;
-    labels.push(`<text x="${tx.toFixed(1)}" y="${(by + 26).toFixed(1)}" text-anchor="${anchor}" font-weight="800" font-size="29" fill="#f2f1f4" paint-order="stroke" stroke="#121214" stroke-width="7">${htmlEsc(c.name)} <tspan fill="#ec9fa4">${c.n}</tspan></text>`);
-  }
+  const m = storyMap, b = BubbleMap.svg(cities, m, { fontSize: 26, labels: 14, esc: htmlEsc });
   return `<svg viewBox="0 0 ${m.w} ${m.h}" role="img" aria-label="Carte des signalements par ville"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient></defs>`
-    + m.near.map(p => `<path d="${p}" fill="#1c1c20" stroke="#34343c" stroke-width="1.5"/>`).join('') + `<path d="${m.fr}" fill="#26262c" stroke="#5a5866" stroke-width="2"/>${dots}${labels.join('')}</svg>`;
+    + m.near.map(p => `<path d="${p}" fill="#1c1c20" stroke="#34343c" stroke-width="1.5"/>`).join('') + `<path d="${m.fr}" fill="#26262c" stroke="#5a5866" stroke-width="2"/>${b.dots}${b.labels}</svg>`
+    + (b.merged ? '<p class="fine">Sur la carte, les communes très proches sont regroupées sous le nom de la plus active ; le détail est dans la liste.</p>' : '');
 }
 const htmlEsc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const GROUP_COL = { fdo: '#e5484d', danger: '#f5a524', soutien: '#30a46c', info: '#8e8cd8' };

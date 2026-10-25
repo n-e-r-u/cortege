@@ -105,21 +105,10 @@ h2 { font-size: 64px; line-height: 1.05; font-weight: 900; letter-spacing: -.02e
 <div class="big" style="margin-top:22px">${nf(s.total)}</div><h2 style="margin-top:6px">signalement${s.total > 1 ? 's' : ''}</h2>
 <p class="sub">envoyés par des manifestant·es sur Cortège, dans ${s.city.length} ville${s.city.length > 1 ? 's' : ''}, de ${hh(s.first)} à ${hh(s.last)}.</p></div>${foot(1)}`);
     // 2. Carte
-    const m = a.map, P = projector(m), R = n => 4 + Math.sqrt(n) * 3.3;
-    const dots = s.city.map(c => { const [x, y] = P(c.lng, c.lat); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R(c.n).toFixed(1)}" fill="url(#gr)" fill-opacity=".78" stroke="#121214" stroke-width="2"/>`; }).join('');
-    // Étiquettes des grandes villes : on essaie à droite, à gauche, au-dessus puis en dessous, sans chevaucher les autres
-    const placed = [], labels = [];
-    for (const c of s.city.slice(0, 10)) {
-      const [x, y] = P(c.lng, c.lat), r = R(c.n) + 10, w = (c.name.length + String(c.n).length + 1) * 16.5, h = 34;
-      const opts = [[x + r, y - h / 2, 'start'], [x - r - w, y - h / 2, 'end'], [x - w / 2, y - r - h, 'middle'], [x - w / 2, y + r, 'middle']];
-      const ok = opts.find(([bx, by]) => bx > 0 && by > 0 && bx + w < m.w && by + h < m.h && !placed.some(q => bx < q[0] + q[2] && bx + w > q[0] && by < q[1] + q[3] && by + h > q[1]));
-      if (!ok) continue;
-      const [bx, by, anchor] = ok; placed.push([bx, by, w, h]);
-      const tx = anchor === 'start' ? bx : anchor === 'end' ? bx + w : bx + w / 2;
-      labels.push(`<text x="${tx.toFixed(1)}" y="${(by + 26).toFixed(1)}" text-anchor="${anchor}" font-family="Inter" font-weight="800" font-size="29" fill="#f2f1f4" paint-order="stroke" stroke="#121214" stroke-width="7">${esc(c.name)} <tspan font-family="Mono" fill="#ec9fa4">${nf(c.n)}</tspan></text>`);
-    }
+    const m = a.map, bm = window.BubbleMap.svg(s.city, m, { fontSize: 30, labels: 12, font: 'Inter', numFont: 'Mono', numFmt: nf, esc });
+    const dots = bm.dots, labels = [bm.labels];
     out.push(`<div class="page"><div class="kicker">Où ?</div><h2>Signalements par ville</h2>
-<p class="sub">Plus le cercle est grand, plus il y a de signalements. ${s.city.length} ville${s.city.length > 1 ? 's' : ''} en tout.</p>
+<p class="sub">Plus le cercle est grand, plus il y a de signalements. ${s.city.length} ville${s.city.length > 1 ? 's' : ''} en tout${bm.merged ? ', les communes voisines regroupées' : ''}.</p>
 <svg xmlns="http://www.w3.org/2000/svg" width="${m.w}" height="${m.h}" viewBox="0 0 ${m.w} ${m.h}" style="margin-top:34px">
 <defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient><clipPath id="c"><rect width="${m.w}" height="${m.h}"/></clipPath></defs>
 <g clip-path="url(#c)">${m.near.map(p => `<path d="${p}" fill="#1c1c20" stroke="#34343c" stroke-width="1.5"/>`).join('')}<path d="${m.fr}" fill="#26262c" stroke="#5a5866" stroke-width="2"/>${dots}${labels.join('')}</g></svg></div>${foot(2)}`);
