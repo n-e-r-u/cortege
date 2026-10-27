@@ -100,7 +100,7 @@ const MERGE = {
   inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 }, facho: { r: 150, move: true },
   nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
   medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
-  cortege: { r: 300, move: true }, queue: { r: 300, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
+  cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
 };
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;
