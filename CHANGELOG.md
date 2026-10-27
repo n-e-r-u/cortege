@@ -2,6 +2,17 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.6.4
+
+Correctif de sécurité, suite à un audit signalé en privé. Merci à la personne qui l’a fait.
+
+- Orgas : les droits ne reposent plus sur le nom affiché. Chaque annonce et chaque événement garde l’identifiant de l’orga qui l’a publié ; seule elle (ou l’admin) peut le retirer, et « mes annonces » ne montre que les siennes. Avant, une orga qui prenait le même nom qu’une autre (ou que l’admin) pouvait retirer ses annonces. Les annonces et événements existants sont rattachés à leur orga au démarrage, seulement quand il n’y a aucun doute ; sinon, seul·e l’admin peut les retirer.
+- Noms réservés : le nom de l’admin, « Cortège », les sources importées et les noms déjà pris sont refusés, sans tenir compte des accents, majuscules, espaces et lettres sosies (cyrillique, grec). Une orga invitée par parrainage ne peut pas non plus prendre le nom d’une legal team de l’annuaire, ni un nom qui contient « Cortège ». L’admin voit un avertissement sur toute orga existante dont le nom pose problème.
+- Adresse IP : les en-têtes du proxy (`X-Forwarded-For`…) ne sont crus que si la connexion vient de la machine elle-même ou d’une adresse listée dans `PROXY_IPS`. `CF-Connecting-IP` est ignoré sauf avec `CLOUDFLARE=1`. Avant, n’importe qui pouvait changer d’« IP » à chaque requête et contourner les limites (signalements, votes, essais de clé). Nouvelle option `ONION_SECRET` pour que personne ne puisse se faire passer pour Tor. Docker : `TRUST_PROXY=0` par défaut.
+- L’empreinte d’un téléphone n’est enregistrée qu’après la limite d’envois (un identifiant inventé à chaque requête refusée ne remplit plus la table).
+- Effacement d’urgence : efface aussi l’empreinte du téléphone dans les propositions d’arrêtés, continue même si un fichier de l’archive résiste (et le signale), et peut supprimer les bilans publics (case à cocher). L’admin rappelle ce qu’un effacement logiciel ne peut pas toucher (sauvegardes de l’hébergeur, copies, disque).
+- `SECURITY.md` précise combien de temps les actions d’un même appareil peuvent être reliées entre elles.
+
 ## 2.6.3
 
 - Nouveau signalement « Milice / groupe fasciste » (☠️), demandé par les manifestant·es après les attaques d’extrême droite contre des cortèges : famille Danger, alerte « danger près de toi » et alerte vocale, vibration propre (une longue, deux courtes, une longue), suspend les zones calmes voisines. Visible 20 min, fusion à 150 m, le point suit le groupe. Aide de la précision : « Combien, direction, armes visibles. Pas de nom ni de photo. »

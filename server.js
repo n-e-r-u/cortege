@@ -83,6 +83,12 @@ const EVENT_TYPES = [
 ];
 const EVT = Object.fromEntries(EVENT_TYPES.map(e => [e.id, e]));
 const ADMIN_LABEL = process.env.ADMIN_LABEL || 'Cortège';   // nom affiché sur les annonces de l'admin
+// ---- Noms d'orga : comparés sans accents, majuscules, espaces ni lettres sosies (cyrillique, grec) ----
+// Le nom n'est qu'un affichage : les droits (retirer une annonce, un événement) passent par l'identifiant de l'orga.
+const SOSIES = { 'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x', 'і': 'i', 'ј': 'j', 'ѕ': 's', 'ԁ': 'd', 'ɡ': 'g', 'ӏ': 'l',
+  'α': 'a', 'ε': 'e', 'ι': 'i', 'κ': 'k', 'ν': 'v', 'ο': 'o', 'ρ': 'p', 'τ': 't', 'υ': 'u', 'χ': 'x', '0': 'o', '1': 'l' };
+const labelKey = l => String(l || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/./gu, c => SOSIES[c] || c).replace(/[^a-z0-9]/g, '');
+const IMPORT_NAMES = ['17octobregiletjaune.net'];
 const PUBLIC_URL = process.env.PUBLIC_URL || 'https://cortege.neru.tv';
 const CAT = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 // Fusion : un signalement du même type dans ce rayon (m) confirme le point existant au lieu d'en créer un.
@@ -192,11 +198,22 @@ const PRIVATE_IP = /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.
 // Accès par Tor (.onion) : toutes les connexions arrivent du serveur lui-même. Le proxy local de l'adresse .onion
 // ajoute X-Cortege-Onion ; l'anti-spam se fonde alors sur l'identifiant du téléphone, sinon tout Tor partagerait une seule limite.
 const ONION_HOST = (process.env.ONION_HOST || '').trim();
-function viaOnion(req) { return TRUST_PROXY && req.headers['x-cortege-onion'] === '1' && /^(127\.|::1$|::ffff:127\.)/.test(req.socket.remoteAddress || ''); }
+// En-têtes de proxy crus seulement si la connexion vient du proxy lui-même : la machine (Caddy, Nginx, Tor),
+// un socket local (Passenger) ou une adresse listée dans PROXY_IPS. Sinon, n'importe qui pourrait choisir son « IP ».
+const PROXY_IPS = new Set((process.env.PROXY_IPS || '').split(',').map(x => x.trim()).filter(Boolean));
+// CF-Connecting-IP : seulement si l'instance est vraiment derrière Cloudflare (CLOUDFLARE=1)
+const CLOUDFLARE = process.env.CLOUDFLARE === '1';
+// ONION_SECRET : valeur attendue dans X-Cortege-Onion (posée par le bloc .onion de Caddy). Sans elle, « 1 » comme avant.
+const ONION_SECRET = process.env.ONION_SECRET || '';
+const fromProxy = req => { const a = req.socket.remoteAddress || ''; return !a || /^(127\.|::1$|::ffff:127\.)/.test(a) || PROXY_IPS.has(a.replace(/^::ffff:/, '')); };
+function viaOnion(req) {
+  const h = String(req.headers['x-cortege-onion'] || '');
+  return TRUST_PROXY && fromProxy(req) && (ONION_SECRET ? h.length === ONION_SECRET.length && keyEq(h, ONION_SECRET) : h === '1');
+}
 function clientIp(req) {
   if (viaOnion(req)) { const d = String(req.headers['x-device'] || ''); return 'onion:' + (/^[\w-]{16,64}$/.test(d) ? d : 'sans-id'); }
-  if (TRUST_PROXY) {
-    const cf = String(req.headers['cf-connecting-ip'] || '').trim();
+  if (TRUST_PROXY && fromProxy(req)) {
+    const cf = CLOUDFLARE ? String(req.headers['cf-connecting-ip'] || '').trim() : '';
     if (cf) return cf;
     const hops = String(req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
     const pub = hops.filter(h => !PRIVATE_IP.test(h));
@@ -621,10 +638,10 @@ function addNote(r, text, dev, t) {
 }
 const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
   notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}), ...(r.fl === 1 ? { f: 1 } : r.fl === -1 && !r.up ? { nf: 1 } : {}) });
-const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, city: a.city || null, by: a.by, lat: a.lat, lng: a.lng, r: a.r,
+const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, city: a.city || null, by: a.by, ob: ownerTag(a.oid), lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
 const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
-  route: e.route || null, end: !!e.end, by: e.by, status: e.status, link: e.link || null, src: e.src || null, t: e.t });
+  route: e.route || null, end: !!e.end, by: e.by, ob: ownerTag(e.oid), status: e.status, link: e.link || null, src: e.src || null, t: e.t });
 const round = n => Math.round(n * 1e4) / 1e4; // ~11 m
 const EVENT_KEEP = 12 * 60 * MIN;  // un événement reste affiché 12 h après son début
 const clean = (v, max) => String(v || '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -635,10 +652,38 @@ function distKm(aLat, aLng, bLat, bLng) {
   return 12742 * Math.asin(Math.sqrt(h));
 }
 
+// Qui peut retirer une annonce ou un événement : l'admin, ou l'orga qui l'a publié (par son identifiant, jamais par son nom)
+const canManage = (orga, x) => !!orga && (orga.admin || (!!x.oid && x.oid === orga.id));
+// Empreinte publique de l'auteur (l'appli sait ainsi afficher « retirer » sur ses propres annonces), sans révéler l'identifiant
+const ownerTag = oid => oid ? sha('owner|' + oid).slice(0, 12) : null;
+// Noms interdits : celui de l'admin, les sources importées, les orgas existantes ; pour une orga invitée par parrainage,
+// aussi l'annuaire des legal teams et tout nom qui contient celui de l'admin (« Cortège officiel »…)
+function labelClash(label, { sponsor = false, except = null } = {}) {
+  const k = labelKey(label), admin = labelKey(ADMIN_LABEL);
+  if (k.length < 2) return 'Ce nom est trop court.';
+  const reserved = [ADMIN_LABEL, 'Cortège', 'admin', 'administration', 'modération', VOTES.label, ...IMPORT_NAMES].map(labelKey);
+  if (reserved.includes(k) || (sponsor && (k.includes(admin) || k.includes('cortege')))) return 'Ce nom est réservé.';
+  if (readOrgas().some(o => o.id !== except && labelKey(o.label) === k) || ORGAS.some(o => labelKey(o.label) === k)) return 'Une orga porte déjà ce nom.';
+  if (sponsor && legalAll().some(e => labelKey(e.name) === k)) return 'Ce nom est celui d’une legal team de l’annuaire : seul·e l’admin peut l’inviter.';
+  return null;
+}
+// Annonces et événements d'avant la 2.6.4 : auteur retrouvé par son nom, seulement s'il n'y a aucun doute
+function migrateOwners() {
+  const owners = new Map(), addO = (label, id) => { const k = labelKey(label); owners.set(k, [...(owners.get(k) || []), id]); };
+  addO(ADMIN_LABEL, 'admin'); for (const o of ORGAS) addO(o.label, 'env:' + o.label); for (const o of readOrgas()) addO(o.label, o.id);
+  const pick = by => { if (IMPORT_NAMES.includes(by)) return 'import'; const ids = owners.get(labelKey(by)) || []; return ids.length === 1 ? ids[0] : null; };
+  let n = 0;
+  tx(() => {
+    for (const x of q('SELECT id, data FROM ann').all()) { const a = JSON.parse(x.data); if ('oid' in a) continue; a.oid = pick(a.by); q('UPDATE ann SET data=? WHERE id=?').run(JSON.stringify(a), x.id); n++; }
+    for (const x of q('SELECT id, data FROM events').all()) { const e = JSON.parse(x.data); if ('oid' in e) continue; e.oid = e.src ? 'import' : pick(e.by); q('UPDATE events SET data=? WHERE id=?').run(JSON.stringify(e), x.id); n++; }
+  });
+  if (n) console.log(`auteurs : ${n} annonce(s) ou événement(s) rattaché(s) à leur orga`);
+}
+
 // Création d'annonce, partagée par l'espace orga et la page admin.
 //  - numéro de legal team : permanent, jusqu'à ce que l'orga (ou l'admin) le retire ;
 //  - annonce nationale : réservée à l'admin, visible partout en France.
-function createAnnouncement(b, by, admin, pending = false) {
+function createAnnouncement(b, by, admin, pending = false, oid = admin ? 'admin' : null) {
   const kind = b.kind === 'legal' ? 'legal' : 'info';
   const national = kind === 'info' && !!b.national && admin;
   const level = kind === 'info' && b.level === 'urgent' ? 'urgent' : 'info';
@@ -655,7 +700,7 @@ function createAnnouncement(b, by, admin, pending = false) {
   if (kind === 'legal' && city.length < 2) return [400, { error: 'Indique la ville de la legal team.' }];
   if (!national && !validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
   const now = Date.now();
-  const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, ...(city ? { city } : {}), by, link,
+  const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, ...(city ? { city } : {}), by, oid, link,
     lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
     t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
   if (pending) a.pending = true; // numéro de legal team d'une orga en essai : affiché après validation par l'admin
@@ -1730,7 +1775,7 @@ async function import17() {
       title: clean(`${k.type === 'manifestation' ? 'Manifestation' : 'Rassemblement'}${city ? ' · ' + city : ''}`, 80),
       place: clean(p.kind === 'station' ? `Station-service, ${name}` : (name || city || 'Lieu annoncé'), 100),
       note: 'Annoncé sur la carte participative du 17 octobre.', start, lat: round(p.lat), lng: round(p.lng), route: null, end: false,
-      by: '17octobregiletjaune.net', link: IMPORT_BASE + '/carte/', status: 'ok', t: now });
+      by: '17octobregiletjaune.net', oid: 'import', link: IMPORT_BASE + '/carte/', status: 'ok', t: now });
   }
   const n = tx(() => {
     const hidden = new Set(q('SELECT id FROM hidden').all().map(x => x.id));
@@ -1779,7 +1824,7 @@ function createEvent(b, orga, dev, ipH) {
       if (q("SELECT COUNT(*) n FROM events WHERE status='pending'").get().n >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
     }
     const e = { id: crypto.randomBytes(6).toString('base64url'), type, title, place, note, start, lat: round(lat), lng: round(lng),
-      route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', status: orga && !orga.trial ? 'ok' : 'pending', t: now };
+      route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', oid: orga ? orga.id : null, status: orga && !orga.trial ? 'ok' : 'pending', t: now };
     if (!orga) e.dev = dev;
     saveEvent(e);
     return [201, evView(e)];
@@ -2621,7 +2666,7 @@ const server = http.createServer(async (req, res) => {
           orgas: (() => { const list = readOrgas(); return list.map(o => ({ id: o.id, label: o.label, created: o.created, trial: o.trial === true, source: 'page',
             active: !!o.hash, invite: o.invite && o.invite.exp > Date.now() ? o.invite.exp : null, devices: o.hash ? 1 + (o.keys || []).length : 0,
             by: o.by || null, byLabel: o.by ? (list.find(x => x.id === o.by)?.label || o.byLabel || 'orga supprimée') : null, sponsored: o.sponsored === true,
-            children: list.filter(x => x.by === o.id).length, ban: banUntil(o.id), ...(o.sponsored && o.trial ? { readiness: orgaReady(o) } : {}), ...orgaStats(o.id) })); })()
+            children: list.filter(x => x.by === o.id).length, ban: banUntil(o.id), clash: !!labelClash(o.label, { except: o.id }), ...(o.sponsored && o.trial ? { readiness: orgaReady(o) } : {}), ...orgaStats(o.id) })); })()
             .concat(ORGAS.map(o => ({ id: null, label: o.label, created: null, trial: false, source: 'variable', ...orgaStats('env:' + o.label) }))),
         });
       }
@@ -2633,11 +2678,11 @@ const server = http.createServer(async (req, res) => {
         const token = crypto.randomBytes(18).toString('base64url');
         const out = withLock(() => {
           const list = readOrgas().slice();
-          if (list.some(o => o.label.toLowerCase() === label.toLowerCase())) return null;
+          if (labelClash(label)) return null;
           const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: null, created: Date.now(), trial: true, invite: { h: sha(token), exp: Date.now() + INVITE_MS } };
           list.push(o); writeOrgas(list); return o;
         });
-        if (!out) return send(res, 409, { error: 'Une orga porte déjà ce nom.' });
+        if (!out) return send(res, 409, { error: labelClash(label) || 'Une orga porte déjà ce nom.' });
         orgaLog({ id: 'admin', label: ADMIN_LABEL }, 'invitation', { ref: out.id, detail: out.label });
         return send(res, 201, { id: out.id, label: out.label, created: out.created, invite: token, exp: out.invite.exp });
       }
@@ -2927,14 +2972,21 @@ const server = http.createServer(async (req, res) => {
           for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'hidden', 'push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
           for (const e of listEvents()) if (e.dev) { delete e.dev; saveEvent(e); }
           q("UPDATE events SET dev=NULL").run();
+          // Arrêtés proposés par des participant·es : l'empreinte du téléphone disparaît aussi (colonne et données)
+          for (const x of q('SELECT id, data FROM orders').all()) { const o = JSON.parse(x.data); if ('dev' in o) { delete o.dev; q('UPDATE orders SET data=? WHERE id=?').run(JSON.stringify(o), x.id); } }
+          q('UPDATE orders SET dev=NULL').run();
+          // Bilans publics : seulement si l'admin le demande (ils ne contiennent que des totaux et des points arrondis)
+          if (b.pub === true) q('DELETE FROM pub').run();
           return n;
         });
-        try { for (const f of fs.readdirSync(ARCHIVE_DIR)) fs.unlinkSync(path.join(ARCHIVE_DIR, f)); } catch {}
+        // Archive du digest : chaque fichier séparément (un fichier qui résiste n'empêche pas d'effacer les autres)
+        const left = [];
+        try { for (const f of fs.readdirSync(ARCHIVE_DIR)) try { fs.unlinkSync(path.join(ARCHIVE_DIR, f)); } catch { left.push(f); } } catch {}
         const rotated = (() => { try { return rotateSecret(); } catch { return false; } })();
         try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.exec('VACUUM'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
         rebuildAll();
-        console.log('effacement d’urgence effectué');
-        return send(res, 200, { removed: n, rotated });
+        console.log('effacement d’urgence effectué' + (left.length ? ` (${left.length} fichier(s) d’archive non effacé(s))` : ''));
+        return send(res, left.length ? 500 : 200, { removed: n, rotated, pub: b.pub === true, left: left.length, ...(left.length ? { error: `${left.length} fichier(s) de l’archive n’ont pas pu être effacés : vérifie les droits du dossier.` } : {}) });
       }
       // --- Tableau des abus (24 h) et mode manif renforcé ---
       if (req.method === 'GET' && pathname === '/api/admin/abuse') {
@@ -3064,13 +3116,15 @@ const server = http.createServer(async (req, res) => {
       const orga = req.headers['x-orga-key'] ? orgaOf(req) : null, sure = !!(orga && !orga.trial && !orga.sponsored);
       const result = tx(() => {
         const base = cat.ttl * MIN, now = Date.now(), ttl = sure ? 2 * base : base;
-        const age = deviceAge(dev, now), strict = strictUntil(now) > 0;
+        const strict = strictUntil(now) > 0;
         // Heure où le signalement a été fait (file d'attente hors ligne). Jamais dans le futur ;
         // mentir dessus ne peut que raccourcir la vie du point.
         const t0 = Math.min(now, Number(b.t) || now);
         if (t0 + ttl <= now) return [410, { error: 'Signalement trop ancien, il n’a pas été publié.', stale: true }];
         if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
         if (!allow(dev, ipH, 'report', now)) { abuseOnce('signalements en rafale', dev, RATE.windowMs, { lat, lng }); return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }]; }
+        // Après la limite d'envois : un identifiant inventé à chaque requête refusée ne remplit pas la table
+        const age = deviceAge(dev, now);
         const pos = { lat: round(lat), lng: round(lng) };
         // Un danger n'efface plus une zone calme voisine : le téléphone l'affiche « suspendue » tant que le danger est actif
         // (un faux danger ne peut donc plus faire disparaître une zone calme).
@@ -3235,14 +3289,14 @@ const server = http.createServer(async (req, res) => {
 
       if (req.method === 'GET' && pathname === '/api/orga/me') {
         const me = readOrgas().find(x => x.id === orga.id);
-        return send(res, 200, { label: orga.label, admin: orga.admin, trial: orga.trial, sponsored: !!orga.sponsored,
+        return send(res, 200, { label: orga.label, ob: ownerTag(orga.admin ? 'admin' : orga.id), admin: orga.admin, trial: orga.trial, sponsored: !!orga.sponsored,
           sponsor: me && me.by ? (readOrgas().find(x => x.id === me.by)?.label || me.byLabel || null) : null,
           canInvite: !orga.trial && !banUntil(orga.id), ban: banUntil(orga.id), canAddDevice: !!me, devices: me && me.hash ? 1 + (me.keys || []).length : 0 });
       }
 
       // Ses propres annonces, y compris les numéros en attente de validation
       if (req.method === 'GET' && pathname === '/api/orga/mine') {
-        return send(res, 200, { a: annAll(Date.now()).filter(a => orga.admin ? true : a.by === orga.label).sort((a, b) => b.t - a.t).map(annView) });
+        return send(res, 200, { a: annAll(Date.now()).filter(a => orga.admin ? true : a.oid === orga.id).sort((a, b) => b.t - a.t).map(annView) });
       }
 
       // --- Parrainage : une orga confirmée invite une autre orga (QR code / lien à usage unique, 24 h) ---
@@ -3256,12 +3310,12 @@ const server = http.createServer(async (req, res) => {
         const { token, invite } = newInvite();
         const out = withLock(() => {
           const list = readOrgas().slice();
-          if (list.some(o => o.label.toLowerCase() === label.toLowerCase())) return 'dup';
+          if (labelClash(label, { sponsor: true })) return 'dup';
           if (!orga.admin && list.filter(o => o.by === orga.id && o.created > Date.now() - SPONSOR.quotaMs).length >= SPONSOR.quota) return 'quota';
           const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: null, created: Date.now(), trial: true, sponsored: true, by: orga.id, byLabel: orga.label, invite };
           list.push(o); writeOrgas(list); return o;
         });
-        if (out === 'dup') return send(res, 409, { error: 'Une orga porte déjà ce nom.' });
+        if (out === 'dup') return send(res, 409, { error: labelClash(label, { sponsor: true }) || 'Une orga porte déjà ce nom.' });
         if (out === 'quota') return send(res, 429, { error: `${SPONSOR.quota} invitations par semaine au maximum. Réessaie dans quelques jours.` });
         orgaLog(orga, 'invitation (parrainage)', { ref: out.id, detail: out.label });
         return send(res, 201, { id: out.id, label: out.label, invite: token, exp: invite.exp });
@@ -3309,7 +3363,7 @@ const server = http.createServer(async (req, res) => {
           return send(res, 400, { error: 'Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info ».' });
         if (orga.sponsored && b.kind !== 'legal' && q("SELECT COUNT(*) n FROM orga_log WHERE oid=? AND action='annonce' AND t>?").get(orga.id, Date.now() - 24 * 60 * 60_000).n >= SPONSOR.annPerDay)
           return send(res, 400, { error: `Orga parrainée : ${SPONSOR.annPerDay} annonces par jour au maximum jusqu’à ta confirmation.` });
-        const out = createAnnouncement(b, orga.label, orga.admin, orga.trial && b.kind === 'legal');
+        const out = createAnnouncement(b, orga.label, orga.admin, orga.trial && b.kind === 'legal', orga.admin ? 'admin' : orga.id);
         if (out[0] === 201) orgaLog(orga, out[1].pending ? 'legal team (en attente)' : 'annonce', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id,
           detail: (out[1].kind === 'legal' ? out[1].phone + ' ' : '') + (out[1].level === 'urgent' ? '[urgent] ' : '') + (out[1].national ? '[nationale] ' : '') + (out[1].text || '') });
         return send(res, ...out);
@@ -3320,7 +3374,7 @@ const server = http.createServer(async (req, res) => {
         const out = tx(() => {
           const e = getEvent(delEv[1]);
           if (!e) return [404, { error: 'Événement déjà retiré.' }];
-          if (!orga.admin && e.by !== orga.label) return [403, { error: 'Seule l’orga qui l’a publié peut le retirer.' }];
+          if (!canManage(orga, e)) return [403, { error: 'Seule l’orga qui l’a publié peut le retirer.' }];
           if (e.src) q('INSERT OR REPLACE INTO hidden(id,until) VALUES(?,?)').run(e.id, e.start + EVENT_KEEP);
           dropEvent(e.id); orgaLog(orga, 'événement retiré', { lat: e.lat, lng: e.lng, ref: e.id, detail: e.title }); return [200, { removed: true }];
         });
@@ -3332,7 +3386,7 @@ const server = http.createServer(async (req, res) => {
         const out = tx(() => {
           const a = getAnn(delAnn[1]);
           if (!a) return [404, { error: 'Annonce déjà retirée.' }];
-          if (!orga.admin && a.by !== orga.label) return [403, { error: 'Seul·e l’auteur·ice peut retirer cette annonce.' }];
+          if (!canManage(orga, a)) return [403, { error: 'Seul·e l’auteur·ice peut retirer cette annonce.' }];
           dropAnn(a.id); orgaLog(orga, 'annonce retirée', { lat: a.lat, lng: a.lng, ref: a.id, detail: a.phone || a.text }); return [200, { removed: true }];
         });
         return send(res, ...out);
@@ -3438,4 +3492,5 @@ const server = http.createServer(async (req, res) => {
 // Connexions lentes ou abandonnées : on ne les garde pas indéfiniment
 server.headersTimeout = 20_000;
 server.requestTimeout = 30_000;
+try { migrateOwners(); } catch (e) { console.error('auteurs', e.message); }
 server.listen(PORT, process.env.HOST || undefined, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));

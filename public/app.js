@@ -1613,7 +1613,7 @@
     $('#annListTitle').textContent = t(mineAnns ? (orga && orga.admin ? 'Toutes les annonces actives' : 'Tes annonces actives') : 'Annonces actives ici');
     if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? 'Aucune annonce publiée.' : 'Aucune annonce active ici.')); return; }
     for (const a of list) {
-      const mine = orga && (orga.admin || a.by === orga.label);
+      const mine = orga && (orga.admin || (!!a.ob && a.ob === orga.ob));
       const del = el('button', { class: 'ghost' }, 'Retirer');
       del.disabled = !mine;
       del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); loadMine(); } catch (e) { toast(e.message); } };
@@ -1773,7 +1773,7 @@
     if (e.note) root.append(el('p', { class: 'pop-note' }, e.note));
     root.append(el('div', { class: 'pop-meta' }, t('Publié par {who}', { who: e.by })));
     if (e.link) root.append(el('a', { class: 'ann-link', href: e.link, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la carte d’origine →'));
-    if (orga && (orga.admin || e.by === orga.label)) {
+    if (orga && (orga.admin || (!!e.ob && e.ob === orga.ob))) {
       const rm = el('button', { class: 'danger' }, 'Retirer cet événement');
       rm.onclick = async () => {
         if (!rm.dataset.armed) { rm.dataset.armed = '1'; rm.textContent = t('Confirmer le retrait'); return; }

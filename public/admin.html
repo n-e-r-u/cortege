@@ -493,8 +493,10 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     </section>
     <section class="card danger-card">
       <h2>Effacement d’urgence : toutes les traces</h2>
-      <p class="fine">À utiliser si une saisie du serveur se profile. Efface d’un coup : signalements, annonces, journal des orgas, corbeille, empreintes anti-abus, tableau des abus, abonnements aux notifications et archive du digest. Une nouvelle clé de hachage est créée : les anciennes empreintes deviennent inutilisables. Les orgas et l’agenda public sont gardés.</p>
+      <p class="fine">À utiliser si une saisie du serveur se profile. Efface d’un coup : signalements, annonces, journal des orgas, corbeille, empreintes anti-abus (y compris celles des propositions d’agenda et d’arrêtés), tableau des abus, abonnements aux notifications et archive du digest. Une nouvelle clé de hachage est créée : les anciennes empreintes deviennent inutilisables. Les orgas, l’agenda public et les arrêtés publiés sont gardés.</p>
+      <p class="fine"><b>Ce que l’effacement ne peut pas toucher :</b> les sauvegardes et instantanés de l’hébergeur, les copies déjà faites ailleurs (navigateurs, captures), et le disque lui-même (un effacement logiciel n’est pas un effacement physique). Si plusieurs processus tournent (Passenger), arrête-les ensuite.</p>
       <form class="controls" id="wipeForm">
+        <label class="check"><input type="checkbox" id="wipePub"> Supprimer aussi les bilans publics</label>
         <label for="wipeConfirm" style="flex:1;min-width:200px">Tape EFFACER pour confirmer<input id="wipeConfirm" autocomplete="off" placeholder="EFFACER"></label>
         <button type="submit" class="danger">Tout effacer maintenant</button>
       </form>
@@ -864,7 +866,7 @@ $('#wipeForm').addEventListener('submit', async e => {
   e.preventDefault();
   if ($('#wipeConfirm').value.trim() !== 'EFFACER') return alertMsg('Tape EFFACER pour confirmer.');
   try {
-    const r = await api('/api/admin/wipe', { method: 'POST', body: JSON.stringify({ confirm: 'EFFACER' }) });
+    const r = await api('/api/admin/wipe', { method: 'POST', body: JSON.stringify({ confirm: 'EFFACER', pub: $('#wipePub').checked }) });
     $('#wipeConfirm').value = '';
     alertMsg(`Effacement terminé : ${r.removed} signalement(s) et toutes les traces effacés.` + (r.rotated ? ' Nouvelle clé de hachage créée.' : ' La clé vient de la variable SECRET : change-la dans cPanel puis redémarre.'));
     loadReports();
@@ -915,6 +917,7 @@ function renderOrgas({ orgas }) {
     meta.textContent = (o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }))
       + (o.trial ? ' · EN PÉRIODE D’ESSAI' : ' · confirmée')
       + (o.source === 'page' ? (o.active ? ' · activée' + (o.devices > 1 ? ' (' + o.devices + ' appareils)' : '') : o.invite ? ' · invitation en attente' : ' · invitation expirée') : '')
+      + (o.clash ? ' · ⚠ NOM RÉSERVÉ OU EN DOUBLE : vérifie que c’est bien une vraie orga' : '')
       + (o.byLabel ? ' · parrainée par ' + o.byLabel : '') + (o.children ? ' · a invité ' + o.children + ' orga(s)' : '')
       + (o.ban ? ' · ⛔ invitations suspendues jusqu’au ' + new Date(o.ban).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : '');
     let extra = null;

@@ -632,13 +632,51 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
   } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
 });
 
+test('sécurité : une orga ne peut pas prendre le nom d’une autre, ni retirer ce qui n’est pas à elle', async () => {
+  for (const label of ['Cortège', 'CORTEGE', 'Cоrtège' /* o cyrillique */, '17octobregiletjaune.net'])
+    assert.equal((await admin('/api/admin/orgas', { label })).s, 409, label + ' refusé');
+  const A = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Audit A' })).j.invite);
+  assert.equal((await admin('/api/admin/orgas', { label: 'collectif  audit-a' })).s, 409, 'doublon à la casse et aux espaces près');
+  const Bo = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Audit B' })).j.invite);
+  const p = place();
+  const adm = await admin('/api/admin/announcements', { kind: 'info', text: 'Annonce officielle', ...p, radiusKm: 3, minutes: 30 });
+  assert.equal(adm.s, 201);
+  const del = (key, id) => fetch(B + '/api/announcements/' + id, { method: 'DELETE', headers: { 'x-orga-key': key, 'content-type': 'application/json' } }).then(r => r.status);
+  assert.equal(await del(A.key, adm.j.id), 403, 'une orga ne retire pas une annonce de l’admin');
+  const mine = await asOrga(A.key, '/api/announcements', { kind: 'info', text: 'Annonce de A', ...p, radiusKm: 3, minutes: 30 });
+  assert.equal(mine.s, 201); assert.ok(mine.j.ob, 'empreinte de l’auteur');
+  assert.equal(await del(Bo.key, mine.j.id), 403, 'B ne retire pas l’annonce de A');
+  const listB = await fetch(B + '/api/orga/mine', { headers: { 'x-orga-key': Bo.key } }).then(r => r.json());
+  assert.ok(!listB.a.some(x => x.id === mine.j.id), 'B ne voit pas les annonces de A');
+  const meA = await fetch(B + '/api/orga/me', { headers: { 'x-orga-key': A.key } }).then(r => r.json());
+  assert.equal(meA.ob, mine.j.ob);
+  assert.equal(await del(A.key, mine.j.id), 200, 'A retire la sienne');
+});
+
+test('sécurité : CF-Connecting-IP ignoré sans CLOUDFLARE=1 (impossible de changer d’« IP » à volonté)', async () => {
+  const net = '9.9.' + (Date.now() % 250) + '.9';
+  for (let i = 0; i < 11; i++)
+    await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': 'mauvaise-cle-' + i, 'x-forwarded-for': net, 'cf-connecting-ip': '7.7.7.' + i } });
+  const r = await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN, 'x-forwarded-for': net, 'cf-connecting-ip': '7.7.8.1' } });
+  assert.equal(r.status, 403, 'même réseau malgré l’en-tête changé : bloqué après 10 essais');
+});
+
 test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace', async () => {
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
+  const day = d => new Date(Date.now() + d * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  assert.equal((await post('/api/orders', { dep: '34', commune: 'Montpellier', start: day(1) + ' 10:00', end: day(2) + ' 10:00', items: [['manif', 'Test effacement']], src: 'https://x.fr/a' })).s, 201);
   const before = fs.readFileSync(DIR + '/d/secret', 'utf8');
   const w = await admin('/api/admin/wipe', { confirm: 'EFFACER' });
   assert.equal(w.s, 200); assert.equal(w.j.rotated, true);
   for (const t of ['reports', 'devices', 'abuse', 'trash', 'orga_log', 'push', 'orga_req'])
     assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n, 0, t + ' vide');
+  // Aucune empreinte de téléphone ou de réseau, dans aucune table (colonnes et données JSON)
+  for (const { name } of db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all()) {
+    const cols = db.prepare(`PRAGMA table_info(${name})`).all().map(c => c.name);
+    for (const c of cols.filter(c => ['dev', 'ip', 'net', 'voters', 'down_ips'].includes(c)))
+      assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${name} WHERE ${c} IS NOT NULL AND ${c} NOT IN ('[]', '')`).get().n, 0, name + '.' + c);
+    if (cols.includes('data')) assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${name} WHERE data LIKE '%"dev":"%'`).get().n, 0, name + ' (données)');
+  }
   assert.notEqual(fs.readFileSync(DIR + '/d/secret', 'utf8'), before, 'nouvelle clé');
 });
 
