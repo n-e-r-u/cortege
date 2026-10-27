@@ -523,6 +523,26 @@
   </div>
   <p class="hint trial-note" id="orgaSponsored" hidden></p>
   <p class="hint trial-note" id="orgaTrial" hidden>Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée.</p>
+  <div class="bk-box" id="bkBox" hidden>
+    <h3 class="group-title">Ma position en direct</h3>
+    <p class="hint">Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt.</p>
+    <div class="bk-row">
+      <label>Je suis<select id="bkRole">
+        <option value="cortege">📣 la tête de cortège</option>
+        <option value="queue">🔚 la queue de cortège</option>
+        <option value="medic">⛑️ street medic</option>
+        <option value="legal">⚖️ legal team</option>
+        <option value="presse">🎥 presse</option>
+      </select></label>
+      <label>Pendant<select id="bkDur">
+        <option value="60">1 h</option>
+        <option value="120" selected>2 h</option>
+        <option value="240">4 h</option>
+      </select></label>
+    </div>
+    <button type="button" class="secondary" id="bkBtn">Partager ma position</button>
+    <p class="fine" id="bkState" role="status"></p>
+  </div>
   <form id="annForm" class="orga-form">
     <fieldset class="seg">
       <legend>Type</legend>

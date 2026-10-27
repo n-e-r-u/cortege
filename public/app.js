@@ -8,6 +8,7 @@
   const MIN = 60_000;
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
+  let beacon = null; // position partagée en direct par une orga : { role, until, timer, lock }
   let announcements = [];
   // Économie de batterie : rafraîchissement espacé, GPS moins précis, boussole coupée
   let eco = false; try { eco = localStorage.getItem('cortege-eco') === '1'; } catch {}
@@ -226,7 +227,7 @@
     const cs = calmSt.get(r.id);
     const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : '', cs ? 'calm-' + cs.lvl : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
-      html: `<div class="${cls}${r.ver ? ' ver' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
+      html: `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
   }
   function popup(r) {
     const c = CAT[r.cat];
@@ -235,6 +236,9 @@
     const revu = r.last && r.last - r.t >= MIN ? ' · ' + t('revu {ago}', { ago: ago(r.last) }) : '';
     const meta = ago(r.t) + revu + ' · ' + t('expire dans {d}', { d: left(r.exp) }) + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
     root.append(el('div', { class: 'pop-meta' }, meta));
+    if (r.live) root.append(el('div', { class: 'pop-live' }, t('En direct : position partagée par {who}', { who: r.ver || t('une orga') })));
+    const fl = flowInfo.get(r.id);
+    if (fl && fl.lines.length) root.append(el('div', { class: 'pop-flow', style: `--c:${GROUP_COLOR[c.group]}` }, ...fl.lines.flatMap((x, i) => i ? [el('br'), x] : [x])));
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, t('Signalé par {n} personnes', { n: r.up + 1 })));
     if (r.ver) root.append(el('div', { class: 'pop-ver' }, '✓ ' + t('Vérifié par {who}', { who: r.ver === 'une orga' ? t('une orga') : r.ver })));
     else if (r.f) root.append(el('div', { class: 'pop-fiable' }, '★ ' + t('Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)')));
@@ -372,6 +376,100 @@
     for (const [id, { data, marker }] of reports) {
       const show = !hidden.has(CAT[data.cat].group) && !stackOf.has(id) && !calmHidden(data), on = layer.hasLayer(marker);
       if (show && !on) layer.addLayer(marker); else if (!show && on) layer.removeLayer(marker);
+    }
+    try { drawFlow(); } catch (e) { console.error('cortège', e); }
+  }
+  // ---- Tête et queue de cortège : trace, direction, longueur du cortège, avancée sur le parcours annoncé ----
+  // Tout est calculé sur le téléphone, à partir des points publics (ta position ne part jamais).
+  const flowLayer = L.layerGroup().addTo(map), flowInfo = new Map();
+  const FLOW_CATS = ['cortege', 'queue'];
+  // Projection locale en mètres, suffisante à l'échelle d'une manif
+  const xy = (p, lat0) => [p[1] * 111320 * Math.cos(lat0 * Math.PI / 180), p[0] * 110540];
+  // Point le plus proche sur un parcours : distance au parcours (m), distance parcourue depuis le départ (m), longueur totale (m)
+  function onRoute(route, p) {
+    const lat0 = route[0][0], P = xy(p, lat0);
+    let best = { d: Infinity, at: 0, i: 0, q: route[0] }, acc = 0;
+    for (let i = 0; i < route.length - 1; i++) {
+      const A = xy(route[i], lat0), Bp = xy(route[i + 1], lat0), dx = Bp[0] - A[0], dy = Bp[1] - A[1], L2 = dx * dx + dy * dy, seg = Math.sqrt(L2);
+      const k = L2 ? Math.max(0, Math.min(1, ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / L2)) : 0;
+      const d = Math.hypot(P[0] - (A[0] + k * dx), P[1] - (A[1] + k * dy));
+      if (d < best.d) best = { d, at: acc + k * seg, i, q: [route[i][0] + k * (route[i + 1][0] - route[i][0]), route[i][1] + k * (route[i + 1][1] - route[i][1])] };
+      acc += seg;
+    }
+    return { ...best, total: acc };
+  }
+  // Morceau du parcours entre deux distances depuis le départ
+  function routeSlice(route, a, b) {
+    const lat0 = route[0][0], out = []; let acc = 0;
+    for (let i = 0; i < route.length - 1; i++) {
+      const A = xy(route[i], lat0), Bp = xy(route[i + 1], lat0), seg = Math.hypot(Bp[0] - A[0], Bp[1] - A[1]);
+      const at = k => [route[i][0] + k * (route[i + 1][0] - route[i][0]), route[i][1] + k * (route[i + 1][1] - route[i][1])];
+      if (acc + seg >= a && acc <= b) {
+        if (!out.length) out.push(at(seg ? Math.max(0, (a - acc) / seg) : 0));
+        if (acc + seg <= b) out.push(route[i + 1]); else { out.push(at(seg ? (b - acc) / seg : 0)); break; }
+      }
+      acc += seg;
+    }
+    return out;
+  }
+  // Direction et vitesse d'après la trace des 10 dernières minutes
+  function motion(r) {
+    const now = Date.now() / 1000, pts = (r.tr || []).filter(p => p[2] > now - 600);
+    if (!pts.length) return null;
+    const from = pts[0], d = dist([from[0], from[1]], [r.lat, r.lng]), dt = ((r.last || r.t) / 1000) - from[2];
+    if (d < 30 || dt < 60) return null;
+    return { b: bearing([from[0], from[1]], [r.lat, r.lng]), kmh: d / dt * 3.6 };
+  }
+  const CARD = ['vers le nord', 'vers le nord-est', 'vers l’est', 'vers le sud-est', 'vers le sud', 'vers le sud-ouest', 'vers l’ouest', 'vers le nord-ouest'];
+  const cardinal = b => t(CARD[Math.round(((b % 360) + 360) % 360 / 45) % 8]);
+  const mins = m => m < 60 ? t('{n} min', { n: Math.max(1, Math.round(m)) }) : t('{h} h {m}', { h: Math.floor(m / 60), m: String(Math.round(m % 60)).padStart(2, '0') });
+  function drawFlow() {
+    flowLayer.clearLayers(); flowInfo.clear();
+    if (hidden.has('info')) return;
+    const all = [...reports.values()].map(x => x.data).filter(r => FLOW_CATS.includes(r.cat) && !r.c);
+    const now = Date.now(), routes = evCache.e.filter(e => e.route && e.route.length > 1 && e.start < now + 60 * MIN && e.start > now - 12 * 60 * MIN);
+    const info = id => { if (!flowInfo.has(id)) flowInfo.set(id, { lines: [] }); return flowInfo.get(id); };
+    const fix = {}; // parcours sur lequel se trouve chaque point
+    for (const r of all) {
+      const col = GROUP_COLOR.info;
+      // Trace des 30 dernières minutes
+      if (r.tr && r.tr.length) L.polyline([...r.tr.map(p => [p[0], p[1]]), [r.lat, r.lng]], { color: col, weight: 4, opacity: .7, dashArray: '2 8', lineCap: 'round', interactive: false }).addTo(flowLayer);
+      const mo = motion(r);
+      if (mo) {
+        L.marker([r.lat, r.lng], { interactive: false, keyboard: false, zIndexOffset: -10,
+          icon: L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13], html: `<div class="flow-arrow" style="transform:rotate(${mo.b}deg) translateY(-30px)">▲</div>` }) }).addTo(flowLayer);
+        info(r.id).lines.push(t('Avance {dir}, environ {v} km/h', { dir: cardinal(mo.b), v: mo.kmh < 10 ? mo.kmh.toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') : Math.round(mo.kmh) }));
+      }
+      // Sur un parcours annoncé dans l'agenda ?
+      let best = null;
+      for (const e of routes) { const o = onRoute(e.route, [r.lat, r.lng]); if (o.d <= 300 && (!best || o.d < best.o.d)) best = { e, o }; }
+      if (best) {
+        fix[r.id] = best;
+        if (r.cat === 'cortege') {
+          const { e, o } = best, pct = Math.round(o.at / o.total * 100);
+          L.polyline(routeSlice(e.route, 0, o.at), { color: '#ec9fa4', weight: 7, opacity: .9, interactive: false }).addTo(flowLayer);
+          const left = o.total - o.at, sp = mo && mo.kmh > 0.3 ? mo.kmh * 1000 / 60 : null; // mètres par minute
+          info(r.id).lines.push(t('Parcours « {title} » : {p} % fait', { title: e.title, p: pct }) + (sp ? ' · ' + t('fin dans environ {d}', { d: mins(left / sp) }) : ''));
+          if (me && sp) { const mine = onRoute(e.route, me); if (mine.d <= 200 && mine.at > o.at) info(r.id).lines.push(t('Arrive près de toi dans environ {d}', { d: mins((mine.at - o.at) / sp) })); }
+        }
+      }
+    }
+    // Tête et queue : le cortège entre les deux, avec sa longueur
+    const heads = all.filter(r => r.cat === 'cortege');
+    for (const q of all.filter(r => r.cat === 'queue')) {
+      let h = null, hd = Infinity;
+      for (const x of heads) { const d = dist([x.lat, x.lng], [q.lat, q.lng]); if (d < hd && d <= 5000) { h = x; hd = d; } }
+      if (!h) continue;
+      const fh = fix[h.id], fq = fix[q.id];
+      let line, len;
+      if (fh && fq && fh.e.id === fq.e.id && fh.o.at >= fq.o.at) { line = routeSlice(fh.e.route, fq.o.at, fh.o.at); len = fh.o.at - fq.o.at; }
+      else { line = [[q.lat, q.lng], [h.lat, h.lng]]; len = hd; }
+      if (line.length < 2) continue;
+      L.polyline(line, { color: GROUP_COLOR.info, weight: 12, opacity: .35, lineCap: 'round', interactive: false }).addTo(flowLayer);
+      const mid = line[Math.floor(line.length / 2)];
+      const txt = t('Cortège : environ {d}', { d: fmtDist(len) });
+      L.marker(mid, { interactive: false, keyboard: false, icon: L.divIcon({ className: '', iconSize: [130, 22], iconAnchor: [65, 11], html: `<div class="flow-len">${txt.replace(/[<&]/g, '')}</div>` }) }).addTo(flowLayer);
+      info(h.id).lines.push(txt); info(q.id).lines.push(txt);
     }
   }
   function refreshUI() { renderFilters(); renderNational(); feedBadge(); if (!$('#sheetList').hidden) renderList(); }
@@ -1556,6 +1654,8 @@
     $('#orgaChip').hidden = !o;
     if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : o.trial ? t('ORGA · essai') : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
     $('#orgaTrial').hidden = !(o && o.trial);
+    $('#bkBox').hidden = !(o && !o.trial);
+    if (!o && beacon) beaconStop(false);
     $('#annNationalWrap').hidden = !(o && o.admin);
     $('#btnPropose').textContent = t(o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif');
     $('#agFine').hidden = !!o;
@@ -1731,6 +1831,40 @@
   // Annonce nationale (admin) : pas de rayon
   const annZoneUI = () => { $('#annRadiusWrap').hidden = $('#annInfoFields').hidden || $('#annNational').checked; };
   $('#annNational').addEventListener('change', annZoneUI);
+  // ---- Ma position en direct (orgas confirmées) : street medic, legal team, presse, tête ou queue de cortège ----
+  // Envoyée toutes les 30 s tant que l'appli est ouverte ; arrêt au bout de la durée choisie, ou à la main.
+  async function beaconSend() {
+    if (!beacon) return;
+    if (Date.now() > beacon.until) return beaconStop(true);
+    if (!me) { $('#bkState').textContent = t('En attente de ta position…'); return; }
+    try {
+      await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1] }) });
+      $('#bkState').textContent = t('Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte.', { h: fmtHour(Date.now()), end: fmtHour(beacon.until) });
+      sync();
+    } catch (e) {
+      $('#bkState').textContent = e.message;
+      if (/8 h|réservé|Rôle/.test(e.message)) beaconStop(false);
+    }
+  }
+  async function beaconStop(tell) {
+    const b = beacon; beacon = null;
+    if (b) { clearInterval(b.timer); try { b.lock && b.lock.release(); } catch {} }
+    $('#bkBtn').dataset.on = '0'; $('#bkBtn').textContent = t('Partager ma position'); $('#bkRole').disabled = $('#bkDur').disabled = false;
+    if (b) { try { await orgaFetch('/api/orga/beacon', { method: 'DELETE', body: JSON.stringify({ role: b.role }) }); } catch {} }
+    $('#bkState').textContent = b ? t('Partage arrêté : ton point disparaît de la carte.') : '';
+    if (b && tell) toast('Partage de position terminé');
+    sync();
+  }
+  $('#bkBtn').onclick = async () => {
+    if (beacon) return beaconStop(false);
+    if (!me) { toast('Active d’abord ta position (bouton ◎)'); return; }
+    beacon = { role: $('#bkRole').value, until: Date.now() + Number($('#bkDur').value) * MIN, timer: setInterval(beaconSend, 30_000), lock: null };
+    // L'écran reste allumé pendant le partage (sinon le téléphone met l'appli en pause)
+    try { beacon.lock = await navigator.wakeLock?.request('screen'); } catch {}
+    $('#bkBtn').dataset.on = '1'; $('#bkBtn').textContent = t('Arrêter le partage'); $('#bkRole').disabled = $('#bkDur').disabled = true;
+    beaconSend();
+  };
+  document.addEventListener('visibilitychange', async () => { if (!document.hidden && beacon) { try { beacon.lock = await navigator.wakeLock?.request('screen'); } catch {} beaconSend(); } });
   $('#annForm').addEventListener('submit', async e => {
     e.preventDefault();
     const kind = document.querySelector('input[name="kind"]:checked').value;
@@ -1797,6 +1931,7 @@
       evMarkers.set(e.id, m);
     }
     if (!$('#sheetAgenda').hidden) renderAgenda();
+    try { drawFlow(); } catch {}
     renderFilters();
   }
   function renderAgenda() {

@@ -2,6 +2,14 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.7.0
+
+- Tête de cortège qui suit vraiment le cortège : un seul point, que chaque nouveau signalement à moins de 300 m déplace, avec la trace pointillée des 30 dernières minutes, une flèche de direction et la vitesse (« Avance vers le nord-ouest, environ 3 km/h »). Durée de base ramenée à 10 min, relancée à chaque signalement.
+- Nouveau signalement « Queue de cortège » (🔚). Avec une tête et une queue, la carte dessine le cortège entre les deux et affiche sa longueur (« Cortège : environ 480 m »).
+- Sur un parcours dessiné dans l’agenda : la partie déjà parcourue est surlignée, avec l’avancée en pourcentage, une estimation de la fin, et « Arrive près de toi dans environ 12 min » si tu es plus loin sur le parcours (calculé sur le téléphone, ta position ne part jamais).
+- Position en direct pour les orgas confirmées : dans l’espace orga, « Ma position en direct » comme street medic, legal team, presse, tête ou queue de cortège, pour qu’on les trouve facilement. Envoi toutes les 30 s tant que l’appli est ouverte (l’écran reste allumé), point marqué « En direct » avec le nom de l’orga, qui disparaît 3 min après le dernier envoi. Arrêt à la main, à la fin de la durée choisie (1, 2 ou 4 h) ou au bout de 8 h. Le serveur ne garde que la dernière position (et, pour la tête et la queue seulement, le chemin des 30 dernières minutes). Une orga en période d’essai ne peut pas l’utiliser.
+- Mentions légales : la position en direct des orgas est décrite.
+
 ## 2.6.5
 
 Durcissement, suite du même audit.

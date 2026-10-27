@@ -1,0 +1,40 @@
+# Version 2.7 : tête et queue de cortège, position en direct des orgas
+Queue de cortège	Back of the march	Cola de la manifestación	مؤخرة المسيرة
+En direct : position partagée par {who}	Live: position shared by {who}	En directo: posición compartida por {who}	مباشر: موقع يشاركه {who}
+Avance {dir}, environ {v} km/h	Moving {dir}, about {v} km/h	Avanza {dir}, unos {v} km/h	تتقدّم {dir}، نحو {v} كم/س
+vers le nord	north	hacia el norte	نحو الشمال
+vers le nord-est	north-east	hacia el noreste	نحو الشمال الشرقي
+vers l’est	east	hacia el este	نحو الشرق
+vers le sud-est	south-east	hacia el sureste	نحو الجنوب الشرقي
+vers le sud	south	hacia el sur	نحو الجنوب
+vers le sud-ouest	south-west	hacia el suroeste	نحو الجنوب الغربي
+vers l’ouest	west	hacia el oeste	نحو الغرب
+vers le nord-ouest	north-west	hacia el noroeste	نحو الشمال الغربي
+{n} min	{n} min	{n} min	{n} د
+{h} h {m}	{h} h {m}	{h} h {m}	{h} س {m}
+Parcours « {title} » : {p} % fait	Route “{title}”: {p}% done	Recorrido «{title}»: {p} % hecho	المسار «{title}»: أُنجز {p}٪
+fin dans environ {d}	ends in about {d}	termina en unos {d}	ينتهي بعد نحو {d}
+Arrive près de toi dans environ {d}	Reaches you in about {d}	Llega cerca de ti en unos {d}	تصل قربك بعد نحو {d}
+Cortège : environ {d}	March: about {d} long	Manifestación: unos {d}	المسيرة: نحو {d}
+Ma position en direct	My live position	Mi posición en directo	موقعي المباشر
+Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt.	So people can find you easily: your point updates itself every 30 seconds while the app stays open on this phone. It disappears 3 minutes after you stop.	Para que te encuentren fácilmente: tu punto se actualiza solo cada 30 segundos mientras la app siga abierta en este teléfono. Desaparece 3 minutos después de parar.	ليعثروا عليك بسهولة: تتحدّث نقطتك تلقائيًا كل 30 ثانية ما دام التطبيق مفتوحًا على هذا الهاتف. وتختفي بعد 3 دقائق من الإيقاف.
+Je suis	I am	Soy	أنا
+Pendant	For	Durante	لمدة
+📣 la tête de cortège	📣 the front of the march	📣 la cabeza de la manifestación	📣 مقدمة المسيرة
+🔚 la queue de cortège	🔚 the back of the march	🔚 la cola de la manifestación	🔚 مؤخرة المسيرة
+⛑️ street medic	⛑️ street medic	⛑️ street medic	⛑️ مسعف ميداني
+⚖️ legal team	⚖️ legal team	⚖️ legal team	⚖️ الفريق القانوني
+🎥 presse	🎥 press	🎥 prensa	🎥 صحافة
+1 h	1 h	1 h	1 س
+2 h	2 h	2 h	2 س
+4 h	4 h	4 h	4 س
+Partager ma position	Share my position	Compartir mi posición	مشاركة موقعي
+Arrêter le partage	Stop sharing	Dejar de compartir	إيقاف المشاركة
+En attente de ta position…	Waiting for your position…	Esperando tu posición…	بانتظار موقعك…
+Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte.	Position shared at {h}, until {end}. Keep the app open.	Posición compartida a las {h}, hasta las {end}. Mantén la app abierta.	تمت مشاركة الموقع عند {h}، حتى {end}. أبقِ التطبيق مفتوحًا.
+Partage arrêté : ton point disparaît de la carte.	Sharing stopped: your point is removed from the map.	Se dejó de compartir: tu punto desaparece del mapa.	توقّفت المشاركة: تختفي نقطتك من الخريطة.
+Partage de position terminé	Position sharing ended	Fin de la posición compartida	انتهت مشاركة الموقع
+Active d’abord ta position (bouton ◎)	Turn on your location first (◎ button)	Activa primero tu ubicación (botón ◎)	فعّل موقعك أولًا (زر ◎)
+Le partage de position est réservé aux orgas confirmées.	Position sharing is for confirmed organisations only.	Compartir la posición está reservado a las organizaciones confirmadas.	مشاركة الموقع مخصّصة للمنظمات المؤكَّدة فقط.
+Partage arrêté au bout de 8 h. Relance-le si besoin.	Sharing stopped after 8 h. Start it again if needed.	Se dejó de compartir tras 8 h. Vuelve a activarlo si hace falta.	توقّفت المشاركة بعد 8 ساعات. أعد تشغيلها إن لزم.
+Rôle inconnu.	Unknown role.	Rol desconocido.	دور غير معروف.

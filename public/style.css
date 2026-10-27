@@ -216,6 +216,19 @@ body.raster .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness
 /* ---- Popup : badge vérifié + actions orga ---- */
 .pop-ver { margin-top: 6px; font-size: 12px; font-weight: 700; color: #7ee2b0; }
 .pin.ver { box-shadow: 0 0 0 3px #7ee2b0, 0 3px 10px rgba(0,0,0,.6); }
+/* Position partagée en direct par une orga : anneau qui pulse en continu */
+.pin.live { animation: livering 1.6s ease-out infinite; }
+@keyframes livering { 0% { box-shadow: 0 0 0 3px #7ee2b0, 0 0 0 3px color-mix(in srgb, var(--c) 80%, transparent); } 100% { box-shadow: 0 0 0 3px #7ee2b0, 0 0 0 20px transparent; } }
+.pop-live { color: #7ee2b0; font-weight: 700; margin: 4px 0; }
+.pop-live::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #7ee2b0; margin-inline-end: 6px; animation: blink 1.2s infinite; }
+.pop-flow { margin: 6px 0; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c, #8e8cd8) 14%, transparent); font-size: 14px; line-height: 1.35; }
+.flow-arrow { width: 26px; height: 26px; display: grid; place-items: center; color: #fff; font-size: 18px; text-shadow: 0 0 4px #000, 0 0 2px #000; pointer-events: none; }
+.flow-len { background: #1c1c20; color: #f2f1f4; border: 1px solid #8e8cd8; border-radius: 99px; padding: 2px 8px; font-weight: 700; font-size: 12px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.bk-box { margin: 14px 0; }
+.bk-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; margin: 8px 0; }
+.bk-row label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.bk-row select { height: 44px; border-radius: 10px; background: var(--surface); color: var(--fg); border: 1px solid var(--line, #34343c); padding: 0 8px; font-size: 15px; }
+#bkBtn[data-on="1"] { background: #7ee2b0; color: #102018; border-color: #7ee2b0; }
 .pop-actions.orga { margin-top: 8px; }
 .pop-actions .danger { border-color: var(--fdo); color: #ff9a9d; }
 

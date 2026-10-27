@@ -676,6 +676,30 @@ test('orgas : en essai, ni coche « vérifié » ni annonce visible avant valida
   assert.deepEqual(urg, [201, 201, 201, 429]);
 });
 
+test('cortège : tête qui suit (avec sa trace), queue, et position en direct des orgas confirmées', async () => {
+  const p = place(), h1 = (await post('/api/reports', { cat: 'cortege', ...p })).j;
+  const h2 = (await post('/api/reports', { cat: 'cortege', lat: p.lat + 0.002, lng: p.lng })).j; // ~220 m plus loin
+  assert.equal(h2.id, h1.id, 'une seule tête'); assert.ok(Math.abs(h2.lat - (p.lat + 0.002)) < 1e-6, 'elle suit');
+  assert.equal(h2.tr.length, 1, 'trace : l’ancienne position'); assert.ok(Math.abs(h2.tr[0][0] - p.lat) < 1e-6);
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.ok(cfg.categories.some(c => c.id === 'queue'), 'queue de cortège');
+  // Position en direct : réservée aux orgas confirmées
+  const T = await orgaFrom((await admin('/api/admin/orgas', { label: 'Medics Essai 27' })).j.invite);
+  assert.equal((await asOrga(T.key, '/api/orga/beacon', { role: 'medic', ...place() })).s, 403);
+  const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Service Ordre 27' })).j.invite);
+  const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Service Ordre 27').id;
+  await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+  const bk = await asOrga(C.key, '/api/orga/beacon', { role: 'cortege', lat: p.lat + 0.0021, lng: p.lng });
+  assert.equal(bk.s, 201); assert.equal(bk.j.live, 1); assert.equal(bk.j.ver, 'Service Ordre 27');
+  assert.ok(!row(h1.id), 'la tête signalée à côté est reprise par la position de l’orga'); assert.ok(bk.j.tr.length >= 2, 'avec sa trace');
+  const again = await asOrga(C.key, '/api/orga/beacon', { role: 'cortege', lat: p.lat + 0.01, lng: p.lng });
+  assert.equal(again.j.id, bk.j.id); assert.ok(Math.abs(again.j.lat - (p.lat + 0.0021)) < 1e-6, 'pas plus d’une mise à jour toutes les 10 s');
+  const hp = (await post('/api/reports', { cat: 'cortege', lat: p.lat + 0.0025, lng: p.lng })).j;
+  assert.equal(hp.id, bk.j.id, 'un signalement de participant·e confirme la tête en direct'); assert.ok(Math.abs(hp.lat - (p.lat + 0.0021)) < 1e-6, 'sans la déplacer');
+  const stop = await fetch(B + '/api/orga/beacon', { method: 'DELETE', headers: { 'x-orga-key': C.key, 'content-type': 'application/json' }, body: JSON.stringify({ role: 'cortege' }) });
+  assert.equal(stop.status, 200); assert.ok(!row(bk.j.id), 'point retiré à l’arrêt');
+});
+
 test('sécurité : CF-Connecting-IP ignoré sans CLOUDFLARE=1 (impossible de changer d’« IP » à volonté)', async () => {
   const net = '9.9.' + (Date.now() % 250) + '.9';
   for (let i = 0; i < 11; i++)

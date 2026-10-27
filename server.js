@@ -70,7 +70,9 @@ const CATEGORIES = [
   { id: 'presse',         group: 'soutien', label: 'Presse',                  glyph: '🎥', ttl: 45 },
   { id: 'calme',          group: 'soutien', label: 'Zone calme / repli',      glyph: '🕊️', ttl: 90 },
   { id: 'eau',            group: 'soutien', label: 'Eau / sérum phy',         glyph: '💧', ttl: 90 },
-  { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 15 },
+  // Tête et queue : un seul point chacune, qui suit le cortège (avec sa trace des 30 dernières minutes)
+  { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 10 },
+  { id: 'queue',          group: 'info',    label: 'Queue de cortège',        glyph: '🔚', ttl: 10 },
   { id: 'bloque',         group: 'info',    label: 'Rue bloquée',             glyph: '⛔', ttl: 30 },
   { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
 ];
@@ -98,7 +100,7 @@ const MERGE = {
   inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 }, facho: { r: 150, move: true },
   nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
   medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
-  cortege: { r: 200, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
+  cortege: { r: 300, move: true }, queue: { r: 300, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
 };
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;
@@ -435,6 +437,10 @@ try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
 // Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié
 try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch {}
+// Trace (tête et queue de cortège) : positions des 30 dernières minutes [[lat, lng, heure]] ;
+// bk : heure de début du partage de position en direct d'une orga (0 sinon)
+try { db.exec('ALTER TABLE reports ADD COLUMN trail TEXT'); } catch {}
+try { db.exec('ALTER TABLE reports ADD COLUMN bk INTEGER DEFAULT 0'); } catch {}
 // Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
 // Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
@@ -478,8 +484,19 @@ function orgaStats(oid) {
     announcements: (by['annonce'] || 0) + (by['legal team (en attente)'] || 0) }, lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null };
 }
 const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
+const parseTrail = r => { if (Array.isArray(r.trail)) return r.trail; try { return JSON.parse(r.trail || '[]'); } catch { return []; } };
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
-  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: r.oid || null });
+  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: r.oid || null,
+  trail: parseTrail(r), bk: r.bk || 0 });
+// Trace d'un point qui suit le cortège : on garde l'ancienne position (si elle a bougé d'au moins 20 m), 30 min et 30 points au plus
+const TRAIL_CATS = new Set(['cortege', 'queue']), TRAIL_MS = 30 * MIN;
+const BEACON_ROLES = new Set(['cortege', 'queue', 'medic', 'legal', 'presse']), BEACON_TTL = 3 * MIN, BEACON_MAX = 8 * 60 * MIN;
+function addTrail(r, now) {
+  if (!TRAIL_CATS.has(r.cat)) return;
+  const tr = (r.trail || []).filter(p => p[2] > now - TRAIL_MS), lastP = tr[tr.length - 1];
+  if (!lastP || distM({ lat: lastP[0], lng: lastP[1] }, r) >= 20) tr.push([r.lat, r.lng, r.last || r.t]);
+  r.trail = tr.slice(-30);
+}
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
@@ -487,11 +504,12 @@ function saveReport(r) {
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid,trail,bk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
-       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl`)
+       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl, trail=excluded.trail, bk=excluded.bk`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0, r.oid || null);
+      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0, r.oid || null,
+      r.trail && r.trail.length ? JSON.stringify(r.trail) : null, r.bk || 0);
   dirtyCell(cell);
 }
 // outcome : ce qu'est devenu le point, pour le digest (orga, admin, full = zone saturée, purge…)
@@ -666,7 +684,9 @@ function addNote(r, text, dev, t) {
   const notes = (r.notes || []).filter(n => n.d !== dev && n.x.toLowerCase() !== text.toLowerCase());
   r.notes = [{ x: text, t, d: dev }, ...notes].slice(0, NOTES_KEEP);
 }
-const publicView = r => ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
+// tr : trace de la tête ou de la queue (positions arrondies à ~11 m, heures en secondes) ; live : position partagée en direct par une orga
+const trailView = r => { if (!TRAIL_CATS.has(r.cat)) return {}; const tr = parseTrail(r); return tr.length ? { tr: tr.map(p => [p[0], p[1], Math.round(p[2] / 1000)]) } : {}; };
+const publicView = r => ({ ...trailView(r), ...(r.bk ? { live: 1 } : {}), id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
   notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}), ...(r.fl === 1 ? { f: 1 } : r.fl === -1 && !r.up ? { nf: 1 } : {}) });
 const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, city: a.city || null, by: a.by, ob: ownerTag(a.oid), lat: a.lat, lng: a.lng, r: a.r,
   national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
@@ -3223,7 +3243,8 @@ const server = http.createServer(async (req, res) => {
           if (!self) { r.voters.push(dev); r.up++; firstConfirm(r); }
           // Preuve plus fraîche que les « Plus là » : on les efface
           if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; r.dw = 0; r.ct = 0; }
-          if (m.move && t0 >= (r.last || r.t)) { r.lat = pos.lat; r.lng = pos.lng; }
+          // Point qui suit (forces mobiles, tête, queue) : il se déplace, sauf s'il est partagé en direct par une orga (sa position fait foi)
+          if (m.move && !r.bk && t0 >= (r.last || r.t) && (r.lat !== pos.lat || r.lng !== pos.lng)) { addTrail(r, now); r.lat = pos.lat; r.lng = pos.lng; }
           if (note) addNote(r, note, dev, t0);
           r.last = Math.max(r.last || r.t, t0);
           r.exp = Math.max(r.exp, t0 + ttl);
@@ -3428,6 +3449,40 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { id: target.id, label: target.label, invite: token, exp: invite.exp });
       }
       // --- Ajouter un appareil : lien à usage unique, 10 minutes, la clé actuelle reste valable ---
+      // --- Position en direct (orgas confirmées) : tête ou queue de cortège, street medic, legal team, presse ---
+      // Le téléphone de l'orga envoie sa position toutes les 30 s tant que l'appli est ouverte ; le point disparaît 3 min après
+      // le dernier envoi, et le partage s'arrête de lui-même au bout de 8 h. Seule la dernière position est gardée
+      // (plus la trace des 30 dernières minutes pour la tête et la queue, jamais pour une personne).
+      if (pathname === '/api/orga/beacon' && (req.method === 'POST' || req.method === 'DELETE')) {
+        const b = await readJson(req);
+        const role = String(b.role || '');
+        if (!BEACON_ROLES.has(role) || !CAT[role]) return send(res, 400, { error: 'Rôle inconnu.' });
+        if (orga.trial) return send(res, 403, { error: 'Le partage de position est réservé aux orgas confirmées.' });
+        const out = tx(() => {
+          const now = Date.now();
+          const cur = toReport(q('SELECT * FROM reports WHERE oid=? AND cat=? AND bk>0 AND exp>?').get(orga.id, role, now));
+          if (req.method === 'DELETE') { if (cur) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); } return [200, { stopped: true }]; }
+          const lat = Number(b.lat), lng = Number(b.lng);
+          if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
+          if (cur && now - cur.bk > BEACON_MAX) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); return [410, { error: 'Partage arrêté au bout de 8 h. Relance-le si besoin.' }]; }
+          if (cur && now - (cur.last || cur.t) < 10_000) return [200, publicView(cur)];
+          const pos = { lat: round(lat), lng: round(lng) };
+          if (cur) {
+            if (cur.lat !== pos.lat || cur.lng !== pos.lng) { addTrail(cur, now); cur.lat = pos.lat; cur.lng = pos.lng; }
+            Object.assign(cur, { last: now, exp: now + BEACON_TTL, down: 0, downIps: [], dw: 0, ct: 0, ver: orga.label, fl: 1 });
+            saveReport(cur); return [200, publicView(cur)];
+          }
+          const r = { id: crypto.randomBytes(6).toString('base64url'), cat: role, lat: pos.lat, lng: pos.lng, note: '', notes: [], t: now, last: now, exp: now + BEACON_TTL,
+            up: 0, down: 0, voters: ['o:' + orga.id], downIps: [], ip: null, ver: orga.label, fl: 1, oid: orga.id, bk: now, trail: [] };
+          // Tête ou queue déjà signalée tout près par des participant·es : la position de l'orga prend le relais (avec la trace)
+          if (TRAIL_CATS.has(role)) for (const x of nearby(role, pos.lat, pos.lng, MERGE[role].r, now).filter(x => !x.r.bk)) {
+            const old = toReport(x.r); r.trail = [...(old.trail || []), [old.lat, old.lng, old.last || old.t]].slice(-30); r.up += old.up || 0; dropReport(old.id, 'exp');
+          }
+          saveReport(r); orgaLog(orga, 'partage de position', { r });
+          return [201, publicView(r)];
+        });
+        return send(res, ...out);
+      }
       if (req.method === 'POST' && pathname === '/api/orga/device') {
         const token = crypto.randomBytes(18).toString('base64url');
         const ok = withLock(() => {

@@ -1,30 +1,121 @@
 {
-  "version": "2.6.3",
+  "version": "2.7",
   "items": [
     [
-      "☠️ Milices fascistes",
-      "Nouveau signalement « Milice / groupe fasciste », avec alerte et vibration. Dans Droits : que faire en cas d’attaque."
+      "📣 La tête suit le cortège",
+      "Un seul point qui avance avec le cortège, sa trace, sa direction et sa vitesse. Sur un parcours annoncé : où en est le cortège et quand il arrive près de toi."
+    ],
+    [
+      "🔚 Queue de cortège",
+      "Signale aussi la queue : la carte montre le cortège entier et sa longueur."
+    ],
+    [
+      "🟢 Medics et legal teams en direct",
+      "Les orgas confirmées peuvent partager leur position en direct pour qu’on les trouve facilement."
     ]
   ],
   "items_en": [
     [
-      "☠️ Fascist militias",
-      "New report type “Far-right militia / fascist group”, with alert and vibration. In Rights: what to do if attacked."
+      "📣 The front follows the march",
+      "A single point that moves with the march, with its trail, direction and speed. On an announced route: how far the march is and when it reaches you."
+    ],
+    [
+      "🔚 Back of the march",
+      "Report the back too: the map shows the whole march and its length."
+    ],
+    [
+      "🟢 Live medics and legal teams",
+      "Confirmed organisations can share their live position so people can find them easily."
     ]
   ],
   "items_es": [
     [
-      "☠️ Milicias fascistas",
-      "Nuevo aviso «Milicia / grupo fascista», con alerta y vibración. En Derechos: qué hacer en caso de ataque."
+      "📣 La cabeza sigue la manifestación",
+      "Un solo punto que avanza con la manifestación, con su rastro, dirección y velocidad. En un recorrido anunciado: por dónde va y cuándo llega cerca de ti."
+    ],
+    [
+      "🔚 Cola de la manifestación",
+      "Avisa también de la cola: el mapa muestra la manifestación entera y su longitud."
+    ],
+    [
+      "🟢 Medics y legal teams en directo",
+      "Las organizaciones confirmadas pueden compartir su posición en directo para que se las encuentre fácilmente."
     ]
   ],
   "items_ar": [
     [
-      "☠️ ميليشيات فاشية",
-      "بلاغ جديد «ميليشيا / جماعة فاشية» مع تنبيه واهتزاز. وفي الحقوق: ماذا تفعل عند التعرّض لهجوم."
+      "📣 المقدمة تتبع المسيرة",
+      "نقطة واحدة تتقدّم مع المسيرة، مع أثرها واتجاهها وسرعتها. وعلى مسار معلَن: أين وصلت المسيرة ومتى تصل قربك."
+    ],
+    [
+      "🔚 مؤخرة المسيرة",
+      "أبلغ عن المؤخرة أيضًا: تُظهر الخريطة المسيرة كاملة وطولها."
+    ],
+    [
+      "🟢 مسعفون وفرق قانونية مباشرة",
+      "يمكن للمنظمات المؤكَّدة مشاركة موقعها مباشرة ليسهل العثور عليها."
     ]
   ],
   "history": [
+    {
+      "version": "2.7",
+      "items": [
+        [
+          "📣 La tête suit le cortège",
+          "Un seul point qui avance avec le cortège, sa trace, sa direction et sa vitesse. Sur un parcours annoncé : où en est le cortège et quand il arrive près de toi."
+        ],
+        [
+          "🔚 Queue de cortège",
+          "Signale aussi la queue : la carte montre le cortège entier et sa longueur."
+        ],
+        [
+          "🟢 Medics et legal teams en direct",
+          "Les orgas confirmées peuvent partager leur position en direct pour qu’on les trouve facilement."
+        ]
+      ],
+      "items_en": [
+        [
+          "📣 The front follows the march",
+          "A single point that moves with the march, with its trail, direction and speed. On an announced route: how far the march is and when it reaches you."
+        ],
+        [
+          "🔚 Back of the march",
+          "Report the back too: the map shows the whole march and its length."
+        ],
+        [
+          "🟢 Live medics and legal teams",
+          "Confirmed organisations can share their live position so people can find them easily."
+        ]
+      ],
+      "items_es": [
+        [
+          "📣 La cabeza sigue la manifestación",
+          "Un solo punto que avanza con la manifestación, con su rastro, dirección y velocidad. En un recorrido anunciado: por dónde va y cuándo llega cerca de ti."
+        ],
+        [
+          "🔚 Cola de la manifestación",
+          "Avisa también de la cola: el mapa muestra la manifestación entera y su longitud."
+        ],
+        [
+          "🟢 Medics y legal teams en directo",
+          "Las organizaciones confirmadas pueden compartir su posición en directo para que se las encuentre fácilmente."
+        ]
+      ],
+      "items_ar": [
+        [
+          "📣 المقدمة تتبع المسيرة",
+          "نقطة واحدة تتقدّم مع المسيرة، مع أثرها واتجاهها وسرعتها. وعلى مسار معلَن: أين وصلت المسيرة ومتى تصل قربك."
+        ],
+        [
+          "🔚 مؤخرة المسيرة",
+          "أبلغ عن المؤخرة أيضًا: تُظهر الخريطة المسيرة كاملة وطولها."
+        ],
+        [
+          "🟢 مسعفون وفرق قانونية مباشرة",
+          "يمكن للمنظمات المؤكَّدة مشاركة موقعها مباشرة ليسهل العثور عليها."
+        ]
+      ]
+    },
     {
       "version": "2.6.3",
       "items": [
