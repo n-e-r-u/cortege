@@ -166,6 +166,7 @@ test('notifications : choix enregistrés, alerte « danger près de toi » limit
 // Orga activée à partir d'une invitation (admin ou parrainage)
 const orgaFrom = async (token) => (await post('/api/invite', { token })).j;
 const asOrga = (key, p, body) => post(p, body, phone(), { 'x-orga-key': key });
+const asOrgaAdmin = (p, body) => post(p, body, phone(), { 'x-orga-key': ADMIN });
 
 test('parrainage : seule une orga confirmée invite, la parrainée est plus surveillée', async () => {
   const a = (await admin('/api/admin/orgas', { label: 'Marraine' })).j;
@@ -733,6 +734,59 @@ test('tracé du cortège par les rues : plus court chemin piéton, sans autorout
   const straight = r.path[0], end = r.path[r.path.length - 1];
   assert.ok(r.len > require(path.join(ROOT, 'tools', 'street-route.js')).meters(straight, end) * 1.2, 'plus long qu’à vol d’oiseau');
   assert.equal((await fetch(B + '/api/cortege-route?a=1,2&b=x')).status, 400);
+});
+
+test('bilans détaillés : moments clés, durées, parcours, page de ville, données ouvertes', async () => {
+  const day = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }), now = Date.now();
+  // Rennes : 22 signalements, une nasse, et une tête de cortège qui avance
+  for (let i = 0; i < 20; i++) await post('/api/reports', { cat: i % 2 ? 'police' : 'crs', lat: 48.105 + i * 0.0006, lng: -1.68 + (i % 5) * 0.0011 });
+  await post('/api/reports', { cat: 'nasse', lat: 48.112, lng: -1.676 });
+  await post('/api/reports', { cat: 'cortege', lat: 48.1040, lng: -1.6850, t: now - 9 * 60e3 });
+  await post('/api/reports', { cat: 'cortege', lat: 48.1100, lng: -1.6780, t: now - 60e3 });
+  const pub = await admin('/api/admin/publish/' + day, {});
+  assert.equal(pub.s, 200);
+  const html = await fetch(B + '/manif/' + day).then(r => r.text());
+  for (const x of ['Moments clés', 'Combien de temps', 'Parcours des cortèges', 'Données ouvertes', 'CC BY 4.0', '/manif/' + day + '/rennes']) assert.ok(html.includes(x), x);
+  const city = await fetch(B + '/manif/' + day + '/rennes');
+  assert.equal(city.status, 200);
+  const ch = await city.text();
+  assert.match(ch, /Parcours du cortège/); assert.match(ch, /<svg/); assert.match(ch, /carte\?c=/);
+  const csv = await fetch(B + '/manif/' + day + '/donnees.csv');
+  assert.match(csv.headers.get('content-type'), /text\/csv/);
+  const lines = (await csv.text()).trim().split('\n');
+  assert.ok(lines[0].includes('latitude;longitude;commune') && lines.some(l => l.includes('Rennes')), 'CSV avec communes');
+  assert.ok(lines.some(l => /;48\.1\d{2,4};/.test(l)), 'positions au dix-millième');
+  await fetch(B + '/api/admin/publish/' + day, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+});
+
+test('pages de contenu : agenda, arrêtés, villes, droits, legal teams, plan du site', async () => {
+  const B2 = await asOrgaAdmin('/api/events', { type: 'manif', title: 'Marche test Brest', place: 'Place de la Liberté', start: Date.now() + 864e5, lat: 48.3904, lng: -4.4861 });
+  assert.equal(B2.s, 201);
+  const ag = await fetch(B + '/agenda').then(r => r.text());
+  assert.match(ag, /Marche test Brest/); assert.match(ag, /"@type":"Event"/);
+  for (const u of ['/arretes', '/legal-teams', '/villes']) assert.equal((await fetch(B + u)).status, 200, u);
+  const dr = await fetch(B + '/droits').then(r => r.text());
+  assert.match(dr, /Garde à vue/); assert.match(dr, /groupe fasciste/); assert.ok(!dr.includes('<button'), 'sans boutons de l’appli');
+  const v = await fetch(B + '/ville/brest');
+  assert.equal(v.status, 200); assert.match(await v.text(), /Marche test Brest/);
+  const sm = await fetch(B + '/sitemap.xml').then(r => r.text());
+  for (const u of ['/agenda', '/arretes', '/droits', '/legal-teams', '/ville/brest']) assert.ok(sm.includes(u + '</loc>'), u);
+});
+
+test('admin : nom affiché choisi, réservé, et point en direct avec son logo', async () => {
+  assert.equal((await admin('/api/admin/settings', { adminLabel: 'Neru Test' })).s, 200);
+  const a = await admin('/api/admin/announcements', { kind: 'info', text: 'Annonce signée', ...place(), radiusKm: 3, minutes: 30 });
+  assert.equal(a.j.by, 'Neru Test');
+  assert.equal((await admin('/api/admin/orgas', { label: 'neru  test' })).s, 409, 'nom de l’admin réservé');
+  assert.equal((await post('/api/reports', { cat: 'contact', ...place() })).s, 400, 'personne ne peut signaler ce point');
+  const bk = await asOrgaAdmin('/api/orga/beacon', { role: 'contact', ...place(), note: 'Devant la fontaine, viens me voir' });
+  assert.equal(bk.s, 201); assert.equal(bk.j.live, 1); assert.equal(bk.j.ver, 'Neru Test'); assert.equal(bk.j.note, 'Devant la fontaine, viens me voir');
+  const O = await orgaFrom((await admin('/api/admin/orgas', { label: 'Orga Contact 28' })).j.invite);
+  const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Orga Contact 28').id;
+  await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+  assert.equal((await asOrga(O.key, '/api/orga/beacon', { role: 'contact', ...place() })).s, 403, 'réservé à l’admin');
+  await fetch(B + '/api/orga/beacon', { method: 'DELETE', headers: { 'x-orga-key': ADMIN, 'content-type': 'application/json' }, body: JSON.stringify({ role: 'contact' }) });
+  await admin('/api/admin/settings', {});
 });
 
 test('sécurité : CF-Connecting-IP ignoré sans CLOUDFLARE=1 (impossible de changer d’« IP » à volonté)', async () => {

@@ -2,6 +2,16 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.8.0
+
+- Bilans précis : les positions gardées pour les bilans passent d’environ 100 m à une dizaine de mètres (comme sur la carte en direct), pour la presse et les legal teams. Les journées archivées avant gardent leur ancienne précision.
+- Bilans plus complets : rang de la journée parmi les bilans publiés et évolution depuis le précédent, moments clés (premier signalement de chaque danger, ville par ville), durée de chaque danger par ville, parcours réel des cortèges d’après le chemin de leur tête (longueur, heures, vitesse moyenne), arrêtés en vigueur ce jour-là avec leurs sources. Les bilans déjà publiés sont complétés tant que l’archive de la journée existe.
+- Une page par ville et par journée (au moins 20 signalements) : chiffres, schéma du parcours et des signalements, moments clés, durées, arrêtés, et la carte d’un créneau déjà centrée sur la ville.
+- Données ouvertes : chaque bilan propose un fichier CSV (un signalement par ligne, position, commune, heures, confirmations, devenir), sous licence CC BY 4.0.
+- Pages publiques pour le référencement, sans script : `/agenda`, `/arretes`, `/villes` et une page par ville (agenda, arrêtés, legal team, bilans), `/droits`, `/legal-teams`. Menu commun à toutes les pages publiques, plan du site complété.
+- Admin : nom affiché au choix dans les réglages (au lieu de « Cortège »), réservé. Nouveau point « viens me voir pour un accès orga », partagé en direct par l’admin, avec le logo et une phrase libre ; toutes les orgas peuvent aussi ajouter une phrase à leur position en direct.
+- Les arrêtés terminés sont gardés 8 jours (non affichés sur la carte) pour que les bilans les citent.
+
 ## 2.7.1
 
 - Position en direct des orgas, garde-fous pour ne jamais révéler où la personne va après la manif :

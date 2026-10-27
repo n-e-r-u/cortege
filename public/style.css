@@ -234,6 +234,11 @@ body.raster .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness
 .bk-banner.ask { background: #3a2a08; border-color: #f5a524; color: #fff3d6; animation: blink 1.2s 3; }
 .bk-dot { width: 10px; height: 10px; border-radius: 50%; background: #7ee2b0; animation: blink 1.2s infinite; }
 .flow-len.air { border-style: dashed; opacity: .85; }
+.bk-note { display: grid; gap: 4px; font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.bk-note input { height: 44px; border-radius: 10px; background: var(--surface); color: var(--fg); border: 1px solid var(--line); padding: 0 10px; font-size: 15px; }
+/* Point de l'admin : son logo, bordé du dégradé de la marque */
+.pin.admin { padding: 0; border: 0; background: linear-gradient(135deg, #ec9fa4, #a191d8 60%, #7d86dc); width: 46px; height: 46px; margin: -3px; }
+.pin.admin img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #121214; display: block; }
 .bk-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; margin: 8px 0; }
 .bk-row label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
 .bk-row select { height: 44px; border-radius: 10px; background: var(--surface); color: var(--fg); border: 1px solid var(--line, #34343c); padding: 0 8px; font-size: 15px; }

@@ -227,7 +227,8 @@
     const cs = calmSt.get(r.id);
     const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : '', cs ? 'calm-' + cs.lvl : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
-      html: `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
+      html: r.cat === 'contact' ? `<div class="pin admin live" style="--c:#a191d8"><img src="/brand/logo.png" alt=""></div>`
+        : `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
   }
   function popup(r) {
     const c = CAT[r.cat];
@@ -237,6 +238,8 @@
     const meta = ago(r.t) + revu + ' · ' + t('expire dans {d}', { d: left(r.exp) }) + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
     root.append(el('div', { class: 'pop-meta' }, meta));
     if (r.live) root.append(el('div', { class: 'pop-live' }, t('En direct : position partagée par {who}', { who: r.ver || t('une orga') })));
+    // Point de l'admin : on vient le voir pour devenir orga certifiée
+    if (r.cat === 'contact') { const jb = el('button', { class: 'secondary', style: 'margin:6px 0' }, t('Demander un accès orga')); jb.onclick = () => { map.closePopup(); openJoin(); }; root.append(jb); }
     const fl = flowInfo.get(r.id);
     if (fl && fl.lines.length) root.append(el('div', { class: 'pop-flow', style: `--c:${GROUP_COLOR[c.group]}` }, ...fl.lines.flatMap((x, i) => i ? [el('br'), x] : [x])));
     if (r.up > 0) root.append(el('div', { class: 'pop-count' }, t('Signalé par {n} personnes', { n: r.up + 1 })));
@@ -255,6 +258,7 @@
     if (r.c) root.append(el('div', { class: 'pop-contested' }, tn(r.down, 'Contesté : {n} personne dit que c’est parti. Confirme si c’est toujours là.', 'Contesté : {n} personnes disent que c’est parti. Confirme si c’est toujours là.')));
     const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
     for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
+    if (r.cat === 'contact') return root; // point de l'admin : ni précision, ni vote
     // Ajouter une précision à un point déjà signalé
     const addBtn = el('button', { class: 'link-btn pop-add' }, '＋ ' + t('Ajouter une précision'));
     const form = el('form', { class: 'pop-note-form', hidden: '' });
@@ -288,7 +292,7 @@
         ext.onclick = () => ownAction(r.id, 'extend');
         const form = el('form', { class: 'pop-edit', hidden: '' });
         const sel = el('select', { 'aria-label': t('Type') });
-        for (const c of cfg.categories.filter(c => !c.off)) { const o = el('option', { value: c.id }, c.glyph + ' ' + c.label); if (c.id === r.cat) o.selected = true; sel.append(o); }
+        for (const c of cfg.categories.filter(c => !c.off && !c.beaconOnly)) { const o = el('option', { value: c.id }, c.glyph + ' ' + c.label); if (c.id === r.cat) o.selected = true; sel.append(o); }
         const mineNote = (r.notes || [])[0]?.x || '';
         const inp = el('input', { maxlength: '120', placeholder: t('Précision (vide = aucune)'), 'aria-label': t('Précision'), value: mineNote });
         form.append(sel, inp, el('button', { type: 'submit' }, t('Enregistrer')));
@@ -1316,7 +1320,7 @@
     for (const g of cfg.groups) {
       grid.append(el('div', { class: 'group-title' }, g.label));
       const row = el('div', { class: 'row' });
-      for (const c of cfg.categories.filter(c => c.group === g.id)) {
+      for (const c of cfg.categories.filter(c => c.group === g.id && !c.beaconOnly)) {
         const b = el('button', { class: 'cat', 'data-cat': c.id, style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
         if (c.off) b.hidden = true;
         b.onclick = () => submit(c.id);
@@ -1680,6 +1684,10 @@
     if (o) { $('#orgaChip').textContent = o.admin ? 'ADMIN' : o.trial ? t('ORGA · essai') : 'ORGA'; $('#orgaChip').title = o.label; $('#orgaName').textContent = o.label; }
     $('#orgaTrial').hidden = !(o && o.trial);
     $('#bkBox').hidden = !(o && !o.trial);
+    // L'admin peut partager « son » point (logo), pour que les collectifs viennent le voir
+    { const sel = $('#bkRole'), has = sel.querySelector('option[value="contact"]');
+      if (o && o.admin && !has) sel.prepend(el('option', { value: 'contact' }, '★ ' + t('l’admin : viens me voir pour un accès orga')));
+      if (!(o && o.admin) && has) has.remove(); }
     if (!o && beacon) beaconStop(false);
     $('#annNationalWrap').hidden = !(o && o.admin);
     $('#btnPropose').textContent = t(o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif');
@@ -1896,7 +1904,7 @@
     bkBanner();
     if (!me) { $('#bkState').textContent = t('En attente de ta position…'); return; }
     try {
-      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1] }) });
+      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1], note: beacon.note }) });
       if (beacon && r && r.id) beacon.id = r.id;
       $('#bkState').textContent = t('Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte.', { h: fmtHour(Date.now()), end: fmtHour(beacon.until) });
       sync();
@@ -1909,7 +1917,7 @@
     const b = beacon; beacon = null;
     if (b) { clearInterval(b.timer); try { b.lock && b.lock.release(); } catch {} }
     bkBanner();
-    $('#bkBtn').dataset.on = '0'; $('#bkBtn').textContent = t('Partager ma position'); $('#bkRole').disabled = $('#bkDur').disabled = false;
+    $('#bkBtn').dataset.on = '0'; $('#bkBtn').textContent = t('Partager ma position'); $('#bkRole').disabled = $('#bkDur').disabled = $('#bkNote').disabled = false;
     if (b && !already) { try { await orgaFetch('/api/orga/beacon', { method: 'DELETE', body: JSON.stringify({ role: b.role }) }); } catch {} }
     if (b && !already) $('#bkState').textContent = t('Partage arrêté : ton point disparaît de la carte.');
     if (b && tell) toast('Partage de position terminé');
@@ -1919,10 +1927,10 @@
     if (beacon) return beaconStop(false);
     if (!me) { toast('Active d’abord ta position (bouton ◎)'); return; }
     const now = Date.now();
-    beacon = { role: $('#bkRole').value, until: now + Number($('#bkDur').value) * MIN, askAt: now + ASK_EVERY, askUntil: 0, isoSince: 0, id: null, timer: setInterval(beaconSend, 30_000), lock: null };
+    beacon = { role: $('#bkRole').value, note: $('#bkNote').value.trim(), until: now + Number($('#bkDur').value) * MIN, askAt: now + ASK_EVERY, askUntil: 0, isoSince: 0, id: null, timer: setInterval(beaconSend, 30_000), lock: null };
     // L'écran reste allumé pendant le partage (sinon le téléphone met l'appli en pause)
     try { beacon.lock = await navigator.wakeLock?.request('screen'); } catch {}
-    $('#bkBtn').dataset.on = '1'; $('#bkBtn').textContent = t('Arrêter le partage'); $('#bkRole').disabled = $('#bkDur').disabled = true;
+    $('#bkBtn').dataset.on = '1'; $('#bkBtn').textContent = t('Arrêter le partage'); $('#bkRole').disabled = $('#bkDur').disabled = $('#bkNote').disabled = true;
     beaconSend();
   };
   $('#bkYes').onclick = () => { if (!beacon) return; beacon.askUntil = 0; beacon.isoSince = 0; beacon.askAt = Date.now() + ASK_EVERY; bkBanner(); toast('Partage prolongé, merci'); };

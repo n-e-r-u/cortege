@@ -267,6 +267,11 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   <section class="panel" id="panelSettings" role="tabpanel" aria-labelledby="tabSettings" hidden>
     <form class="panel" id="setForm">
       <section class="card">
+        <h2>Ton nom affiché</h2>
+        <div class="controls"><label style="flex:1;min-width:220px">Nom de l’admin sur les annonces, les vérifications et ta position en direct<input id="setAdminLabel" maxlength="40" placeholder="Cortège"></label></div>
+        <p class="fine">Les annonces déjà publiées gardent leur nom. Ce nom est réservé : aucune orga ne peut le prendre.</p>
+      </section>
+      <section class="card">
         <h2>Bandeau en haut de la carte</h2>
         <div class="controls">
           <label style="flex:1;min-width:220px">Texte (vide = nom par défaut)<input id="setBanner" maxlength="80"></label>
@@ -1549,6 +1554,7 @@ async function loadSettings() {
   $('#setLat').placeholder = df.center[0]; $('#setLng').placeholder = df.center[1]; $('#setZoom').placeholder = df.zoom;
   $('#setRadius').value = s.alertRadius || ''; $('#setRadius').placeholder = df.alertRadius;
   $('#setNear').value = s.nearKm || ''; $('#setNear').placeholder = df.nearKm;
+  $('#setAdminLabel').value = s.adminLabel || '';
   const box = $('#setCats'); box.textContent = '';
   for (const c of setData.categories) {
     const on = document.createElement('label'); on.className = 'check';
@@ -1566,7 +1572,7 @@ $('#setForm').addEventListener('submit', async e => {
   document.querySelectorAll('#setCats .set-on').forEach(cb => { cats[cb.dataset.cat] = { off: !cb.checked }; });
   document.querySelectorAll('#setCats .set-ttl').forEach(i => { cats[i.dataset.cat].ttl = Number(i.value); });
   const num = id => $(id).value.trim() === '' ? null : Number($(id).value.replace(',', '.'));
-  const body = { cats, alertRadius: num('#setRadius'), nearKm: num('#setNear') };
+  const body = { cats, alertRadius: num('#setRadius'), nearKm: num('#setNear'), adminLabel: $('#setAdminLabel').value.trim() };
   if ($('#setBanner').value.trim()) body.banner = { text: $('#setBanner').value, from: $('#setFrom').value, to: $('#setTo').value };
   if (num('#setLat') != null && num('#setLng') != null) body.view = { lat: num('#setLat'), lng: num('#setLng'), zoom: num('#setZoom') ?? 12 };
   if ($('#setTo').value && $('#setFrom').value && $('#setTo').value < $('#setFrom').value) return alertMsg('La date de fin est avant la date de début.');
