@@ -700,6 +700,40 @@ test('cortège : tête qui suit (avec sa trace), queue, et position en direct de
   assert.equal(stop.status, 200); assert.ok(!row(bk.j.id), 'point retiré à l’arrêt');
 });
 
+test('position en direct : arrêtée net à plus de 2 km du départ, sans garder la position lointaine', async () => {
+  const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Medics Zone 271' })).j.invite);
+  const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Medics Zone 271').id;
+  await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+  const p = place(), bk = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', ...p });
+  assert.equal(bk.s, 201); assert.ok(!('bkla' in bk.j), 'point de départ jamais publié');
+  const far = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', lat: p.lat + 0.03, lng: p.lng }); // ~3,3 km
+  assert.equal(far.s, 410); assert.equal(far.j.zone, true);
+  assert.ok(!row(bk.j.id), 'point retiré');
+  assert.ok(!JSON.stringify(db.prepare('SELECT * FROM reports').all()).includes(String(Math.round((p.lat + 0.03) * 1e4) / 1e4)), 'position lointaine jamais enregistrée');
+});
+
+test('tracé du cortège par les rues : plus court chemin piéton, sans autoroute', async () => {
+  const { streetRoute, tileOf } = require(path.join(ROOT, 'tools', 'street-route.js'));
+  // Petite tuile vectorielle (format MVT) : une rue en L, et une autoroute en diagonale qui ne doit pas servir
+  const vi = n => { const o = []; while (n > 127) { o.push((n & 127) | 128); n = Math.floor(n / 128); } o.push(n); return o; };
+  const zz = n => n >= 0 ? 2 * n : -2 * n - 1;
+  const fld = (f, w, body) => w === 2 ? [...vi(f * 8 + 2), ...vi(body.length), ...body] : [...vi(f * 8), ...vi(body)];
+  const str = x => [...Buffer.from(x)];
+  const line = pts => { const g = [...vi(9), ...vi(zz(pts[0][0])), ...vi(zz(pts[0][1])), ...vi(((pts.length - 1) << 3) | 2)]; for (let i = 1; i < pts.length; i++) g.push(...vi(zz(pts[i][0] - pts[i - 1][0])), ...vi(zz(pts[i][1] - pts[i - 1][1]))); return g; };
+  const feat = (pts, kindIdx) => fld(2, 2, [...fld(2, 2, [0, kindIdx]), ...fld(3, 0, 2), ...fld(4, 2, line(pts))]);
+  const layer = [...fld(15, 0, 2), ...fld(1, 2, str('roads')), ...feat([[200, 1000], [3800, 1000], [3800, 3000]], 0), ...feat([[200, 1000], [3800, 3000]], 1),
+    ...fld(3, 2, str('kind')), ...fld(4, 2, fld(1, 2, str('minor_road'))), ...fld(4, 2, fld(1, 2, str('highway'))), ...fld(5, 0, 4096)];
+  const tile = Buffer.from(fld(3, 2, layer));
+  const z = 15, [tx, ty] = tileOf(43.61, 3.877, z);
+  const at = (px, py) => { const n = 2 ** z, wx = (tx + px / 4096) / n, wy = (ty + py / 4096) / n; return [Math.atan(Math.sinh(Math.PI * (1 - 2 * wy))) * 180 / Math.PI, wx * 360 - 180]; };
+  const r = await streetRoute(async (zz2, x, y) => (x === tx && y === ty ? tile : null), z, at(250, 1010), at(3790, 2950));
+  assert.ok(r && r.path.length >= 4, 'chemin trouvé');
+  assert.ok(r.path.some(p => Math.abs(p[0] - at(3800, 1000)[0]) < 1e-4 && Math.abs(p[1] - at(3800, 1000)[1]) < 1e-4), 'passe par le coin de la rue (pas par l’autoroute)');
+  const straight = r.path[0], end = r.path[r.path.length - 1];
+  assert.ok(r.len > require(path.join(ROOT, 'tools', 'street-route.js')).meters(straight, end) * 1.2, 'plus long qu’à vol d’oiseau');
+  assert.equal((await fetch(B + '/api/cortege-route?a=1,2&b=x')).status, 400);
+});
+
 test('sécurité : CF-Connecting-IP ignoré sans CLOUDFLARE=1 (impossible de changer d’« IP » à volonté)', async () => {
   const net = '9.9.' + (Date.now() % 250) + '.9';
   for (let i = 0; i < 11; i++)

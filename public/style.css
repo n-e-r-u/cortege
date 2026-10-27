@@ -225,6 +225,15 @@ body.raster .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness
 .flow-arrow { width: 26px; height: 26px; display: grid; place-items: center; color: #fff; font-size: 18px; text-shadow: 0 0 4px #000, 0 0 2px #000; pointer-events: none; }
 .flow-len { background: #1c1c20; color: #f2f1f4; border: 1px solid #8e8cd8; border-radius: 99px; padding: 2px 8px; font-weight: 700; font-size: 12px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.5); }
 .bk-box { margin: 14px 0; }
+/* Bandeau toujours visible pendant le partage de position en direct */
+.bk-banner { position: fixed; z-index: 3000; left: 8px; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 64px); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 10px; border-radius: 14px; background: #10261c; color: #d9fbe9; border: 2px solid #7ee2b0; box-shadow: 0 4px 16px rgba(0,0,0,.6); font-weight: 700; font-size: 14px; }
+.bk-banner span:nth-child(2) { flex: 1; min-width: 150px; }
+.bk-banner button { height: 36px; padding: 0 12px; border-radius: 10px; border: 0; font-weight: 800; font-size: 14px; background: #7ee2b0; color: #102018; }
+.bk-banner #bkOff { background: transparent; color: #d9fbe9; border: 1px solid #7ee2b0; }
+.bk-banner.ask { background: #3a2a08; border-color: #f5a524; color: #fff3d6; animation: blink 1.2s 3; }
+.bk-dot { width: 10px; height: 10px; border-radius: 50%; background: #7ee2b0; animation: blink 1.2s infinite; }
+.flow-len.air { border-style: dashed; opacity: .85; }
 .bk-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; margin: 8px 0; }
 .bk-row label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
 .bk-row select { height: 44px; border-radius: 10px; background: var(--surface); color: var(--fg); border: 1px solid var(--line, #34343c); padding: 0 8px; font-size: 15px; }

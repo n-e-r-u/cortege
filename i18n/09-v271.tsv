@@ -1,0 +1,14 @@
+# Version 2.7.1 : garde-fous de la position en direct, tracé du cortège
+Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus.	So it never reveals where you go after the protest: sharing stops on its own if you move more than 2 km away, if you don’t confirm every 30 minutes that you’re still there, and after 4 h at most.	Para no revelar nunca adónde vas después de la manifestación: se deja de compartir solo si te alejas más de 2 km, si no confirmas cada 30 minutos que sigues allí, y como máximo a las 4 h.	حتى لا يُكشف أبدًا إلى أين تذهب بعد المظاهرة: تتوقف المشاركة تلقائيًا إذا ابتعدت أكثر من 2 كم، أو إذا لم تؤكد كل 30 دقيقة أنك ما زلت هناك، وبعد 4 ساعات كحدّ أقصى.
+30 min	30 min	30 min	30 د
+Position partagée en direct	Position shared live	Posición compartida en directo	الموقع مُشارَك مباشرة
+Oui, je continue	Yes, keep going	Sí, sigo	نعم، أواصل
+Arrêter	Stop	Parar	إيقاف
+Plus rien autour de toi : tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}.	Nothing around you any more: still at the protest? Without an answer, sharing stops in {d}.	No hay nada a tu alrededor: ¿sigues en la manifestación? Sin respuesta, se deja de compartir en {d}.	لا شيء حولك الآن: هل ما زلت في المظاهرة؟ دون رد، تتوقف المشاركة بعد {d}.
+Tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}.	Still at the protest? Without an answer, sharing stops in {d}.	¿Sigues en la manifestación? Sin respuesta, se deja de compartir en {d}.	هل ما زلت في المظاهرة؟ دون رد، تتوقف المشاركة بعد {d}.
+Position partagée en direct ({role})	Position shared live ({role})	Posición compartida en directo ({role})	الموقع مُشارَك مباشرة ({role})
+Pas de réponse : partage de position arrêté	No answer: position sharing stopped	Sin respuesta: se dejó de compartir la posición	لا رد: توقفت مشاركة الموقع
+Partage prolongé, merci	Sharing continues, thanks	Se sigue compartiendo, gracias	تستمر المشاركة، شكرًا
+Tu t’es éloigné·e de plus de 2 km de la manif : partage de position arrêté.	You moved more than 2 km away from the protest: position sharing stopped.	Te alejaste más de 2 km de la manifestación: se dejó de compartir la posición.	ابتعدت أكثر من 2 كم عن المظاهرة: توقفت مشاركة الموقع.
+Partage arrêté au bout de 4 h. Relance-le si besoin.	Sharing stopped after 4 h. Start it again if needed.	Se dejó de compartir tras 4 h. Vuelve a activarlo si hace falta.	توقفت المشاركة بعد 4 ساعات. أعد تشغيلها إن لزم.
+Cortège : environ {d} à vol d’oiseau	March: about {d} as the crow flies	Manifestación: unos {d} en línea recta	المسيرة: نحو {d} في خط مستقيم

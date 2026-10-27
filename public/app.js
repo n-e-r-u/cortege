@@ -423,6 +423,16 @@
   const CARD = ['vers le nord', 'vers le nord-est', 'vers l’est', 'vers le sud-est', 'vers le sud', 'vers le sud-ouest', 'vers l’ouest', 'vers le nord-ouest'];
   const cardinal = b => t(CARD[Math.round(((b % 360) + 360) % 360 / 45) % 8]);
   const mins = m => m < 60 ? t('{n} min', { n: Math.max(1, Math.round(m)) }) : t('{h} h {m}', { h: Math.floor(m / 60), m: String(Math.round(m % 60)).padStart(2, '0') });
+  // Tracé par les rues entre la queue et la tête (positions publiques), gardé en mémoire tant qu'elles ne bougent pas
+  const streetCache = new Map();
+  function streetFetch(key, q, h) {
+    if (!cfg.vector) { streetCache.set(key, { none: true }); return; }
+    streetCache.set(key, { pending: true });
+    if (streetCache.size > 50) streetCache.delete(streetCache.keys().next().value);
+    fetch(`/api/cortege-route?a=${q.lat},${q.lng}&b=${h.lat},${h.lng}`).then(r => r.ok ? r.json() : null)
+      .then(x => { streetCache.set(key, x && x.path ? x : { none: true }); if (x && x.path) drawFlow(); })
+      .catch(() => streetCache.delete(key));
+  }
   function drawFlow() {
     flowLayer.clearLayers(); flowInfo.clear();
     if (hidden.has('info')) return;
@@ -461,14 +471,29 @@
       for (const x of heads) { const d = dist([x.lat, x.lng], [q.lat, q.lng]); if (d < hd && d <= 5000) { h = x; hd = d; } }
       if (!h) continue;
       const fh = fix[h.id], fq = fix[q.id];
-      let line, len;
+      let line, len, air = false;
+      const lenOf = l => l.reduce((t2, p, i) => i ? t2 + dist(l[i - 1], p) : 0, 0);
+      // 1. Sur le parcours annoncé : le morceau entre la queue et la tête
       if (fh && fq && fh.e.id === fq.e.id && fh.o.at >= fq.o.at) { line = routeSlice(fh.e.route, fq.o.at, fh.o.at); len = fh.o.at - fq.o.at; }
-      else { line = [[q.lat, q.lng], [h.lat, h.lng]]; len = hd; }
+      else {
+        // 2. Sinon, le chemin réellement suivi par la tête : la queue passe là où la tête est passée
+        const tr = [...(h.tr || []).map(p => [p[0], p[1]]), [h.lat, h.lng]];
+        let bi = -1, bd = Infinity;
+        tr.forEach((p, i) => { const d = dist(p, [q.lat, q.lng]); if (d < bd) { bd = d; bi = i; } });
+        if (bi >= 0 && bi < tr.length - 1 && bd <= 150) { line = [[q.lat, q.lng], ...tr.slice(bi)]; len = lenOf(line); }
+        else {
+          // 3. Sinon, par les rues de la carte (calculé par le serveur), et en attendant ou à défaut : à vol d'oiseau
+          const key = `${q.lat},${q.lng}|${h.lat},${h.lng}`, st = streetCache.get(key);
+          if (st && st.path) { line = st.path; len = st.len; }
+          else { if (!st) streetFetch(key, q, h); line = [[q.lat, q.lng], [h.lat, h.lng]]; len = hd; air = true; }
+        }
+      }
       if (line.length < 2) continue;
-      L.polyline(line, { color: GROUP_COLOR.info, weight: 12, opacity: .35, lineCap: 'round', interactive: false }).addTo(flowLayer);
+      L.polyline(line, air ? { color: GROUP_COLOR.info, weight: 3, opacity: .7, dashArray: '4 8', interactive: false }
+        : { color: GROUP_COLOR.info, weight: 12, opacity: .35, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(flowLayer);
       const mid = line[Math.floor(line.length / 2)];
-      const txt = t('Cortège : environ {d}', { d: fmtDist(len) });
-      L.marker(mid, { interactive: false, keyboard: false, icon: L.divIcon({ className: '', iconSize: [130, 22], iconAnchor: [65, 11], html: `<div class="flow-len">${txt.replace(/[<&]/g, '')}</div>` }) }).addTo(flowLayer);
+      const txt = t(air ? 'Cortège : environ {d} à vol d’oiseau' : 'Cortège : environ {d}', { d: fmtDist(len) });
+      L.marker(mid, { interactive: false, keyboard: false, icon: L.divIcon({ className: '', iconSize: [170, 22], iconAnchor: [85, 11], html: `<div class="flow-len${air ? ' air' : ''}">${txt.replace(/[<&]/g, '')}</div>` }) }).addTo(flowLayer);
       info(h.id).lines.push(txt); info(q.id).lines.push(txt);
     }
   }
@@ -1833,37 +1858,76 @@
   $('#annNational').addEventListener('change', annZoneUI);
   // ---- Ma position en direct (orgas confirmées) : street medic, legal team, presse, tête ou queue de cortège ----
   // Envoyée toutes les 30 s tant que l'appli est ouverte ; arrêt au bout de la durée choisie, ou à la main.
+  // Garde-fous (pour ne jamais révéler où l'orga va après la manif) : le serveur coupe à plus de 2 km du départ ;
+  // ici, une question toutes les 30 min (« Tu es toujours en manif ? »), posée aussi plus tôt si plus rien ne se passe
+  // autour depuis 10 min, et sans réponse en 3 min, le partage s'arrête. Bandeau toujours visible pendant le partage.
+  const ASK_EVERY = 30 * MIN, ASK_WAIT = 3 * MIN, ISO_M = 300, ISO_MS = 10 * MIN;
+  function bkBanner() {
+    const b = $('#bkBanner');
+    b.hidden = !beacon;
+    if (!beacon) return;
+    const role = $('#bkRole').selectedOptions[0]?.textContent || '';
+    b.classList.toggle('ask', !!beacon.askUntil);
+    $('#bkYes').hidden = !beacon.askUntil;
+    $('#bkBannerTxt').textContent = beacon.askUntil
+      ? t(beacon.iso ? 'Plus rien autour de toi : tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}.' : 'Tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}.', { d: left(beacon.askUntil) })
+      : t('Position partagée en direct ({role})', { role: role.replace(/^\S+\s/, '') });
+  }
+  function bkAsk(iso) {
+    if (!beacon || beacon.askUntil) return;
+    beacon.askUntil = Date.now() + ASK_WAIT; beacon.iso = iso;
+    try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {}
+    bkBanner();
+  }
+  // Activité autour : d'autres signalements à moins de 300 m (sa propre position ne compte pas), ou un événement de l'agenda
+  function bkIsolated() {
+    if (!me) return false;
+    for (const { data: r } of reports.values()) if (r.id !== beacon.id && dist(me, [r.lat, r.lng]) <= ISO_M) return false;
+    for (const e of evCache.e) if (Math.abs(e.start - Date.now()) < 6 * 3600e3 && (dist(me, [e.lat, e.lng]) <= ISO_M || (e.route || []).some(p => dist(me, p) <= ISO_M))) return false;
+    return true;
+  }
   async function beaconSend() {
     if (!beacon) return;
-    if (Date.now() > beacon.until) return beaconStop(true);
+    const now = Date.now();
+    if (now > beacon.until) return beaconStop(true);
+    if (beacon.askUntil && now > beacon.askUntil) { toast('Pas de réponse : partage de position arrêté'); return beaconStop(false); }
+    if (!beacon.askUntil && now >= beacon.askAt) bkAsk(false);
+    if (!beacon.askUntil) { if (bkIsolated()) { beacon.isoSince ||= now; if (now - beacon.isoSince >= ISO_MS) bkAsk(true); } else beacon.isoSince = 0; }
+    bkBanner();
     if (!me) { $('#bkState').textContent = t('En attente de ta position…'); return; }
     try {
-      await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1] }) });
+      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1] }) });
+      if (beacon && r && r.id) beacon.id = r.id;
       $('#bkState').textContent = t('Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte.', { h: fmtHour(Date.now()), end: fmtHour(beacon.until) });
       sync();
     } catch (e) {
-      $('#bkState').textContent = e.message;
-      if (/8 h|réservé|Rôle/.test(e.message)) beaconStop(false);
+      $('#bkState').textContent = t(e.message);
+      if (/arrêté|réservé|Rôle/.test(e.message)) { toast(e.message); beaconStop(false, true); }
     }
   }
-  async function beaconStop(tell) {
+  async function beaconStop(tell, already = false) {
     const b = beacon; beacon = null;
     if (b) { clearInterval(b.timer); try { b.lock && b.lock.release(); } catch {} }
+    bkBanner();
     $('#bkBtn').dataset.on = '0'; $('#bkBtn').textContent = t('Partager ma position'); $('#bkRole').disabled = $('#bkDur').disabled = false;
-    if (b) { try { await orgaFetch('/api/orga/beacon', { method: 'DELETE', body: JSON.stringify({ role: b.role }) }); } catch {} }
-    $('#bkState').textContent = b ? t('Partage arrêté : ton point disparaît de la carte.') : '';
+    if (b && !already) { try { await orgaFetch('/api/orga/beacon', { method: 'DELETE', body: JSON.stringify({ role: b.role }) }); } catch {} }
+    if (b && !already) $('#bkState').textContent = t('Partage arrêté : ton point disparaît de la carte.');
     if (b && tell) toast('Partage de position terminé');
     sync();
   }
   $('#bkBtn').onclick = async () => {
     if (beacon) return beaconStop(false);
     if (!me) { toast('Active d’abord ta position (bouton ◎)'); return; }
-    beacon = { role: $('#bkRole').value, until: Date.now() + Number($('#bkDur').value) * MIN, timer: setInterval(beaconSend, 30_000), lock: null };
+    const now = Date.now();
+    beacon = { role: $('#bkRole').value, until: now + Number($('#bkDur').value) * MIN, askAt: now + ASK_EVERY, askUntil: 0, isoSince: 0, id: null, timer: setInterval(beaconSend, 30_000), lock: null };
     // L'écran reste allumé pendant le partage (sinon le téléphone met l'appli en pause)
     try { beacon.lock = await navigator.wakeLock?.request('screen'); } catch {}
     $('#bkBtn').dataset.on = '1'; $('#bkBtn').textContent = t('Arrêter le partage'); $('#bkRole').disabled = $('#bkDur').disabled = true;
     beaconSend();
   };
+  $('#bkYes').onclick = () => { if (!beacon) return; beacon.askUntil = 0; beacon.isoSince = 0; beacon.askAt = Date.now() + ASK_EVERY; bkBanner(); toast('Partage prolongé, merci'); };
+  $('#bkOff').onclick = () => beaconStop(false);
+  setInterval(() => { if (beacon && beacon.askUntil) bkBanner(); }, 15_000);
   document.addEventListener('visibilitychange', async () => { if (!document.hidden && beacon) { try { beacon.lock = await navigator.wakeLock?.request('screen'); } catch {} beaconSend(); } });
   $('#annForm').addEventListener('submit', async e => {
     e.preventDefault();

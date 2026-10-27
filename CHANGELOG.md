@@ -2,6 +2,15 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.7.1
+
+- Position en direct des orgas, garde-fous pour ne jamais révéler où la personne va après la manif :
+  - le serveur arrête le partage dès qu’une position arrive à plus de 2 km du point de départ (et du parcours d’une manif en cours de l’agenda), sans enregistrer cette position ; le point de départ n’est jamais publié ;
+  - toutes les 30 min, l’appli demande « Tu es toujours en manif ? » (vibration, bandeau orange) ; plus tôt si plus rien ne se passe à moins de 300 m depuis 10 min ; sans réponse en 3 min, le partage s’arrête ;
+  - bandeau vert toujours visible pendant le partage, avec « Arrêter » ;
+  - 1 h par défaut (30 min, 1 h, 2 h ou 4 h), 4 h au maximum côté serveur (au lieu de 8 h).
+- Cortège entre la queue et la tête : il suit maintenant les rues. D’abord le parcours annoncé, sinon le chemin réellement suivi par la tête (trace gardée 60 min pour la tête), sinon le plus court chemin piéton calculé par le serveur sur les rues de la carte hébergée (tuiles PMTiles, sans autoroutes ni voies ferrées, aucun service extérieur). À défaut, ligne fine en pointillés marquée « à vol d’oiseau ».
+
 ## 2.7.0
 
 - Tête de cortège qui suit vraiment le cortège : un seul point, que chaque nouveau signalement à moins de 300 m déplace, avec la trace pointillée des 30 dernières minutes, une flèche de direction et la vitesse (« Avance vers le nord-ouest, environ 3 km/h »). Durée de base ramenée à 10 min, relancée à chaque signalement.

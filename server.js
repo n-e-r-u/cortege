@@ -441,6 +441,9 @@ try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch {}
 // bk : heure de début du partage de position en direct d'une orga (0 sinon)
 try { db.exec('ALTER TABLE reports ADD COLUMN trail TEXT'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN bk INTEGER DEFAULT 0'); } catch {}
+// Point de départ du partage de position en direct (jamais publié) : le partage s'arrête si l'orga s'en éloigne de plus de 2 km
+try { db.exec('ALTER TABLE reports ADD COLUMN bkla REAL'); } catch {}
+try { db.exec('ALTER TABLE reports ADD COLUMN bklo REAL'); } catch {}
 // Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
 // Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
@@ -487,15 +490,30 @@ const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } c
 const parseTrail = r => { if (Array.isArray(r.trail)) return r.trail; try { return JSON.parse(r.trail || '[]'); } catch { return []; } };
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
   dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: r.oid || null,
-  trail: parseTrail(r), bk: r.bk || 0 });
+  trail: parseTrail(r), bk: r.bk || 0, bkla: r.bkla ?? null, bklo: r.bklo ?? null });
 // Trace d'un point qui suit le cortège : on garde l'ancienne position (si elle a bougé d'au moins 20 m), 30 min et 30 points au plus
-const TRAIL_CATS = new Set(['cortege', 'queue']), TRAIL_MS = 30 * MIN;
-const BEACON_ROLES = new Set(['cortege', 'queue', 'medic', 'legal', 'presse']), BEACON_TTL = 3 * MIN, BEACON_MAX = 8 * 60 * MIN;
+// Tête : 60 min de trace (le tracé du cortège suit le chemin réel de la tête jusqu'à la queue) ; queue : 30 min
+const TRAIL_CATS = new Set(['cortege', 'queue']), TRAIL_MS = { cortege: 60 * MIN, queue: 30 * MIN }, TRAIL_MAX = { cortege: 60, queue: 30 };
+const BEACON_ROLES = new Set(['cortege', 'queue', 'medic', 'legal', 'presse']), BEACON_TTL = 3 * MIN, BEACON_MAX = 4 * 60 * MIN, BEACON_ZONE_M = 2000;
+// Distance (m) d'un point au parcours le plus proche d'un événement en cours de l'agenda (Infinity s'il n'y en a pas)
+function routeDistM(lat, lng, now = Date.now()) {
+  let best = Infinity;
+  for (const e of listEvents()) {
+    if (!e.route || e.route.length < 2 || e.status === 'pending' || e.start > now + 60 * MIN || e.start < now - 12 * 60 * MIN) continue;
+    const k = Math.cos(lat * Math.PI / 180), P = [lng * 111320 * k, lat * 110540];
+    for (let i = 0; i < e.route.length - 1; i++) {
+      const A = [e.route[i][1] * 111320 * k, e.route[i][0] * 110540], Bq = [e.route[i + 1][1] * 111320 * k, e.route[i + 1][0] * 110540];
+      const dx = Bq[0] - A[0], dy = Bq[1] - A[1], L2 = dx * dx + dy * dy, t = L2 ? Math.max(0, Math.min(1, ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / L2)) : 0;
+      best = Math.min(best, Math.hypot(P[0] - A[0] - t * dx, P[1] - A[1] - t * dy));
+    }
+  }
+  return best;
+}
 function addTrail(r, now) {
   if (!TRAIL_CATS.has(r.cat)) return;
-  const tr = (r.trail || []).filter(p => p[2] > now - TRAIL_MS), lastP = tr[tr.length - 1];
+  const tr = (r.trail || []).filter(p => p[2] > now - TRAIL_MS[r.cat]), lastP = tr[tr.length - 1];
   if (!lastP || distM({ lat: lastP[0], lng: lastP[1] }, r) >= 20) tr.push([r.lat, r.lng, r.last || r.t]);
-  r.trail = tr.slice(-30);
+  r.trail = tr.slice(-TRAIL_MAX[r.cat]);
 }
 const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
@@ -504,12 +522,12 @@ function saveReport(r) {
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid,trail,bk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid,trail,bk,bkla,bklo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
-       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl, trail=excluded.trail, bk=excluded.bk`)
+       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl, trail=excluded.trail, bk=excluded.bk, bkla=excluded.bkla, bklo=excluded.bklo`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
       JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0, r.oid || null,
-      r.trail && r.trail.length ? JSON.stringify(r.trail) : null, r.bk || 0);
+      r.trail && r.trail.length ? JSON.stringify(r.trail) : null, r.bk || 0, r.bkla ?? null, r.bklo ?? null);
   dirtyCell(cell);
 }
 // outcome : ce qu'est devenu le point, pour le digest (orga, admin, full = zone saturée, purge…)
@@ -1054,6 +1072,8 @@ function pubWithPts(date) {
 }
 let storyMap = null;
 const BubbleMap = require('./public/bubble-map.js');
+const { streetRoute } = require('./tools/street-route.js');
+const routeCache = new Map();
 function mapSvg(cities) {
   try { storyMap ||= JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'story-map.json'), 'utf8')); } catch { return ''; }
   const m = storyMap, b = BubbleMap.svg(cities, m, { fontSize: 26, labels: 14, esc: htmlEsc });
@@ -2654,6 +2674,24 @@ const server = http.createServer(async (req, res) => {
     }
     const vt = PMTILES && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);
     if (vt) return serveVectorTile(req, res, +vt[1], +vt[2], +vt[3]);
+    // Tracé du cortège entre la queue et la tête, par les rues de la carte hébergée (positions publiques, rien sur la personne qui demande)
+    if (req.method === 'GET' && pathname === '/api/cortege-route') {
+      const pt = v => { const m = String(v || '').match(/^(-?\d{1,2}\.\d{1,6}),(-?\d{1,3}\.\d{1,6})$/); return m && validLatLng(+m[1], +m[2]) ? [+m[1], +m[2]] : null; };
+      const a = pt(url.searchParams.get('a')), b = pt(url.searchParams.get('b'));
+      if (!a || !b) return send(res, 400, { error: 'Points invalides.' });
+      if (!PMTILES) return send(res, 404, { error: 'Pas de carte hébergée.' });
+      if (distM({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] }) > 5000) return send(res, 404, { error: 'Trop loin.' });
+      const k = a.map(x => x.toFixed(4)).join(',') + '|' + b.map(x => x.toFixed(4)).join(',');
+      if (!routeCache.has(k)) {
+        if (!quota('route:' + clientHash(req), 120, 5 * MIN)) return send(res, 429, { error: 'Trop de demandes.' });
+        let r = null;
+        try { const h = await pmOpen(); r = await streetRoute(async (z, x, y) => { const t = await pmTile(z, x, y); return t ? pmDecomp(t, h.tileC) : null; }, Math.min(h.maxz, 15), a, b); }
+        catch (e) { console.error('tracé du cortège', e.message); }
+        routeCache.set(k, r); if (routeCache.size > 300) routeCache.delete(routeCache.keys().next().value);
+      }
+      const r = routeCache.get(k);
+      return r ? send(res, 200, r, { 'Cache-Control': 'public, max-age=60' }) : send(res, 404, { error: 'Pas de chemin trouvé.' });
+    }
     if (req.method === 'GET' && pathname === '/api/config')
       { const S = settings(), banner = bannerNow();
       return send(res, 200, { event: banner || EVENT_NAME, banner: !!banner, center: S.view ? [S.view.lat, S.view.lng] : CENTER, zoom: S.view ? S.view.zoom : ZOOM,
@@ -3464,7 +3502,13 @@ const server = http.createServer(async (req, res) => {
           if (req.method === 'DELETE') { if (cur) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); } return [200, { stopped: true }]; }
           const lat = Number(b.lat), lng = Number(b.lng);
           if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
-          if (cur && now - cur.bk > BEACON_MAX) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); return [410, { error: 'Partage arrêté au bout de 8 h. Relance-le si besoin.' }]; }
+          if (cur && now - cur.bk > BEACON_MAX) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); return [410, { error: 'Partage arrêté au bout de 4 h. Relance-le si besoin.' }]; }
+          // Garde-fou : à plus de 2 km du point de départ (et du parcours d'une manif en cours), le partage s'arrête tout seul
+          // et cette position n'est jamais enregistrée (une orga qui oublie de l'arrêter ne révèle pas où elle rentre)
+          if (cur && cur.bkla != null && distM({ lat: cur.bkla, lng: cur.bklo }, { lat, lng }) > BEACON_ZONE_M && routeDistM(lat, lng, now) > BEACON_ZONE_M) {
+            dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position (hors zone)', { r: cur });
+            return [410, { error: 'Tu t’es éloigné·e de plus de 2 km de la manif : partage de position arrêté.', zone: true }];
+          }
           if (cur && now - (cur.last || cur.t) < 10_000) return [200, publicView(cur)];
           const pos = { lat: round(lat), lng: round(lng) };
           if (cur) {
@@ -3473,10 +3517,10 @@ const server = http.createServer(async (req, res) => {
             saveReport(cur); return [200, publicView(cur)];
           }
           const r = { id: crypto.randomBytes(6).toString('base64url'), cat: role, lat: pos.lat, lng: pos.lng, note: '', notes: [], t: now, last: now, exp: now + BEACON_TTL,
-            up: 0, down: 0, voters: ['o:' + orga.id], downIps: [], ip: null, ver: orga.label, fl: 1, oid: orga.id, bk: now, trail: [] };
+            up: 0, down: 0, voters: ['o:' + orga.id], downIps: [], ip: null, ver: orga.label, fl: 1, oid: orga.id, bk: now, trail: [], bkla: pos.lat, bklo: pos.lng };
           // Tête ou queue déjà signalée tout près par des participant·es : la position de l'orga prend le relais (avec la trace)
           if (TRAIL_CATS.has(role)) for (const x of nearby(role, pos.lat, pos.lng, MERGE[role].r, now).filter(x => !x.r.bk)) {
-            const old = toReport(x.r); r.trail = [...(old.trail || []), [old.lat, old.lng, old.last || old.t]].slice(-30); r.up += old.up || 0; dropReport(old.id, 'exp');
+            const old = toReport(x.r); r.trail = [...(old.trail || []), [old.lat, old.lng, old.last || old.t]].slice(-TRAIL_MAX[role]); r.up += old.up || 0; dropReport(old.id, 'exp');
           }
           saveReport(r); orgaLog(orga, 'partage de position', { r });
           return [201, publicView(r)];

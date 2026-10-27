@@ -32,6 +32,11 @@
 </head>
 <body>
 <div id="map" aria-label="Carte de la manifestation"></div>
+<div class="bk-banner" id="bkBanner" hidden role="status">
+  <span class="bk-dot" aria-hidden="true"></span><span id="bkBannerTxt">Position partagée en direct</span>
+  <button type="button" id="bkYes" hidden>Oui, je continue</button>
+  <button type="button" id="bkOff">Arrêter</button>
+</div>
 
 <header class="topbar">
   <a class="brand" id="brandLink" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer">
@@ -526,6 +531,7 @@
   <div class="bk-box" id="bkBox" hidden>
     <h3 class="group-title">Ma position en direct</h3>
     <p class="hint">Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt.</p>
+    <p class="fine">Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus.</p>
     <div class="bk-row">
       <label>Je suis<select id="bkRole">
         <option value="cortege">📣 la tête de cortège</option>
@@ -535,8 +541,9 @@
         <option value="presse">🎥 presse</option>
       </select></label>
       <label>Pendant<select id="bkDur">
-        <option value="60">1 h</option>
-        <option value="120" selected>2 h</option>
+        <option value="30">30 min</option>
+        <option value="60" selected>1 h</option>
+        <option value="120">2 h</option>
         <option value="240">4 h</option>
       </select></label>
     </div>
