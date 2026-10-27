@@ -2,6 +2,18 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.6.5
+
+Durcissement, suite du même audit.
+
+- Orgas en période d’essai : « Vérifier » compte comme une confirmation forte, sans la coche « vérifié », et toutes leurs annonces (info comprises) attendent la validation de l’admin.
+- Limites pour toutes les orgas (sauf l’admin) : 30 vérifications par 5 min, 3 annonces urgentes par heure (une orga piratée ne peut pas inonder les téléphones de notifications), 30 annonces et 20 événements par jour. Une orga bloquée en rafale apparaît dans le tableau des abus (« orga en rafale »), en plus de son journal.
+- Veille des legal teams : le serveur ne va chercher que des adresses publiques (jamais lui-même, le réseau local ni les adresses internes de l’hébergeur), vérifiées au moment de la connexion, ports 80 et 443, 3 redirections au plus, chacune revérifiée.
+- Notifications : au plus 60 nouveaux abonnements par réseau et par 6 h, désabonnements et notifications de test limités par réseau, abonnement supprimé après 5 refus d’affilée du service de notification (hors erreurs de notre côté), au plus 3 000 zones différentes par envoi.
+- Charge : tables plafonnées (empreintes de téléphones, abus, limites, journal des orgas), cache des tuiles plafonné en mémoire (64 Mo, `TILE_CACHE_MB`) et sur le disque (2 Go, `TILE_DISK_GB`, les plus anciennes partent d’abord), tuiles OpenStreetMap délestées en premier quand le serveur est débordé.
+- Clés de hachage : une clé tirée au hasard pour chaque période (6 h pour les adresses IP, un jour pour les téléphones), détruite à la fin de la période suivante. Même avec une copie du disque, les empreintes passées ne peuvent plus être recalculées. L’ancienne clé unique est effacée au démarrage.
+- Mentions légales complétées : services de notification des navigateurs (Google, Apple, Mozilla, Microsoft), abonnement temps réel par zones d’environ 100 km, arrêtés proposés, contenu exact du journal des orgas et de la corbeille, tout ce qui est gardé sur le téléphone, ce que voit un hébergeur ou quelqu’un qui prendrait le contrôle du serveur, limites de l’effacement d’urgence. Plus aucun « nous ».
+
 ## 2.6.4
 
 Correctif de sécurité, suite à un audit signalé en privé. Merci à la personne qui l’a fait.

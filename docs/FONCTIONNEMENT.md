@@ -51,7 +51,9 @@ Avec la clé `ADMIN_KEY` :
 - **Journal** : chaque action d'orga (vérification, retrait, annonce, événement) est enregistrée 30 jours, sans IP. Les points retirés restent une heure dans une corbeille, restaurables d'un clic. Des retraits en rafale bloquent temporairement le retrait pour l'orga concernée et apparaissent dans « À vérifier ».
 - **Abus** : tableau des 24 dernières heures (points contestés, votes et signalements en rafale, dangers en série près des zones calmes), par heure et par zone. Gardé 48 h, sans empreinte au-delà d'une heure.
 - **Mode manif renforcé** (onglet Abus, 1 à 6 h) : limites divisées par deux et téléphones apparus depuis moins de 10 min sans poids, sans couper les signalements.
-- **Effacement d'urgence** (onglet Urgences) : efface d'un coup toutes les traces liées aux personnes et change la clé de hachage. Les orgas et l'agenda sont gardés.
+- **Effacement d'urgence** (onglet Urgences) : efface d'un coup toutes les traces liées aux personnes et détruit les clés de hachage. Les orgas et l'agenda sont gardés.
+- **Limites des orgas** : en période d'essai, « Vérifier » vaut une confirmation forte (sans la coche) et toutes les annonces attendent la validation de l'admin. Pour toutes les orgas : 30 vérifications par 5 min, 3 annonces urgentes par heure, 30 annonces et 20 événements par jour. Une orga bloquée apparaît dans le tableau des abus (« orga en rafale »).
+- **Notifications** : au plus 60 nouveaux abonnements par réseau et par 6 h ; un abonnement refusé 5 fois de suite par le service de notification est supprimé.
 - **Digest** : bilan anonyme par jour.
 - **Direct** : signalements par minute, téléphones connectés en temps réel, notifications envoyées, reçues, expirées ou refusées (avec la dernière erreur du service de notification), charge, mémoire et disque du serveur. Actualisé toutes les 10 s.
 - **Modération** : le plus urgent en haut (dangers contestés, puis dangers d'une série près des zones calmes, puis points isolés à plus de 500 km de toute autre activité, « Plus là » isolés et points hors de France). Chaque point dit pourquoi il est là, en clair. Filtres par ville et par type ; les simples « pas encore confirmé » du mode renforcé sont cachés par défaut (et ne comptent pas dans le badge). Boutons « C’est vrai » (efface les contestations), « Vérifier » ou « Retirer ».
@@ -108,7 +110,7 @@ L’interface existe en français, anglais, espagnol et arabe (affichage de droi
 
 - Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base hors du dossier web et supprimés à expiration.
 - La position de l'utilisateur ne quitte jamais le téléphone. Seuls les signalements sont envoyés, arrondis à ~11 m.
-- L'anti-spam utilise une empreinte de l'IP (HMAC avec une clé secrète, renouvelée toutes les 6 h), effacée avec le signalement. Sur un hébergement mutualisé, l'hébergeur garde ses propres journaux d'accès : l'appli ne peut rien y faire.
+- L'anti-spam utilise une empreinte de l'IP et du téléphone (HMAC avec une clé tirée au hasard pour chaque période de 6 h ou d'un jour, détruite à la fin de la période suivante), effacée avec le signalement. Sur un hébergement mutualisé, l'hébergeur garde ses propres journaux d'accès : l'appli ne peut rien y faire.
 - Les tuiles passent par le serveur : les IP des manifestant·es ne partent pas chez le fournisseur de carte.
 
 ## Sécurité et vérification

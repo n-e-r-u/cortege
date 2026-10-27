@@ -37,7 +37,7 @@ Variables d'environnement :
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |
 | `HOST` | toutes les adresses | Adresse d'écoute. `127.0.0.1` derrière un proxy sur la même machine (Caddy, Nginx) |
 | `LIVE_DIR` | `live/` du code | Dossier des fichiers publics de la carte, servi directement par le serveur web si possible |
-| `SECRET_STORE` | fichier | `memory` : la clé de hachage n'existe qu'en mémoire, jamais sur le disque (un seul processus ; elle change à chaque redémarrage) |
+| `SECRET_STORE` | fichier | Clés de hachage : une par période (6 h pour les IP, un jour pour les téléphones), détruites à la fin de la période suivante, dans `DATA_DIR/keys`. `memory` : seulement en mémoire, jamais sur le disque (un seul processus) |
 | `STREAM` | auto | Temps réel (`/api/stream`). Actif par défaut hors Passenger (un seul processus), `0` pour le couper |
 | `STREAM_MAX` | `20000` | Nombre maximal de téléphones connectés en temps réel (au-delà : interrogation régulière) |
 | `ACCESS_LOGS` | vide | `none` quand le serveur web ne garde aucun journal d'accès (Caddy par défaut) : les mentions légales le disent |

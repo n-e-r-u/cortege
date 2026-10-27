@@ -155,38 +155,45 @@ fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
 const STATE_FILE = path.join(DATA_DIR, 'state.json');
 const LOCK_FILE = STATE_FILE + '.lock';
 
-// Clé de hachage des IP : jamais dans le dossier web, et renouvelée toutes les 6 h.
-// La clé peut être remplacée par « Tout effacer » (admin) : chaque processus relit le fichier s'il a changé.
-const SECRET_FILE = path.join(DATA_DIR, 'secret');
-// SECRET_STORE=memory (un seul processus, ex. VPS) : la clé n'existe que dans la mémoire du serveur, jamais sur le disque.
-// Une copie ou une saisie du disque ne permet alors pas de recalculer les empreintes. Elle change à chaque redémarrage.
+// Clés de hachage (HMAC) : une clé tirée au hasard pour chaque période (6 h pour les adresses IP, une journée pour les téléphones),
+// détruite dès la période suivante terminée. Une copie ou une saisie du disque ne permet donc jamais de recalculer
+// les empreintes des périodes passées, même avec le code du serveur.
+// Fichiers dans DATA_DIR/keys (partagés entre processus, relus toutes les 5 s) ; SECRET_STORE=memory : seulement en mémoire
+// (un seul processus). SECRET=… (variable fixe) : clés dérivées de cette valeur, sans cette protection.
+const KEY_DIR = path.join(DATA_DIR, 'keys');
+const SECRET_FILE = path.join(DATA_DIR, 'secret'); // ancienne clé unique (avant la 2.6.5), effacée au démarrage
 const SECRET_MEMORY = process.env.SECRET_STORE === 'memory' && !process.env.SECRET;
-let memSecret = SECRET_MEMORY ? crypto.randomBytes(32).toString('hex') : null;
-if (SECRET_MEMORY) try { fs.unlinkSync(SECRET_FILE); } catch {}
-let secretCache = { t: 0, mtime: -1, v: null };
-function secret() {
-  if (process.env.SECRET) return process.env.SECRET;
-  if (memSecret) return memSecret;
-  const now = Date.now();
-  if (secretCache.v && now - secretCache.t < 5000) return secretCache.v;
-  secretCache.t = now;
-  try {
-    const st = fs.statSync(SECRET_FILE);
-    if (st.mtimeMs !== secretCache.mtime) secretCache = { t: now, mtime: st.mtimeMs, v: fs.readFileSync(SECRET_FILE, 'utf8') };
-    return secretCache.v;
-  } catch {}
-  const v = crypto.randomBytes(32).toString('hex');
-  try { fs.writeFileSync(SECRET_FILE, v, { mode: 0o600, flag: 'wx' }); } catch { return secret(); }
-  secretCache = { t: now, mtime: fs.statSync(SECRET_FILE).mtimeMs, v };
+fs.mkdirSync(KEY_DIR, { recursive: true, mode: 0o700 });
+try { fs.unlinkSync(SECRET_FILE); } catch {}
+const keyCache = new Map();
+function periodKey(kind, bucket) {
+  if (process.env.SECRET) return crypto.createHmac('sha256', process.env.SECRET).update(kind + '|' + bucket).digest('hex');
+  const id = kind + '-' + bucket, now = Date.now(), hit = keyCache.get(id);
+  if (hit && (SECRET_MEMORY || now - hit.t < 5000)) return hit.v;
+  let v;
+  if (SECRET_MEMORY) v = crypto.randomBytes(32).toString('hex');
+  else {
+    const f = path.join(KEY_DIR, id);
+    try { v = fs.readFileSync(f, 'utf8'); } catch {
+      const n = crypto.randomBytes(32).toString('hex');
+      try { fs.writeFileSync(f, n, { mode: 0o600, flag: 'wx' }); v = n; } catch { v = fs.readFileSync(f, 'utf8'); }
+      pruneKeys();
+    }
+  }
+  keyCache.set(id, { v, t: now });
   return v;
 }
+// Seules la période en cours et la précédente sont gardées
+function pruneKeys() {
+  const keep = new Set([`ip-${ipBucket()}`, `ip-${ipBucket() - 1}`, `dev-${dayBucket()}`, `dev-${dayBucket() - 1}`]);
+  for (const id of keyCache.keys()) if (!keep.has(id)) keyCache.delete(id);
+  if (!SECRET_MEMORY) try { for (const f of fs.readdirSync(KEY_DIR)) if (!keep.has(f)) try { fs.unlinkSync(path.join(KEY_DIR, f)); } catch {} } catch {}
+}
+// Effacement d'urgence : toutes les clés détruites, de nouvelles sont tirées
 function rotateSecret() {
   if (process.env.SECRET) return false;
-  if (SECRET_MEMORY) { memSecret = crypto.randomBytes(32).toString('hex'); return true; }
-  const tmp = SECRET_FILE + '.' + process.pid + '.tmp';
-  fs.writeFileSync(tmp, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
-  fs.renameSync(tmp, SECRET_FILE);
-  secretCache = { t: 0, mtime: -1, v: null };
+  keyCache.clear();
+  if (!SECRET_MEMORY) for (const f of fs.readdirSync(KEY_DIR)) try { fs.unlinkSync(path.join(KEY_DIR, f)); } catch {}
   return true;
 }
 // IP du téléphone, seulement pour l'anti-spam (jamais stockée en clair).
@@ -225,16 +232,18 @@ function clientIp(req) {
 }
 function clientHash(req) {
   const ip = clientIp(req);
-  const bucket = Math.floor(Date.now() / (6 * 60 * MIN));
-  return crypto.createHmac('sha256', secret()).update(bucket + '|' + ip).digest('base64url').slice(0, 16);
+  const bucket = ipBucket();
+  return crypto.createHmac('sha256', periodKey('ip', bucket)).update(bucket + '|' + ip).digest('base64url').slice(0, 16);
 }
 // Empreinte du téléphone : l'identifiant brut n'est jamais stocké, seulement son HMAC.
 // Elle change chaque jour à 4 h (heure de Paris en été) : impossible de relier deux journées entre elles.
-const dayBucket = (now = Date.now()) => Math.floor((now - 2 * 60 * MIN) / (24 * 60 * MIN));
+function dayBucket(now = Date.now()) { return Math.floor((now - 2 * 60 * MIN) / (24 * 60 * MIN)); }
+function ipBucket(now = Date.now()) { return Math.floor(now / (6 * 60 * MIN)); }
 function deviceHash(req) {
   const d = String(req.headers['x-device'] || '');
   if (!/^[\w-]{16,64}$/.test(d)) return 'ip:' + clientHash(req);
-  return 'd:' + crypto.createHmac('sha256', secret()).update('dev|' + dayBucket() + '|' + d).digest('base64url').slice(0, 16);
+  const day = dayBucket();
+  return 'd:' + crypto.createHmac('sha256', periodKey('dev', day)).update('dev|' + day + '|' + d).digest('base64url').slice(0, 16);
 }
 
 function keyEq(a, b) { a = Buffer.from(String(a)); b = Buffer.from(String(b)); return a.length === b.length && crypto.timingSafeEqual(a, b); }
@@ -516,6 +525,25 @@ function bump(key, kind, max, now) {
     .run(key, r.t, r.reports, r.votes);
   return true;
 }
+// Plafonds des tables qui grandissent avec le trafic (même en cas d'attaque, la base garde une taille raisonnable) :
+// au-delà, les lignes les plus anciennes partent d'abord
+const TABLE_CAPS = [['devices', 'seen', 500_000], ['abuse', 't', 200_000], ['rate', 't', 500_000], ['quota', 't', 200_000], ['orga_log', 't', 200_000]];
+function capTables() {
+  for (const [t, col, max] of TABLE_CAPS) {
+    const n = q(`SELECT COUNT(*) n FROM ${t}`).get().n;
+    if (n > max) q(`DELETE FROM ${t} WHERE rowid IN (SELECT rowid FROM ${t} ORDER BY ${col} LIMIT ?)`).run(n - Math.floor(max * 0.9));
+  }
+}
+// Quotas sur une période plus longue (une heure, un jour…) : notifications urgentes par orga, abonnements par réseau…
+db.exec('CREATE TABLE IF NOT EXISTS quota(k TEXT PRIMARY KEY, t INTEGER, n INTEGER)');
+function quota(key, max, windowMs, now = Date.now()) {
+  const r = q('SELECT t, n FROM quota WHERE k=?').get(key), cur = r && now - r.t < windowMs ? r : { t: now, n: 0 };
+  if (cur.n >= max) return false;
+  q('INSERT OR REPLACE INTO quota(k,t,n) VALUES(?,?,?)').run(key, cur.t, cur.n + 1);
+  return true;
+}
+// Limites des orgas (hors admin) : vérifications par 5 min, annonces urgentes par heure, annonces et événements par jour
+const ORGA_LIMITS = { verify: Number(process.env.ORGA_VERIFY_MAX) || 30, urgentPerHour: Number(process.env.ORGA_URGENT_MAX) || 3, annPerDay: 30, eventsPerDay: 20 };
 // Vrai si ce téléphone ET cette IP sont sous leurs limites.
 function allow(dev, ip, kind, now) {
   const rep = kind === 'report', cur = q('SELECT t, reports, votes FROM rate WHERE k=?').get('ip:' + ip);
@@ -611,6 +639,8 @@ function snapshotContested(r, now) {
 // Ménage toutes les 30 s : signalements, annonces et événements expirés, limites périmées, fin de pause.
 function sweep() {
   const now = Date.now();
+  try { pruneKeys(); } catch {}
+  try { q('DELETE FROM quota WHERE t<?').run(now - 2 * 24 * 60 * MIN); capTables(); } catch (e) { console.error('plafonds', e.message); }
   try {
     const expired = tx(() => q('DELETE FROM reports WHERE exp<=? RETURNING *').all(now));
     for (const r of expired) { archive(r, r.ct ? 'cont' : 'exp'); dirtyCell(r.cell); }
@@ -703,7 +733,7 @@ function createAnnouncement(b, by, admin, pending = false, oid = admin ? 'admin'
   const a = { id: crypto.randomBytes(6).toString('base64url'), kind, level, text, phone, ...(city ? { city } : {}), by, oid, link,
     lat: national ? CENTER[0] : round(lat), lng: national ? CENTER[1] : round(lng), r, national, permanent: kind === 'legal',
     t: now, exp: kind === 'legal' ? now + 3650 * 24 * 60 * MIN : now + minutes * MIN };
-  if (pending) a.pending = true; // numéro de legal team d'une orga en essai : affiché après validation par l'admin
+  if (pending) a.pending = true; // annonce d'une orga en essai : affichée après validation par l'admin
   saveAnn(a);
   if (a.level === 'urgent' && !a.pending) pushBroadcast(a).catch(e => console.error('push', e.message));
   return [201, annView(a)];
@@ -745,18 +775,44 @@ function seedLegal() {
   setMeta('legalseed', Date.now());
 }
 const LEGAL_WATCH_MS = 24 * 60 * MIN;
+// Adresse publique seulement : jamais le serveur lui-même, le réseau local, ni les adresses internes des hébergeurs (métadonnées)
+const BLOCKED_IP = /^(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|192\.0\.0\.|198\.1[89]\.|22[4-9]\.|2[3-5]\d\.|::$|::1$|f[cd][0-9a-f]{2}:|fe[89ab][0-9a-f]:|::ffff:(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.))/i;
+// Page web d'une source (veille des legal teams) : HTTP(S) sur les ports habituels, adresse vérifiée au moment même de la connexion
+// (une redirection ou un nom de domaine qui change d'adresse ne peut pas mener au réseau interne), 3 redirections au plus.
+function fetchPublic(url, { max = 3_000_000, timeout = 15000, hops = 3 } = {}) {
+  return new Promise((resolve, reject) => {
+    let u; try { u = new URL(url); } catch { return reject(new Error('adresse invalide')); }
+    if (!/^https?:$/.test(u.protocol) || (u.port && !['80', '443'].includes(u.port) && process.env.FETCH_ALLOW_PRIVATE !== '1') || u.username || u.password) return reject(new Error('adresse refusée'));
+    const lib = u.protocol === 'https:' ? require('https') : require('http');
+    const lookup = (host, opts, cb) => require('dns').lookup(host, { ...opts, all: false }, (err, addr, fam) => {
+      if (err) return cb(err);
+      if (BLOCKED_IP.test(addr) && process.env.FETCH_ALLOW_PRIVATE !== '1') return cb(new Error('adresse interne refusée'));
+      cb(null, addr, fam);
+    });
+    const req = lib.get(u, { lookup, timeout, headers: { 'user-agent': 'Cortege-veille/1 (verification annuaire legal teams)' } }, res => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+        res.resume();
+        if (hops <= 0) return reject(new Error('trop de redirections'));
+        return resolve(fetchPublic(new URL(res.headers.location, u).href, { max, timeout, hops: hops - 1 }));
+      }
+      if (res.statusCode < 200 || res.statusCode >= 300) { res.resume(); return reject(new Error('HTTP ' + res.statusCode)); }
+      let size = 0; const parts = [];
+      res.on('data', c => { size += c.length; if (size > max) { res.destroy(); resolve(Buffer.concat(parts).toString('utf8')); } else parts.push(c); });
+      res.on('end', () => resolve(Buffer.concat(parts).toString('utf8')));
+      res.on('error', () => reject(new Error('lecture interrompue')));
+    });
+    req.on('timeout', () => req.destroy(new Error('délai dépassé')));
+    req.on('error', e2 => reject(new Error(/interne|refusée|délai/.test(e2.message) ? e2.message : 'site injoignable')));
+  });
+}
 async function watchOne(e) {
   const w = { at: Date.now() };
   try {
-    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
-    const r = await fetch(e.src, { signal: ctl.signal, redirect: 'follow', headers: { 'user-agent': 'Cortege-veille/1 (verification annuaire legal teams)' } });
-    clearTimeout(timer);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const html = (await r.text()).slice(0, 3_000_000);
+    const html = await fetchPublic(e.src);
     const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/g, ' ');
     w.phones = phonesIn(text);
     w.found = w.phones.includes(phoneDigits(e.phone));
-  } catch (err) { w.err = String(err.name === 'AbortError' ? 'délai dépassé' : err.message).slice(0, 80); }
+  } catch (err) { w.err = String(err.message).slice(0, 80); }
   return w;
 }
 // État de la veille pour une ligne : ok, missing (numéro absent de la source), changed (numéros différents), error
@@ -1145,6 +1201,9 @@ try { db.exec('ALTER TABLE push ADD COLUMN last INTEGER'); } catch {}
 // lang : langue de l'appli sur ce téléphone (textes des notifications) ; ord : nouveaux arrêtés dans la zone
 try { db.exec("ALTER TABLE push ADD COLUMN lang TEXT DEFAULT 'fr'"); } catch {}
 try { db.exec('ALTER TABLE push ADD COLUMN ord INTEGER DEFAULT 1'); } catch {}
+// fails : refus d'envoi consécutifs du service de notification (abonnement supprimé au 5e)
+try { db.exec('ALTER TABLE push ADD COLUMN fails INTEGER DEFAULT 0'); } catch {}
+const PUSH_FAILS = 5, PUSH_NET_MAX = Number(process.env.PUSH_NET_MAX) || 60, PUSH_ZONES_MAX = 3000;
 // Textes des notifications dans la langue du téléphone : mêmes traductions que l'appli (public/lang/*.json, le français sert de clé)
 const PUSH_LANGS = ['fr', 'en', 'es', 'ar'];
 const LANG_DICT = {};
@@ -1272,9 +1331,19 @@ async function pushSendAll(targets, payload, urgent = false, kind = 'envoi') {
   const mk = typeof payload === 'function' ? payload : () => payload, byLang = new Map();
   const base = l => { if (!byLang.has(l)) byLang.set(l, JSON.parse(mk(l))); return byLang.get(l); };
   // Les abonné·es d'une même zone (arrondie à ~10 km) reçoivent les mêmes données : calculées une seule fois
-  const memo = new Map(), dataFor = s => { const k = s.lat + ',' + s.lng; if (!memo.has(k)) memo.set(k, pushData(s.lat, s.lng)); return memo.get(k); };
+  // (au plus PUSH_ZONES_MAX zones différentes par envoi : au-delà, la notification part sans les données)
+  const memo = new Map(), dataFor = s => { const k = s.lat + ',' + s.lng; if (!memo.has(k)) { if (memo.size >= PUSH_ZONES_MAX) return null; memo.set(k, pushData(s.lat, s.lng)); } return memo.get(k); };
   const codes = await Promise.all(targets.map(s => pushOne(s, JSON.stringify({ ...base(PUSH_LANGS.includes(s.lang) ? s.lang : 'fr'), d: dataFor(s) }), urgent)));
-  codes.forEach((code, j) => { if (code === 404 || code === 410) dead.push(targets[j].id); });
+  // Abonnement mort (404, 410) : supprimé. Autre refus définitif (400, 413…) : supprimé au 5e d'affilée.
+  // Pas 403 ni 429 : c'est en général un souci de notre côté (jeton) ou une surcharge passagère.
+  const failed = [], healed = [];
+  codes.forEach((code, j) => {
+    const t = targets[j];
+    if (code === 404 || code === 410) dead.push(t.id);
+    else if (code >= 400 && code < 500 && code !== 403 && code !== 429) { if ((t.fails || 0) + 1 >= PUSH_FAILS) dead.push(t.id); else failed.push(t.id); }
+    else if (code >= 200 && code < 300 && t.fails) healed.push(t.id);
+  });
+  if (failed.length || healed.length) try { tx(() => { for (const id of failed) q('UPDATE push SET fails=COALESCE(fails,0)+1 WHERE id=?').run(id); for (const id of healed) q('UPDATE push SET fails=0 WHERE id=?').run(id); }); } catch {}
   pushStat(kind, codes);
   if (dead.length) try { tx(() => dead.forEach(id => q('DELETE FROM push WHERE id=?').run(id))); } catch {}
   return dead.length;
@@ -1822,7 +1891,7 @@ function createEvent(b, orga, dev, ipH) {
       if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
       if (q("SELECT COUNT(*) n FROM events WHERE status='pending' AND dev=?").get(dev).n >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
       if (q("SELECT COUNT(*) n FROM events WHERE status='pending'").get().n >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
-    }
+    } else if (!orga.admin && !quota('evt:' + orga.id, ORGA_LIMITS.eventsPerDay, 24 * 60 * MIN, now)) return [429, { error: `${ORGA_LIMITS.eventsPerDay} événements par jour au maximum.` }];
     const e = { id: crypto.randomBytes(6).toString('base64url'), type, title, place, note, start, lat: round(lat), lng: round(lng),
       route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', oid: orga ? orga.id : null, status: orga && !orga.trial ? 'ok' : 'pending', t: now };
     if (!orga) e.dev = dev;
@@ -2378,7 +2447,13 @@ async function serveVectorTile(req, res, z, x, y) {
 }
 
 // ---- Proxy de tuiles : les IP des manifestant·es ne partent pas chez le fournisseur de carte ----
-const tileCache = new Map(); const TILE_CACHE_MAX = 2000;
+const tileCache = new Map(); const TILE_CACHE_MAX = 2000, TILE_CACHE_BYTES = (Number(process.env.TILE_CACHE_MB) || 64) * 1e6;
+let tileCacheBytes = 0;
+function tileCachePut(key, buf) {
+  const old = tileCache.get(key); if (old) tileCacheBytes -= old.length;
+  tileCache.set(key, buf); tileCacheBytes += buf.length;
+  while (tileCache.size > TILE_CACHE_MAX || tileCacheBytes > TILE_CACHE_BYTES) { const [k, v] = tileCache.entries().next().value; tileCache.delete(k); tileCacheBytes -= v.length; }
+}
 // Cache disque : une tuile téléchargée une fois est écrite dans tiles/z/x/y.png.
 // Sur cPanel, Apache la sert ensuite directement, sans Node ni OpenStreetMap.
 const TILE_DIR = process.env.TILE_DIR || path.join(__dirname, 'tiles');
@@ -2388,15 +2463,21 @@ if (TILE_DISK) try {
   fs.mkdirSync(TILE_DIR, { recursive: true });
   fs.writeFileSync(path.join(TILE_DIR, '.htaccess'), ['Options -Indexes', '<IfModule mod_headers.c>', '  Header set Cache-Control "public, max-age=604800"', '</IfModule>', ''].join('\n'));
 } catch {}
-function pruneTiles() { // supprime les tuiles de plus de TILE_DAYS jours (la carte d'OSM évolue)
-  const limit = Date.now() - TILE_DAYS * 24 * 60 * MIN;
+// Ménage du cache disque : tuiles de plus de TILE_DAYS jours (la carte d'OSM évolue), puis les plus anciennes
+// tant que le cache dépasse TILE_DISK_GB (2 Go par défaut) : personne ne peut remplir le disque en demandant des tuiles.
+const TILE_DISK_BYTES = (Number(process.env.TILE_DISK_GB) || 2) * 1e9;
+function pruneTiles() {
+  const limit = Date.now() - TILE_DAYS * 24 * 60 * MIN, files = [];
   const walk = d => { for (const e of fs.readdirSync(d, { withFileTypes: true })) {
     const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p); else if (e.name.endsWith('.png') && fs.statSync(p).mtimeMs < limit) try { fs.unlinkSync(p); } catch {}
+    if (e.isDirectory()) walk(p);
+    else if (e.name.endsWith('.png')) { const st = fs.statSync(p); if (st.mtimeMs < limit) try { fs.unlinkSync(p); } catch {} else files.push([st.mtimeMs, st.size, p]); }
   } };
   try { walk(TILE_DIR); } catch {}
+  let total = files.reduce((t, f) => t + f[1], 0);
+  if (total > TILE_DISK_BYTES) for (const [, size, p] of files.sort((a, b) => a[0] - b[0])) { if (total <= TILE_DISK_BYTES * 0.9) break; try { fs.unlinkSync(p); total -= size; } catch {} }
 }
-if (TILE_DISK) setInterval(pruneTiles, 24 * 60 * MIN).unref();
+if (TILE_DISK) setInterval(pruneTiles, 6 * 60 * MIN).unref();
 // Protection du proxy de tuiles : sans elle, n'importe qui pourrait faire télécharger des millions de tuiles
 // par le serveur, remplir le disque et faire bannir le serveur par OpenStreetMap (la carte tomberait pour tous).
 //  - zone : France métropolitaine, Corse et outre-mer à partir du zoom 8 (en dessous, le monde entier tient en peu de tuiles) ;
@@ -2437,8 +2518,7 @@ function fetchTile(z, x, y) {
       up.on('data', c => { size += c.length; if (size > 2_000_000) rq.destroy(); else chunks.push(c); });
       up.on('end', () => {
         const buf = Buffer.concat(chunks); done();
-        tileCache.set(key, buf);
-        if (tileCache.size > TILE_CACHE_MAX) tileCache.delete(tileCache.keys().next().value);
+        tileCachePut(key, buf);
         if (TILE_DISK) {
           const dir = path.join(TILE_DIR, String(z), String(x));
           fs.mkdir(dir, { recursive: true }, () => {
@@ -2491,7 +2571,7 @@ setInterval(() => { lagMs = LAG.percentile(99) / 1e6; LAG.reset(); lagHigh = lag
 const shedding = () => lagHigh >= 3;
 // Jamais délestés : la page et ses fichiers (peu coûteux, et sans eux l'appli ne s'ouvre pas), les fichiers live, et les actions vitales
 const essential = (req, pathname) => pathname === '/api/health' || pathname === '/api/stream'
-  || (req.method === 'GET' && !pathname.startsWith('/api/') && !pathname.startsWith('/vt/'))
+  || (req.method === 'GET' && !pathname.startsWith('/api/') && !pathname.startsWith('/vt/') && !pathname.startsWith('/tiles/'))
   || (req.method === 'POST' && (pathname === '/api/reports' || /^\/api\/reports\/[\w-]{1,16}\/(vote|note)$/.test(pathname)));
 let shedCount = 0, floodCount = 0;
 
@@ -2569,6 +2649,7 @@ const server = http.createServer(async (req, res) => {
       if (!PUSH_HOSTS.test(host) || endpoint.length > 1000) return send(res, 400, { error: 'Service de notification non pris en charge.' });
       const id = sha(endpoint).slice(0, 24);
       if (pathname.endsWith('/unsubscribe')) {
+        if (!quota('unsub:' + clientHash(req), 60, 5 * MIN)) return send(res, 429, { error: 'Trop de demandes, réessaie plus tard.' });
         q('DELETE FROM push WHERE id=?').run(id);
         return send(res, 200, { ok: true });
       }
@@ -2578,7 +2659,10 @@ const server = http.createServer(async (req, res) => {
       const out = tx(() => {
         // limite par réseau : empêche de remplir la liste avec de faux abonnements
         if (!bump('push:' + clientHash(req), 'vote', 10, Date.now())) return 'rate';
-        if (!q('SELECT 1 FROM push WHERE id=?').get(id) && pushCount() >= PUSH_MAX) return false;
+        const known = !!q('SELECT 1 FROM push WHERE id=?').get(id);
+        if (!known && pushCount() >= PUSH_MAX) return false;
+        // Nouveaux abonnements : au plus PUSH_NET_MAX par réseau et par 6 h (une machine ne peut pas remplir la liste)
+        if (!known && !quota('pushnet:' + clientHash(req), PUSH_NET_MAX, 6 * 60 * MIN)) { abuseOnce('abonnements en rafale', deviceHash(req), 60 * MIN, { net: clientHash(req) }); return 'rate'; }
         const urg = b.urgent === false ? 0 : 1, near = b.near === true && hasZone ? 1 : 0, ord = b.orders === false || !hasZone ? 0 : 1;
         const lang = PUSH_LANGS.includes(b.lang) ? b.lang : 'fr';
         q(`INSERT INTO push(id,e,k,a,lat,lng,t,urg,near,lang,ord) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET e=excluded.e, k=excluded.k, a=excluded.a,
@@ -2596,7 +2680,7 @@ const server = http.createServer(async (req, res) => {
       const endpoint = String(b.endpoint || '');
       const row = endpoint && q('SELECT * FROM push WHERE id=?').get(sha(endpoint).slice(0, 24));
       if (!row) return send(res, 404, { error: 'Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications.' });
-      if (!tx(() => bump('ptest:' + deviceHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trois essais au plus toutes les 5 minutes.' });
+      if (!tx(() => bump('ptest:' + deviceHash(req), 'report', 3, Date.now()) && quota('ptestnet:' + clientHash(req), 20, 5 * MIN))) return send(res, 429, { error: 'Trois essais au plus toutes les 5 minutes.' });
       const l = PUSH_LANGS.includes(row.lang) ? row.lang : 'fr';
       const code = await pushOne(row, JSON.stringify({ title: '🔔 ' + tr(l, 'Test Cortège'), body: tr(l, 'Les notifications marchent : tu seras prévenu·e ici.'), tag: 'test', url: '/',
         vibrate: [200, 100, 200, 100, 600] }), true);
@@ -2969,7 +3053,7 @@ const server = http.createServer(async (req, res) => {
         if (b.confirm !== 'EFFACER') return send(res, 400, { error: 'Tape EFFACER pour confirmer.' });
         const n = tx(() => {
           const n = q('DELETE FROM reports').run().changes;
-          for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'hidden', 'push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
+          for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'quota', 'hidden', 'push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
           for (const e of listEvents()) if (e.dev) { delete e.dev; saveEvent(e); }
           q("UPDATE events SET dev=NULL").run();
           // Arrêtés proposés par des participant·es : l'empreinte du téléphone disparaît aussi (colonne et données)
@@ -3361,10 +3445,18 @@ const server = http.createServer(async (req, res) => {
         // Période d'essai : pas d'annonce urgente (notification à toute la zone), numéro de legal team validé par l'admin
         if (orga.trial && b.kind !== 'legal' && b.level === 'urgent')
           return send(res, 400, { error: 'Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info ».' });
-        if (orga.sponsored && b.kind !== 'legal' && q("SELECT COUNT(*) n FROM orga_log WHERE oid=? AND action='annonce' AND t>?").get(orga.id, Date.now() - 24 * 60 * 60_000).n >= SPONSOR.annPerDay)
+        if (orga.sponsored && b.kind !== 'legal' && q("SELECT COUNT(*) n FROM orga_log WHERE oid=? AND action IN ('annonce', 'annonce (en attente)') AND t>?").get(orga.id, Date.now() - 24 * 60 * 60_000).n >= SPONSOR.annPerDay)
           return send(res, 400, { error: `Orga parrainée : ${SPONSOR.annPerDay} annonces par jour au maximum jusqu’à ta confirmation.` });
-        const out = createAnnouncement(b, orga.label, orga.admin, orga.trial && b.kind === 'legal', orga.admin ? 'admin' : orga.id);
-        if (out[0] === 201) orgaLog(orga, out[1].pending ? 'legal team (en attente)' : 'annonce', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id,
+        if (!orga.admin && !quota('ann:' + orga.id, ORGA_LIMITS.annPerDay, 24 * 60 * MIN))
+          return send(res, 429, { error: `${ORGA_LIMITS.annPerDay} annonces par jour au maximum.` });
+        // Notifications urgentes : au plus quelques-unes par heure et par orga (une orga piratée ne peut pas inonder les téléphones)
+        if (!orga.admin && b.kind !== 'legal' && b.level === 'urgent' && !quota('urg:' + orga.id, ORGA_LIMITS.urgentPerHour, 60 * MIN)) {
+          abuseLog('orga en rafale', { ref: orga.id });
+          return send(res, 429, { error: `${ORGA_LIMITS.urgentPerHour} annonces urgentes par heure au maximum. Publie celle-ci en « info ».` });
+        }
+        // Période d'essai : toute annonce (info ou numéro de legal team) n'est visible qu'après validation par l'admin
+        const out = createAnnouncement(b, orga.label, orga.admin, orga.trial, orga.admin ? 'admin' : orga.id);
+        if (out[0] === 201) orgaLog(orga, out[1].pending ? (out[1].kind === 'legal' ? 'legal team (en attente)' : 'annonce (en attente)') : 'annonce', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id,
           detail: (out[1].kind === 'legal' ? out[1].phone + ' ' : '') + (out[1].level === 'urgent' ? '[urgent] ' : '') + (out[1].national ? '[nationale] ' : '') + (out[1].text || '') });
         return send(res, ...out);
       }
@@ -3426,18 +3518,23 @@ const server = http.createServer(async (req, res) => {
         const out = tx(() => {
           const r = getReport(act[1], Date.now());
           if (!r) return [404, { error: 'Signalement expiré.' }];
-          // Parrainée : « Vérifier » vaut une confirmation forte, le point reste contestable
-          if (act[2] === 'verify' && orga.sponsored) {
+          // Vérifications en rafale : bloquées quelques minutes, et l'admin le voit dans le tableau des abus
+          if (act[2] === 'verify' && !orga.admin && !bump('orv:' + orga.id, 'report', ORGA_LIMITS.verify, Date.now())) {
+            orgaLog(orga, 'vérification bloquée (rafale)', { r }); abuseLog('orga en rafale', { lat: r.lat, lng: r.lng, ref: orga.id });
+            return [429, { error: 'Trop de vérifications d’un coup : c’est suspendu quelques minutes. L’admin est prévenu·e.' }];
+          }
+          // Période d'essai (parrainée ou non) : « Vérifier » vaut une confirmation forte, sans la coche « vérifié », le point reste contestable
+          if (act[2] === 'verify' && (orga.sponsored || orga.trial)) {
             const mark = 'o:' + orga.id;
             if (r.voters.includes(mark)) return [409, { error: 'Déjà confirmé.' }];
             r.voters.push(mark); r.up++; r.last = Date.now(); firstConfirm(r);
             const ttl = CAT[r.cat].ttl * MIN; r.exp = Math.min(Math.max(r.exp, Date.now() + ttl), r.t + 4 * ttl);
-            saveReport(r); orgaLog(orga, 'confirmé (parrainée)', { r }); return [200, { ...publicView(r), sponsored: true }];
+            saveReport(r); orgaLog(orga, orga.sponsored ? 'confirmé (parrainée)' : 'confirmé (essai)', { r }); return [200, { ...publicView(r), sponsored: true }];
           }
           if (act[2] === 'verify') { if (!r.ver) repAdd(r.voters[0], 'good', 2); r.ver = orga.label; if (r.fl === -1) r.fl = 0; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
           // Période d'essai : « Retirer » compte comme deux « Plus là », sans retrait direct
           if (orga.sponsored && !bump('orm:' + orga.id, 'report', SPONSOR.removeMax, Date.now())) {
-            orgaLog(orga, 'retrait bloqué (rafale)', { r });
+            orgaLog(orga, 'retrait bloqué (rafale)', { r }); abuseLog('orga en rafale', { lat: r.lat, lng: r.lng, ref: orga.id });
             return [429, { error: 'Trop de retraits d’un coup : le retrait est suspendu quelques minutes.' }];
           }
           if (orga.trial) {
@@ -3448,7 +3545,7 @@ const server = http.createServer(async (req, res) => {
           }
           // Garde-fou : des retraits en rafale bloquent le retrait pour cette orga quelques minutes
           if (!orga.admin && !bump('orm:' + orga.id, 'report', ORGA_REMOVE_MAX, Date.now())) {
-            orgaLog(orga, 'retrait bloqué (rafale)', { r });
+            orgaLog(orga, 'retrait bloqué (rafale)', { r }); abuseLog('orga en rafale', { lat: r.lat, lng: r.lng, ref: orga.id });
             return [429, { error: 'Trop de retraits d’un coup : le retrait est suspendu quelques minutes. L’admin est prévenu·e.' }];
           }
           trashReport(r, orga); orgaLog(orga, 'retiré', { r }); return [200, { removed: true }];

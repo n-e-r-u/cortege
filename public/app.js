@@ -1619,7 +1619,7 @@
       del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); loadMine(); } catch (e) { toast(e.message); } };
       ol.append(el('li', { class: 'ann-row' },
         el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
-          el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible dans « Mes droits »'
+          el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible'
             : `${a.by} · ${a.national ? t('toute la France') : (a.kind === 'legal' ? t('visible partout, rangé par ville') : a.r + ' km')} · ${a.permanent ? t('permanent') : t('expire dans {d}', { d: left(a.exp) })}`)), del));
     }
   }
@@ -1741,7 +1741,7 @@
       national: !!(orga && orga.admin && $('#annNational').checked) });
     try {
       const out = await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
-      toast(out && out.pending ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce publiée');
+      toast(out && out.pending ? (out.kind === 'legal' ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce envoyée : elle s’affichera après validation par l’admin') : 'Annonce publiée');
       $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annCity').value = ''; $('#annNational').checked = false; annZoneUI();
       etag = null; sync(); loadMine();
     } catch (err) { toast(err.message); }

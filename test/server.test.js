@@ -29,7 +29,7 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', ORDER_PUSH_WAIT_MS: '200', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', ORDER_PUSH_WAIT_MS: '200', FETCH_ALLOW_PRIVATE: '1', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
@@ -622,6 +622,12 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
     assert.equal((await A('/api/admin/publish/' + day, {})).s, 200);
     const page = await fetch(B2 + '/manif/' + day).then(r => r.text());
     assert.match(page, />Paris</); assert.ok(!page.includes('75056'), 'pas de code INSEE dans le bilan');
+    // Veille des legal teams : jamais une adresse interne (ici le serveur lui-même), même par un lien enregistré par l'admin
+    const lt = await A('/api/admin/legal', { city: 'Testville', name: 'LT Interne', phone: '06 12 34 56 78', src: B2 + '/api/health', lat: 44.1, lng: 4.1 });
+    assert.ok(lt.s < 300, 'ligne ajoutée');
+    await A('/api/admin/legal-watch', {});
+    let w; for (let i = 0; i < 30 && !(w && w.watch); i++) { await new Promise(r => setTimeout(r, 100)); w = (await A('/api/admin/legal', undefined, 'GET')).j.list.find(e => e.id === lt.j.id); }
+    assert.match(w.watch.err, /refusée/);
     assert.deepEqual(st.counts, { cam: 2, mairie: 1, pharma: 1 }, 'caméra intérieure et boulangerie ignorées');
     const cams = JSON.parse(fs.readFileSync(D2 + '/l/l/48_2-c.json', 'utf8')).p;
     assert.deepEqual(cams.find(x => x[0] === 'n1'), ['n1', 'cam', 48.866, 2.362, 'Préfecture de police', 1, 90, 'f']);
@@ -653,6 +659,23 @@ test('sécurité : une orga ne peut pas prendre le nom d’une autre, ni retirer
   assert.equal(await del(A.key, mine.j.id), 200, 'A retire la sienne');
 });
 
+test('orgas : en essai, ni coche « vérifié » ni annonce visible avant validation ; urgences limitées', async () => {
+  const T = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Essai 265' })).j.invite);
+  const r = (await post('/api/reports', { cat: 'police', ...place() })).j;
+  const v = await asOrga(T.key, `/api/reports/${r.id}/verify`, {});
+  assert.equal(v.s, 200); assert.ok(!v.j.ver, 'pas de coche pendant l’essai'); assert.equal(v.j.up, 1, 'confirmation forte');
+  const a = await asOrga(T.key, '/api/announcements', { kind: 'info', text: 'Info d’essai', ...place(), radiusKm: 3, minutes: 30 });
+  assert.equal(a.s, 201); assert.equal(a.j.pending, true, 'en attente de validation');
+  // Orga confirmée : 3 annonces urgentes par heure au plus
+  const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Confirme 265' })).j.invite);
+  const orgas = await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  const id = orgas.orgas.find(o => o.label === 'Collectif Confirme 265').id;
+  await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+  const urg = [];
+  for (let i = 0; i < 4; i++) urg.push((await asOrga(C.key, '/api/announcements', { kind: 'info', level: 'urgent', text: 'Urgence ' + i, ...place(), radiusKm: 3, minutes: 30 })).s);
+  assert.deepEqual(urg, [201, 201, 201, 429]);
+});
+
 test('sécurité : CF-Connecting-IP ignoré sans CLOUDFLARE=1 (impossible de changer d’« IP » à volonté)', async () => {
   const net = '9.9.' + (Date.now() % 250) + '.9';
   for (let i = 0; i < 11; i++)
@@ -665,7 +688,9 @@ test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace'
   assert.equal((await admin('/api/admin/wipe', {})).s, 400);
   const day = d => new Date(Date.now() + d * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
   assert.equal((await post('/api/orders', { dep: '34', commune: 'Montpellier', start: day(1) + ' 10:00', end: day(2) + ' 10:00', items: [['manif', 'Test effacement']], src: 'https://x.fr/a' })).s, 201);
-  const before = fs.readFileSync(DIR + '/d/secret', 'utf8');
+  const keys = () => fs.readdirSync(DIR + '/d/keys').map(f => fs.readFileSync(DIR + '/d/keys/' + f, 'utf8'));
+  const before = keys();
+  assert.ok(before.length >= 1, 'clés par période sur le disque');
   const w = await admin('/api/admin/wipe', { confirm: 'EFFACER' });
   assert.equal(w.s, 200); assert.equal(w.j.rotated, true);
   for (const t of ['reports', 'devices', 'abuse', 'trash', 'orga_log', 'push', 'orga_req'])
@@ -677,7 +702,7 @@ test('effacement d’urgence : confirmation obligatoire, puis plus aucune trace'
       assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${name} WHERE ${c} IS NOT NULL AND ${c} NOT IN ('[]', '')`).get().n, 0, name + '.' + c);
     if (cols.includes('data')) assert.equal(db.prepare(`SELECT COUNT(*) n FROM ${name} WHERE data LIKE '%"dev":"%'`).get().n, 0, name + ' (données)');
   }
-  assert.notEqual(fs.readFileSync(DIR + '/d/secret', 'utf8'), before, 'nouvelle clé');
+  assert.ok(!keys().some(k => before.includes(k)), 'anciennes clés détruites');
 });
 
 test('traductions : fichiers valides, mêmes textes dans chaque langue', () => {
