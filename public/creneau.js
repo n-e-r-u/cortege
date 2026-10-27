@@ -15,12 +15,12 @@
   let cfg = {}, data;
   try {
     [cfg, data] = await Promise.all([fetch('/api/config').then(r => r.json()).catch(() => ({})),
-      fetch(`/manif/${date}/points.json?v=3`, { cache: 'no-cache' }).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Indisponible.'); return j; })]);
+      fetch(`/manif/${date}/points.json?v=4`, { cache: 'no-cache' }).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Indisponible.'); return j; })]);
   } catch (e) { return msg(e.message || 'Pas de réseau.'); }
   const cats = Object.fromEntries(data.cats.map(c => [c.id, c]));
   // Devenir du point (8e valeur) : les retirés et contestés restent visibles, avec la mention
   const OUT = ['', 'contesté (« Plus là »)', 'retiré par une orga', 'retiré par l’admin', 'évincé (zone saturée)', 'effacé (purge)', 'retiré', 'retiré'];
-  const rows = data.pts.map(([c, t, e, la, lo, up, v, o]) => ({ cat: cats[c], t: t * 60000, end: e * 60000, lat: la / 1e3, lng: lo / 1e3, up, v, status: OUT[o || 0] || '' })).filter(r => r.cat);
+  const rows = data.pts.map(([c, t, e, la, lo, up, v, o]) => ({ cat: cats[c], t: t * 60000, end: e * 60000, lat: la / (data.ps || 1e3), lng: lo / (data.ps || 1e3), up, v, status: OUT[o || 0] || '' })).filter(r => r.cat);
   if (!rows.length) return msg('Aucun signalement ce jour-là.');
 
   // Créneau par défaut : l'heure la plus chargée de la journée
@@ -61,6 +61,10 @@
     preview();
   }
   map.on('click', e => setPlace(e.latlng.lat, e.latlng.lng));
+  // Lien depuis la page d'une ville (?c=lat,lng&n=Lyon&h=14:00-17:00) : lieu et créneau déjà choisis
+  { const u = new URLSearchParams(location.search), c = (u.get('c') || '').match(/^(-?\d+\.\d+),(-?\d+\.\d+)$/), h = (u.get('h') || '').match(/^(\d{2}:\d{2})-(\d{2}:\d{2})$/);
+    if (h) { $('#from').value = h[1]; $('#to').value = h[2]; }
+    if (c) { setPlace(+c[1], +c[2], (u.get('n') || '').slice(0, 60) || null); map.setView([+c[1], +c[2]], 14); } }
   ['#from', '#to', '#r'].forEach(s => $(s).addEventListener('change', preview));
   $('#search').onclick = async () => {
     const q = $('#q').value.trim(); if (q.length < 2) return;
