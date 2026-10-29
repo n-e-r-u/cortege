@@ -1329,10 +1329,21 @@ function pubCsv(d) {
 // ---- Pages de contenu (référencement) : agenda, arrêtés, villes, droits, legal teams ----
 const whenLong = t => new Date(t).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
 const upcoming = (now = Date.now()) => listEvents().filter(e => e.status !== 'pending' && e.lat != null && e.start > now - 2 * 3600e3).sort((a, b) => a.start - b.start);
-const eventLd = (req, list) => list.length ? { '@context': 'https://schema.org', '@graph': list.map(e => ({ '@type': 'Event', name: e.title, startDate: new Date(e.start).toISOString(),
-  eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true,
-  location: { '@type': 'Place', name: e.place || e.title, ...(e.place ? { address: e.place } : {}), geo: { '@type': 'GeoCoordinates', latitude: e.lat, longitude: e.lng } },
-  url: `${PUBLIC_URL_REAL(req)}/?at=${e.lat},${e.lng}`, description: (EVT[e.type] || EVT.manif).label + (e.place ? ' · ' + e.place : '') })) } : null;
+// Données structurées des événements (schema.org Event) : gratuit, organisé par l'orga qui l'a publié, fin estimée à 3 h après le début
+const eventLd = (req, list) => {
+  if (!list.length) return null;
+  const base = PUBLIC_URL_REAL(req);
+  return { '@context': 'https://schema.org', '@graph': list.map(e => {
+    const who = e.by && e.by !== 'Proposition de participant·e' ? e.by : 'Mobilisation locale', url = `${base}/?at=${e.lat},${e.lng}`;
+    const org = { '@type': 'Organization', name: who, url: base + '/agenda' };
+    return { '@type': 'Event', name: e.title, startDate: new Date(e.start).toISOString(), endDate: new Date(e.start + 3 * 3600e3).toISOString(),
+      eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true,
+      location: { '@type': 'Place', name: e.place || e.title, address: e.place || whereOf(e.lat, e.lng).name, geo: { '@type': 'GeoCoordinates', latitude: e.lat, longitude: e.lng } },
+      image: [base + '/og.png'], organizer: org, performer: org,
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'EUR', availability: 'https://schema.org/InStock', url, validFrom: new Date(e.t || e.start).toISOString() },
+      url, description: (EVT[e.type] || EVT.manif).label + (e.place ? ' · ' + e.place : '') + (e.note ? ' · ' + e.note : '') };
+  }) };
+};
 const eventsHtml = list => `<ul class="days">${list.map(e => `<li><a href="/?at=${e.lat},${e.lng}"><span>${htmlEsc((EVT[e.type] || EVT.manif).glyph + ' ' + e.title)}${e.place ? `<br><small class="fine">${htmlEsc(e.place)}</small>` : ''}</span><span>${htmlEsc(whenLong(e.start))}</span></a></li>`).join('')}</ul>`;
 const legalHtml = list => `<ul class="days">${list.map(e => `<li><a href="tel:${htmlEsc(String(e.phone).replace(/[^\d+]/g, ''))}"><span>⚖️ ${htmlEsc(e.name)}</span><span>${htmlEsc(e.phone)}</span></a></li>`).join('')}</ul>`;
 

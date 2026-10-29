@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.8.1
+
+- Données structurées des événements (Google Search Console) : ajout de l’organisateur (l’orga qui a publié), de l’image, de l’entrée gratuite, de la fin (estimée à 3 h après le début) et de l’adresse.
+
 ## 2.8.0
 
 - Bilans précis : les positions gardées pour les bilans passent d’environ 100 m à une dizaine de mètres (comme sur la carte en direct), pour la presse et les legal teams. Les journées archivées avant gardent leur ancienne précision.
