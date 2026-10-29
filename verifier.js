@@ -49,6 +49,10 @@ function listFiles(dir, rel = '') {
     const localServer = sha(fs.readFileSync(path.join(root, 'server.js')));
     console.log(`\nVersion annoncée en ligne : ${v.version}`);
     console.log(`server.js (déclaré par le serveur, non vérifiable) : ${v.files['server.js'] === localServer ? 'identique' : 'différent'} au dépôt`);
+    for (const [f, h] of Object.entries(v.files)) if (f.startsWith('src/')) {
+      let l = null; try { l = sha(fs.readFileSync(path.join(root, f))); } catch {}
+      console.log(`${f} (déclaré, non vérifiable) : ${h === l ? 'identique' : 'différent'} au dépôt`);
+    }
   } catch { console.log('\n/api/version indisponible'); }
   console.log(`\n${ok} identique(s), ${diff} différent(s), ${err} injoignable(s).`);
   if (diff) console.log('Un fichier différent peut venir d\'une version plus récente ou plus ancienne : compare avec le bon commit (git log).');

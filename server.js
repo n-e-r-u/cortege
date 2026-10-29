@@ -1,9 +1,5 @@
-// Cortège — serveur, zéro dépendance (Node >= 18).
-// Compatible hébergement mutualisé (cPanel / Passenger, ex. o2switch) :
-//  - l'état est partagé via un petit fichier JSON, car Passenger peut lancer plusieurs
-//    processus et les endormir ; la mémoire seule ne suffit pas ;
-//  - les clients interrogent le serveur toutes les quelques secondes (pas de connexion
-//    permanente, que les proxys mutualisés gèrent mal).
+// Cortège — serveur, zéro dépendance (Node >= 22.13).
+// Le code est découpé par domaine dans src/ (voir ARCHITECTURE.md) ; ce fichier assemble le tout et démarre le serveur.
 'use strict';
 const http = require('http');
 const https = require('https');
@@ -12,124 +8,15 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 
-const PORT = Number(process.env.PORT) || 8080;
-const EVENT_NAME = process.env.EVENT_NAME || 'Carte des mobilisations';
-const CENTER = (process.env.CENTER || '46.6,2.4').split(',').map(Number); // France entière par défaut
-const ZOOM = Number(process.env.ZOOM) || 6;
-// Accès admin ; vide = admin désactivé. Une clé trop courte est refusée (elle se devinerait).
-const ADMIN_KEY = (k => {
-  if (k && k.length < 12) { console.error('ADMIN_KEY trop courte (12 caractères minimum) : administration désactivée.'); return ''; }
-  return k;
-})(process.env.ADMIN_KEY || '');
-const ARCHIVE_DAYS = Number(process.env.ARCHIVE_DAYS) || 30; // archive du digest et journal des orgas
-// Clés orga / legal team : « Nom affiché:clé » séparés par des virgules.
-// ex. ORGA_KEYS="Legal Team Montpellier:k7f…,Intersyndicale Lyon:p2x…"
-const ORGAS = (process.env.ORGA_KEYS || '').split(',').map(x => x.trim()).filter(Boolean).map(x => {
-  const i = x.lastIndexOf(':'); return { label: x.slice(0, i).trim(), key: x.slice(i + 1).trim() };
-}).filter(o => o.label && o.key.length >= 12);
-const TILE_URL = process.env.TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_UA = process.env.TILE_UA || 'Cortege/1.0 (+https://cortege.neru.tv)';
-// Derrière Passenger/Apache, l'IP réelle arrive dans un en-tête : activé par défaut sous Passenger.
-const UNDER_PASSENGER = typeof PhusionPassenger !== 'undefined';
-const TRUST_PROXY = process.env.TRUST_PROXY ? process.env.TRUST_PROXY === '1' : UNDER_PASSENGER;
-// Hors du dossier web, pour qu'Apache ne serve jamais ce fichier.
-const DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), '.cortege-data');
-// Lien « Signaler une violence policière » (plateforme de la LDH par défaut ; remplaçable par une variable)
-const VIOLENCE_URL = process.env.VIOLENCE_URL || 'https://www.ldh-france.org/stop-violences-policieres/';
-const CONTACT_EMAIL = process.env.CONTACT_EMAIL || '';
-const HOST_INFO = process.env.HOST_INFO || '';   // ex. « o2switch, 222 boulevard …, 63000 Clermont-Ferrand — 04 … »
-const SOURCE_URL = process.env.SOURCE_URL || 'https://github.com/n-e-r-u/cortege'; // lien du dépôt GitHub
-const BRAND = {
-  handle: process.env.BRAND_HANDLE || 'neru',
-  instagram: process.env.BRAND_INSTAGRAM || 'https://www.instagram.com/neru/',
-  site: process.env.BRAND_SITE || 'https://neru.tv',
-  kofi: process.env.BRAND_KOFI || 'https://ko-fi.com/neru', // soutien : faire durer l'appli, renforcer le serveur
-};
+const { PORT, EVENT_NAME, CENTER, ZOOM, ADMIN_KEY, ARCHIVE_DAYS, ORGAS, TILE_URL, TILE_UA, UNDER_PASSENGER, TRUST_PROXY, DATA_DIR,
+  VIOLENCE_URL, CONTACT_EMAIL, HOST_INFO, SOURCE_URL, BRAND, ADMIN_LABEL_ENV, IMPORT_NAMES, PUBLIC_URL, MIN, MAX_REPORTS, MAX_PER_ZONE,
+  MAX_PER_NET_ZONE, NOTE_MAX, ANN_MAX, RATE, STATE_FILE, LOCK_FILE } = require('./src/config');
+const { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL } = require('./src/categories');
+const { labelKey, distM, keyEq, sha, sleep, withLock } = require('./src/util');
+const { periodKey, pruneKeys, rotateSecret, PRIVATE_IP, ONION_HOST, viaOnion, clientIp, clientHash, dayBucket, ipBucket, deviceHash } = require('./src/privacy');
+const { DatabaseSync, db, q, tx, isBusy, getMeta, setMeta } = require('./src/db');
 
-// ---- Catégories (source unique, envoyée au client) — ttl en minutes ----
-const CATEGORIES = [
-  { id: 'crs',            group: 'fdo',     label: 'CRS / Gendarmes mobiles', glyph: '🛡️', ttl: 20 },
-  { id: 'police',         group: 'fdo',     label: 'Police',                  glyph: '🚓', ttl: 20 },
-  { id: 'bac',            group: 'fdo',     label: 'BAC / BRAV-M',            glyph: '🏍️', ttl: 15 },
-  // Militaires de l'opération Sentinelle : garde statique de bâtiments, pas de maintien de l'ordre (pas d'alerte, ne suspend pas les zones calmes)
-  { id: 'militaires',     group: 'fdo',     label: 'Militaires (Sentinelle)', glyph: '🪖', ttl: 60 },
-  { id: 'inter',          group: 'fdo',     label: 'Unités d’intervention (BRI, RAID, GIGN)', glyph: '🚨', ttl: 15 },
-  { id: 'blinde',         group: 'fdo',     label: 'Blindé (Centaure, VBRG)', glyph: '🚛', ttl: 20 },
-  { id: 'nasse',          group: 'fdo',     label: 'Nasse / encerclement',    glyph: '⭕', ttl: 20 },
-  { id: 'interpellation', group: 'fdo',     label: 'Interpellations',         glyph: '⛓️', ttl: 20 },
-  { id: 'lacrymo',        group: 'danger',  label: 'Lacrymo',                 glyph: '💨', ttl: 15 },
-  { id: 'canon',          group: 'danger',  label: 'Canon à eau',             glyph: '🌊', ttl: 15 },
-  { id: 'charge',         group: 'danger',  label: 'Charge',                  glyph: '⚡', ttl: 10 },
-  { id: 'tirs',           group: 'danger',  label: 'Tirs LBD / grenades',     glyph: '💥', ttl: 10 },
-  // Attaques de groupes d'extrême droite contre les cortèges : danger avec alerte, le point suit le groupe
-  { id: 'facho',          group: 'danger',  label: 'Milice / groupe fasciste', glyph: '☠️', ttl: 20 },
-  { id: 'chaud',          group: 'danger',  label: 'Point chaud',             glyph: '🔥', ttl: 20 },
-  { id: 'sommations',     group: 'danger',  label: 'Sommations',              glyph: '📢', ttl: 20 },
-  { id: 'medic',          group: 'soutien', label: 'Street medic',            glyph: '⛑️', ttl: 45 },
-  { id: 'legal',          group: 'soutien', label: 'Legal team / observateurs', glyph: '⚖️', ttl: 60 },
-  { id: 'presse',         group: 'soutien', label: 'Presse',                  glyph: '🎥', ttl: 45 },
-  { id: 'calme',          group: 'soutien', label: 'Zone calme / repli',      glyph: '🕊️', ttl: 90 },
-  { id: 'eau',            group: 'soutien', label: 'Eau / sérum phy',         glyph: '💧', ttl: 90 },
-  // Tête et queue : un seul point chacune, qui suit le cortège (avec sa trace des 30 dernières minutes)
-  { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 10 },
-  { id: 'queue',          group: 'info',    label: 'Queue de cortège',        glyph: '🔚', ttl: 10 },
-  // Point de l'admin en direct (« viens me voir pour un accès orga ») : jamais signalé par d'autres, seulement partagé par l'admin
-  { id: 'contact',        group: 'info',    label: 'Point de rencontre orga', glyph: '★', ttl: 3, beaconOnly: true },
-  { id: 'bloque',         group: 'info',    label: 'Rue bloquée',             glyph: '⛔', ttl: 30 },
-  { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
-];
-// Agenda : types d'événements publiés par les orgas (ou proposés puis validés par l'admin)
-const EVENT_TYPES = [
-  { id: 'manif',         label: 'Manifestation',        glyph: '✊' },
-  { id: 'blocus',        label: 'Blocus (lycée / fac)', glyph: '🚧' },
-  { id: 'rassemblement', label: 'Rassemblement',        glyph: '📍' },
-  { id: 'ag',            label: 'Assemblée générale',   glyph: '🗣️' },
-];
-const EVT = Object.fromEntries(EVENT_TYPES.map(e => [e.id, e]));
-// Nom affiché de l'admin (annonces, vérifications, position en direct) : choisi dans les réglages, sinon ADMIN_LABEL, sinon « Cortège »
-const ADMIN_LABEL_ENV = process.env.ADMIN_LABEL || 'Cortège';
 function adminLabel() { return settings().adminLabel || ADMIN_LABEL_ENV; }
-// ---- Noms d'orga : comparés sans accents, majuscules, espaces ni lettres sosies (cyrillique, grec) ----
-// Le nom n'est qu'un affichage : les droits (retirer une annonce, un événement) passent par l'identifiant de l'orga.
-const SOSIES = { 'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x', 'і': 'i', 'ј': 'j', 'ѕ': 's', 'ԁ': 'd', 'ɡ': 'g', 'ӏ': 'l',
-  'α': 'a', 'ε': 'e', 'ι': 'i', 'κ': 'k', 'ν': 'v', 'ο': 'o', 'ρ': 'p', 'τ': 't', 'υ': 'u', 'χ': 'x', '0': 'o', '1': 'l' };
-const labelKey = l => String(l || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/./gu, c => SOSIES[c] || c).replace(/[^a-z0-9]/g, '');
-const IMPORT_NAMES = ['17octobregiletjaune.net'];
-const PUBLIC_URL = process.env.PUBLIC_URL || 'https://cortege.neru.tv';
-const CAT = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
-// Fusion : un signalement du même type dans ce rayon (m) confirme le point existant au lieu d'en créer un.
-// « move » : le point glisse vers le signalement le plus récent (unités qui se déplacent).
-const MERGE = {
-  crs: { r: 100, move: true }, police: { r: 100, move: true }, bac: { r: 100, move: true }, canon: { r: 100, move: true },
-  inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 }, facho: { r: 150, move: true },
-  nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
-  medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
-  cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
-};
-// Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
-const CALM_KILL_M = 100;
-// Dangers qui déclenchent une alerte de proximité (dans l'appli et en notification)
-const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
-// Vibrations par type : on reconnaît le danger sans sortir le téléphone
-const VIBES = {
-  charge: [100, 60, 100, 60, 100, 60, 100, 60, 100],   // rafale courte : ça arrive vite
-  nasse: [900, 200, 900],                              // deux longues : risque d'être bloqué·e
-  sommations: [500, 150, 500, 150, 500],               // trois longues : partir
-  lacrymo: [400, 150, 400],                            // deux moyennes
-  canon: [250, 100, 250, 100, 250],                    // trois moyennes
-  bac: [150, 80, 150, 80, 600],                        // deux courtes, une longue
-  crs: [200, 100, 200],                                // deux courtes
-  interpellation: [200, 100, 200, 100, 200],           // trois courtes
-  tirs: [60, 40, 60, 40, 60, 40, 60, 40, 60, 40, 60],  // rafale très rapide : tirs
-  inter: [150, 80, 150, 80, 150, 80, 600],             // trois courtes, une longue
-  blinde: [700, 150, 250],                             // une longue, une courte
-  facho: [600, 100, 150, 100, 150, 100, 600],          // une longue, deux courtes, une longue
-};
-const isDanger = cat => Object.hasOwn(CAT, cat) && cat !== 'militaires' && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
-const distM = (a, b) => {
-  const k = Math.PI / 180, x = (b.lng - a.lng) * k * Math.cos((a.lat + b.lat) / 2 * k), y = (b.lat - a.lat) * k;
-  return Math.sqrt(x * x + y * y) * 6371000;
-};
 // Points actifs d'une catégorie autour d'une position (pré-filtre par carré, puis distance réelle)
 function nearby(cat, lat, lng, m, now) {
   const dLat = m / 111000, dLng = m / (111000 * Math.max(0.2, Math.cos(lat * Math.PI / 180)));
@@ -137,126 +24,10 @@ function nearby(cat, lat, lng, m, now) {
     .all(cat, now, lat - dLat, lat + dLat, lng - dLng, lng + dLng)
     .map(r => ({ r, d: distM({ lat, lng }, r) })).filter(x => x.d <= m).sort((a, b) => a.d - b.d);
 }
-const GROUPS = [
-  { id: 'fdo', label: 'Forces de l’ordre' },
-  { id: 'danger', label: 'Danger' },
-  { id: 'soutien', label: 'Soutien' },
-  { id: 'info', label: 'Infos cortège' },
-];
 
-const MIN = 60_000;
-// Plafonds de signalements actifs. Ils sont pensés par zone (~5 km) : une attaque ne peut saturer
-// qu'un secteur, jamais toute la France, et les vrais signalements y entrent quand même.
-const MAX_REPORTS = Number(process.env.MAX_REPORTS) || 200000; // garde-fou technique, toute la France
-const MAX_PER_ZONE = Number(process.env.MAX_PER_ZONE) || 300;  // par zone ; au-delà, les plus anciens non confirmés sortent
-const MAX_PER_NET_ZONE = 25;                                    // par réseau et par zone
-const NOTE_MAX = 120;
-const ANN_MAX = 220;
-// Limites sur 5 min. En 4G/5G, des centaines d'abonnés partagent la même IP : la limite fine est donc
-// par téléphone (identifiant anonyme tiré au hasard sur l'appareil), avec un plafond large par IP.
-const RATE = { windowMs: 5 * MIN, maxReports: 8, maxVotes: 40, ipReports: 120, ipVotes: 800 }; // par IP : large, car des milliers de téléphones partagent parfois une IP d’opérateur (CGNAT)
-
-// ---- Stockage partagé entre processus ----
-fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
-const STATE_FILE = path.join(DATA_DIR, 'state.json');
-const LOCK_FILE = STATE_FILE + '.lock';
-
-// Clés de hachage (HMAC) : une clé tirée au hasard pour chaque période (6 h pour les adresses IP, une journée pour les téléphones),
-// détruite dès la période suivante terminée. Une copie ou une saisie du disque ne permet donc jamais de recalculer
-// les empreintes des périodes passées, même avec le code du serveur.
-// Fichiers dans DATA_DIR/keys (partagés entre processus, relus toutes les 5 s) ; SECRET_STORE=memory : seulement en mémoire
-// (un seul processus). SECRET=… (variable fixe) : clés dérivées de cette valeur, sans cette protection.
-const KEY_DIR = path.join(DATA_DIR, 'keys');
-const SECRET_FILE = path.join(DATA_DIR, 'secret'); // ancienne clé unique (avant la 2.6.5), effacée au démarrage
-const SECRET_MEMORY = process.env.SECRET_STORE === 'memory' && !process.env.SECRET;
-fs.mkdirSync(KEY_DIR, { recursive: true, mode: 0o700 });
-try { fs.unlinkSync(SECRET_FILE); } catch {}
-const keyCache = new Map();
-function periodKey(kind, bucket) {
-  if (process.env.SECRET) return crypto.createHmac('sha256', process.env.SECRET).update(kind + '|' + bucket).digest('hex');
-  const id = kind + '-' + bucket, now = Date.now(), hit = keyCache.get(id);
-  if (hit && (SECRET_MEMORY || now - hit.t < 5000)) return hit.v;
-  let v;
-  if (SECRET_MEMORY) v = crypto.randomBytes(32).toString('hex');
-  else {
-    const f = path.join(KEY_DIR, id);
-    try { v = fs.readFileSync(f, 'utf8'); } catch {
-      const n = crypto.randomBytes(32).toString('hex');
-      try { fs.writeFileSync(f, n, { mode: 0o600, flag: 'wx' }); v = n; } catch { v = fs.readFileSync(f, 'utf8'); }
-      pruneKeys();
-    }
-  }
-  keyCache.set(id, { v, t: now });
-  return v;
-}
-// Seules la période en cours et la précédente sont gardées
-function pruneKeys() {
-  const keep = new Set([`ip-${ipBucket()}`, `ip-${ipBucket() - 1}`, `dev-${dayBucket()}`, `dev-${dayBucket() - 1}`]);
-  for (const id of keyCache.keys()) if (!keep.has(id)) keyCache.delete(id);
-  if (!SECRET_MEMORY) try { for (const f of fs.readdirSync(KEY_DIR)) if (!keep.has(f)) try { fs.unlinkSync(path.join(KEY_DIR, f)); } catch {} } catch {}
-}
-// Effacement d'urgence : toutes les clés détruites, de nouvelles sont tirées
-function rotateSecret() {
-  if (process.env.SECRET) return false;
-  keyCache.clear();
-  if (!SECRET_MEMORY) for (const f of fs.readdirSync(KEY_DIR)) try { fs.unlinkSync(path.join(KEY_DIR, f)); } catch {}
-  return true;
-}
-// IP du téléphone, seulement pour l'anti-spam (jamais stockée en clair).
-// - Derrière un CDN : en-tête CF-Connecting-IP (sinon tout le monde aurait l'IP du CDN
-//   et l'anti-spam bloquerait des foules entières).
-// - Sinon : dernière adresse publique de X-Forwarded-For, celle ajoutée par le proxy de l'hébergeur ;
-//   les premières peuvent être inventées par le client pour contourner les limites.
-const PRIVATE_IP = /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|f[cd][0-9a-f]{2}:|fe80:|::ffff:(10\.|127\.|192\.168\.))/i;
-// Accès par Tor (.onion) : toutes les connexions arrivent du serveur lui-même. Le proxy local de l'adresse .onion
-// ajoute X-Cortege-Onion ; l'anti-spam se fonde alors sur l'identifiant du téléphone, sinon tout Tor partagerait une seule limite.
-const ONION_HOST = (process.env.ONION_HOST || '').trim();
-// En-têtes de proxy crus seulement si la connexion vient du proxy lui-même : la machine (Caddy, Nginx, Tor),
-// un socket local (Passenger) ou une adresse listée dans PROXY_IPS. Sinon, n'importe qui pourrait choisir son « IP ».
-const PROXY_IPS = new Set((process.env.PROXY_IPS || '').split(',').map(x => x.trim()).filter(Boolean));
-// CF-Connecting-IP : seulement si l'instance est vraiment derrière Cloudflare (CLOUDFLARE=1)
-const CLOUDFLARE = process.env.CLOUDFLARE === '1';
-// ONION_SECRET : valeur attendue dans X-Cortege-Onion (posée par le bloc .onion de Caddy). Sans elle, « 1 » comme avant.
-const ONION_SECRET = process.env.ONION_SECRET || '';
-const fromProxy = req => { const a = req.socket.remoteAddress || ''; return !a || /^(127\.|::1$|::ffff:127\.)/.test(a) || PROXY_IPS.has(a.replace(/^::ffff:/, '')); };
-function viaOnion(req) {
-  const h = String(req.headers['x-cortege-onion'] || '');
-  return TRUST_PROXY && fromProxy(req) && (ONION_SECRET ? h.length === ONION_SECRET.length && keyEq(h, ONION_SECRET) : h === '1');
-}
-function clientIp(req) {
-  if (viaOnion(req)) { const d = String(req.headers['x-device'] || ''); return 'onion:' + (/^[\w-]{16,64}$/.test(d) ? d : 'sans-id'); }
-  if (TRUST_PROXY && fromProxy(req)) {
-    const cf = CLOUDFLARE ? String(req.headers['cf-connecting-ip'] || '').trim() : '';
-    if (cf) return cf;
-    const hops = String(req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
-    const pub = hops.filter(h => !PRIVATE_IP.test(h));
-    if (pub.length) return pub[pub.length - 1];
-    if (hops.length) return hops[hops.length - 1];
-    if (req.headers['x-real-ip']) return String(req.headers['x-real-ip']).trim();
-  }
-  return req.socket.remoteAddress || '';
-}
-function clientHash(req) {
-  const ip = clientIp(req);
-  const bucket = ipBucket();
-  return crypto.createHmac('sha256', periodKey('ip', bucket)).update(bucket + '|' + ip).digest('base64url').slice(0, 16);
-}
-// Empreinte du téléphone : l'identifiant brut n'est jamais stocké, seulement son HMAC.
-// Elle change chaque jour à 4 h (heure de Paris en été) : impossible de relier deux journées entre elles.
-function dayBucket(now = Date.now()) { return Math.floor((now - 2 * 60 * MIN) / (24 * 60 * MIN)); }
-function ipBucket(now = Date.now()) { return Math.floor(now / (6 * 60 * MIN)); }
-function deviceHash(req) {
-  const d = String(req.headers['x-device'] || '');
-  if (!/^[\w-]{16,64}$/.test(d)) return 'ip:' + clientHash(req);
-  const day = dayBucket();
-  return 'd:' + crypto.createHmac('sha256', periodKey('dev', day)).update('dev|' + day + '|' + d).digest('base64url').slice(0, 16);
-}
-
-function keyEq(a, b) { a = Buffer.from(String(a)); b = Buffer.from(String(b)); return a.length === b.length && crypto.timingSafeEqual(a, b); }
 // Orgas créées depuis la page admin : seule l'empreinte (hash) de leur clé est stockée.
 const ORGA_FILE = () => path.join(DATA_DIR, 'orgas.json');
 const INVITE_MS = 24 * 60 * 60_000; // durée de validité d'une invitation d'orga
-const sha = k => crypto.createHash('sha256').update(String(k)).digest('hex');
 let orgaCache = { mtime: -1, list: [] };
 function readOrgas() {
   try {
@@ -319,68 +90,12 @@ function descendants(list, id) {
   return out;
 }
 const newInvite = () => { const token = crypto.randomBytes(18).toString('base64url'); return { token, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; };
-const sleep = ms => { try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch { const e = Date.now() + ms; while (Date.now() < e); } };
-function withLock(fn, lockFile = LOCK_FILE) {
-  let fd;
-  for (let i = 0; ; i++) {
-    try { fd = fs.openSync(lockFile, 'wx'); break; }
-    catch (e) {
-      if (e.code !== 'EEXIST') throw e;
-      try { if (Date.now() - fs.statSync(lockFile).mtimeMs > 3000) fs.unlinkSync(lockFile); } catch {}
-      if (i > 300) throw new Error('busy');
-      sleep(10);
-    }
-  }
-  try { return fn(); } finally { fs.closeSync(fd); try { fs.unlinkSync(lockFile); } catch {} }
-}
 
-// ---- Base de données : SQLite intégré à Node (22.13 ou plus), en mode WAL ----
-// Chaque action n'écrit que sa propre ligne, et plusieurs processus Passenger écrivent sans se bloquer.
-{
-  const emit = process.emitWarning;
-  process.emitWarning = function (w, ...rest) { if (/sqlite/i.test(String((w && w.message) || w))) return; return emit.call(process, w, ...rest); };
-}
-let DatabaseSync;
-try { ({ DatabaseSync } = require('node:sqlite')); }
-catch { console.error('Cortège a besoin de Node 22.13 ou plus récent (module node:sqlite) : choisis Node 24 dans cPanel.'); process.exit(1); }
-const DB_FILE = path.join(DATA_DIR, 'cortege.db');
-const db = new DatabaseSync(DB_FILE);
-// Plusieurs processus démarrent parfois en même temps : on attend que la base soit libre (8 s max par opération).
-db.exec('PRAGMA busy_timeout=8000');
-for (let i = 0; ; i++) {
-  try { db.exec('PRAGMA journal_mode=WAL'); break; }
-  catch (e) { if (i > 50 || !/locked|busy/i.test(e.message)) throw e; sleep(100); }
-}
-db.exec(`PRAGMA synchronous=NORMAL;
-  CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY, cat TEXT NOT NULL, lat REAL, lng REAL, cell TEXT, note TEXT, t INTEGER, exp INTEGER,
-    up INTEGER DEFAULT 0, down INTEGER DEFAULT 0, ver TEXT, voters TEXT DEFAULT '[]', down_ips TEXT DEFAULT '[]');
-  CREATE INDEX IF NOT EXISTS reports_cell ON reports(cell);
-  CREATE INDEX IF NOT EXISTS reports_exp ON reports(exp);
-  CREATE TABLE IF NOT EXISTS ann(id TEXT PRIMARY KEY, exp INTEGER, data TEXT);
-  CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, status TEXT, src TEXT, start INTEGER, dev TEXT, data TEXT);
-  CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY, status TEXT, end INTEGER, dev TEXT, data TEXT);
-  CREATE TABLE IF NOT EXISTS rate(k TEXT PRIMARY KEY, t INTEGER, reports INTEGER DEFAULT 0, votes INTEGER DEFAULT 0);
-  CREATE TABLE IF NOT EXISTS hidden(id TEXT PRIMARY KEY, until INTEGER);
-  CREATE TABLE IF NOT EXISTS cells(cell TEXT PRIMARY KEY, region TEXT, h TEXT);
-  CREATE INDEX IF NOT EXISTS cells_region ON cells(region);
-  CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);`);
-for (const f of [DB_FILE, DB_FILE + '-wal', DB_FILE + '-shm']) try { fs.chmodSync(f, 0o600); } catch {}
-const stmts = new Map();
-const q = sql => { let st = stmts.get(sql); if (!st) stmts.set(sql, (st = db.prepare(sql))); return st; };
-const isBusy = e => e && (e.message === 'busy' || /locked|busy/i.test(e.message || ''));
-function tx(fn) {
-  db.exec('BEGIN IMMEDIATE');
-  try { const out = fn(); db.exec('COMMIT'); return out; }
-  catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
-}
-const getMeta = k => q('SELECT v FROM meta WHERE k=?').get(k)?.v;
-const setMeta = (k, v) => q('INSERT INTO meta(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v').run(k, String(v));
 const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p > now ? p : 0; };
 
 // ---- Réglages modifiables depuis l'admin (sans toucher aux variables du serveur) ----
 // Bandeau d'événement (avec dates), vue d'ouverture, catégories (activées, durée), rayon d'alerte, distance des notifications.
 // Les clés, chemins et liens restent dans les variables d'environnement.
-const BASE_TTL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.ttl]));
 let SET = { at: 0, v: {}, h: '' };
 function settings() {
   const now = Date.now();
@@ -431,45 +146,7 @@ function bannerNow(now = Date.now()) {
 }
 const cfgHash = () => { const s = settings(); return crypto.createHash('sha1').update(JSON.stringify([s, bannerNow()])).digest('base64url').slice(0, 10); };
 
-// Signalements
-// Empreinte du réseau de l'auteur (même HMAC tournant que l'anti-spam), effacée avec le signalement.
-try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
-// Heure de la dernière confirmation ou du dernier signalement fusionné
-try { db.exec('ALTER TABLE reports ADD COLUMN last INTEGER'); } catch {}
-// Précisions écrites (les 3 plus récentes, une par téléphone) : [{ x: texte, t: heure, d: empreinte du téléphone }]
-try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch {}
-// « Plus là » pondérés (dw) et heure à laquelle le point est devenu contesté (ct)
-try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
-try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
-// Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié
-try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch {}
-// Trace (tête et queue de cortège) : positions des 30 dernières minutes [[lat, lng, heure]] ;
-// bk : heure de début du partage de position en direct d'une orga (0 sinon)
-try { db.exec('ALTER TABLE reports ADD COLUMN trail TEXT'); } catch {}
-try { db.exec('ALTER TABLE reports ADD COLUMN bk INTEGER DEFAULT 0'); } catch {}
-// Point de départ du partage de position en direct (jamais publié) : le partage s'arrête si l'orga s'en éloigne de plus de 2 km
-try { db.exec('ALTER TABLE reports ADD COLUMN bkla REAL'); } catch {}
-try { db.exec('ALTER TABLE reports ADD COLUMN bklo REAL'); } catch {}
-// Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
-// Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
-db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
-// Fiabilité du jour : signalements confirmés par d'autres (good) ou contestés (bad). Repart de zéro chaque jour (empreinte quotidienne).
-try { db.exec('ALTER TABLE devices ADD COLUMN good INTEGER DEFAULT 0'); } catch {}
-try { db.exec('ALTER TABLE devices ADD COLUMN bad INTEGER DEFAULT 0'); } catch {}
-// Fiabilité du signalement à sa création : 1 = téléphone fiable, -1 = non fiable (série suspecte, mode renforcé)
-try { db.exec('ALTER TABLE reports ADD COLUMN fl INTEGER DEFAULT 0'); } catch {}
-// Tableau des abus : 48 h, position arrondie à ~1 km ; les empreintes (dev, net) sont effacées au bout d'une heure
-db.exec(`CREATE TABLE IF NOT EXISTS abuse(id INTEGER PRIMARY KEY, t INTEGER, kind TEXT, lat REAL, lng REAL, dev TEXT, net TEXT, ref TEXT);
-  CREATE INDEX IF NOT EXISTS abuse_t ON abuse(t);
-  CREATE INDEX IF NOT EXISTS abuse_kind_dev ON abuse(kind, dev, t);`);
-db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
-db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
 // ---- Journal des actions d'orgas (30 jours) et corbeille des retraits (1 h) ----
-// Journal : heure, orga, action, type de signalement, position arrondie à ~100 m. Jamais d'IP.
-db.exec(`CREATE TABLE IF NOT EXISTS orga_log(id INTEGER PRIMARY KEY, t INTEGER, oid TEXT, orga TEXT, action TEXT, cat TEXT, lat REAL, lng REAL, ref TEXT, detail TEXT);
-  CREATE INDEX IF NOT EXISTS orga_log_t ON orga_log(t);
-  CREATE INDEX IF NOT EXISTS orga_log_oid ON orga_log(oid, t);
-  CREATE TABLE IF NOT EXISTS trash(id TEXT PRIMARY KEY, t INTEGER, oid TEXT, orga TEXT, data TEXT);`);
 const TRASH_MS = 60 * 60_000;
 const ORGA_REMOVE_MAX = Number(process.env.ORGA_REMOVE_MAX) || 15; // retraits par orga et par 5 min
 function orgaLog(orga, action, { r, lat, lng, ref, detail } = {}) {
@@ -577,8 +254,6 @@ function capTables() {
     if (n > max) q(`DELETE FROM ${t} WHERE rowid IN (SELECT rowid FROM ${t} ORDER BY ${col} LIMIT ?)`).run(n - Math.floor(max * 0.9));
   }
 }
-// Quotas sur une période plus longue (une heure, un jour…) : notifications urgentes par orga, abonnements par réseau…
-db.exec('CREATE TABLE IF NOT EXISTS quota(k TEXT PRIMARY KEY, t INTEGER, n INTEGER)');
 function quota(key, max, windowMs, now = Date.now()) {
   const r = q('SELECT t, n FROM quota WHERE k=?').get(key), cur = r && now - r.t < windowMs ? r : { t: now, n: 0 };
   if (cur.n >= max) return false;
@@ -786,10 +461,6 @@ function createAnnouncement(b, by, admin, pending = false, oid = admin ? 'admin'
 }
 
 // ---- Annuaire permanent des legal teams ----
-// Rempli par l'admin (à partir d'une liste de départ non validée). Seules les lignes validées sont publiées
-// (live/legal.json). Une veille quotidienne relit la page source de chaque ligne et prévient l'admin si le
-// numéro n'y figure plus ou si d'autres numéros apparaissent. Elle ne publie et ne modifie jamais rien.
-db.exec('CREATE TABLE IF NOT EXISTS legal_dir(id TEXT PRIMARY KEY, data TEXT)');
 const legalAll = () => q('SELECT data FROM legal_dir').all().map(x => JSON.parse(x.data)).sort((a, b) => a.city.localeCompare(b.city, 'fr') || a.name.localeCompare(b.name, 'fr'));
 const getLegal = id => { const x = q('SELECT data FROM legal_dir WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
 function saveLegal(e) { cityIdx.at = 0; q('INSERT OR REPLACE INTO legal_dir(id,data) VALUES(?,?)').run(e.id, JSON.stringify(e)); dirty.legal = true; scheduleFlush(); }
@@ -884,11 +555,7 @@ async function legalWatch(force = false) {
 }
 const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
 
-
 // ---- Demandes d'accès orga (formulaire dans l'appli, au lieu d'un e-mail) ----
-// Gardé : nom du collectif, ville, rôle, lien public, canal officiel du collectif, garant éventuel, message.
-// Supprimé dès que l'admin a traité la demande, et au plus tard au bout de 30 jours. Ni IP ni identifiant du téléphone.
-db.exec('CREATE TABLE IF NOT EXISTS orga_req(id TEXT PRIMARY KEY, t INTEGER, data TEXT)');
 const OREQ_DAYS = 30;
 function orgaRequest(b) {
   const f = { collective: clean(b.collective, 80), city: clean(b.city, 60), role: clean(b.role, 40), link: String(b.link || '').trim().slice(0, 300),
@@ -934,8 +601,6 @@ function placeOf(lat, lng) {
 }
 
 // ---- Communes : contours OpenStreetMap (limites administratives de niveau 8), extraits pendant l'import mensuel ----
-// Gardés dans la base (simplifiés à ~50 m) : un point est rattaché à la commune qui le contient, sans aucun service extérieur.
-db.exec('CREATE TABLE IF NOT EXISTS communes(id TEXT PRIMARY KEY, insee TEXT, name TEXT, minlat REAL, minlng REAL, maxlat REAL, maxlng REAL, data TEXT, seen INTEGER)');
 let COMM = null;
 const commPolys = new Map(), commCache = new Map();
 function commIndex() {
@@ -1034,9 +699,6 @@ function dayRows(date) {
 const dayCountFr = d => dedupeRows(readArchiveDay(d)).filter(r => inFrance(r.lat, r.lng)).length;
 
 // ---- Pages publiques par manif (/manif/AAAA-MM-JJ) ----
-// Publiées à la main par l'admin. On fige alors un résumé agrégé (la page n'affiche que le centre de chaque ville et des totaux),
-// plus les points arrondis à ~11 m pour la carte d’un créneau, gardés même quand l'archive détaillée est effacée.
-db.exec('CREATE TABLE IF NOT EXISTS pub(date TEXT PRIMARY KEY, t INTEGER, data TEXT)');
 // Bilans figés par la 2.6.0 avec le code INSEE à la place du nom de la commune : nom retrouvé à la lecture
 const INSEE_RE = /^\d[\dAB]\d{3}$/;
 const fixPubNames = d => { if (d && Array.isArray(d.cities)) for (const c of d.cities) if (INSEE_RE.test(c.name)) { const x = q('SELECT name FROM communes WHERE insee=?').get(c.name); if (x) c.name = x.name; } return d; };
@@ -1510,17 +1172,6 @@ const VAPID = (() => {
   try { fs.writeFileSync(f, JSON.stringify(v), { mode: 0o600, flag: 'wx' }); return v; } catch { return JSON.parse(fs.readFileSync(f, 'utf8')); }
 })();
 const VAPID_KEY = crypto.createPrivateKey({ key: VAPID.jwk, format: 'jwk' });
-// Abonnements dans la base (avant : un fichier réécrit en entier à chaque abonnement, de plus en plus lent)
-db.exec('CREATE TABLE IF NOT EXISTS push(id TEXT PRIMARY KEY, e TEXT NOT NULL, k TEXT, a TEXT, lat REAL, lng REAL, t INTEGER)');
-// urg : annonces urgentes ; near : dangers signalés dans la zone ; last : dernier envoi « danger » (anti-avalanche)
-try { db.exec('ALTER TABLE push ADD COLUMN urg INTEGER DEFAULT 1'); } catch {}
-try { db.exec('ALTER TABLE push ADD COLUMN near INTEGER DEFAULT 0'); } catch {}
-try { db.exec('ALTER TABLE push ADD COLUMN last INTEGER'); } catch {}
-// lang : langue de l'appli sur ce téléphone (textes des notifications) ; ord : nouveaux arrêtés dans la zone
-try { db.exec("ALTER TABLE push ADD COLUMN lang TEXT DEFAULT 'fr'"); } catch {}
-try { db.exec('ALTER TABLE push ADD COLUMN ord INTEGER DEFAULT 1'); } catch {}
-// fails : refus d'envoi consécutifs du service de notification (abonnement supprimé au 5e)
-try { db.exec('ALTER TABLE push ADD COLUMN fails INTEGER DEFAULT 0'); } catch {}
 const PUSH_FAILS = 5, PUSH_NET_MAX = Number(process.env.PUSH_NET_MAX) || 60, PUSH_ZONES_MAX = 3000;
 // Textes des notifications dans la langue du téléphone : mêmes traductions que l'appli (public/lang/*.json, le français sert de clé)
 const PUSH_LANGS = ['fr', 'en', 'es', 'ar'];
@@ -1705,8 +1356,6 @@ const POI_KINDS = [
   { id: 'cam', label: 'Caméra de surveillance', glyph: '📷', grp: 'surv', cam: true },
 ];
 const POI = Object.fromEntries(POI_KINDS.map(k => [k.id, k]));
-db.exec(`CREATE TABLE IF NOT EXISTS pois(id TEXT PRIMARY KEY, kind TEXT, lat REAL, lng REAL, rg TEXT, data TEXT, src TEXT, hid INTEGER DEFAULT 0, ed INTEGER DEFAULT 0, seen INTEGER);
-  CREATE INDEX IF NOT EXISTS pois_rg ON pois(rg);`);
 const PLACES_IMPORT = process.env.PLACES_IMPORT !== '0';
 // overpass.private.coffee d'abord : overpass-api.de met parfois les requêtes en attente jusqu'au délai (et refuse l'IPv6 de certains hébergeurs)
 const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass.private.coffee/api/interpreter,https://overpass-api.de/api/interpreter';
@@ -2218,7 +1867,6 @@ function createEvent(b, orga, dev, ipH) {
   });
 }
 
-
 // ---- Arrêtés et restrictions (interdiction de manif, couvre-feu, transports…) ----
 // N'importe qui peut proposer, avec une source fiable ; seul l'admin valide. La zone est une commune ou un département :
 // son contour officiel est envoyé aux téléphones, qui affichent un bandeau quand on regarde la zone ou qu'on s'y trouve.
@@ -2376,7 +2024,6 @@ async function orderPush(ids) {
     await pushSendAll(subs, payload, false, 'arrêté');
   }
 }
-
 
 // ---- Publication en fichiers statiques ----
 // Node écrit de petits fichiers JSON dans live/ ; sur cPanel, Apache les sert directement aux téléphones.
@@ -2672,6 +2319,11 @@ function versionInfo() {
   };
   walk(PUBLIC, '');
   files['server.js'] = sha(__filename);
+  // Code serveur découpé dans src/ (déclaré, comme server.js)
+  const walkSrc = (dir, rel) => { for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    if (e.name.startsWith('.')) continue; const p = path.join(dir, e.name);
+    if (e.isDirectory()) walkSrc(p, rel + '/' + e.name); else if (e.name.endsWith('.js')) files['src' + rel + '/' + e.name] = sha(p); } };
+  try { walkSrc(path.join(__dirname, 'src'), ''); } catch {}
   versionCache = { t: Date.now(), body: { version: APP_VERSION, algorithm: 'sha256', files,
     verify: 'node verifier.js ' + PUBLIC_URL + '  (depuis une copie du dépôt public)' } };
   return versionCache.body;
@@ -3699,7 +3351,6 @@ const server = http.createServer(async (req, res) => {
       });
       return send(res, ...result);
     }
-
 
     // ---- Invitation d'orga : le jeton du QR code est échangé une seule fois contre une clé ----
     if (req.method === 'POST' && pathname === '/api/invite') {
