@@ -12,7 +12,7 @@ Ouvre une « issue » avec le modèle qui correspond (bug ou idée). Plus c'est 
 
 1. Fais un fork, puis une branche pour ton changement.
 2. Lance l'appli en local : `node server.js` (Node 22.13 ou plus, 24 conseillé), puis ouvre http://localhost:8080.
-   Le fonctionnement détaillé et la configuration sont dans [`docs/`](docs/).
+   Le fonctionnement détaillé et la configuration sont dans [`docs/`](docs/), l'organisation du code dans [ARCHITECTURE.md](ARCHITECTURE.md).
 3. Lance les tests : `npm test`. Ils doivent tous passer, et un nouveau comportement mérite un test.
 4. Ouvre une « pull request » qui explique le pourquoi, pas seulement le quoi.
 
