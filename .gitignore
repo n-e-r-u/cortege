@@ -1,7 +1,7 @@
 # Données générées sur le serveur (jamais dans le dépôt)
-live/
-tiles/
-map/
+/live/
+/tiles/
+/map/
 node_modules/
 *.log
 *.tmp
