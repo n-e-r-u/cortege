@@ -772,7 +772,7 @@ function createAnnouncement(b, by, admin, pending = false, oid = admin ? 'admin'
   const r = national ? 0 : Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), 50);
   const minutes = Math.min(Math.max(Number(b.minutes) || 60, 10), 24 * 60);
   if (kind === 'info' && text.length < 3) return [400, { error: 'Écris le message de l’annonce.' }];
-  if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Numéro de téléphone invalide.' }];
+  if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Invalid phone number.' }];
   if (kind === 'legal' && city.length < 2) return [400, { error: 'Indique la ville de la legal team.' }];
   if (!national && !validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
   const now = Date.now();
@@ -808,7 +808,7 @@ function cleanLegal(b, old) {
   if (b.srcDate !== undefined) e.srcDate = /^\d{4}-\d{2}-\d{2}$/.test(String(b.srcDate)) ? b.srcDate : null;
   if (e.city.length < 2) return [400, 'Indique la ville.'];
   if (e.name.length < 2) return [400, 'Indique le nom du collectif.'];
-  if (phoneDigits(e.phone).length < 6) return [400, 'Numéro de téléphone invalide.'];
+  if (phoneDigits(e.phone).length < 6) return [400, 'Invalid phone number.'];
   if (!validLatLng(e.lat, e.lng)) return [400, 'Position invalide (choisis la ville dans la recherche).'];
   return [200, e];
 }
