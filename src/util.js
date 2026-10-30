@@ -34,4 +34,14 @@ const wait = ms => new Promise(go => setTimeout(go, ms));
 
 const h8 = str => crypto.createHash('sha1').update(str).digest('base64url').slice(0, 10);
 
-module.exports = { SOSIES, labelKey, distM, keyEq, sha, sleep, withLock, wait, h8 };
+const round = n => Math.round(n * 1e4) / 1e4; // ~11 m
+
+const clean = (v, max) => String(v || '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+const validLatLng = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+function distKm(aLat, aLng, bLat, bLng) {
+  const r = Math.PI / 180, dLat = (bLat - aLat) * r, dLng = (bLng - aLng) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLng / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
+
+module.exports = { SOSIES, labelKey, distM, keyEq, sha, sleep, withLock, wait, h8, round, clean, validLatLng, distKm };

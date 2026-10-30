@@ -13,7 +13,7 @@ const { PORT, EVENT_NAME, CENTER, ZOOM, ADMIN_KEY, ARCHIVE_DAYS, ORGAS, TILE_URL
   VIOLENCE_URL, CONTACT_EMAIL, HOST_INFO, SOURCE_URL, BRAND, ADMIN_LABEL_ENV, IMPORT_NAMES, PUBLIC_URL, MIN, MAX_REPORTS, MAX_PER_ZONE,
   MAX_PER_NET_ZONE, NOTE_MAX, ANN_MAX, RATE, STATE_FILE, LOCK_FILE } = require('./src/config');
 const { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL } = require('./src/categories');
-const { labelKey, distM, keyEq, sha, sleep, withLock, wait, h8 } = require('./src/util');
+const { labelKey, distM, keyEq, sha, sleep, withLock, wait, h8, round, clean, validLatLng, distKm } = require('./src/util');
 const { periodKey, pruneKeys, rotateSecret, PRIVATE_IP, ONION_HOST, viaOnion, clientIp, clientHash, dayBucket, ipBucket, deviceHash } = require('./src/privacy');
 const { DatabaseSync, db, q, tx, isBusy, getMeta, setMeta } = require('./src/db');
 const { send, readJson } = require('./src/http/respond');
@@ -23,34 +23,18 @@ const { APP_VERSION, versionInfo } = require('./src/http/version');
 const { PMTILES, PM_ZONES, pmDecomp, pmOpen, pmTile, pmInfo, serveVectorTile } = require('./src/geo/pmtiles');
 const { TILE_DIR, TILE_DISK, TILE_ZONES, TILE_PREFETCH, tileInZone, serveTile } = require('./src/geo/tiles');
 const { gate, loadStats } = require('./src/http/saturation');
+const { cityIdx } = require('./src/pages/city-cache');
 const { LIVE_DIR, cellId, regionOfCell, writeAtomic, writeIfChanged, FLUSH_MS, ALL_EVERY, LIVE_LOCK, dirty, pub, setFlusher, scheduleFlush, dirtyCell } = require('./src/live/files');
+const { ORGA_FILE, INVITE_MS, readOrgas, writeOrgas } = require('./src/orgas/store');
+const { settings, cleanSettings, saveSettings, mobsAll, mobToday, bannerNow, cfgHash, adminLabel, pausedUntil } = require('./src/settings');
+const { strictUntil, bump, TABLE_CAPS, capTables, quota, ORGA_LIMITS, allow } = require('./src/limits');
+const { parseNotes, parseTrail, toReport, TRAIL_CATS, TRAIL_MS, TRAIL_MAX, BEACON_ROLES, BEACON_TTL, BEACON_MAX, BEACON_ZONE_M, addTrail, NOTES_KEEP, addNote, trailView, publicView } = require('./src/reports/model');
+const { ARCHIVE_DIR, parisDay, parisHour, archTrail, archLine, archive, pruneArchive } = require('./src/digest/archive');
+const { canManage, ownerTag } = require('./src/orgas/owner');
+const { nearby, getReport, activeReports, saveReport, dropReport } = require('./src/reports/store');
+const { annAll, annActive, getAnn, saveAnn, dropAnn, annView } = require('./src/announcements/store');
+const { getEvent, listEvents, saveEvent, dropEvent, evView, EVENT_KEEP, routeDistM } = require('./src/events/store');
 
-function adminLabel() { return settings().adminLabel || ADMIN_LABEL_ENV; }
-// Points actifs d'une catégorie autour d'une position (pré-filtre par carré, puis distance réelle)
-function nearby(cat, lat, lng, m, now) {
-  const dLat = m / 111000, dLng = m / (111000 * Math.max(0.2, Math.cos(lat * Math.PI / 180)));
-  return q('SELECT * FROM reports WHERE cat=? AND exp>? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?')
-    .all(cat, now, lat - dLat, lat + dLat, lng - dLng, lng + dLng)
-    .map(r => ({ r, d: distM({ lat, lng }, r) })).filter(x => x.d <= m).sort((a, b) => a.d - b.d);
-}
-
-// Orgas créées depuis la page admin : seule l'empreinte (hash) de leur clé est stockée.
-const ORGA_FILE = () => path.join(DATA_DIR, 'orgas.json');
-const INVITE_MS = 24 * 60 * 60_000; // durée de validité d'une invitation d'orga
-let orgaCache = { mtime: -1, list: [] };
-function readOrgas() {
-  try {
-    const st = fs.statSync(ORGA_FILE());
-    if (st.mtimeMs !== orgaCache.mtime) orgaCache = { mtime: st.mtimeMs, list: JSON.parse(fs.readFileSync(ORGA_FILE(), 'utf8')) };
-  } catch { orgaCache = { mtime: -1, list: [] }; }
-  return orgaCache.list;
-}
-function writeOrgas(list) {
-  const tmp = ORGA_FILE() + '.' + process.pid + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(list, null, 1), { mode: 0o600 });
-  fs.renameSync(tmp, ORGA_FILE());
-  orgaCache.mtime = -1;
-}
 // Clés admin / orga : au-delà de 10 essais ratés en 5 min depuis un même réseau, tout est refusé,
 // même la bonne clé (empêche de deviner une clé en essayant en boucle).
 const KEY_TRIES = 10;
@@ -100,61 +84,6 @@ function descendants(list, id) {
 }
 const newInvite = () => { const token = crypto.randomBytes(18).toString('base64url'); return { token, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; };
 
-const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p > now ? p : 0; };
-
-// ---- Réglages modifiables depuis l'admin (sans toucher aux variables du serveur) ----
-// Bandeau d'événement (avec dates), vue d'ouverture, catégories (activées, durée), rayon d'alerte, distance des notifications.
-// Les clés, chemins et liens restent dans les variables d'environnement.
-let SET = { at: 0, v: {}, h: '' };
-function settings() {
-  const now = Date.now();
-  if (now - SET.at > 3000) {
-    const raw = getMeta('settings') || '{}';
-    if (raw !== SET.raw) {
-      let v = {}; try { v = JSON.parse(raw); } catch {}
-      for (const c of CATEGORIES) { const o = v.cats?.[c.id]; c.ttl = o && o.ttl >= 5 && o.ttl <= 24 * 60 ? Math.round(o.ttl) : BASE_TTL[c.id]; c.off = !!(o && o.off); }
-      SET = { at: now, v, raw };
-    } else SET.at = now;
-  }
-  return SET.v;
-}
-function cleanSettings(b) {
-  const s = {}, str = (x, n) => String(x || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
-  const day = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || '')) ? String(x) : null;
-  if (b.banner && str(b.banner.text, 80)) s.banner = { text: str(b.banner.text, 80), from: day(b.banner.from), to: day(b.banner.to) };
-  if (b.view) {
-    const lat = Number(b.view.lat), lng = Number(b.view.lng), zoom = Math.round(Number(b.view.zoom));
-    if (Math.abs(lat) <= 85 && Math.abs(lng) <= 180 && zoom >= 3 && zoom <= 17) s.view = { lat: Math.round(lat * 1e4) / 1e4, lng: Math.round(lng * 1e4) / 1e4, zoom };
-  }
-  if (b.cats && typeof b.cats === 'object') {
-    s.cats = {};
-    for (const c of CATEGORIES) {
-      const o = b.cats[c.id]; if (!o) continue;
-      const ttl = Math.round(Number(o.ttl)), out = {};
-      if (o.off) out.off = true;
-      if (ttl >= 5 && ttl <= 24 * 60 && ttl !== BASE_TTL[c.id]) out.ttl = ttl;
-      if (Object.keys(out).length) s.cats[c.id] = out;
-    }
-  }
-  const ar = Math.round(Number(b.alertRadius)); if (ar >= 50 && ar <= 2000) s.alertRadius = ar;
-  const nk = Number(b.nearKm); if (nk >= 1 && nk <= 50) s.nearKm = Math.round(nk);
-  const al = str(b.adminLabel, 40);
-  if (al.length >= 2 && !readOrgas().some(o => labelKey(o.label) === labelKey(al)) && !ORGAS.some(o => labelKey(o.label) === labelKey(al))) s.adminLabel = al;
-  return s;
-}
-function saveSettings(s) { setMeta('settings', JSON.stringify(s)); SET.at = 0; settings(); dirty.global = true; scheduleFlush(); }
-// Journées de mobilisation prévues : notification la veille au soir, bandeau et mode renforcé le jour J, bilan proposé le lendemain
-const mobsAll = () => { try { return JSON.parse(getMeta('mobs') || '[]'); } catch { return []; } };
-const mobToday = (now = Date.now()) => { const d = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); return mobsAll().find(m => m.date === d) || null; };
-// Bandeau affiché en haut de la carte : journée de mobilisation du jour, sinon bandeau des réglages (dans ses dates), sinon le nom par défaut
-function bannerNow(now = Date.now()) {
-  const m = mobToday(now); if (m) return m.title;
-  const b = settings().banner, d = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
-  if (b && b.text && (!b.from || d >= b.from) && (!b.to || d <= b.to)) return b.text;
-  return null;
-}
-const cfgHash = () => { const s = settings(); return crypto.createHash('sha1').update(JSON.stringify([s, bannerNow()])).digest('base64url').slice(0, 10); };
-
 // ---- Journal des actions d'orgas (30 jours) et corbeille des retraits (1 h) ----
 const TRASH_MS = 60 * 60_000;
 const ORGA_REMOVE_MAX = Number(process.env.ORGA_REMOVE_MAX) || 15; // retraits par orga et par 5 min
@@ -178,108 +107,7 @@ function orgaStats(oid) {
   return { day: { verified: by['vérifié'] || 0, removed: (by['retiré'] || 0) + (by['retrait (essai)'] || 0), blocked: by['retrait bloqué (rafale)'] || 0,
     announcements: (by['annonce'] || 0) + (by['legal team (en attente)'] || 0) }, lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null };
 }
-const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
-const parseTrail = r => { if (Array.isArray(r.trail)) return r.trail; try { return JSON.parse(r.trail || '[]'); } catch { return []; } };
-const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
-  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: r.oid || null,
-  trail: parseTrail(r), bk: r.bk || 0, bkla: r.bkla ?? null, bklo: r.bklo ?? null });
-// Trace d'un point qui suit le cortège : on garde l'ancienne position (si elle a bougé d'au moins 20 m), 30 min et 30 points au plus
-// Tête : 60 min de trace (le tracé du cortège suit le chemin réel de la tête jusqu'à la queue) ; queue : 30 min
-const TRAIL_CATS = new Set(['cortege', 'queue']), TRAIL_MS = { cortege: 60 * MIN, queue: 30 * MIN }, TRAIL_MAX = { cortege: 60, queue: 30 };
-const BEACON_ROLES = new Set(['cortege', 'queue', 'medic', 'legal', 'presse', 'contact']), BEACON_TTL = 3 * MIN, BEACON_MAX = 4 * 60 * MIN, BEACON_ZONE_M = 2000;
-// Distance (m) d'un point au parcours le plus proche d'un événement en cours de l'agenda (Infinity s'il n'y en a pas)
-function routeDistM(lat, lng, now = Date.now()) {
-  let best = Infinity;
-  for (const e of listEvents()) {
-    if (!e.route || e.route.length < 2 || e.status === 'pending' || e.start > now + 60 * MIN || e.start < now - 12 * 60 * MIN) continue;
-    const k = Math.cos(lat * Math.PI / 180), P = [lng * 111320 * k, lat * 110540];
-    for (let i = 0; i < e.route.length - 1; i++) {
-      const A = [e.route[i][1] * 111320 * k, e.route[i][0] * 110540], Bq = [e.route[i + 1][1] * 111320 * k, e.route[i + 1][0] * 110540];
-      const dx = Bq[0] - A[0], dy = Bq[1] - A[1], L2 = dx * dx + dy * dy, t = L2 ? Math.max(0, Math.min(1, ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / L2)) : 0;
-      best = Math.min(best, Math.hypot(P[0] - A[0] - t * dx, P[1] - A[1] - t * dy));
-    }
-  }
-  return best;
-}
-function addTrail(r, now) {
-  if (!TRAIL_CATS.has(r.cat)) return;
-  const tr = (r.trail || []).filter(p => p[2] > now - TRAIL_MS[r.cat]), lastP = tr[tr.length - 1];
-  if (!lastP || distM({ lat: lastP[0], lng: lastP[1] }, r) >= 20) tr.push([r.lat, r.lng, r.last || r.t]);
-  r.trail = tr.slice(-TRAIL_MAX[r.cat]);
-}
-const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
-const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
-function saveReport(r) {
-  const cell = cellId(r.lat, r.lng);
-  if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
-  const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
-  r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid,trail,bk,bkla,bklo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-     ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
-       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl, trail=excluded.trail, bk=excluded.bk, bkla=excluded.bkla, bklo=excluded.bklo`)
-    .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0, r.oid || null,
-      r.trail && r.trail.length ? JSON.stringify(r.trail) : null, r.bk || 0, r.bkla ?? null, r.bklo ?? null);
-  dirtyCell(cell);
-}
-// outcome : ce qu'est devenu le point, pour le digest (orga, admin, full = zone saturée, purge…)
-function dropReport(id, outcome) {
-  const r = q('DELETE FROM reports WHERE id=? RETURNING *').get(id);
-  if (r) { archive(r, outcome || 'removed'); dirtyCell(r.cell); }
-  return !!r;
-}
-// Annonces
-const annAll = now => q('SELECT data FROM ann WHERE exp>? ORDER BY rowid').all(now).map(x => JSON.parse(x.data));
-const annActive = now => annAll(now).filter(a => !a.pending);
-const getAnn = id => { const x = q('SELECT data FROM ann WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
-function saveAnn(a) { q('INSERT OR REPLACE INTO ann(id,exp,data) VALUES(?,?,?)').run(a.id, a.exp, JSON.stringify(a)); dirty.ann = true; scheduleFlush(); }
-function dropAnn(id) { const n = q('DELETE FROM ann WHERE id=?').run(id).changes; if (n) { dirty.ann = true; scheduleFlush(); } return n > 0; }
-// Agenda
-const getEvent = id => { const x = q('SELECT data FROM events WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
-const listEvents = () => q('SELECT data FROM events ORDER BY start').all().map(x => JSON.parse(x.data));
-function saveEvent(e) {
-  cityIdx.at = 0; // pages de villes à refaire
-  q('INSERT OR REPLACE INTO events(id,status,src,start,dev,data) VALUES(?,?,?,?,?,?)').run(e.id, e.status, e.src || null, e.start, e.dev || null, JSON.stringify(e));
-  dirty.events = true; scheduleFlush();
-}
-function dropEvent(id) { const n = q('DELETE FROM events WHERE id=?').run(id).changes; if (n) { dirty.events = true; scheduleFlush(); } return n > 0; }
 
-// Limites anti-spam, sur 5 min
-function bump(key, kind, max, now) {
-  let r = q('SELECT t, reports, votes FROM rate WHERE k=?').get(key);
-  r = !r || now - r.t > RATE.windowMs ? { t: now, reports: 0, votes: 0 } : { t: r.t, reports: r.reports, votes: r.votes };
-  if (r[kind + 's'] >= max) return false;
-  r[kind + 's']++;
-  q('INSERT INTO rate(k,t,reports,votes) VALUES(?,?,?,?) ON CONFLICT(k) DO UPDATE SET t=excluded.t, reports=excluded.reports, votes=excluded.votes')
-    .run(key, r.t, r.reports, r.votes);
-  return true;
-}
-// Plafonds des tables qui grandissent avec le trafic (même en cas d'attaque, la base garde une taille raisonnable) :
-// au-delà, les lignes les plus anciennes partent d'abord
-const TABLE_CAPS = [['devices', 'seen', 500_000], ['abuse', 't', 200_000], ['rate', 't', 500_000], ['quota', 't', 200_000], ['orga_log', 't', 200_000]];
-function capTables() {
-  for (const [t, col, max] of TABLE_CAPS) {
-    const n = q(`SELECT COUNT(*) n FROM ${t}`).get().n;
-    if (n > max) q(`DELETE FROM ${t} WHERE rowid IN (SELECT rowid FROM ${t} ORDER BY ${col} LIMIT ?)`).run(n - Math.floor(max * 0.9));
-  }
-}
-function quota(key, max, windowMs, now = Date.now()) {
-  const r = q('SELECT t, n FROM quota WHERE k=?').get(key), cur = r && now - r.t < windowMs ? r : { t: now, n: 0 };
-  if (cur.n >= max) return false;
-  q('INSERT OR REPLACE INTO quota(k,t,n) VALUES(?,?,?)').run(key, cur.t, cur.n + 1);
-  return true;
-}
-// Limites des orgas (hors admin) : vérifications par 5 min, annonces urgentes par heure, annonces et événements par jour
-const ORGA_LIMITS = { verify: Number(process.env.ORGA_VERIFY_MAX) || 30, urgentPerHour: Number(process.env.ORGA_URGENT_MAX) || 3, annPerDay: 30, eventsPerDay: 20 };
-// Vrai si ce téléphone ET cette IP sont sous leurs limites.
-function allow(dev, ip, kind, now) {
-  const rep = kind === 'report', cur = q('SELECT t, reports, votes FROM rate WHERE k=?').get('ip:' + ip);
-  if (cur && now - cur.t <= RATE.windowMs && cur[kind + 's'] >= (rep ? RATE.ipReports : RATE.ipVotes)) return false;
-  const strict = strictUntil(now) > 0;
-  if (!bump(dev, kind, rep ? (strict ? Math.ceil(RATE.maxReports / 2) : RATE.maxReports) : RATE.maxVotes, now)) return false;
-  bump('ip:' + ip, kind, Infinity, now);
-  return true;
-}
 // ---- « Plus là » : un point n'est jamais effacé par des votes, il devient « contesté » ----
 // Contesté = grisé, et il ne lui reste que quelques minutes ; une confirmation le remet en état normal.
 // Poids d'un « Plus là » : ×2 si le téléphone dit être sur place (calcul fait sur le téléphone, la position
@@ -305,8 +133,6 @@ function repAdd(dev, field, n = 1) {
 }
 // Première confirmation par quelqu'un d'autre : l'auteur gagne en fiabilité, le point n'est plus « non fiable »
 function firstConfirm(r) { if (r.up === 1) { repAdd(r.voters[0], 'good'); if (r.fl === -1) r.fl = 0; } }
-// ---- Mode manif renforcé (réglage admin, avec une durée) ----
-const strictUntil = now => { const p = Number(getMeta('strict') || 0); return p > now ? p : 0; };
 // ---- Tableau des abus ----
 const ABUSE_KEEP = 48 * 60 * MIN;
 const r2 = x => (x == null ? null : Math.round(x * 100) / 100);
@@ -388,34 +214,6 @@ function sweep() {
   } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
 }
 setInterval(sweep, 30_000).unref();
-const NOTES_KEEP = 3;
-// Ajoute (ou remplace) la précision d'un téléphone sur un point ; les plus récentes d'abord
-function addNote(r, text, dev, t) {
-  const notes = (r.notes || []).filter(n => n.d !== dev && n.x.toLowerCase() !== text.toLowerCase());
-  r.notes = [{ x: text, t, d: dev }, ...notes].slice(0, NOTES_KEEP);
-}
-// tr : trace de la tête ou de la queue (positions arrondies à ~11 m, heures en secondes) ; live : position partagée en direct par une orga
-const trailView = r => { if (!TRAIL_CATS.has(r.cat)) return {}; const tr = parseTrail(r); return tr.length ? { tr: tr.map(p => [p[0], p[1], Math.round(p[2] / 1000)]) } : {}; };
-const publicView = r => ({ ...trailView(r), ...(r.bk ? { live: 1 } : {}), id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
-  notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}), ...(r.fl === 1 ? { f: 1 } : r.fl === -1 && !r.up ? { nf: 1 } : {}) });
-const annView = a => ({ id: a.id, kind: a.kind, level: a.level, text: a.text, phone: a.phone || null, city: a.city || null, by: a.by, ob: ownerTag(a.oid), lat: a.lat, lng: a.lng, r: a.r,
-  national: !!a.national, permanent: !!a.permanent, link: a.link || null, t: a.t, exp: a.exp, ...(a.pending ? { pending: true } : {}) });
-const evView = e => ({ id: e.id, type: e.type, title: e.title, place: e.place, note: e.note, start: e.start, lat: e.lat, lng: e.lng,
-  route: e.route || null, end: !!e.end, by: e.by, ob: ownerTag(e.oid), status: e.status, link: e.link || null, src: e.src || null, t: e.t });
-const round = n => Math.round(n * 1e4) / 1e4; // ~11 m
-const EVENT_KEEP = 12 * 60 * MIN;  // un événement reste affiché 12 h après son début
-const clean = (v, max) => String(v || '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
-const validLatLng = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
-function distKm(aLat, aLng, bLat, bLng) {
-  const r = Math.PI / 180, dLat = (bLat - aLat) * r, dLng = (bLng - aLng) * r;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLng / 2) ** 2;
-  return 12742 * Math.asin(Math.sqrt(h));
-}
-
-// Qui peut retirer une annonce ou un événement : l'admin, ou l'orga qui l'a publié (par son identifiant, jamais par son nom)
-const canManage = (orga, x) => !!orga && (orga.admin || (!!x.oid && x.oid === orga.id));
-// Empreinte publique de l'auteur (l'appli sait ainsi afficher « retirer » sur ses propres annonces), sans révéler l'identifiant
-const ownerTag = oid => oid ? sha('owner|' + oid).slice(0, 12) : null;
 // Noms interdits : celui de l'admin, les sources importées, les orgas existantes ; pour une orga invitée par parrainage,
 // aussi l'annuaire des legal teams et tout nom qui contient celui de l'admin (« Cortège officiel »…)
 function labelClash(label, { sponsor = false, except = null } = {}) {
@@ -1058,7 +856,6 @@ function rightsPage(req) {
   return pubShell(req, { title: 'Tes droits en manif : sommations, garde à vue, contrôle d’identité · Cortège', desc: 'Ce qu’il faut savoir avant une manif : sommations, contrôle d’identité, garde à vue, téléphone, attaque fasciste.', body });
 }
 // Villes qui ont du contenu (manif à venir, legal team, ou ville d'un bilan publié) : une page chacune
-var cityIdx = { at: 0, map: new Map() }; // var : remis à zéro par saveEvent, saveLegal et la publication d'un bilan
 function cityIndex() {
   if (Date.now() - cityIdx.at < 5 * MIN) return cityIdx.map;
   const map = new Map(), get = (name, lat, lng) => { const s = slugOf(name); if (!s) return null; if (!map.has(s)) map.set(s, { slug: s, name, lat, lng, events: [], legal: [], bilans: [] }); return map.get(s); };
@@ -1068,7 +865,7 @@ function cityIndex() {
     const d = JSON.parse(x.data), pages = new Map((d.cityPages || []).map(p => [p.name, p.slug]));
     for (const c2 of d.cities || []) if (c2.n >= 10) { const c = get(c2.name, c2.lat, c2.lng); if (c) c.bilans.push({ date: x.date, n: c2.n, page: pages.get(c2.name) || null }); }
   }
-  cityIdx = { at: Date.now(), map };
+  cityIdx.at = Date.now(); cityIdx.map = map;
   return map;
 }
 const cityLink = name => { const s = slugOf(name); return cityIndex().has(s) ? `<a href="/ville/${s}">${htmlEsc(name)}</a>` : htmlEsc(name); };
@@ -1101,39 +898,6 @@ function sendPage(res, html) {
     'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'", 'X-Frame-Options': 'DENY' });
   res.end(html);
 }
-
-// ---- Archive anonyme pour le digest ----
-// Gardé : catégorie, heures de début et de fin à la minute, position arrondie à ~11 m, nombre de confirmations
-// et de « Plus là », nombre de précisions (jamais leur texte), vérification, fiabilité, et ce qu'est devenu le point.
-// Jamais gardé : la précision écrite, les empreintes d'IP ou de téléphone.
-const ARCHIVE_DIR = path.join(DATA_DIR, 'archive');
-fs.mkdirSync(ARCHIVE_DIR, { recursive: true, mode: 0o700 });
-const parisDay = t => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); // AAAA-MM-JJ
-const parisHour = t => Number(new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }));
-// Tête et queue de cortège : leur chemin (positions à ~11 m, heures à la minute), pour le parcours réel du cortège dans les bilans
-function archTrail(r) {
-  if (!TRAIL_CATS.has(r.cat)) return {};
-  const tr = parseTrail(r).map(p => [Math.round(p[0] * 1e4) / 1e4, Math.round(p[1] * 1e4) / 1e4, Math.floor(p[2] / MIN)]);
-  return tr.length ? { tr } : {};
-}
-const archLine = (r, o) => {
-  const notes = Array.isArray(r.notes) ? r.notes : parseNotes(r);
-  return { k: h8('a|' + r.id), c: r.cat, t: Math.floor(r.t / MIN) * MIN, e: Math.floor(Math.min(Date.now(), r.exp) / MIN) * MIN,
-    lat: Math.round(r.lat * 1e4) / 1e4, lng: Math.round(r.lng * 1e4) / 1e4, up: r.up || 0, dn: r.down || 0, n: notes.length,
-    v: r.ver ? 1 : 0, f: r.fl || 0, o, d: o === 'exp' || o === 'active' ? 0 : 1, ...archTrail(r) };
-};
-function archive(r, outcome) {
-  const line = JSON.stringify(archLine(r, outcome)) + '\n';
-  try { fs.appendFileSync(path.join(ARCHIVE_DIR, parisDay(r.t) + '.jsonl'), line, { mode: 0o600 }); } catch {}
-}
-function pruneArchive() {
-  const limit = Date.now() - ARCHIVE_DAYS * 24 * 60 * MIN;
-  for (const f of fs.readdirSync(ARCHIVE_DIR)) {
-    const t = Date.parse(f.slice(0, 10));
-    if (t && t < limit) try { fs.unlinkSync(path.join(ARCHIVE_DIR, f)); } catch {}
-  }
-}
-pruneArchive(); setInterval(pruneArchive, 6 * 60 * MIN).unref();
 
 // ---- Recherche de lieux (OpenStreetMap Nominatim, via le serveur : rien ne part du téléphone) ----
 const geoCache = new Map();
