@@ -13,9 +13,9 @@ const path = require('path');
 const crypto = require('crypto');
 
 const PORT = Number(process.env.PORT) || 8080;
-const EVENT_NAME = process.env.EVENT_NAME || 'Carte des mobilisations';
-const CENTER = (process.env.CENTER || '46.6,2.4').split(',').map(Number); // France entière par défaut
-const ZOOM = Number(process.env.ZOOM) || 6;
+const EVENT_NAME = process.env.EVENT_NAME || 'Protest map';
+const CENTER = (process.env.CENTER || '39.8283,-98.5795').split(',').map(Number); // États-Unis par défaut / US default
+const ZOOM = Number(process.env.ZOOM) || 4;
 // Accès admin ; vide = admin désactivé. Une clé trop courte est refusée (elle se devinerait).
 const ADMIN_KEY = (k => {
   if (k && k.length < 12) { console.error('ADMIN_KEY trop courte (12 caractères minimum) : administration désactivée.'); return ''; }
@@ -87,7 +87,7 @@ const EVENT_TYPES = [
 ];
 const EVT = Object.fromEntries(EVENT_TYPES.map(e => [e.id, e]));
 // Nom affiché de l'admin (annonces, vérifications, position en direct) : choisi dans les réglages, sinon ADMIN_LABEL, sinon « Cortège »
-const ADMIN_LABEL_ENV = process.env.ADMIN_LABEL || 'Cortège';
+const ADMIN_LABEL_ENV = process.env.ADMIN_LABEL || 'Protest map';
 function adminLabel() { return settings().adminLabel || ADMIN_LABEL_ENV; }
 // ---- Noms d'orga : comparés sans accents, majuscules, espaces ni lettres sosies (cyrillique, grec) ----
 // Le nom n'est qu'un affichage : les droits (retirer une annonce, un événement) passent par l'identifiant de l'orga.
@@ -432,32 +432,42 @@ function bannerNow(now = Date.now()) {
 const cfgHash = () => { const s = settings(); return crypto.createHash('sha1').update(JSON.stringify([s, bannerNow()])).digest('base64url').slice(0, 10); };
 
 // Signalements
+function ensureCol(table, name, def) {
+  try {
+    const cols = new Set(db.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name));
+    if (!cols.has(name)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+      console.log(`[migrate] added ${table}.${name} ${def}`);
+    }
+  } catch (e) {
+    console.error('[migrate]', table, name, e.message);
+  }
+}
 // Empreinte du réseau de l'auteur (même HMAC tournant que l'anti-spam), effacée avec le signalement.
-try { db.exec('ALTER TABLE reports ADD COLUMN ip TEXT'); } catch {}
+ensureCol('reports', 'ip', 'TEXT');
 // Heure de la dernière confirmation ou du dernier signalement fusionné
-try { db.exec('ALTER TABLE reports ADD COLUMN last INTEGER'); } catch {}
+ensureCol('reports', 'last', 'INTEGER');
 // Précisions écrites (les 3 plus récentes, une par téléphone) : [{ x: texte, t: heure, d: empreinte du téléphone }]
-try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch {}
+ensureCol('reports', 'notes', "TEXT DEFAULT '[]'");
 // « Plus là » pondérés (dw) et heure à laquelle le point est devenu contesté (ct)
-try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
-try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
+ensureCol('reports', 'dw', 'INTEGER DEFAULT 0');
+ensureCol('reports', 'ct', 'INTEGER DEFAULT 0');
 // Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié
-try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch {}
+ensureCol('reports', 'oid', 'TEXT');
 // Trace (tête et queue de cortège) : positions des 30 dernières minutes [[lat, lng, heure]] ;
 // bk : heure de début du partage de position en direct d'une orga (0 sinon)
-try { db.exec('ALTER TABLE reports ADD COLUMN trail TEXT'); } catch {}
-try { db.exec('ALTER TABLE reports ADD COLUMN bk INTEGER DEFAULT 0'); } catch {}
+ensureCol('reports', 'trail', 'TEXT');
+ensureCol('reports', 'bk', 'INTEGER DEFAULT 0');
 // Point de départ du partage de position en direct (jamais publié) : le partage s'arrête si l'orga s'en éloigne de plus de 2 km
-try { db.exec('ALTER TABLE reports ADD COLUMN bkla REAL'); } catch {}
-try { db.exec('ALTER TABLE reports ADD COLUMN bklo REAL'); } catch {}
+ensureCol('reports', 'bkla', 'REAL');
+ensureCol('reports', 'bklo', 'REAL');
 // Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
-// Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');
 // Fiabilité du jour : signalements confirmés par d'autres (good) ou contestés (bad). Repart de zéro chaque jour (empreinte quotidienne).
-try { db.exec('ALTER TABLE devices ADD COLUMN good INTEGER DEFAULT 0'); } catch {}
-try { db.exec('ALTER TABLE devices ADD COLUMN bad INTEGER DEFAULT 0'); } catch {}
+ensureCol('devices', 'good', 'INTEGER DEFAULT 0');
+ensureCol('devices', 'bad', 'INTEGER DEFAULT 0');
 // Fiabilité du signalement à sa création : 1 = téléphone fiable, -1 = non fiable (série suspecte, mode renforcé)
-try { db.exec('ALTER TABLE reports ADD COLUMN fl INTEGER DEFAULT 0'); } catch {}
+ensureCol('reports', 'fl', 'INTEGER DEFAULT 0');
 // Tableau des abus : 48 h, position arrondie à ~1 km ; les empreintes (dev, net) sont effacées au bout d'une heure
 db.exec(`CREATE TABLE IF NOT EXISTS abuse(id INTEGER PRIMARY KEY, t INTEGER, kind TEXT, lat REAL, lng REAL, dev TEXT, net TEXT, ref TEXT);
   CREATE INDEX IF NOT EXISTS abuse_t ON abuse(t);
@@ -3519,10 +3529,10 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/digest') {
-      if (!ADMIN_KEY) return send(res, 404, { error: 'Digest désactivé : ajoute ADMIN_KEY dans les variables du serveur.' });
+      if (!ADMIN_KEY) return send(res, 404, { error: 'Digest disabled: set ADMIN_KEY in server environment.' });
       if (!isAdmin(req)) return send(res, 403, { error: 'Clé incorrecte.' });
       const date = String(url.searchParams.get('date') || parisDay(Date.now()));
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return send(res, 400, { error: 'Date invalide.' });
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return send(res, 400, { error: 'Invalid date.' });
       sweep(); // archive ce qui vient d'expirer
       const { rows, zones, abroad } = dayRows(date);
       // Activité des orgas et anti-abus ce jour-là
@@ -3982,7 +3992,10 @@ const server = http.createServer(async (req, res) => {
     send(res, 405, 'Method not allowed');
   } catch (e) {
     const busy = isBusy(e);
-    if (!busy && !/bad json|too large/.test(e.message)) console.error('requête', req.method, pathname, e.message);
+    if (!busy && !/bad json|too large/.test(e.message)) {
+      console.error('requête', req.method, pathname, e.message);
+      if (pathname?.startsWith('/api/orga/beacon')) console.error(e.stack);
+    }
     send(res, busy ? 503 : 400, { error: busy ? 'Serveur occupé, réessaie.' : 'Requête invalide.' });
   }
 });
