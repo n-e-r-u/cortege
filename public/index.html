@@ -157,9 +157,9 @@
     <button class="x" id="fdClose" aria-label="Fermer">×</button>
   </div>
   <p class="hint" id="feedWhere"></p>
-  <h3 class="menu-group">Arrêtés et restrictions</h3>
-  <div id="feedOrd"></div>
-  <button type="button" class="secondary" id="btnOrders">Tous les arrêtés en France</button>
+  <h3 class="menu-group" style="display:none">Arrêtés et restrictions</h3>
+  <div id="feedOrd" style="display:none"></div>
+  <button type="button" class="secondary" id="btnOrders" style="display:none">Tous les arrêtés en France</button>
   <h3 class="menu-group">Annonces des orgas</h3>
   <div id="feedAnn" class="feed-anns"></div>
   <h3 class="menu-group">Agenda</h3>
@@ -349,7 +349,7 @@
   </div>
   <label class="switch">
     <input type="checkbox" id="poiAll">
-    <span class="switch-txt"><b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span></span>
+    <span class="switch-txt"><b>Afficher les lieux</b><span>Places of interest and useful locations from OpenStreetMap. They appear as you zoom in.</span></span>
   </label>
   <div id="poiList"></div>
   <p class="fine">Pharmacie de garde : appelle le 3237. Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé.</p>
