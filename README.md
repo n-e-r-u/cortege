@@ -1,5 +1,7 @@
 # Cortège US Port
 
+Purpose: Localize rights to the US, prioritize EN-US and Latino Spanish
+
 [![Tests](https://github.com/JadePrice/cortege/actions/workflows/tests.yml/badge.svg)](https://github.com/JadePrice/cortege/actions/workflows/tests.yml)
 
 **The live protest map, made by those who are there.**  
