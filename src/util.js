@@ -30,4 +30,8 @@ function withLock(fn, lockFile = LOCK_FILE) {
   try { return fn(); } finally { fs.closeSync(fd); try { fs.unlinkSync(lockFile); } catch {} }
 }
 
-module.exports = { SOSIES, labelKey, distM, keyEq, sha, sleep, withLock };
+const wait = ms => new Promise(go => setTimeout(go, ms));
+
+const h8 = str => crypto.createHash('sha1').update(str).digest('base64url').slice(0, 10);
+
+module.exports = { SOSIES, labelKey, distM, keyEq, sha, sleep, withLock, wait, h8 };

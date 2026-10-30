@@ -7,14 +7,21 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 const { PORT, EVENT_NAME, CENTER, ZOOM, ADMIN_KEY, ARCHIVE_DAYS, ORGAS, TILE_URL, TILE_UA, UNDER_PASSENGER, TRUST_PROXY, DATA_DIR,
   VIOLENCE_URL, CONTACT_EMAIL, HOST_INFO, SOURCE_URL, BRAND, ADMIN_LABEL_ENV, IMPORT_NAMES, PUBLIC_URL, MIN, MAX_REPORTS, MAX_PER_ZONE,
   MAX_PER_NET_ZONE, NOTE_MAX, ANN_MAX, RATE, STATE_FILE, LOCK_FILE } = require('./src/config');
 const { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL } = require('./src/categories');
-const { labelKey, distM, keyEq, sha, sleep, withLock } = require('./src/util');
+const { labelKey, distM, keyEq, sha, sleep, withLock, wait, h8 } = require('./src/util');
 const { periodKey, pruneKeys, rotateSecret, PRIVATE_IP, ONION_HOST, viaOnion, clientIp, clientHash, dayBucket, ipBucket, deviceHash } = require('./src/privacy');
 const { DatabaseSync, db, q, tx, isBusy, getMeta, setMeta } = require('./src/db');
+const { send, readJson } = require('./src/http/respond');
+const { STREAM_ON, STREAM_MAX, sseClients, streamOpen, streamNotify } = require('./src/live/stream');
+const { PUBLIC, TYPES, cspFor, NOINDEX, serveStatic } = require('./src/http/static');
+const { APP_VERSION, versionInfo } = require('./src/http/version');
+const { PMTILES, PM_ZONES, pmDecomp, pmOpen, pmTile, pmInfo, serveVectorTile } = require('./src/geo/pmtiles');
+const { TILE_DIR, TILE_DISK, TILE_ZONES, TILE_PREFETCH, tileInZone, serveTile } = require('./src/geo/tiles');
 
 function adminLabel() { return settings().adminLabel || ADMIN_LABEL_ENV; }
 // Points actifs d'une catégorie autour d'une position (pré-filtre par carré, puis distance réelle)
@@ -1360,7 +1367,6 @@ const PLACES_IMPORT = process.env.PLACES_IMPORT !== '0';
 // overpass.private.coffee d'abord : overpass-api.de met parfois les requêtes en attente jusqu'au délai (et refuse l'IPv6 de certains hébergeurs)
 const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass.private.coffee/api/interpreter,https://overpass-api.de/api/interpreter';
 const PLACES_EVERY = 30 * 24 * 60 * MIN;
-const wait = ms => new Promise(go => setTimeout(go, ms));
 const poiRg = (lat, lng) => `${Math.floor(lat)}_${Math.floor(lng)}`;
 function poiKind(t) {
   const name = t.name || '';
@@ -2054,7 +2060,6 @@ try {
     '  AddOutputFilterByType DEFLATE application/json',
     '</IfModule>', ''].join('\n'));
 } catch {}
-const h8 = str => crypto.createHash('sha1').update(str).digest('base64url').slice(0, 10);
 function writeAtomic(file, str) { const tmp = file + '.' + process.pid + '.tmp'; fs.writeFileSync(tmp, str); fs.renameSync(tmp, file); }
 function writeIfChanged(file, str) {
   try { if (fs.readFileSync(file, 'utf8') === str) return; } catch {}
@@ -2204,321 +2209,6 @@ setTimeout(() => {
 }, 200);
 // Veille de l'annuaire : vérifiée toutes les heures, faite une fois par jour (désactivable : LEGAL_WATCH=0)
 if (process.env.LEGAL_WATCH !== '0') setInterval(() => legalWatch().catch(e => console.error('veille annuaire', e.message)), 60 * MIN).unref();
-
-// ---- HTTP helpers ----
-// ---- Temps réel : prévenir les téléphones dès qu'une région change (Server-Sent Events) ----
-// Le téléphone s'abonne aux régions (carrés de 1°, ~100 km) qu'il affiche ; le serveur lui envoie seulement
-// « telle région a changé », et le téléphone relit les fichiers publiés comme d'habitude. Pas de position précise envoyée.
-// Un seul processus (VPS) : sous Passenger, plusieurs processus ne se voient pas, on reste sur l'interrogation régulière.
-const STREAM_ON = process.env.STREAM ? process.env.STREAM === '1' : !UNDER_PASSENGER;
-const STREAM_MAX = Number(process.env.STREAM_MAX) || 20000;
-const sseClients = new Map();
-function streamOpen(req, res, url) {
-  if (!STREAM_ON || sseClients.size >= STREAM_MAX) return send(res, 503, { error: 'Temps réel indisponible, interrogation régulière.' }, { 'Retry-After': '60' });
-  const regions = new Set(String(url.searchParams.get('r') || '').split(',').filter(x => /^-?\d{1,3}_-?\d{1,3}$/.test(x)).slice(0, 8));
-  res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no', Connection: 'keep-alive' });
-  res.write('retry: 5000\n\n');
-  const c = { regions, ping: setInterval(() => res.write(': \n\n'), 25000) };
-  sseClients.set(res, c);
-  const close = () => { clearInterval(c.ping); sseClients.delete(res); };
-  req.on('close', close); res.on('error', close);
-}
-function streamNotify(regions, global) {
-  if (!sseClients.size) return;
-  const rs = [...regions];
-  for (const [res, c] of sseClients) {
-    const mine = rs.filter(r => c.regions.has(r));
-    if (mine.length || global) res.write(`data: ${JSON.stringify({ r: mine, g: global ? 1 : 0 })}\n\n`);
-  }
-}
-
-function send(res, status, body, headers = {}) {
-  const isObj = typeof body === 'object' && !Buffer.isBuffer(body);
-  res.writeHead(status, {
-    'Content-Type': isObj ? 'application/json; charset=utf-8' : 'text/plain; charset=utf-8',
-    'Cache-Control': 'no-store', ...headers,
-  });
-  res.end(isObj ? JSON.stringify(body) : body);
-}
-function readJson(req, max = 2048) {
-  return new Promise((resolve, reject) => {
-    let size = 0; const chunks = [];
-    req.on('data', c => { size += c.length; if (size > max) { reject(new Error('too large')); req.destroy(); } else chunks.push(c); });
-    req.on('end', () => { let v; try { v = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { return reject(new Error('bad json')); } v && typeof v === 'object' && !Array.isArray(v) ? resolve(v) : reject(new Error('bad json')); });
-    req.on('error', reject);
-  });
-}
-
-// ---- Statique ----
-const PUBLIC = path.join(__dirname, 'public');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.woff2': 'font/woff2' };
-// Politique de sécurité des pages : le navigateur n'exécute que nos propres scripts. Même si du code
-// était un jour injecté dans une note ou un titre, il ne pourrait pas s'exécuter. Les scripts intégrés
-// aux pages (admin, mentions légales) sont autorisés par leur empreinte exacte.
-const cspCache = new Map();
-function cspFor(buf) {
-  const key = h8(buf.toString('latin1'));
-  if (!cspCache.has(key)) {
-    const hashes = [...buf.toString('utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)]
-      .map(m => `'sha256-${crypto.createHash('sha256').update(m[1], 'utf8').digest('base64')}'`);
-    cspCache.set(key, `default-src 'self'; script-src 'self' ${hashes.join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; `
-      + `connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`);
-  }
-  return cspCache.get(key);
-}
-// Fichiers de l'appli gardés en mémoire avec une empreinte : un téléphone qui a déjà la bonne version
-// reçoit une réponse vide « pas modifié » (304) au lieu de tout retélécharger.
-const staticCache = new Map();
-// Pages d'outils, jamais dans les moteurs de recherche (l'admin, le digest, la carte à intégrer, l'image d'un créneau)
-const NOINDEX = new Set(['/admin.html', '/digest.html', '/embed.html', '/creneau.html']);
-function serveStatic(req, res, pathname) {
-  const file = path.normalize(path.join(PUBLIC, pathname === '/' ? 'index.html' : pathname));
-  if (!file.startsWith(PUBLIC + path.sep)) return send(res, 403, 'Forbidden');
-  fs.stat(file, (err, st) => {
-    if (err || !st.isFile()) return send(res, 404, 'Not found');
-    let c = staticCache.get(file);
-    const reply = () => {
-      const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: c.etag,
-        'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
-      if (NOINDEX.has(pathname)) headers['X-Robots-Tag'] = 'noindex, nofollow';
-      if (file.endsWith('.html')) {
-        // La carte à intégrer (embed.html) peut s'afficher dans le site d'un média ou d'un collectif ; les autres pages, jamais
-        if (pathname === '/embed.html') headers['Content-Security-Policy'] = cspFor(c.buf).replace("frame-ancestors 'none'", 'frame-ancestors *');
-        else { headers['Content-Security-Policy'] = cspFor(c.buf); headers['X-Frame-Options'] = 'DENY'; }
-      }
-      if (req.headers['if-none-match'] === c.etag) { res.writeHead(304, headers); return res.end(); }
-      res.writeHead(200, headers); res.end(c.buf);
-    };
-    if (c && c.mtime === st.mtimeMs && c.size === st.size) return reply();
-    fs.readFile(file, (err2, buf) => {
-      if (err2) return send(res, 404, 'Not found');
-      c = { buf, mtime: st.mtimeMs, size: st.size, etag: '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"' };
-      if (staticCache.size > 200) staticCache.clear();
-      staticCache.set(file, c);
-      reply();
-    });
-  });
-}
-
-// ---- Version en ligne : empreintes SHA-256 des fichiers servis, pour comparer avec le dépôt public ----
-// Les fichiers de l'appli (public/) peuvent être vérifiés pour de vrai : verifier.js les retélécharge et les compare.
-// L'empreinte de server.js est seulement déclarée par le serveur : elle ne prouve rien à elle seule.
-const APP_VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version; } catch { return '?'; } })();
-let versionCache = { t: 0, body: null };
-function versionInfo() {
-  if (Date.now() - versionCache.t < 60_000) return versionCache.body;
-  const files = {};
-  const sha = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
-  const walk = (dir, rel) => {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (e.name.startsWith('.')) continue;
-      const p = path.join(dir, e.name), r = rel + '/' + e.name;
-      if (e.isDirectory()) walk(p, r); else files['public' + r] = sha(p);
-    }
-  };
-  walk(PUBLIC, '');
-  files['server.js'] = sha(__filename);
-  // Code serveur découpé dans src/ (déclaré, comme server.js)
-  const walkSrc = (dir, rel) => { for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    if (e.name.startsWith('.')) continue; const p = path.join(dir, e.name);
-    if (e.isDirectory()) walkSrc(p, rel + '/' + e.name); else if (e.name.endsWith('.js')) files['src' + rel + '/' + e.name] = sha(p); } };
-  try { walkSrc(path.join(__dirname, 'src'), ''); } catch {}
-  versionCache = { t: Date.now(), body: { version: APP_VERSION, algorithm: 'sha256', files,
-    verify: 'node verifier.js ' + PUBLIC_URL + '  (depuis une copie du dépôt public)' } };
-  return versionCache.body;
-}
-
-// ---- Carte hébergée sur le serveur : fichier PMTiles (tuiles vectorielles) ----
-// TILE_PMTILES=/chemin/france.pmtiles : la carte vient du serveur lui-même, plus aucune requête vers un fournisseur.
-// Lecteur PMTiles v3 minimal (format ouvert de Protomaps) : en-tête, répertoires compressés, tuiles servies telles quelles.
-const PMTILES = process.env.TILE_PMTILES || '';
-// Zones couvertes par le fichier (rectangles [sud, nord, ouest, est]) : lues dans la région utilisée pour l'extraire
-const PM_ZONES = (() => {
-  try {
-    const g = JSON.parse(fs.readFileSync(process.env.TILE_PMTILES_REGION || path.join(__dirname, 'tools', 'france.geojson'), 'utf8'));
-    const geom = g.geometry || g;
-    const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-    return polys.map(p => { const xs = p[0].map(c => c[0]), ys = p[0].map(c => c[1]); return [Math.min(...ys), Math.max(...ys), Math.min(...xs), Math.max(...xs)]; });
-  } catch { return []; }
-})();
-const pm = { fd: null, h: null, dirs: new Map() };
-const zlib = require('zlib');
-function pmDecomp(buf, c) { return c === 2 ? zlib.gunzipSync(buf) : c === 3 ? zlib.brotliDecompressSync(buf) : buf; }
-function pmRead(off, len) {
-  return new Promise((ok, ko) => { const b = Buffer.alloc(len); fs.read(pm.fd, b, 0, len, off, (e, n) => e ? ko(e) : ok(b.subarray(0, n))); });
-}
-function zxyToTileId(z, x, y) {
-  let acc = (4 ** z - 1) / 3, a = 2 ** (z - 1);
-  for (let s = a; s >= 1; s /= 2) {
-    const rx = (x & s) ? 1 : 0, ry = (y & s) ? 1 : 0;
-    acc += s * s * ((3 * rx) ^ ry);
-    if (ry === 0) { if (rx === 1) { x = s - 1 - x; y = s - 1 - y; } [x, y] = [y, x]; }
-  }
-  return acc;
-}
-function pmDir(buf) {
-  let pos = 0;
-  const v = () => { let r = 0, m = 1, b; do { b = buf[pos++]; r += (b & 0x7f) * m; m *= 128; } while (b & 0x80); return r; };
-  const n = v(), e = Array.from({ length: n }, () => ({}));
-  let last = 0;
-  for (const x of e) { last += v(); x.id = last; }
-  for (const x of e) x.run = v();
-  for (const x of e) x.len = v();
-  e.forEach((x, i) => { const o = v(); x.off = o === 0 && i > 0 ? e[i - 1].off + e[i - 1].len : o - 1; });
-  return e;
-}
-async function pmOpen() {
-  if (pm.h || !PMTILES) return pm.h;
-  pm.fd = fs.openSync(PMTILES, 'r');
-  const b = await pmRead(0, 127);
-  if (b.toString('latin1', 0, 7) !== 'PMTiles' || b[7] !== 3) throw new Error('fichier PMTiles v3 attendu');
-  const u = o => Number(b.readBigUInt64LE(o)), i32 = o => b.readInt32LE(o) / 1e7;
-  pm.h = { rootOff: u(8), rootLen: u(16), leafOff: u(40), dataOff: u(56), dirC: b[97], tileC: b[98], type: b[99], minz: b[100], maxz: b[101],
-    bounds: [i32(102), i32(106), i32(110), i32(114)] };
-  return pm.h;
-}
-async function pmGetDir(off, len) {
-  const k = off + ':' + len;
-  if (pm.dirs.has(k)) return pm.dirs.get(k);
-  const d = pmDir(pmDecomp(await pmRead(off, len), pm.h.dirC));
-  if (pm.dirs.size > 400) pm.dirs.delete(pm.dirs.keys().next().value);
-  pm.dirs.set(k, d);
-  return d;
-}
-async function pmTile(z, x, y) {
-  const h = await pmOpen();
-  if (z < h.minz || z > h.maxz || x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) return null;
-  const id = zxyToTileId(z, x, y);
-  let off = h.rootOff, len = h.rootLen;
-  for (let depth = 0; depth < 4; depth++) {
-    const dir = await pmGetDir(off, len);
-    let lo = 0, hi = dir.length - 1, f = null;
-    while (lo <= hi) { const m = (lo + hi) >> 1; if (dir[m].id <= id) { f = dir[m]; lo = m + 1; } else hi = m - 1; }
-    if (!f) return null;
-    if (f.run === 0) { off = h.leafOff + f.off; len = f.len; continue; }
-    if (id - f.id >= f.run) return null;
-    return pmRead(h.dataOff + f.off, f.len);
-  }
-  return null;
-}
-const pmInfo = () => pm.h ? { url: '/vt/{z}/{x}/{y}.mvt', minzoom: pm.h.minz, maxzoom: pm.h.maxz, bounds: pm.h.bounds, zones: PM_ZONES } : null;
-if (PMTILES) pmOpen().then(h => console.log(`Carte PMTiles : zoom ${h.minz}-${h.maxz}`)).catch(e => console.error('PMTiles', e.message));
-async function serveVectorTile(req, res, z, x, y) {
-  let data;
-  try { data = await pmTile(z, x, y); } catch (e) { return send(res, 500, { error: 'Carte indisponible.' }); }
-  if (!data || !data.length) { res.writeHead(204, { 'Cache-Control': 'public, max-age=86400' }); return res.end(); }
-  const headers = { 'Content-Type': 'application/vnd.mapbox-vector-tile', 'Cache-Control': 'public, max-age=604800' };
-  if (pm.h.tileC === 2) {
-    if (/\bgzip\b/.test(String(req.headers['accept-encoding'] || ''))) headers['Content-Encoding'] = 'gzip';
-    else data = zlib.gunzipSync(data);
-  }
-  res.writeHead(200, headers); res.end(data);
-}
-
-// ---- Proxy de tuiles : les IP des manifestant·es ne partent pas chez le fournisseur de carte ----
-const tileCache = new Map(); const TILE_CACHE_MAX = 2000, TILE_CACHE_BYTES = (Number(process.env.TILE_CACHE_MB) || 64) * 1e6;
-let tileCacheBytes = 0;
-function tileCachePut(key, buf) {
-  const old = tileCache.get(key); if (old) tileCacheBytes -= old.length;
-  tileCache.set(key, buf); tileCacheBytes += buf.length;
-  while (tileCache.size > TILE_CACHE_MAX || tileCacheBytes > TILE_CACHE_BYTES) { const [k, v] = tileCache.entries().next().value; tileCache.delete(k); tileCacheBytes -= v.length; }
-}
-// Cache disque : une tuile téléchargée une fois est écrite dans tiles/z/x/y.png.
-// Sur cPanel, Apache la sert ensuite directement, sans Node ni OpenStreetMap.
-const TILE_DIR = process.env.TILE_DIR || path.join(__dirname, 'tiles');
-const TILE_DISK = process.env.TILE_DISK !== '0';
-const TILE_DAYS = Number(process.env.TILE_DAYS) || 30;
-if (TILE_DISK) try {
-  fs.mkdirSync(TILE_DIR, { recursive: true });
-  fs.writeFileSync(path.join(TILE_DIR, '.htaccess'), ['Options -Indexes', '<IfModule mod_headers.c>', '  Header set Cache-Control "public, max-age=604800"', '</IfModule>', ''].join('\n'));
-} catch {}
-// Ménage du cache disque : tuiles de plus de TILE_DAYS jours (la carte d'OSM évolue), puis les plus anciennes
-// tant que le cache dépasse TILE_DISK_GB (2 Go par défaut) : personne ne peut remplir le disque en demandant des tuiles.
-const TILE_DISK_BYTES = (Number(process.env.TILE_DISK_GB) || 2) * 1e9;
-function pruneTiles() {
-  const limit = Date.now() - TILE_DAYS * 24 * 60 * MIN, files = [];
-  const walk = d => { for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-    const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p);
-    else if (e.name.endsWith('.png')) { const st = fs.statSync(p); if (st.mtimeMs < limit) try { fs.unlinkSync(p); } catch {} else files.push([st.mtimeMs, st.size, p]); }
-  } };
-  try { walk(TILE_DIR); } catch {}
-  let total = files.reduce((t, f) => t + f[1], 0);
-  if (total > TILE_DISK_BYTES) for (const [, size, p] of files.sort((a, b) => a[0] - b[0])) { if (total <= TILE_DISK_BYTES * 0.9) break; try { fs.unlinkSync(p); total -= size; } catch {} }
-}
-if (TILE_DISK) setInterval(pruneTiles, 6 * 60 * MIN).unref();
-// Protection du proxy de tuiles : sans elle, n'importe qui pourrait faire télécharger des millions de tuiles
-// par le serveur, remplir le disque et faire bannir le serveur par OpenStreetMap (la carte tomberait pour tous).
-//  - zone : France métropolitaine, Corse et outre-mer à partir du zoom 8 (en dessous, le monde entier tient en peu de tuiles) ;
-//  - budget par réseau de tuiles NOUVELLES (les tuiles déjà en cache ne comptent pas) ;
-//  - plafond de téléchargements simultanés, et une même tuile demandée par mille personnes n'est téléchargée qu'une fois.
-const TILE_ZONES = [[41, 51.6, -5.8, 10.6], [15.8, 16.6, -61.9, -60.9], [14.3, 14.95, -61.3, -60.75], [2, 6, -54.7, -51.5],
-  [-21.45, -20.85, 55.1, 55.9], [-13.05, -12.6, 44.95, 45.35], [46.7, 47.2, -56.5, -56.05]]; // métropole+Corse, Guadeloupe, Martinique, Guyane, Réunion, Mayotte, St-Pierre
-// Préchargement de zone (« Garder la zone hors ligne ») : interdit par la politique d'OpenStreetMap,
-// désactivé tant que les tuiles viennent de chez eux. TILE_PREFETCH=1 pour un fournisseur qui l'autorise.
-const TILE_PREFETCH = process.env.TILE_PREFETCH === '1';
-const TILE_NET_BUDGET = Number(process.env.TILE_NET_BUDGET) || 600;   // nouvelles tuiles par réseau et par 10 min
-const TILE_UPSTREAM_MAX = 12;                                          // téléchargements simultanés vers le fournisseur
-const tileBudget = new Map(), tileInflight = new Map();
-let tileUpstream = 0;
-const tile2lat = (y, z) => { const n = Math.PI - 2 * Math.PI * y / 2 ** z; return 180 / Math.PI * Math.atan(Math.sinh(n)); };
-// Carte hébergée (PMTiles) : hors de sa zone, les téléphones se replient sur OpenStreetMap partout dans le monde
-// (même budget par réseau et même plafond de téléchargements qu'avant).
-const TILE_WORLD = process.env.TILE_WORLD ? process.env.TILE_WORLD === '1' : !!PMTILES;
-function tileInZone(z, x, y) {
-  if (z < 8 || TILE_WORLD) return true;
-  const w = x / 2 ** z * 360 - 180, e = (x + 1) / 2 ** z * 360 - 180, n = tile2lat(y, z), so = tile2lat(y + 1, z);
-  return TILE_ZONES.some(([la1, la2, lo1, lo2]) => so <= la2 && n >= la1 && w <= lo2 && e >= lo1);
-}
-function tileBudgetOk(ip) {
-  const now = Date.now(), b = tileBudget.get(ip);
-  if (!b || now - b.t > 10 * MIN) { tileBudget.set(ip, { t: now, n: 1 }); if (tileBudget.size > 20000) tileBudget.clear(); return true; }
-  return ++b.n <= TILE_NET_BUDGET;
-}
-function fetchTile(z, x, y) {
-  const key = `${z}/${x}/${y}`;
-  if (tileInflight.has(key)) return tileInflight.get(key);
-  const p = new Promise((resolve, reject) => {
-    tileUpstream++;
-    const done = () => { tileUpstream--; tileInflight.delete(key); };
-    const rq = (TILE_URL.startsWith('http:') ? http : https).get(TILE_URL.replace('{z}', z).replace('{x}', x).replace('{y}', y), { headers: { 'User-Agent': TILE_UA, Referer: PUBLIC_URL + '/' }, timeout: 10_000 }, up => {
-      if (up.statusCode !== 200) { up.resume(); done(); return reject(new Error('upstream ' + up.statusCode)); }
-      const chunks = []; let size = 0;
-      up.on('data', c => { size += c.length; if (size > 2_000_000) rq.destroy(); else chunks.push(c); });
-      up.on('end', () => {
-        const buf = Buffer.concat(chunks); done();
-        tileCachePut(key, buf);
-        if (TILE_DISK) {
-          const dir = path.join(TILE_DIR, String(z), String(x));
-          fs.mkdir(dir, { recursive: true }, () => {
-            const tmp = path.join(dir, y + '.png.' + process.pid + '.tmp');
-            fs.writeFile(tmp, buf, err => { if (!err) fs.rename(tmp, path.join(dir, y + '.png'), () => {}); });
-          });
-        }
-        resolve(buf);
-      });
-      up.on('error', e => { done(); reject(e); });
-    });
-    rq.on('timeout', () => rq.destroy(new Error('timeout')));
-    rq.on('error', e => { if (tileInflight.get(key) === p) done(); reject(e); });
-  });
-  tileInflight.set(key, p);
-  return p;
-}
-function serveTile(req, res, z, x, y) {
-  z = +z; x = +x; y = +y;
-  if (!(z >= 0 && z <= 19 && x >= 0 && y >= 0 && x < 2 ** z && y < 2 ** z)) return send(res, 400, 'bad tile');
-  const out = buf => { res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=604800' }); res.end(buf); };
-  const key = `${z}/${x}/${y}`, hit = tileCache.get(key);
-  if (hit) { tileCache.delete(key); tileCache.set(key, hit); return out(hit); }
-  if (!tileInZone(z, x, y)) return send(res, 404, 'hors zone');
-  if (!tileInflight.has(key)) {
-    if (!tileBudgetOk(clientHash(req))) return send(res, 429, 'trop de tuiles');
-    if (tileUpstream >= TILE_UPSTREAM_MAX) return send(res, 503, 'occupé', { 'Retry-After': '2' });
-  }
-  fetchTile(z, x, y).then(out, () => { if (!res.headersSent) send(res, 502, 'tile upstream'); });
-}
 
 // ---- Protection contre la saturation (sans service extérieur) ----
 // 1. Une même adresse ne peut pas envoyer plus de FLOOD_MAX requêtes par minute à Node (les fichiers live/ servis
