@@ -1576,7 +1576,7 @@
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer cette annonce' }, '×');
       close.onclick = () => { dismissed.add(a.id); try { localStorage.setItem('cortege-dismissed', JSON.stringify([...dismissed].slice(-200))); } catch {} renderAnns(announcements, false); };
       box.append(el('div', { class: 'ann ' + a.level },
-        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
+        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? '' : '') + ' · ' + ago(a.t)),
         el('div', { class: 'ann-text' }, a.text),
         a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '', close));
       if (canAlert && !seenAnns.has(a.id) && a.level === 'urgent') { try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {} }
@@ -1754,7 +1754,7 @@
       ol.append(el('li', { class: 'ann-row' },
         el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
           el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible'
-            : `${a.by} · ${a.national ? t('toute la France') : (a.kind === 'legal' ? t('visible partout, rangé par ville') : a.r + ' km')} · ${a.permanent ? t('permanent') : t('expire dans {d}', { d: left(a.exp) })}`)), del));
+            : `${a.by} · ${(a.kind === 'legal' ? t('visible partout, rangé par ville') : a.r + ' km')} · ${a.permanent ? t('permanent') : t('expire dans {d}', { d: left(a.exp) })}`)), del));
     }
   }
   $('#btnOrga').onclick = () => { closeReport(); closeSheets(); renderOrgaList(); renderOrgaExtras(); loadMine(); $('#sheetOrga').hidden = false; };
@@ -2529,7 +2529,7 @@
   // ---- Infos : arrêtés ici, annonces des orgas, agenda proche ----
   function annCard(a) {
     return el('div', { class: 'ann ' + a.level },
-      el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
+      el('div', { class: 'ann-meta' }, '📣 ' + a.by + ' · ' + ago(a.t)),
       el('div', { class: 'ann-text' }, a.text),
       a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '');
   }
