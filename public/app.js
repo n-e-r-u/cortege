@@ -1116,7 +1116,7 @@
     if (ct && CAM_TYPE[ct]) root.append(el('p', {}, t(CAM_TYPE[ct]) + (dir >= 0 && ct !== 'd' ? t(', orientée vers {dir}', { dir: compassFr(dir) }) : '') + '.'));
     else if (dir >= 0) root.append(el('p', {}, t('Orientée vers {dir}.', { dir: compassFr(dir) })));
     root.append(el('p', { class: 'poi-tip' }, t('Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.')));
-    root.append(el('p', { class: 'fine' }, '© contributeurs OpenStreetMap'));
+    root.append(el('p', { class: 'fine' }, t('© contributeurs OpenStreetMap')));
     return root;
   }
   const compassFr = d => t(['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'][Math.round(d / 45) % 8]);
