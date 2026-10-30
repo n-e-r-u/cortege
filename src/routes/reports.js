@@ -18,7 +18,7 @@ const { isAdmin, orgaOf } = require('../orgas/auth');
 const { listEvents } = require('../events/store');
 const { nearby, saveReport, dropReport, getReport } = require('../reports/store');
 const { orgaLog } = require('../orgas/log');
-const { parisDay, ARCHIVE_DIR } = require('../digest/archive');
+const { ARCHIVE_DIR } = require('../digest/archive');
 const { pausedUntil } = require('../settings');
 const { pushNearLater } = require('../push');
 const { q, tx } = require('../db');
@@ -27,6 +27,7 @@ const { send, readJson } = require('../http/respond');
 const { strictUntil, allow, bump } = require('../limits');
 const { sweep } = require('../sweep');
 const { toReport, addTrail, addNote, publicView } = require('../reports/model');
+const { parisDay } = require('../time');
 
 async function reportsRoutes(req, res, url, pathname) {
   if (req.method === 'GET' && pathname === '/api/digest') {

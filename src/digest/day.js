@@ -1,11 +1,12 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { ARCHIVE_DIR, parisDay, archLine } = require('./archive');
+const { ARCHIVE_DIR, archLine } = require('./archive');
 const { CAT, BASE_TTL } = require('../categories');
 const { MIN } = require('../config');
 const { activeReports } = require('../reports/store');
 const { inFrance, whereOf } = require('../geo/communes');
+const { parisDay } = require('../time');
 
 // ---- Lignes d'une journée (digest et pages publiques) ----
 const readArchiveDay = d => { try { return fs.readFileSync(path.join(ARCHIVE_DIR, d + '.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { return []; } };

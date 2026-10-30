@@ -5,11 +5,11 @@ const { dirty, scheduleFlush } = require('./live/files');
 const { getPub } = require('./digest/pub');
 const { mobsAll, adminLabel } = require('./settings');
 const { orgaLog } = require('./orgas/log');
-const { parisDay, parisHour } = require('./digest/archive');
-const { parisMs } = require('./events/import-17oct');
+
 const { pushAll, LOCALE, tr, pushSendAll } = require('./push');
 const { setMeta, getMeta } = require('./db');
 const { strictUntil } = require('./limits');
+const { parisDay, parisHour, parisMs } = require('./time');
 
 // ---- Journées de mobilisation prévues ----
 // La veille à 20 h : notification à tous les abonné·es aux annonces urgentes. Le jour J dès 7 h : mode renforcé jusqu'à 2 h du matin

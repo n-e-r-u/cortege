@@ -27,7 +27,7 @@ const { modQueue } = require('../moderation');
 const { ordersAll, orderView, ORDER_KINDS, createOrder, approveOrder, dropOrder } = require('../orders');
 const { orgaRequests } = require('../orgas/requests');
 const { orgaStats, orgaLog, trashReport, TRASH_MS } = require('../orgas/log');
-const { parisDay, archive, ARCHIVE_DIR } = require('../digest/archive');
+const { archive, ARCHIVE_DIR } = require('../digest/archive');
 const { placeOf } = require('../geo/cities');
 const { placesRun, POI_KINDS, placesStatus, placesState, PLACES_IMPORT, POI, poiStr, poiRg } = require('../places/osm');
 const { placesSource, poiView, placesImport, placesPublish } = require('../places/geofabrik');
@@ -42,6 +42,7 @@ const { setMeta, q, getMeta, tx, db } = require('../db');
 const { sseClients } = require('../live/stream');
 const { strictUntil } = require('../limits');
 const { withLock, sha, validLatLng } = require('../util');
+const { parisDay } = require('../time');
 
 async function adminRoutes(req, res, url, pathname) {
   // ---- Admin : gestion des orgas ----

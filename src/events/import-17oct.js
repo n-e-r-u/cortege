@@ -1,12 +1,12 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
-const https = require('https');
 const { EVENT_KEEP, dropEvent, getEvent, saveEvent } = require('./store');
-const { MIN, DATA_DIR, TILE_UA } = require('../config');
+const { MIN, DATA_DIR } = require('../config');
 const { tx, q } = require('../db');
 const { validLatLng, clean, sha, round } = require('../util');
+const { parisMs } = require('../time');
+const { getJson } = require('../net');
 
 // ---- Import : manifestations de la carte participative du 17 octobre (réutilisation autorisée) ----
 // On importe les actions « manifestation » (où qu'elles soient) et les « rassemblements » des lieux de manif.
@@ -16,28 +16,6 @@ const IMPORT_BASE = (process.env.IMPORT_17OCT_URL || 'https://www.17octobregilet
 const IMPORT_UNTIL = Date.parse(process.env.IMPORT_17OCT_UNTIL || '2026-11-01');
 const IMPORT_EVERY = 15 * MIN;
 const IMPORT_STAMP = path.join(DATA_DIR, 'import-17oct.stamp');
-function getJson(url, timeout = 30_000) {
-  return new Promise((resolve, reject) => {
-    const req = (url.startsWith('http:') ? http : https).get(url, { headers: { 'User-Agent': TILE_UA, Accept: 'application/json' }, timeout }, res => {
-      if (res.statusCode !== 200) { res.resume(); return reject(new Error('HTTP ' + res.statusCode + ' ' + url)); }
-      const chunks = []; res.on('data', c => chunks.push(c));
-      res.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch (e) { reject(e); } });
-    });
-    req.on('timeout', () => req.destroy(new Error('timeout ' + url)));
-    req.on('error', reject);
-  });
-}
-// « 2026-10-17 » + « 14:00 », heure de Paris → horodatage (gère l'heure d'été)
-function parisMs(date, hhmm) {
-  const [y, m, d] = String(date).split('-').map(Number), [h, mi] = String(hhmm || '12:00').split(':').map(Number);
-  const want = Date.UTC(y, m - 1, d, h, mi);
-  let t = want;
-  for (let i = 0; i < 2; i++) {
-    const p = new Date(t).toLocaleString('sv-SE', { timeZone: 'Europe/Paris' });
-    t += want - Date.UTC(+p.slice(0, 4), +p.slice(5, 7) - 1, +p.slice(8, 10), +p.slice(11, 13), +p.slice(14, 16));
-  }
-  return t;
-}
 let stationCache = { t: 0, map: new Map() };
 async function import17() {
   const [lieux, actions, sites] = await Promise.all([getJson(IMPORT_BASE + '/api/lieux'), getJson(IMPORT_BASE + '/api/actions'),
@@ -94,4 +72,4 @@ function maybeImport17() {
 setTimeout(maybeImport17, 3000);
 setInterval(maybeImport17, 60_000).unref();
 
-module.exports = { getJson, parisMs };
+module.exports = {  };

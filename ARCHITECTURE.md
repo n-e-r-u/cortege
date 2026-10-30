@@ -31,8 +31,15 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/http/` | Réponses, fichiers statiques et politique de sécurité, version en ligne, protection contre la saturation |
 | `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin, signalements, orgas, fichiers |
 | `src/mobs.js`, `src/migrate.js` | Journées de mobilisation prévues, reprise des anciennes données |
-| `public/` | La web app (carte, admin, pages statiques) et ses traductions (`public/lang/`, construites depuis `i18n/`) |
+| `client/app/`, `client/admin/` | Le code du téléphone et de la page admin, en morceaux numérotés par fonction (carte, synchro, signaler, orga, agenda…) |
+| `public/` | Ce que sert le serveur : la web app, l'admin, les pages statiques, les traductions (`public/lang/`, construites depuis `i18n/`) |
 | `tools/` | Outils hors serveur : extraction de la carte, tracé par les rues, sauvegarde, traductions |
+
+## Le code du téléphone et de l'admin
+
+Il est écrit dans `client/app/` et `client/admin/`, en morceaux numérotés. `npm run build` (ou `node tools/build-client.js`) les assemble dans `public/app.js` et `public/admin.js`, dans l'ordre des numéros. Les fichiers assemblés restent dans le dépôt : rien à construire au déploiement, et les téléphones gardent un seul fichier à télécharger, important sur un réseau saturé.
+
+Les morceaux de `client/app/` sont placés dans une seule fonction : ils partagent leurs variables (la carte, l'état de l'orga, les caches). Ne modifie jamais `public/app.js` ou `public/admin.js` à la main : un test vérifie qu'ils correspondent à `client/`.
 
 ## Règles de dépendance entre modules
 

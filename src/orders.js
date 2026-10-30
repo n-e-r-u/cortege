@@ -6,9 +6,11 @@ const { MIN } = require('./config');
 const { allow } = require('./limits');
 const { clean, distKm } = require('./util');
 const { dirty, scheduleFlush } = require('./live/files');
-const { getJson, parisMs } = require('./events/import-17oct');
+
 const { polyHas } = require('./geo/communes');
 const { q } = require('./db');
+const { getJson } = require('./net');
+const { parisMs } = require('./time');
 
 // ---- Arrêtés et restrictions (interdiction de manif, couvre-feu, transports…) ----
 // N'importe qui peut proposer, avec une source fiable ; seul l'admin valide. La zone est une commune ou un département :

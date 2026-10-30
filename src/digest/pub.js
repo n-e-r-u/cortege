@@ -5,9 +5,9 @@ const { commIndex } = require('../geo/communes');
 const { dayRows } = require('./day');
 const { distM } = require('../util');
 const { ordersAll, srcHost } = require('../orders');
-const { parisHour } = require('./archive');
-const { parisMs } = require('../events/import-17oct');
+
 const { q } = require('../db');
+const { parisHour, parisMs } = require('../time');
 
 // ---- Pages publiques par manif (/manif/AAAA-MM-JJ) ----
 // Bilans figés par la 2.6.0 avec le code INSEE à la place du nom de la commune : nom retrouvé à la lecture

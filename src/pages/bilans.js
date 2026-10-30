@@ -8,13 +8,14 @@ const { ORDER_KIND } = require('../orders');
 const { ROOT, BRAND, MIN } = require('../config');
 const { cityIndex } = require('./cities');
 const { distM } = require('../util');
-const { parisHour } = require('../digest/archive');
+
 const { q } = require('../db');
 const { whereOf } = require('../geo/communes');
 
 let storyMap = null;
 const BubbleMap = require('../../public/bubble-map.js');
 const { streetRoute } = require('../../tools/street-route.js');
+const { parisHour } = require('../time');
 const routeCache = new Map();
 function mapSvg(cities) {
   try { storyMap ||= JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'story-map.json'), 'utf8')); } catch { return ''; }

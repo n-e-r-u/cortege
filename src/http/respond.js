@@ -1,7 +1,6 @@
 'use strict';
 // Réponses HTTP : JSON ou texte, et lecture d'un corps JSON limité en taille.
 
-
 function send(res, status, body, headers = {}) {
   const isObj = typeof body === 'object' && !Buffer.isBuffer(body);
   res.writeHead(status, {

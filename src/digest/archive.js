@@ -5,6 +5,7 @@ const path = require('path');
 const { DATA_DIR, MIN, ARCHIVE_DAYS } = require('../config');
 const { h8 } = require('../util');
 const { TRAIL_CATS, parseTrail, parseNotes } = require('../reports/model');
+const { parisDay } = require('../time');
 
 // ---- Archive anonyme pour le digest ----
 // Gardé : catégorie, heures de début et de fin à la minute, position arrondie à ~11 m, nombre de confirmations
@@ -12,8 +13,6 @@ const { TRAIL_CATS, parseTrail, parseNotes } = require('../reports/model');
 // Jamais gardé : la précision écrite, les empreintes d'IP ou de téléphone.
 const ARCHIVE_DIR = path.join(DATA_DIR, 'archive');
 fs.mkdirSync(ARCHIVE_DIR, { recursive: true, mode: 0o700 });
-const parisDay = t => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); // AAAA-MM-JJ
-const parisHour = t => Number(new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }));
 // Tête et queue de cortège : leur chemin (positions à ~11 m, heures à la minute), pour le parcours réel du cortège dans les bilans
 function archTrail(r) {
   if (!TRAIL_CATS.has(r.cat)) return {};
@@ -39,4 +38,4 @@ function pruneArchive() {
 }
 pruneArchive(); setInterval(pruneArchive, 6 * 60 * MIN).unref();
 
-module.exports = { ARCHIVE_DIR, parisDay, parisHour, archTrail, archLine, archive, pruneArchive };
+module.exports = { ARCHIVE_DIR, archTrail, archLine, archive, pruneArchive };
