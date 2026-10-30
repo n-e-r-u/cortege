@@ -22,6 +22,8 @@ const { PUBLIC, TYPES, cspFor, NOINDEX, serveStatic } = require('./src/http/stat
 const { APP_VERSION, versionInfo } = require('./src/http/version');
 const { PMTILES, PM_ZONES, pmDecomp, pmOpen, pmTile, pmInfo, serveVectorTile } = require('./src/geo/pmtiles');
 const { TILE_DIR, TILE_DISK, TILE_ZONES, TILE_PREFETCH, tileInZone, serveTile } = require('./src/geo/tiles');
+const { gate, loadStats } = require('./src/http/saturation');
+const { LIVE_DIR, cellId, regionOfCell, writeAtomic, writeIfChanged, FLUSH_MS, ALL_EVERY, LIVE_LOCK, dirty, pub, setFlusher, scheduleFlush, dirtyCell } = require('./src/live/files');
 
 function adminLabel() { return settings().adminLabel || ADMIN_LABEL_ENV; }
 // Points actifs d'une catégorie autour d'une position (pré-filtre par carré, puis distance réelle)
@@ -2031,54 +2033,7 @@ async function orderPush(ids) {
   }
 }
 
-// ---- Publication en fichiers statiques ----
-// Node écrit de petits fichiers JSON dans live/ ; sur cPanel, Apache les sert directement aux téléphones.
-// Seuls les morceaux modifiés sont réécrits, au plus une fois par seconde (les changements sont regroupés).
-//   live/g.json         → empreintes des annonces, de l'agenda et état de pause (presque toujours en 304)
-//   live/r/<région>.json → empreinte de chaque case active d'une région de 1° (≈ 100 km)
-//   live/c/<case>.json  → signalements d'une case de 0,05° (≈ 5 km)
-//   live/all.json       → tous les signalements (vue nationale, réécrit au plus toutes les 10 s)
-//   live/ann.json, live/events.json → annonces et agenda
-//   live/index.json     → ancien format (toutes les cases), pour les téléphones qui n'ont pas rechargé l'appli
-const LIVE_DIR = process.env.LIVE_DIR || path.join(__dirname, 'live');
-const CELL = 0.05;
-const cellId = (lat, lng) => `${Math.floor(lat / CELL)}_${Math.floor(lng / CELL)}`;
-// Région = carré de 20 × 20 cases (1°) ; même calcul côté téléphone
-const regionOfCell = c => { const [i, j] = c.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
-fs.mkdirSync(path.join(LIVE_DIR, 'c'), { recursive: true });
-fs.mkdirSync(path.join(LIVE_DIR, 'r'), { recursive: true });
-fs.mkdirSync(path.join(LIVE_DIR, 'p'), { recursive: true }); // mode « réseau faible » : tous les points d'une région en un seul fichier
-// En-têtes pour Apache (ignorés ailleurs) : revalidation courte, pas de listing.
-try {
-  fs.writeFileSync(path.join(LIVE_DIR, '.htaccess'), [
-    'Options -Indexes',
-    '<IfModule mod_headers.c>',
-    '  Header set Cache-Control "public, max-age=2, must-revalidate"',
-    '  Header set Access-Control-Allow-Origin "*"',
-    '</IfModule>',
-    '<IfModule mod_deflate.c>',
-    '  AddOutputFilterByType DEFLATE application/json',
-    '</IfModule>', ''].join('\n'));
-} catch {}
-function writeAtomic(file, str) { const tmp = file + '.' + process.pid + '.tmp'; fs.writeFileSync(tmp, str); fs.renameSync(tmp, file); }
-function writeIfChanged(file, str) {
-  try { if (fs.readFileSync(file, 'utf8') === str) return; } catch {}
-  writeAtomic(file, str);
-}
-const FLUSH_MS = Number(process.env.FLUSH_MS) || 1000;
-const ALL_EVERY = 10_000;
-const LIVE_LOCK = path.join(DATA_DIR, 'live.lock');
-const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false, legal: false, ord: false };
-let flushTimer = null, lastAll = 0;
-// Publication planifiée. Une demande plus urgente avance le minuteur : un nouveau signalement n'attend
-// jamais les publications espacées (vue nationale toutes les 10 s, ancien index toutes les 5 s).
-let flushDue = 0;
-function scheduleFlush(ms = FLUSH_MS) {
-  const due = Date.now() + ms;
-  if (flushTimer && due >= flushDue) return;
-  clearTimeout(flushTimer); flushDue = due; flushTimer = setTimeout(flush, ms);
-}
-function dirtyCell(c) { dirty.cells.add(c); dirty.all = true; scheduleFlush(); }
+// ---- Publication en fichiers statiques (voir src/live/files.js) ----
 function writeRegion(rg) {
   const rows = q('SELECT cell, h FROM cells WHERE region=?').all(rg);
   const f = path.join(LIVE_DIR, 'r', rg + '.json');
@@ -2117,9 +2072,9 @@ function writeGlobal(now) {
     ann: g.ann, events: g.events, all: getMeta('allh') || null, paused: g.paused, build: g.build }));
 }
 function flush() {
-  flushTimer = null;
+  pub.timer = null;
   const now = Date.now();
-  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doOrd = dirty.ord, doAll = dirty.all && now - lastAll >= ALL_EVERY;
+  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doOrd = dirty.ord, doAll = dirty.all && now - pub.lastAll >= ALL_EVERY;
   const doGlobal = cells.length || doAnn || doEv || doLegal || doOrd || doAll || dirty.global;
   dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = false; if (doAll) dirty.all = false;
   const changed = new Set();
@@ -2144,7 +2099,7 @@ function flush() {
         const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY start LIMIT 3000").all(now - EVENT_KEEP).map(x => evView(JSON.parse(x.data))) });
         writeIfChanged(path.join(LIVE_DIR, 'events.json'), str); setMeta('evh', h8(str));
       }
-      if (doAll) { lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); writeNational(now); }
+      if (doAll) { pub.lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); writeNational(now); }
       writeGlobal(now);
     }, LIVE_LOCK);
   } catch (e) {
@@ -2154,9 +2109,10 @@ function flush() {
     if (!isBusy(e)) console.error('publication', e.message);
     return scheduleFlush(500);
   }
-  if (dirty.all && !flushTimer) scheduleFlush(Math.max(FLUSH_MS, ALL_EVERY - (Date.now() - lastAll)));
+  if (dirty.all && !pub.timer) scheduleFlush(Math.max(FLUSH_MS, ALL_EVERY - (Date.now() - pub.lastAll)));
   if (doGlobal) streamNotify(changed, doAnn || doEv || doLegal || doOrd || dirty.global);
 }
+setFlusher(flush);
 // Tout republier (démarrage, purge) : chaque case active, chaque fichier existant, annonces, agenda.
 function rebuildAll() {
   const now = Date.now();
@@ -2164,8 +2120,8 @@ function rebuildAll() {
   q('SELECT cell FROM cells').all().forEach(x => all.add(x.cell));
   try { fs.readdirSync(path.join(LIVE_DIR, 'c')).forEach(f => f.endsWith('.json') && all.add(f.slice(0, -5))); } catch {}
   all.forEach(c => dirty.cells.add(c));
-  dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = dirty.all = true; lastAll = 0;
-  clearTimeout(flushTimer); flushTimer = null;
+  dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = dirty.all = true; pub.lastAll = 0;
+  clearTimeout(pub.timer); pub.timer = null;
   flush();
   ensureRegions();
 }
@@ -2210,31 +2166,6 @@ setTimeout(() => {
 // Veille de l'annuaire : vérifiée toutes les heures, faite une fois par jour (désactivable : LEGAL_WATCH=0)
 if (process.env.LEGAL_WATCH !== '0') setInterval(() => legalWatch().catch(e => console.error('veille annuaire', e.message)), 60 * MIN).unref();
 
-// ---- Protection contre la saturation (sans service extérieur) ----
-// 1. Une même adresse ne peut pas envoyer plus de FLOOD_MAX requêtes par minute à Node (les fichiers live/ servis
-//    par le serveur web ne comptent pas). Large : des centaines de téléphones partagent parfois une adresse d'opérateur.
-// 2. Si Node est débordé (boucle d'événements en retard), il ne garde que l'essentiel : envoyer un signalement,
-//    voter, le temps réel et la santé. Le reste reçoit « réessaie dans 5 s », et les téléphones ont la carte en cache.
-const FLOOD_MAX = Number(process.env.FLOOD_MAX) || 6000;
-const FLOOD = new Map();
-function floodOk(ip, now) {
-  let e = FLOOD.get(ip);
-  if (!e || now - e.t > 60_000) { if (FLOOD.size > 200_000) FLOOD.clear(); FLOOD.set(ip, (e = { t: now, n: 0 })); }
-  return ++e.n <= FLOOD_MAX;
-}
-setInterval(() => { const now = Date.now(); for (const [k, e] of FLOOD) if (now - e.t > 60_000) FLOOD.delete(k); }, 60_000).unref();
-const LAG = require('perf_hooks').monitorEventLoopDelay({ resolution: 20 }); LAG.enable();
-let lagMs = 0, lagHigh = 0;
-const LAG_SHED = Number(process.env.LAG_SHED) || 500, BOOT = Date.now();
-// Délestage seulement si Node est débordé plusieurs secondes d'affilée (pas pour un pic isolé : démarrage, import, sauvegarde)
-setInterval(() => { lagMs = LAG.percentile(99) / 1e6; LAG.reset(); lagHigh = lagMs > LAG_SHED && Date.now() - BOOT > 20_000 ? lagHigh + 1 : 0; }, 1000).unref();
-const shedding = () => lagHigh >= 3;
-// Jamais délestés : la page et ses fichiers (peu coûteux, et sans eux l'appli ne s'ouvre pas), les fichiers live, et les actions vitales
-const essential = (req, pathname) => pathname === '/api/health' || pathname === '/api/stream'
-  || (req.method === 'GET' && !pathname.startsWith('/api/') && !pathname.startsWith('/vt/') && !pathname.startsWith('/tiles/'))
-  || (req.method === 'POST' && (pathname === '/api/reports' || /^\/api\/reports\/[\w-]{1,16}\/(vote|note)$/.test(pathname)));
-let shedCount = 0, floodCount = 0;
-
 // ---- Routes ----
 // Filet de sécurité : une erreur imprévue dans une requête est notée dans le journal, elle n'arrête plus le serveur
 process.on('unhandledRejection', e => console.error('erreur non gérée :', e && e.stack || e));
@@ -2248,8 +2179,7 @@ const server = http.createServer(async (req, res) => {
   // Adresse lue sans jamais planter : « //%5c.. » et autres chemins piégés des robots d'attaque donnent une erreur 400
   let url; try { url = new URL('http://x' + (String(req.url || '/').startsWith('/') ? req.url : '/' + req.url)); } catch { res.writeHead(400, { 'Content-Type': 'text/plain' }); return res.end('Requête invalide'); }
   const { pathname } = url;
-  if (!floodOk(clientIp(req), Date.now())) { floodCount++; res.writeHead(429, { 'Retry-After': '60', 'Content-Type': 'text/plain' }); return res.end('Trop de requêtes'); }
-  if (shedding() && !essential(req, pathname)) { shedCount++; res.writeHead(503, { 'Retry-After': '5', 'Content-Type': 'text/plain' }); return res.end('Serveur chargé, réessaie'); }
+  if (!gate(req, res, pathname)) return;
   try { settings(); } catch {}
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
@@ -2553,7 +2483,7 @@ const server = http.createServer(async (req, res) => {
           push: { subs: subs.n, urg: subs.urg || 0, near: subs.near || 0, queue: pushQueue.hi.length + pushQueue.lo.length, running: pushRunning,
             since: PSTATS.since, sent: PSTATS.sent, ok: PSTATS.ok, gone: PSTATS.gone, fail: PSTATS.fail, codes: PSTATS.codes, batches: PSTATS.batches.slice(0, 8), lastErr: PSTATS.lastErr || null },
           sys: { disk, mem, load: os.loadavg().map(x => Math.round(x * 100) / 100), cpus: os.cpus().length, uptime: Math.round(process.uptime()), rss: Math.round(process.memoryUsage().rss / 1e6) },
-          load: { lagMs: Math.round(lagMs), shed: shedCount, flood: floodCount, ips: FLOOD.size }, crash: (() => { try { return JSON.parse(getMeta('crash') || 'null'); } catch { return null; } })(), up: Math.round(process.uptime()), version: APP_VERSION });
+          load: loadStats(), crash: (() => { try { return JSON.parse(getMeta('crash') || 'null'); } catch { return null; } })(), up: Math.round(process.uptime()), version: APP_VERSION });
       }
       // --- File de modération : points contestés ou non fiables ---
       if (req.method === 'GET' && pathname === '/api/admin/moderation') {
