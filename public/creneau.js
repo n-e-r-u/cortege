@@ -35,7 +35,8 @@
   const raster = () => { document.body.classList.add('raster'); L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a>' }).addTo(map); };
   try {
     if (cfg.vector && window.protomapsL && window.cortegeVectorLayer)
-      window.cortegeVectorLayer(window.protomapsL, { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> · Protomaps' }).addTo(map);
+      const vlang = (window.I18N && window.I18N.lang === 'fr') ? 'fr' : (window.I18N && window.I18N.lang === 'es') ? 'es' : 'en';
+      window.cortegeVectorLayer(window.protomapsL, { url: cfg.vector.url, lang: vlang, maxDataZoom: cfg.vector.maxzoom, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> · Protomaps' }).addTo(map);
     else raster();
   } catch { raster(); }
   const dots = L.layerGroup().addTo(map), renderer = L.canvas();

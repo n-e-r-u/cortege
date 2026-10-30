@@ -41,7 +41,8 @@ async function slotVector(c, mPerPx, W, H) {
   document.body.append(box);
   const z = Math.log2(156543.03 * Math.cos(c.lat * Math.PI / 180) / mPerPx);
   const map = L.map(box, { zoomControl: false, attributionControl: false, zoomSnap: 0, fadeAnimation: false, zoomAnimation: false, inertia: false }).setView([c.lat, c.lng], z, { animate: false });
-  const vl = window.cortegeVectorLayer(window.protomapsL, { url: slotCfg.vector.url, lang: 'fr', maxDataZoom: slotCfg.vector.maxzoom, maxZoom: 20 });
+  const vlang = (typeof I18N !== 'undefined' && I18N.lang === 'fr') ? 'fr' : (typeof I18N !== 'undefined' && I18N.lang === 'es') ? 'es' : 'en';
+  const vl = window.cortegeVectorLayer(window.protomapsL, { url: slotCfg.vector.url, lang: vlang, maxDataZoom: slotCfg.vector.maxzoom, maxZoom: 20 });
   await new Promise(ok => { vl.once('load', ok); vl.addTo(map); setTimeout(ok, 12000); });
   await new Promise(ok => setTimeout(ok, 600)); // derniers dessins (noms de rues)
   const base = box.getBoundingClientRect(), out = [];

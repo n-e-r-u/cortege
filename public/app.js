@@ -120,7 +120,8 @@
           } });
           new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback' }).addTo(map);
         }
-        const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
+        const vlang = (window.I18N && window.I18N.lang === 'fr') ? 'fr' : (window.I18N && window.I18N.lang === 'es') ? 'es' : 'en';
+        const opts = { url: cfg.vector.url, lang: vlang, maxDataZoom: cfg.vector.maxzoom,
           attribution: OSM_ATTR + ' · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
         vl.addTo(map);
@@ -1138,7 +1139,7 @@
     if (hours) root.append(el('p', { class: 'poi-h' }, '🕒 ', hoursFr(hours)));
     if (phone) root.append(el('p', {}, el('a', { href: 'tel:' + phone.replace(/[^\d+]/g, '') }, '📞 ' + phone)));
     if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le '), el('a', { href: 'tel:3237' }, '3237'), '.'));
-    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences') : t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.')));
+    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences') : t('Urgences : pas indiqué. En cas d’urgence, appelle le 911.')));
     if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;
