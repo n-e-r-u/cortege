@@ -11,10 +11,13 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
-const PORT = Number(process.env.PORT) || 8080;
+
+const rawPort = process.env.PORT;
+const PORT = rawPort && !Number.isNaN(Number(rawPort)) ? Number(rawPort) : (rawPort || 8080);
 const EVENT_NAME = process.env.EVENT_NAME || 'Protest map';
-const CENTER = (process.env.CENTER || '39.8283,-98.5795').split(',').map(Number); // États-Unis par défaut / US default
+const CENTER = (() => { const [a,b]=String(process.env.CENTER||'39.8283,-98.5795').split(',').map(Number); return (Math.abs(a)<=90&&Math.abs(b)<=180&&!Number.isNaN(a)&&!Number.isNaN(b))?[a,b]:[39.8283,-98.5795]; })(); // États-Unis par défaut / US default
 const ZOOM = Number(process.env.ZOOM) || 4;
 // Accès admin ; vide = admin désactivé. Une clé trop courte est refusée (elle se devinerait).
 const ADMIN_KEY = (k => {
@@ -453,7 +456,7 @@ ensureCol('reports', 'notes', "TEXT DEFAULT '[]'");
 ensureCol('reports', 'dw', 'INTEGER DEFAULT 0');
 ensureCol('reports', 'ct', 'INTEGER DEFAULT 0');
 // Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié
-ensureCol('reports', 'oid', 'TEXT');
+try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch (e) { if (!/rowid|alias/i.test(e.message)) console.error('[migrate] reports oid', e.message); }
 // Trace (tête et queue de cortège) : positions des 30 dernières minutes [[lat, lng, heure]] ;
 // bk : heure de début du partage de position en direct d'une orga (0 sinon)
 ensureCol('reports', 'trail', 'TEXT');
@@ -474,6 +477,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS abuse(id INTEGER PRIMARY KEY, t INTEGER, kin
   CREATE INDEX IF NOT EXISTS abuse_kind_dev ON abuse(kind, dev, t);`);
 db.exec('CREATE INDEX IF NOT EXISTS reports_cell_ip ON reports(cell, ip)');
 db.exec('CREATE INDEX IF NOT EXISTS reports_cat_lat ON reports(cat, lat)');
+db.exec('CREATE INDEX IF NOT EXISTS reports_exp_lat_lng ON reports(exp, lat, lng)');
 // ---- Journal des actions d'orgas (30 jours) et corbeille des retraits (1 h) ----
 // Journal : heure, orga, action, type de signalement, position arrondie à ~100 m. Jamais d'IP.
 db.exec(`CREATE TABLE IF NOT EXISTS orga_log(id INTEGER PRIMARY KEY, t INTEGER, oid TEXT, orga TEXT, action TEXT, cat TEXT, lat REAL, lng REAL, ref TEXT, detail TEXT);
@@ -505,7 +509,7 @@ function orgaStats(oid) {
 const parseNotes = r => { let n = []; try { n = JSON.parse(r.notes || '[]'); } catch {} return n.length || !r.note ? n : [{ x: r.note, t: r.t }]; };
 const parseTrail = r => { if (Array.isArray(r.trail)) return r.trail; try { return JSON.parse(r.trail || '[]'); } catch { return []; } };
 const toReport = r => r && ({ id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note, notes: parseNotes(r), t: r.t, exp: r.exp, up: r.up, down: r.down,
-  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: r.oid || null,
+  dw: r.dw || 0, ct: r.ct || 0, fl: r.fl || 0, ver: r.ver || null, voters: JSON.parse(r.voters || '[]'), downIps: JSON.parse(r.down_ips || '[]'), last: r.last || r.t, cell: r.cell, oid: (r && r.oid != null ? r.oid : (r && r.rowid != null ? r.rowid : null)),
   trail: parseTrail(r), bk: r.bk || 0, bkla: r.bkla ?? null, bklo: r.bklo ?? null });
 // Trace d'un point qui suit le cortège : on garde l'ancienne position (si elle a bougé d'au moins 20 m), 30 min et 30 points au plus
 // Tête : 60 min de trace (le tracé du cortège suit le chemin réel de la tête jusqu'à la queue) ; queue : 30 min
@@ -531,19 +535,43 @@ function addTrail(r, now) {
   if (!lastP || distM({ lat: lastP[0], lng: lastP[1] }, r) >= 20) tr.push([r.lat, r.lng, r.last || r.t]);
   r.trail = tr.slice(-TRAIL_MAX[r.cat]);
 }
-const getReport = (id, now) => toReport(q('SELECT * FROM reports WHERE id=? AND exp>?').get(id, now));
+const getReport = (id, now) => {
+  let r = q('SELECT reports.*, reports.rowid as oid FROM reports WHERE id=? AND exp>?').get(id, now);
+  if (!r) { r = q('SELECT *, rowid as oid FROM reports WHERE id=? AND exp>?').get(id, now); }
+  if (!r) return null;
+  if (r.oid === undefined && r.rowid !== undefined) r.oid = r.rowid;
+  return toReport(r);
+};
 const activeReports = (now, limit = 2000) => q('SELECT * FROM reports WHERE exp>? ORDER BY t DESC LIMIT ?').all(now, limit);
 function saveReport(r) {
   const cell = cellId(r.lat, r.lng);
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid,trail,bk,bkla,bklo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-     ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
-       down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl, trail=excluded.trail, bk=excluded.bk, bkla=excluded.bkla, bklo=excluded.bklo`)
-    .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
-      JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100)), r.ip || null, r.last || r.t, JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0, r.oid || null,
-      r.trail && r.trail.length ? JSON.stringify(r.trail) : null, r.bk || 0, r.bkla ?? null, r.bklo ?? null);
+  const cols = new Set(db.prepare("PRAGMA table_info(reports)").all().map(c => c.name));
+  const has = c => cols.has(c);
+  const fields = ['id','cat','lat','lng','cell','note','t','exp','up','down','ver','voters','down_ips'];
+  if (has('ip')) fields.push('ip');
+  if (has('last')) fields.push('last');
+  fields.push('notes','dw','ct','fl');
+  if (has('oid')) fields.push('oid');
+  if (has('trail')) fields.push('trail');
+  fields.push('bk');
+  if (has('bkla')) fields.push('bkla');
+  if (has('bklo')) fields.push('bklo');
+  const qs = fields.map(()=>'?').join(',');
+  const vals = [r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,
+    JSON.stringify((r.voters || []).slice(-500)), JSON.stringify((r.downIps || []).slice(-100))];
+  if (has('ip')) vals.push(r.ip || null);
+  if (has('last')) vals.push(r.last || r.t);
+  vals.push(JSON.stringify(notes), r.dw || 0, r.ct || 0, r.fl || 0);
+  if (has('oid')) vals.push(r.oid || null);
+  if (has('trail')) vals.push(r.trail && r.trail.length ? JSON.stringify(r.trail) : null);
+  vals.push(r.bk || 0);
+  if (has('bkla')) vals.push(r.bkla ?? null);
+  if (has('bklo')) vals.push(r.bklo ?? null);
+  let sql = `INSERT INTO reports(${fields.join(',')}) VALUES(${qs}) ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up, down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips${has('ip')?', ip=excluded.ip':''}${has('last')?', last=excluded.last':''}, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl${has('oid')?', oid=excluded.oid':''}${has('trail')?', trail=excluded.trail':''}, bk=excluded.bk${has('bkla')?', bkla=excluded.bkla':''}${has('bklo')?', bklo=excluded.bklo':''}`;
+  q(sql).run(...vals);
   dirtyCell(cell);
 }
 // outcome : ce qu'est devenu le point, pour le digest (orga, admin, full = zone saturée, purge…)
@@ -2701,7 +2729,7 @@ const PM_ZONES = (() => {
   } catch { return []; }
 })();
 const pm = { fd: null, h: null, dirs: new Map() };
-const zlib = require('zlib');
+
 function pmDecomp(buf, c) { return c === 2 ? zlib.gunzipSync(buf) : c === 3 ? zlib.brotliDecompressSync(buf) : buf; }
 function pmRead(off, len) {
   return new Promise((ok, ko) => { const b = Buffer.alloc(len); fs.read(pm.fd, b, 0, len, off, (e, n) => e ? ko(e) : ok(b.subarray(0, n))); });
@@ -3599,6 +3627,7 @@ const server = http.createServer(async (req, res) => {
             r.exp = Math.min(r.exp, Math.max(r.t + 4 * base, t0 + ttl));
             if (!r.ver) { repAdd(r.voters[0], 'good', 2); r.ver = orga.label; orgaLog(orga, 'vérifié (signalement)', { r }); }
             if (r.fl === -1) r.fl = 0;
+            if (!r.oid) r.oid = orga.id;
           }
           saveReport(r);
           return [200, { ...publicView(r), merged: true, self }];
@@ -3810,7 +3839,8 @@ const server = http.createServer(async (req, res) => {
         const bnote = clean(b.note, NOTE_MAX);
         const out = tx(() => {
           const now = Date.now();
-          const cur = toReport(q('SELECT * FROM reports WHERE oid=? AND cat=? AND bk>0 AND exp>?').get(orga.id, role, now));
+          const cols = new Set(db.prepare("PRAGMA table_info(reports)").all().map(c => c.name));
+          const cur = toReport((cols.has('oid') ? q('SELECT * FROM reports WHERE oid=? AND cat=? AND bk>0 AND exp>?').get(orga.id, role, now) : q('SELECT * FROM reports WHERE cat=? AND bk>0 AND exp>? AND ver=?').get(role, now, orga.label)));
           if (req.method === 'DELETE') { if (cur) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); } return [200, { stopped: true }]; }
           const lat = Number(b.lat), lng = Number(b.lng);
           if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
@@ -4004,4 +4034,5 @@ const server = http.createServer(async (req, res) => {
 server.headersTimeout = 20_000;
 server.requestTimeout = 30_000;
 try { migrateOwners(); } catch (e) { console.error('auteurs', e.message); }
-server.listen(PORT, process.env.HOST || undefined, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));
+const listenArgs = typeof PORT === 'number' && PORT > 0 && !Number.isNaN(PORT) ? [PORT, process.env.HOST || undefined] : [PORT];
+server.listen(...listenArgs, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));
