@@ -1,6 +1,7 @@
 'use strict';
 // Pages HTML des bilans publics (/manif/…), carte des villes, données ouvertes (CSV), plan du site.
 const fs = require('fs');
+const path = require('path');
 const { CAT } = require('../categories');
 const { CITY_PAGE_MIN } = require('../digest/pub');
 const { ORDER_KIND } = require('../orders');
