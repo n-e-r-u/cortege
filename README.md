@@ -9,10 +9,10 @@ Cortège is a free and open-source web app: during a protest, anyone can report 
 ## What it does
 
 - 📍 **Report in two taps**: aim, pick a type, send. Others can confirm ("Still there") or say it's gone ("Gone"), and each point fades away on its own after a few minutes.
-- 📳 **Get warned**: different vibrations for different nearby dangers, and notifications even when the app is closed (urgent announcements, dangers in your area).
+- 📳 **Live Warnings**: different vibrations for different nearby dangers, and notifications even when the app is closed (urgent announcements, dangers in your area).
 - ⚖️ **Know your rights**: US-focused rights info (ACLU-aligned), National Lawyers Guild Mass Defense hotline, guidance for police encounters and arrests, and a pre-filled SMS alert for a trusted contact.
 - 📅 **Calendar**: protests, blockades, gatherings, and general assemblies, with routes shown on the map.
-- 🏛 **Useful places**: police stations, courts, hospitals, pharmacies, and water points.
+- 🏛 **Landmarks**: police stations, courts, hospitals, pharmacies, and water points.
 - 📶 **Works when networks are overloaded**: lightweight mode, reports queued until connection returns, last known situation shown offline, map cached on your phone.
 - 📣 **For organizers and legal teams**: location-based announcements, verification and removal of false reports, access via QR code with no password.
 
