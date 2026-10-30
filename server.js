@@ -34,105 +34,15 @@ const { canManage, ownerTag } = require('./src/orgas/owner');
 const { nearby, getReport, activeReports, saveReport, dropReport } = require('./src/reports/store');
 const { annAll, annActive, getAnn, saveAnn, dropAnn, annView } = require('./src/announcements/store');
 const { getEvent, listEvents, saveEvent, dropEvent, evView, EVENT_KEEP, routeDistM } = require('./src/events/store');
+const { KEY_TRIES, keyLocked, keyFailed, isAdmin, orgaOf } = require('./src/orgas/auth');
+const { SPONSOR, DEVICE_MS, DEVICE_MAX, banUntil, orgaReady, descendants, newInvite } = require('./src/orgas/sponsor');
+const { TRASH_MS, ORGA_REMOVE_MAX, orgaLog, trashReport, orgaStats } = require('./src/orgas/log');
+const { CONTEST, VOTES, deviceAge, contestNeed, TRUST, devRep, repAdd, firstConfirm } = require('./src/reports/votes');
+const { legalAll, getLegal, saveLegal, legalView, phoneDigits, cleanLegal, seedLegal, watchStatus, legalWatch, legalAlerts } = require('./src/legal');
+const { orgaRequest, orgaRequests } = require('./src/orgas/requests');
+const { PLACES, placeOf } = require('./src/geo/cities');
+const { geoCache, nominatim, placeName } = require('./src/geo/search');
 
-// Clés admin / orga : au-delà de 10 essais ratés en 5 min depuis un même réseau, tout est refusé,
-// même la bonne clé (empêche de deviner une clé en essayant en boucle).
-const KEY_TRIES = 10;
-const keySlot = req => 'key:' + clientHash(req);
-function keyLocked(req) {
-  try { const r = q('SELECT t, reports FROM rate WHERE k=?').get(keySlot(req)); return !!r && Date.now() - r.t <= RATE.windowMs && r.reports >= KEY_TRIES; }
-  catch { return false; }
-}
-function keyFailed(req) { try { bump(keySlot(req), 'report', Infinity, Date.now()); } catch {} }
-function isAdmin(req) {
-  const k = String(req.headers['x-admin-key'] || '');
-  if (!ADMIN_KEY || !k || keyLocked(req)) return false;
-  if (keyEq(k, ADMIN_KEY)) return true;
-  keyFailed(req); return false;
-}
-function orgaOf(req) {
-  const k = String(req.headers['x-orga-key'] || '');
-  if (!k || keyLocked(req)) return null;
-  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { id: 'admin', label: adminLabel(), admin: true, trial: false };
-  const env = ORGAS.find(o => keyEq(k, o.key));
-  if (env) return { id: 'env:' + env.label, label: env.label, admin: false, trial: false };
-  const h = sha(k);
-  // Une orga peut avoir plusieurs appareils : une clé principale (hash) et des clés d'appareils supplémentaires (keys)
-  const o = readOrgas().find(o => keyEq(h, o.hash) || (o.keys || []).some(x => keyEq(h, x)));
-  // Période d'essai : trial ; « parrainée » = invitée par une autre orga, surveillance renforcée jusqu'à sa confirmation
-  if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true, sponsored: o.sponsored === true && o.trial === true, by: o.by || null };
-  keyFailed(req); return null;
-}
-// ---- Parrainage ----
-const SPONSOR = { quota: 3, quotaMs: 7 * 24 * 60 * 60_000, banMs: 30 * 24 * 60 * 60_000, readyDays: 7, readyActions: 10, removeMax: 5, annPerDay: 3 };
-const DEVICE_MS = 10 * 60_000, DEVICE_MAX = 5;
-const banUntil = id => { const v = Number(getMeta('ban:' + id) || 0); return v > Date.now() ? v : 0; };
-// Une parrainée est « prête à être confirmée » : assez ancienne, assez active, et rien de suspect dans son journal
-function orgaReady(o) {
-  const since = o.activated || o.created, days = Math.floor((Date.now() - since) / (24 * 60 * 60_000));
-  const rows = q('SELECT action, COUNT(*) n FROM orga_log WHERE oid=? GROUP BY action').all(o.id);
-  const actions = rows.filter(x => !/invitation|appareil/.test(x.action)).reduce((s, x) => s + x.n, 0);
-  const bursts = rows.filter(x => x.action === 'retrait bloqué (rafale)').reduce((s, x) => s + x.n, 0);
-  const restored = q("SELECT COUNT(*) n FROM orga_log WHERE action='restauré' AND detail=?").get('retiré par ' + o.label).n;
-  return { ready: !!o.hash && days >= SPONSOR.readyDays && actions >= SPONSOR.readyActions && !bursts && !restored, days, actions, bursts, restored };
-}
-// Toutes les orgas entrées grâce à celle-ci (filleules, filleules des filleules…)
-function descendants(list, id) {
-  const out = [], todo = [id];
-  while (todo.length) { const cur = todo.pop(); for (const o of list) if (o.by === cur && !out.includes(o.id)) { out.push(o.id); todo.push(o.id); } }
-  return out;
-}
-const newInvite = () => { const token = crypto.randomBytes(18).toString('base64url'); return { token, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; };
-
-// ---- Journal des actions d'orgas (30 jours) et corbeille des retraits (1 h) ----
-const TRASH_MS = 60 * 60_000;
-const ORGA_REMOVE_MAX = Number(process.env.ORGA_REMOVE_MAX) || 15; // retraits par orga et par 5 min
-function orgaLog(orga, action, { r, lat, lng, ref, detail } = {}) {
-  const r3 = x => (x == null ? null : Math.round(x * 1000) / 1000);
-  try {
-    q('INSERT INTO orga_log(t,oid,orga,action,cat,lat,lng,ref,detail) VALUES(?,?,?,?,?,?,?,?,?)')
-      .run(Date.now(), orga.id || null, orga.label, action, r ? r.cat : null, r3(r ? r.lat : lat), r3(r ? r.lng : lng), ref || (r ? r.id : null), detail ? String(detail).slice(0, 200) : null);
-  } catch (e) { console.error('journal', e.message); }
-}
-// Un point retiré par une orga reste restaurable une heure par l'admin
-function trashReport(r, orga) {
-  const now = Date.now();
-  q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, orga.id || null, orga.label, JSON.stringify({ ...r, left: r.exp - now }));
-  dropReport(r.id, orga.id === 'admin' ? 'admin' : 'orga');
-}
-function orgaStats(oid) {
-  const since = Date.now() - 24 * 60 * MIN;
-  const rows = q('SELECT action, COUNT(*) n, MAX(t) last FROM orga_log WHERE oid=? AND t>? GROUP BY action').all(oid, since);
-  const by = Object.fromEntries(rows.map(x => [x.action, x.n]));
-  return { day: { verified: by['vérifié'] || 0, removed: (by['retiré'] || 0) + (by['retrait (essai)'] || 0), blocked: by['retrait bloqué (rafale)'] || 0,
-    announcements: (by['annonce'] || 0) + (by['legal team (en attente)'] || 0) }, lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null };
-}
-
-// ---- « Plus là » : un point n'est jamais effacé par des votes, il devient « contesté » ----
-// Contesté = grisé, et il ne lui reste que quelques minutes ; une confirmation le remet en état normal.
-// Poids d'un « Plus là » : ×2 si le téléphone dit être sur place (calcul fait sur le téléphone, la position
-// ne part jamais), ×2 si l'identifiant n'est pas tout neuf. Il en faut davantage pour chaque confirmation.
-const CONTEST = { near: 2, aged: 2, need: 8, perUp: 4, more: 8, soft: 10 * MIN, short: 2 * MIN, newDev: 10 * MIN,
-  devKeep: 26 * 60 * MIN, devBurst: 6, netBurst: 60 };
-const VOTES = { id: 'votes', label: 'Votes « Plus là »' };
-// Âge de l'identifiant du téléphone (0 si inconnu ou sans identifiant), et note qu'il vient d'agir
-function deviceAge(dev, now) {
-  if (!dev.startsWith('d:')) return 0;
-  const row = q('SELECT first FROM devices WHERE h=?').get(dev);
-  q('INSERT INTO devices(h,first,seen) VALUES(?,?,?) ON CONFLICT(h) DO UPDATE SET seen=excluded.seen').run(dev, now, now);
-  return row ? now - row.first : 0;
-}
-// Un signalement d'un téléphone fiable demande une personne de plus pour être contesté
-const contestNeed = r => CONTEST.need + CONTEST.perUp * (r.up || 0) + (r.fl === 1 ? CONTEST.perUp : 0);
-// ---- Fiabilité du jour ----
-const TRUST = 2; // fiable : (confirmés par d'autres) − 2 × (contestés) ≥ 2
-function devRep(dev) { const x = dev.startsWith('d:') && q('SELECT good, bad FROM devices WHERE h=?').get(dev); return x ? (x.good || 0) - 2 * (x.bad || 0) : 0; }
-function repAdd(dev, field, n = 1) {
-  if (!dev || !dev.startsWith('d:') || (field !== 'good' && field !== 'bad')) return;
-  q(`UPDATE devices SET ${field}=COALESCE(${field},0)+? WHERE h=?`).run(n, dev);
-}
-// Première confirmation par quelqu'un d'autre : l'auteur gagne en fiabilité, le point n'est plus « non fiable »
-function firstConfirm(r) { if (r.up === 1) { repAdd(r.voters[0], 'good'); if (r.fl === -1) r.fl = 0; } }
 // ---- Tableau des abus ----
 const ABUSE_KEEP = 48 * 60 * MIN;
 const r2 = x => (x == null ? null : Math.round(x * 100) / 100);
@@ -265,146 +175,6 @@ function createAnnouncement(b, by, admin, pending = false, oid = admin ? 'admin'
   saveAnn(a);
   if (a.level === 'urgent' && !a.pending) pushBroadcast(a).catch(e => console.error('push', e.message));
   return [201, annView(a)];
-}
-
-// ---- Annuaire permanent des legal teams ----
-const legalAll = () => q('SELECT data FROM legal_dir').all().map(x => JSON.parse(x.data)).sort((a, b) => a.city.localeCompare(b.city, 'fr') || a.name.localeCompare(b.name, 'fr'));
-const getLegal = id => { const x = q('SELECT data FROM legal_dir WHERE id=?').get(id); return x ? JSON.parse(x.data) : null; };
-function saveLegal(e) { cityIdx.at = 0; q('INSERT OR REPLACE INTO legal_dir(id,data) VALUES(?,?)').run(e.id, JSON.stringify(e)); dirty.legal = true; scheduleFlush(); }
-const legalView = e => ({ id: e.id, city: e.city, lat: e.lat, lng: e.lng, name: e.name, phone: e.phone, signal: !!e.signal, src: e.src || null, checked: e.checked || null });
-const phoneDigits = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('33') && d.length === 11) d = '0' + d.slice(2); return d; };
-// Tous les numéros français d'une page, normalisés (0XXXXXXXXX)
-const phonesIn = text => [...new Set((String(text).match(/(?:\+33[\s.\-]?|0)[1-9](?:[\s.\-]?\d{2}){4}/g) || []).map(phoneDigits))].sort();
-function cleanLegal(b, old) {
-  const e = { ...(old || {}) };
-  e.city = clean(b.city ?? e.city, 40); e.name = clean(b.name ?? e.name, 80);
-  e.phone = String(b.phone ?? e.phone ?? '').replace(/[^\d+ .]/g, '').trim().slice(0, 20);
-  e.signal = b.signal === undefined ? !!e.signal : !!b.signal;
-  const src = String(b.src ?? e.src ?? '').trim();
-  e.src = /^https?:\/\/[^\s"<>]{4,400}$/.test(src) ? src : null;
-  if (b.lat !== undefined) { e.lat = round(Number(b.lat)); e.lng = round(Number(b.lng)); }
-  if (b.srcDate !== undefined) e.srcDate = /^\d{4}-\d{2}-\d{2}$/.test(String(b.srcDate)) ? b.srcDate : null;
-  if (e.city.length < 2) return [400, 'Indique la ville.'];
-  if (e.name.length < 2) return [400, 'Indique le nom du collectif.'];
-  if (phoneDigits(e.phone).length < 6) return [400, 'Numéro de téléphone invalide.'];
-  if (!validLatLng(e.lat, e.lng)) return [400, 'Position invalide (choisis la ville dans la recherche).'];
-  return [200, e];
-}
-function seedLegal() {
-  if (getMeta('legalseed')) return;
-  try {
-    const list = JSON.parse(fs.readFileSync(path.join(__dirname, 'legal-seed.json'), 'utf8'));
-    for (const b of list) if (!getLegal(b.id)) { const [st, e] = cleanLegal(b, { id: b.id, ok: false, added: Date.now(), seed: true }); if (st === 200) saveLegal(e); }
-  } catch (e) { if (e.code !== 'ENOENT') console.error('annuaire', e.message); }
-  setMeta('legalseed', Date.now());
-}
-const LEGAL_WATCH_MS = 24 * 60 * MIN;
-// Adresse publique seulement : jamais le serveur lui-même, le réseau local, ni les adresses internes des hébergeurs (métadonnées)
-const BLOCKED_IP = /^(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|192\.0\.0\.|198\.1[89]\.|22[4-9]\.|2[3-5]\d\.|::$|::1$|f[cd][0-9a-f]{2}:|fe[89ab][0-9a-f]:|::ffff:(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.))/i;
-// Page web d'une source (veille des legal teams) : HTTP(S) sur les ports habituels, adresse vérifiée au moment même de la connexion
-// (une redirection ou un nom de domaine qui change d'adresse ne peut pas mener au réseau interne), 3 redirections au plus.
-function fetchPublic(url, { max = 3_000_000, timeout = 15000, hops = 3 } = {}) {
-  return new Promise((resolve, reject) => {
-    let u; try { u = new URL(url); } catch { return reject(new Error('adresse invalide')); }
-    if (!/^https?:$/.test(u.protocol) || (u.port && !['80', '443'].includes(u.port) && process.env.FETCH_ALLOW_PRIVATE !== '1') || u.username || u.password) return reject(new Error('adresse refusée'));
-    const lib = u.protocol === 'https:' ? require('https') : require('http');
-    const lookup = (host, opts, cb) => require('dns').lookup(host, { ...opts, all: false }, (err, addr, fam) => {
-      if (err) return cb(err);
-      if (BLOCKED_IP.test(addr) && process.env.FETCH_ALLOW_PRIVATE !== '1') return cb(new Error('adresse interne refusée'));
-      cb(null, addr, fam);
-    });
-    const req = lib.get(u, { lookup, timeout, headers: { 'user-agent': 'Cortege-veille/1 (verification annuaire legal teams)' } }, res => {
-      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
-        res.resume();
-        if (hops <= 0) return reject(new Error('trop de redirections'));
-        return resolve(fetchPublic(new URL(res.headers.location, u).href, { max, timeout, hops: hops - 1 }));
-      }
-      if (res.statusCode < 200 || res.statusCode >= 300) { res.resume(); return reject(new Error('HTTP ' + res.statusCode)); }
-      let size = 0; const parts = [];
-      res.on('data', c => { size += c.length; if (size > max) { res.destroy(); resolve(Buffer.concat(parts).toString('utf8')); } else parts.push(c); });
-      res.on('end', () => resolve(Buffer.concat(parts).toString('utf8')));
-      res.on('error', () => reject(new Error('lecture interrompue')));
-    });
-    req.on('timeout', () => req.destroy(new Error('délai dépassé')));
-    req.on('error', e2 => reject(new Error(/interne|refusée|délai/.test(e2.message) ? e2.message : 'site injoignable')));
-  });
-}
-async function watchOne(e) {
-  const w = { at: Date.now() };
-  try {
-    const html = await fetchPublic(e.src);
-    const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/g, ' ');
-    w.phones = phonesIn(text);
-    w.found = w.phones.includes(phoneDigits(e.phone));
-  } catch (err) { w.err = String(err.message).slice(0, 80); }
-  return w;
-}
-// État de la veille pour une ligne : ok, missing (numéro absent de la source), changed (numéros différents), error
-function watchStatus(e) {
-  const w = e.watch; if (!w) return 'new';
-  if (w.err) return 'error';
-  if (!w.found) return 'missing';
-  if (e.base && JSON.stringify(e.base) !== JSON.stringify(w.phones)) return 'changed';
-  return 'ok';
-}
-async function legalWatch(force = false) {
-  // Un seul processus fait la veille : on réserve le tour dans la base
-  const claimed = tx(() => { const last = +getMeta('legalwatch') || 0; if (!force && Date.now() - last < LEGAL_WATCH_MS) return false; setMeta('legalwatch', Date.now()); return true; });
-  if (!claimed) return false;
-  for (const e of legalAll().filter(x => x.src)) {
-    const w = await watchOne(e);
-    const cur = getLegal(e.id); if (!cur) continue;
-    cur.watch = w;
-    if (!cur.base && w.phones && w.found) cur.base = w.phones; // première lecture réussie : sert de référence
-    q('INSERT OR REPLACE INTO legal_dir(id,data) VALUES(?,?)').run(cur.id, JSON.stringify(cur)); // pas de republication : rien de public ne change
-  }
-  return true;
-}
-const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
-
-// ---- Demandes d'accès orga (formulaire dans l'appli, au lieu d'un e-mail) ----
-const OREQ_DAYS = 30;
-function orgaRequest(b) {
-  const f = { collective: clean(b.collective, 80), city: clean(b.city, 60), role: clean(b.role, 40), link: String(b.link || '').trim().slice(0, 300),
-    since: clean(b.since, 40), contact: clean(b.contact, 120), sponsor: clean(b.sponsor, 120), note: clean(b.note, 600) };
-  if (f.collective.length < 2) return [400, { error: 'Indique le nom du collectif.' }];
-  if (f.city.length < 2) return [400, { error: 'Indique la ville ou le secteur.' }];
-  if (!/^https:\/\/[^\s"<>]{4,300}$/.test(f.link)) return [400, { error: 'Donne le lien public du collectif (site, Instagram…), en https://' }];
-  if (f.contact.length < 3) return [400, { error: 'Indique le canal officiel du collectif où te confirmer la demande.' }];
-  const now = Date.now();
-  q('DELETE FROM orga_req WHERE t<?').run(now - OREQ_DAYS * 24 * 60 * MIN);
-  if (q('SELECT COUNT(*) n FROM orga_req').get().n >= 500) return [503, { error: 'Trop de demandes en attente, réessaie dans quelques jours.' }];
-  const id = crypto.randomBytes(6).toString('base64url');
-  q('INSERT INTO orga_req(id,t,data) VALUES(?,?,?)').run(id, now, JSON.stringify(f));
-  return [201, { ok: true }];
-}
-const orgaRequests = () => { q('DELETE FROM orga_req WHERE t<?').run(Date.now() - OREQ_DAYS * 24 * 60 * MIN);
-  return q('SELECT id, t, data FROM orga_req ORDER BY t').all().map(x => ({ id: x.id, t: x.t, ...JSON.parse(x.data) })); };
-
-// ---- Villes et agglomérations (digest) ----
-// Liste des villes de plus de 5 000 habitant·es (France, outre-mer, pays voisins francophones), d'après GeoNames (CC BY 4.0).
-// Un point est rattaché à la plus grande ville dont il est assez proche (rayon qui grandit avec la population :
-// environ 14 km pour Paris, 10 km pour Montpellier), sinon à la ville la plus proche.
-const PLACES = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'places.json'), 'utf8')); } catch { return []; } })();
-const PLACE_POP = new Map();
-for (const [n, , , p, c] of PLACES) PLACE_POP.set(n + '|' + c, (PLACE_POP.get(n + '|' + c) || 0) + p);
-const placeCache = new Map();
-function placeOf(lat, lng) {
-  const key = lat.toFixed(2) + ',' + lng.toFixed(2);
-  if (placeCache.has(key)) return placeCache.get(key);
-  const k = Math.cos(lat * Math.PI / 180);
-  let pole = null, near = null, nearD = Infinity;
-  for (const [n, la, lo, , c] of PLACES) {
-    const dy = (la - lat) * 111; if (dy > 30 || dy < -30) continue;
-    const d = Math.hypot(dy, (lo - lng) * 111 * k); if (d > 30) continue;
-    const pop = PLACE_POP.get(n + '|' + c);
-    if (d < nearD) { nearD = d; near = n; }
-    if (pop >= 20000 && d <= Math.min(20, 6 + 4 * Math.log10(pop / 20000)) && (!pole || pop > pole.pop)) pole = { n, pop };
-  }
-  const name = pole ? pole.n : near && nearD <= 15 ? near : `${lat.toFixed(1)}, ${lng.toFixed(1)}`;
-  if (placeCache.size > 50000) placeCache.clear();
-  placeCache.set(key, name);
-  return name;
 }
 
 // ---- Communes : contours OpenStreetMap (limites administratives de niveau 8), extraits pendant l'import mensuel ----
@@ -898,36 +668,6 @@ function sendPage(res, html) {
     'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'", 'X-Frame-Options': 'DENY' });
   res.end(html);
 }
-
-// ---- Recherche de lieux (OpenStreetMap Nominatim, via le serveur : rien ne part du téléphone) ----
-const geoCache = new Map();
-let geoChain = Promise.resolve(), geoLast = 0;
-let geoPending = 0;
-const GEO_QUEUE_MAX = 20; // au-delà, on répond « réessaie » plutôt que d'empiler (1 requête/s chez Nominatim)
-function nominatim(pathAndQuery) {
-  if (geoCache.has(pathAndQuery)) return Promise.resolve(geoCache.get(pathAndQuery));
-  if (geoPending >= GEO_QUEUE_MAX) return Promise.resolve(null);
-  geoPending++;
-  // Politique Nominatim : 1 requête par seconde maximum
-  const run = () => new Promise(resolve => {
-    const wait = Math.max(0, geoLast + 1100 - Date.now());
-    setTimeout(() => {
-      geoLast = Date.now();
-      const rq = https.get('https://nominatim.openstreetmap.org' + pathAndQuery, { headers: { 'User-Agent': TILE_UA, 'Accept-Language': 'fr' }, timeout: 8000 }, up => {
-        const chunks = []; up.on('data', c => chunks.push(c));
-        up.on('end', () => {
-          let data = null; try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch {}
-          if (up.statusCode === 200 && data) { geoCache.set(pathAndQuery, data); if (geoCache.size > 3000) geoCache.delete(geoCache.keys().next().value); }
-          resolve(data);
-        });
-      });
-      rq.on('timeout', () => rq.destroy(new Error('timeout')));
-      rq.on('error', () => resolve(null));
-    }, wait);
-  });
-  const p = geoChain.then(run).finally(() => { geoPending--; }); geoChain = p.catch(() => {}); return p;
-}
-const placeName = a => a && (a.city || a.town || a.village || a.municipality || a.suburb || a.county || a.state) || null;
 
 // ---- Notifications push (Web Push : chiffrement RFC 8291 + VAPID RFC 8292), sans dépendance ----
 // Un téléphone abonné envoie seulement une zone arrondie à 0,1° (≈ 10 km), jamais sa position exacte.
