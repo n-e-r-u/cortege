@@ -8,8 +8,8 @@
   let lang = null;
   try { lang = localStorage.getItem('cortege-lang'); } catch {}
   if (!LANGS.includes(lang)) {
-    lang = 'fr';
-    for (const l of navigator.languages || [navigator.language || 'fr']) {
+    lang = 'en';
+    for (const l of navigator.languages || [navigator.language || 'en']) {
       const b = String(l || '').slice(0, 2).toLowerCase();
       if (LANGS.includes(b)) { lang = b; break; }
     }
@@ -69,7 +69,7 @@
   function translate(root) { if (lang !== 'fr' && root) walk(root); }
   function collect(root) { const out = new Set(); walk(root, out); return [...out]; }
 
-  function set(l) { try { localStorage.setItem('cortege-lang', LANGS.includes(l) ? l : 'fr'); } catch {} }
+  function set(l) { try { localStorage.setItem('cortege-lang', LANGS.includes(l) ? l : 'en'); } catch {} }
 
   let ready;
   if (lang === 'fr') ready = Promise.resolve();
@@ -85,7 +85,7 @@
       html.lang = lang; html.dir = lang === 'ar' ? 'rtl' : 'ltr';
       if (dict[norm(document.title)]) document.title = dict[norm(document.title)];
       translate(document.body);
-    }).catch(() => { lang = 'fr'; window.I18N.lang = 'fr'; window.I18N.locale = LOCALES.fr; }).finally(done);
+    }).catch(() => { if (lang === 'en') { done(); return; } lang = 'fr'; window.I18N.lang = 'fr'; window.I18N.locale = LOCALES.fr; }).finally(done);
   }
   window.I18N = { lang, locale: LOCALES[lang], langs: LANGS, t, tn, translate, collect, set, ready };
 })();
