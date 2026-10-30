@@ -419,92 +419,116 @@
 <!-- Mes droits -->
 <section class="sheet page" id="sheetRights" hidden aria-labelledby="rgTitle">
   <div class="sheet-head">
-    <h2 id="rgTitle">Droits</h2>
-    <button class="x" id="rgClose" aria-label="Fermer">×</button>
+    <h2 id="rgTitle">Rights</h2>
+    <button class="x" id="rgClose" aria-label="Close">×</button>
   </div>
   <div class="legal-box" id="legalBox">
     <div class="legal-title" id="legalTitle">Legal team</div>
     <div id="legalList"></div>
-    <p class="legal-none" id="legalNone">Aucun numéro de legal team connu pour l’instant. Demande-le aux orgas de ton cortège.</p>
-    <p class="legal-tip">Écris le numéro au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré.</p>
+    <p class="legal-none" id="legalNone">No legal team numbers known yet. Ask the organizers at your protest.</p>
+    <p class="legal-tip">Write the number in pen on your arm: if you're arrested, your phone may be taken.</p>
     <details class="legal-other" id="legalOther" hidden>
-      <summary id="legalOtherSum">Autres villes</summary>
+      <summary id="legalOtherSum">Other cities</summary>
       <div id="legalOtherList"></div>
     </details>
   </div>
-  <button class="sos-wide" id="btnSosRights"><b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span></button>
-  <a class="violence-btn" id="violenceLink" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">
-    <b>Signaler une violence policière</b>
-    <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>
+  <button class="sos-wide" id="btnSosRights"><b>I've been arrested</b><span>Alert someone by text in two taps</span></button>
+  <a class="violence-btn" id="violenceLink" href="https://www.aclu.org/know-your-rights/protesters-rights" target="_blank" rel="noopener noreferrer">
+    <b>Know Your Rights (ACLU)</b>
+    <span>ACLU guide to protester rights in the United States.</span>
   </a>
-  <h3 class="menu-group">En cas de</h3>
+  <div class="legal-box" style="margin-top:12px">
+    <div class="legal-title">Legal Support</div>
+    <div class="legal-row">
+      <div class="legal-who">
+        <b>National Lawyers Guild (NLG)</b>
+        <span>Mass Defense Program</span>
+        <span class="legal-meta">nationwide legal support for protesters</span>
+      </div>
+      <div class="legal-num">1-888-NLG-ECOL (1-888-654-3265)</div>
+      <div class="legal-actions">
+        <a class="legal-call" href="tel:18886543265">Call</a>
+        <button class="legal-copy" onclick="navigator.clipboard.writeText('1-888-654-3265').then(()=>{if(window.toast)toast('Number copied');})">Copy</button>
+      </div>
+    </div>
+  </div>
+  <h3 class="menu-group">In case of</h3>
 
   <details class="right">
-    <summary>Attaque d’un groupe fasciste</summary>
+    <summary>Counter-protesters or hostile groups</summary>
     <ul>
-      <li><b>Reste groupé·e</b> et ne pars pas seul·e : les attaques visent d’abord les personnes isolées, y compris après la manif.</li>
-      <li>Va vers le service d’ordre, les street medics ou un endroit fréquenté.</li>
-      <li><b>Signale-les sur la carte</b> (☠️) pour prévenir les autres : combien, direction, armes visibles. Pas de nom ni de photo de personnes.</li>
-      <li>Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, va au commissariat ou écris au procureur de la République ; la legal team peut t’aider.</li>
+      <li><b>Stay in groups</b> and avoid going off alone, especially before and after the protest.</li>
+      <li>Move to a safer area with marshals, medics, or a crowd of other protesters.</li>
+      <li><b>Report threats on the map</b> to warn others. Don't post photos or names of individuals.</li>
+      <li>If injured, call <b>911</b>. Contact your legal team or a trusted person for help.</li>
     </ul>
   </details>
 
   <details class="right" open>
-    <summary>Sommations et dispersion</summary>
+    <summary>Orders to disperse</summary>
     <ul>
-      <li>Un attroupement peut être dispersé par la force après <b>deux sommations</b> restées sans effet. Elles sont annoncées par haut-parleur ou par un signal (fusée rouge, signal sonore).</li>
-      <li>Rester volontairement dans un attroupement <b>après les sommations</b> est un délit.</li>
-      <li><b>Si tu les entends :</b> éloigne-toi par une rue dégagée, sans courir vers les forces de l’ordre.</li>
+      <li>Police may order dispersal. Pay attention to clear verbal orders, announcements, or dispersal orders.</li>
+      <li><b>If ordered to disperse:</b> leave calmly and by the clearest route. Avoid running toward police lines.</li>
+      <li>Laws vary by location - follow lawful orders to disperse. Refusing a lawful dispersal order can carry consequences in some jurisdictions.</li>
     </ul>
   </details>
   <details class="right">
-    <summary>Contrôle d’identité</summary>
+    <summary>Police stops & questioning</summary>
     <ul>
-      <li>Tu dois justifier ton identité <b>par tout moyen</b> : carte d’identité, passeport, permis, voire un témoin. Avoir une pièce sur toi n’est pas obligatoire, mais ça évite d’être retenu·e.</li>
-      <li>Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche.</li>
+      <li><b>You have the right to remain silent.</b> You can say "I am going to remain silent" and ask for a lawyer.</li>
+      <li><b>Ask if you're free to leave.</b> If yes, calmly walk away. If no, you are being detained.</li>
+      <li><b>ID requirements vary.</b> In some states you must identify yourself if lawfully stopped and asked; in many others there is no general duty to show ID while just protesting. Know your local laws.</li>
+      <li>Do not argue, resist, or physically interfere. Stay calm and document if safe.</li>
     </ul>
   </details>
   <details class="right">
-    <summary>Garde à vue</summary>
+    <summary>Arrest</summary>
     <ul>
-      <li><b>Droit de te taire.</b> Tu donnes ton identité, et tu peux ne rien dire d’autre.</li>
-      <li><b>Demande un·e avocat·e tout de suite</b>, dès le début. Si tu n’en connais pas, un·e avocat·e commis·e d’office est gratuit·e.</li>
-      <li>Droit de faire prévenir un proche et ton employeur, de voir un médecin, d’avoir un·e interprète.</li>
-      <li>Durée : 24 heures, prolongeable une fois de 24 heures pour la plupart des délits.</li>
-      <li><b>Ne signe rien</b> que tu n’as pas lu et compris. Tu peux refuser de signer un procès-verbal.</li>
+      <li><b>Stay silent.</b> Give only your name if legally required in your situation, then say you want to remain silent and speak to a lawyer.</li>
+      <li><b>Ask for a lawyer immediately.</b> You have the right to an attorney. If you can't afford one, you may be entitled to a public defender.</li>
+      <li>You have the right to make a local phone call. Let someone know you've been arrested if possible.</li>
+      <li><b>Do not consent to searches.</b> Say "I do not consent to a search." Police may still search in some circumstances, but refusing consent is important.</li>
+      <li><b>Do not sign anything</b> without talking to a lawyer.</li>
     </ul>
   </details>
   <details class="right">
-    <summary>Ton téléphone</summary>
+    <summary>Your phone & privacy</summary>
     <ul>
-      <li>Refuser de donner le code de déverrouillage peut, dans certains cas, être poursuivi (Cour de cassation, 2022).</li>
-      <li><b>Avant de partir :</b> verrouille ton téléphone avec un code plutôt qu’avec l’empreinte ou le visage, et masque le contenu des notifications sur l’écran verrouillé.</li>
-      <li>Pense aussi à sauvegarder tes photos ailleurs que sur le téléphone : il peut être saisi ou cassé.</li>
+      <li><b>Use a passcode, not biometrics.</b> In some jurisdictions, police may compel fingerprint/face unlock more easily than a passcode.</li>
+      <li><b>Lock your screen.</b> Turn off lock screen notifications showing sensitive content.</li>
+      <li>You do not have to unlock your phone for police without a warrant in many situations, but laws are evolving. Do not consent.</li>
+      <li>Consider backing up photos elsewhere. Phones can be seized.</li>
     </ul>
   </details>
   <details class="right">
-    <summary>Filmer</summary>
+    <summary>Filming police</summary>
     <ul>
-      <li>Filmer les forces de l’ordre en intervention est <b>légal</b>.</li>
-      <li>Diffuser des éléments permettant d’identifier un agent dans le but qu’on lui porte atteinte est un délit.</li>
-      <li>Floute les visages avant de publier, ceux des manifestant·es aussi.</li>
+      <li><b>You have the right to film police</b> in public spaces while they're performing official duties.</li>
+      <li>Stay at a safe distance and don't interfere with police actions.</li>
+      <li>Police cannot order you to stop recording solely because they're performing public duties.</li>
+      <li>Be careful about sharing footage that could endanger others - blur faces when possible.</li>
     </ul>
   </details>
   <details class="right">
-    <summary>Visage couvert</summary>
+    <summary>Protesting in public</summary>
     <ul>
-      <li>Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit. La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer.</li>
+      <li><b>Public spaces:</b> You generally have First Amendment rights to protest on sidewalks, in parks, and in public streets, though permits may be required for large marches or street closures.</li>
+      <li><b>Private property:</b> You need permission to protest on private property. You can be asked to leave.</li>
+      <li><b>Counterprotesting:</b> Counterprotesters also have First Amendment rights. Stay peaceful.</li>
+      <li>Time, place, and manner restrictions must be content-neutral and leave open alternative channels of communication.</li>
     </ul>
   </details>
   <details class="right">
-    <summary>Après une interpellation</summary>
+    <summary>After an arrest</summary>
     <ul>
-      <li>En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Demande-le.</li>
-      <li>Blessé·e : fais établir un <b>certificat médical</b> au plus vite, garde photos et témoignages, contacte ta legal team.</li>
-      <li>Victime ou témoin de violences : <a class="inline-link violence-inline" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">signale-les à la LDH</a>.</li>
+      <li>Document everything you remember as soon as it's safe to do so.</li>
+      <li>Get contact info for witnesses if possible.</li>
+      <li>Seek medical attention for injuries and document them with photos.</li>
+      <li>Contact a lawyer or legal support as soon as possible. Reach out to your legal team if available.</li>
+      <li>Consider contacting the ACLU or local legal aid organizations for support.</li>
     </ul>
   </details>
-  <p class="fine">Informations générales sur le droit français, pas un conseil juridique. En cas d’interpellation, la seule personne à qui parler de l’affaire est ton avocat·e.</p>
+  <p class="fine">General information about U.S. constitutional rights, not legal advice. Laws vary by state and locality. If arrested or detained, speak to a qualified attorney about your specific situation.</p>
   <button type="button" class="wipe-btn" data-wipe><span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span></button>
   <p class="fine">Efface tout ce que Cortège garde sur ce téléphone, puis ferme l’appli.</p>
   <div class="credit">
