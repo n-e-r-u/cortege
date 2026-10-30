@@ -3,7 +3,7 @@
 // Le texte français sert de clé : /lang/xx.json associe chaque texte français à sa traduction.
 // Rien n'est demandé au serveur sauf ce fichier, gardé ensuite pour le hors-ligne par le service worker.
 (function () {
-  const LANGS = ['fr', 'en', 'es', 'ar'];
+  const LANGS = ['en', 'es', 'fr', 'ar'];
   const LOCALES = { fr: 'fr-FR', en: 'en-US', es: 'es-US', ar: 'ar-u-nu-latn' };
   let lang = null;
   try { lang = localStorage.getItem('cortege-lang'); } catch {}
