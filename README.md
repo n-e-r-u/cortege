@@ -2,7 +2,8 @@
 
 [![Tests](https://github.com/JadePrice/cortege/actions/workflows/tests.yml/badge.svg)](https://github.com/JadePrice/cortege/actions/workflows/tests.yml)
 
-**The live protest map, made by those who are there.**
+**The live protest map, made by those who are there.**  
+*Fork of [Cortège](https://github.com/n-e-r-u/cortege) by [@neru](https://www.instagram.com/neru/).*
 
 Cortège is a free and open-source web app: during a protest, anyone can report what they see (kettling, tear gas, charges, street medics, legal team, safe zones, etc.) and everyone sees it on the map within seconds. No account, no ads, no tracking.
 
