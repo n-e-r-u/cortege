@@ -1,49 +1,49 @@
 # Cortège
 
-[![Tests](https://github.com/n-e-r-u/cortege/actions/workflows/tests.yml/badge.svg)](https://github.com/n-e-r-u/cortege/actions/workflows/tests.yml)
+[![Tests](https://github.com/JadePrice/cortege/actions/workflows/tests.yml/badge.svg)](https://github.com/JadePrice/cortege/actions/workflows/tests.yml)
 
-**La carte des manifs en temps réel, faite par celles et ceux qui y sont.**
+**The live protest map, made by those who are there.**
 
-Cortège est une appli web gratuite et libre : pendant une manif, chacun·e signale ce qu'il ou elle voit (nasse, lacrymo, charge, street medics, legal team, zone calme…) et tout le monde le voit sur la carte, en quelques secondes. Pas de compte, pas de pub, pas de pistage.
+Cortège is a free and open-source web app: during a protest, anyone can report what they see (kettling, tear gas, charges, street medics, legal team, safe zones, etc.) and everyone sees it on the map within seconds. No account, no ads, no tracking.
 
-## Ce que ça fait
+## What it does
 
-- 📍 **Signaler en deux gestes** : un viseur, un type, c'est envoyé. Les autres confirment (« Toujours là ») ou démentent (« Plus là »), et chaque point s'éteint tout seul au bout de quelques minutes.
-- 📳 **Être prévenu·e** : une vibration différente pour chaque danger proche, et des notifications même appli fermée (annonces urgentes, dangers dans ta zone).
-- ⚖️ **Connaître ses droits** : les numéros des legal teams de ta ville, les réflexes en cas d'interpellation, un SMS d'alerte pré-rempli pour un proche.
-- 📅 **Agenda** : manifs, blocus, rassemblements et AG, avec le parcours sur la carte.
-- 🏛 **Lieux utiles** : préfectures, commissariats, tribunaux, hôpitaux, pharmacies, points d'eau.
-- 📶 **Tenir quand le réseau sature** : mode léger, signalements gardés jusqu'à ce que ça capte, dernière situation connue affichée hors ligne, carte gardée sur le téléphone.
-- 📣 **Pour les orgas et legal teams** : annonces localisées, vérification et retrait des faux signalements, accès par QR code sans mot de passe.
+- 📍 **Report in two taps**: aim, pick a type, send. Others can confirm ("Still there") or say it's gone ("Gone"), and each point fades away on its own after a few minutes.
+- 📳 **Get warned**: different vibrations for different nearby dangers, and notifications even when the app is closed (urgent announcements, dangers in your area).
+- ⚖️ **Know your rights**: US-focused rights info (ACLU-aligned), National Lawyers Guild Mass Defense hotline, guidance for police encounters and arrests, and a pre-filled SMS alert for a trusted contact.
+- 📅 **Calendar**: protests, blockades, gatherings, and general assemblies, with routes shown on the map.
+- 🏛 **Useful places**: police stations, courts, hospitals, pharmacies, and water points.
+- 📶 **Works when networks are overloaded**: lightweight mode, reports queued until connection returns, last known situation shown offline, map cached on your phone.
+- 📣 **For organizers and legal teams**: location-based announcements, verification and removal of false reports, access via QR code with no password.
 
-## Ta vie privée
+## Privacy
 
-- Ta position ne quitte jamais ton téléphone : seuls les signalements partent, arrondis à une dizaine de mètres.
-- Aucun compte, aucun cookie, aucun traqueur. Les signalements sont effacés à leur expiration.
-- La carte peut être servie par le serveur lui-même (aucune requête vers un fournisseur) et l'appli est joignable par Tor.
-- Le code est public : chacun·e peut vérifier que l'appli en ligne est bien celle de ce dépôt.
+- Your location never leaves your phone: only reports are sent, rounded to about 10 meters.
+- No account, no cookies, no trackers. Reports are deleted when they expire.
+- The map can be served by the server itself (no requests to third-party tile providers), and the app is accessible over Tor.
+- The code is public: anyone can verify that the online app matches this repository.
 
-Détails : [ce que le serveur sait et ne sait pas](docs/FONCTIONNEMENT.md#ce-que-le-serveur-sait-et-ne-sait-pas) et [SECURITY.md](SECURITY.md).
+Details: [what the server knows and doesn't know](docs/FONCTIONNEMENT.md#what-the-server-knows-and-doesnt-know) and [SECURITY.md](SECURITY.md).
 
-## Héberger ta propre carte
+## Host your own map
 
-Cortège tourne sur un petit serveur (Node 22.13+, aucune dépendance à installer) ou sur un hébergement mutualisé avec cPanel :
+Cortège runs on a small server (Node 22.13+, no dependencies to install) or on shared hosting with cPanel:
 
 ```bash
-node server.js   # puis ouvre http://localhost:8080
+node server.js   # then open http://localhost:8080
 ```
 
-- [Installation et configuration](docs/INSTALLATION.md) : variables, VPS, cPanel, Docker, sauvegarde, carte hébergée, adresse .onion.
-- [Fonctionnement détaillé](docs/FONCTIONNEMENT.md) : signalements, anti-abus, administration, digest.
-- [Nouveautés de chaque version](CHANGELOG.md).
+- [Installation and configuration](docs/INSTALLATION.md): environment variables, VPS, cPanel, Docker, backups, self-hosted maps, .onion address.
+- [How it works](docs/FONCTIONNEMENT.md): reports, anti-abuse, administration, digest.
+- [Changelog](CHANGELOG.md).
 
-## Participer
+## Contribute
 
-Bug, idée, traduction : ouvre une [issue](../../issues) ou lis [CONTRIBUTING.md](CONTRIBUTING.md). Une faille de sécurité : voir [SECURITY.md](SECURITY.md), sans la publier.
+Bug, idea, or translation: open an [issue](../../issues) or read [CONTRIBUTING.md](CONTRIBUTING.md). To report a security vulnerability: see [SECURITY.md](SECURITY.md), do not publish it publicly.
 
-## Licence et crédits
+## License and credits
 
-Licence [AGPL-3.0](LICENSE) : toute version modifiée mise en ligne doit publier son code.
+License [AGPL-3.0](LICENSE): any modified version made available online must publish its source code.
 
-Données cartographiques © les contributeur·ices d'[OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL). Noms et positions des villes du digest : [GeoNames](https://www.geonames.org/) (CC BY 4.0), fichier `places.json`.
-Polices des stories : Inter et JetBrains Mono (SIL Open Font License), dans `public/vendor/fonts/`. Rendu de la carte vectorielle : [protomaps-leaflet](https://github.com/protomaps/protomaps-leaflet) (BSD-3-Clause). Fond de carte des stories : Natural Earth via world-atlas (domaine public).
+Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL). City names and locations for the digest: [GeoNames](https://www.geonames.org/) (CC BY 4.0), file `places.json`.  
+Story fonts: Inter and JetBrains Mono (SIL Open Font License), in `public/vendor/fonts/`. Vector map rendering: [protomaps-leaflet](https://github.com/protomaps/protomaps-leaflet) (BSD-3-Clause). Story map background: Natural Earth via world-atlas (public domain).
