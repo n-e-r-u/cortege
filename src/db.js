@@ -58,8 +58,12 @@ try { db.exec("ALTER TABLE reports ADD COLUMN notes TEXT DEFAULT '[]'"); } catch
 // « Plus là » pondérés (dw) et heure à laquelle le point est devenu contesté (ct)
 try { db.exec('ALTER TABLE reports ADD COLUMN dw INTEGER DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN ct INTEGER DEFAULT 0'); } catch {}
-// Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié
-try { db.exec('ALTER TABLE reports ADD COLUMN oid TEXT'); } catch {}
+// Orga qui a créé le point (pour qu'elle puisse le prolonger ou le corriger), jamais publié.
+// Colonne « owner » : l'ancien nom « oid » est réservé par SQLite (autre nom du numéro de ligne) et certaines versions
+// refusent de l'ajouter. Une base qui a encore la colonne « oid » est reprise une fois, sans rien perdre.
+try { db.exec('ALTER TABLE reports ADD COLUMN owner TEXT'); } catch {}
+if (db.prepare('PRAGMA table_info(reports)').all().some(c => c.name === 'oid'))
+  db.exec('UPDATE reports SET owner=oid WHERE owner IS NULL AND oid IS NOT NULL');
 // Trace (tête et queue de cortège) : positions des 30 dernières minutes [[lat, lng, heure]] ;
 // bk : heure de début du partage de position en direct d'une orga (0 sinon)
 try { db.exec('ALTER TABLE reports ADD COLUMN trail TEXT'); } catch {}

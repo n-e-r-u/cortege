@@ -19,6 +19,9 @@ const crypto = require('crypto');
 
 const base = (process.argv[2] || 'https://cortege.neru.tv').replace(/\/$/, '');
 const root = __dirname;
+// Chemin encodé pour l'adresse (espaces, accents) ; délai maximal par fichier pour ne jamais rester bloqué
+const encPath = rel => rel.split('/').map(encodeURIComponent).join('/');
+const TIMEOUT = 15000;
 const sha = buf => crypto.createHash('sha256').update(buf).digest('hex');
 
 function listFiles(dir, rel = '') {
@@ -37,7 +40,7 @@ function listFiles(dir, rel = '') {
   for (const rel of listFiles(path.join(root, 'public'))) {
     const local = sha(fs.readFileSync(path.join(root, 'public', rel)));
     try {
-      const res = await fetch(base + rel, { cache: 'no-store' });
+      const res = await fetch(base + encPath(rel), { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const remote = sha(Buffer.from(await res.arrayBuffer()));
       if (remote === local) { ok++; console.log('  ✓ public' + rel); }
@@ -45,7 +48,9 @@ function listFiles(dir, rel = '') {
     } catch (e) { err++; console.log('  ? public' + rel + '  (' + e.message + ')'); }
   }
   try {
-    const v = await (await fetch(base + '/api/version', { cache: 'no-store' })).json();
+    const r = await fetch(base + '/api/version', { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const v = await r.json();
     const localServer = sha(fs.readFileSync(path.join(root, 'server.js')));
     console.log(`\nVersion annoncée en ligne : ${v.version}`);
     console.log(`server.js (déclaré par le serveur, non vérifiable) : ${v.files['server.js'] === localServer ? 'identique' : 'différent'} au dépôt`);

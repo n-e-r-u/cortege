@@ -8,7 +8,7 @@
     const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Orga-Key': orgaKey(), ...(opts.headers || {}) } });
     const body = await res.json().catch(() => ({}));
     if (res.status === 403) { setOrga(null); try { localStorage.removeItem('cortege-orga'); } catch {} }
-    if (!res.ok) throw new Error(body.error || 'Action impossible.');
+    if (!res.ok) throw new Error(body.error || t('Action impossible.'));
     return body;
   }
   function setOrga(o) {
@@ -78,7 +78,7 @@
     const ol = $('#annList'); ol.textContent = '';
     const list = mineAnns || announcements;
     $('#annListTitle').textContent = t(mineAnns ? (orga && orga.admin ? 'Toutes les annonces actives' : 'Tes annonces actives') : 'Annonces actives ici');
-    if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? 'Aucune annonce publiée.' : 'Aucune annonce active ici.')); return; }
+    if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? t('Aucune annonce publiée.') : t('Aucune annonce active ici.'))); return; }
     for (const a of list) {
       const mine = orga && (orga.admin || (!!a.ob && a.ob === orga.ob));
       const del = el('button', { class: 'ghost' }, 'Retirer');
@@ -130,7 +130,7 @@
     const ul = $('#filleulList'); ul.textContent = '';
     if (me && me.ban) ul.append(el('li', {}, '⛔ ' + t('Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus.', { date: fmtExp(me.ban) })));
     let d; try { d = await orgaFetch('/api/orga/filleules'); } catch (e) { return; }
-    if (!d.orgas.length && !(me && me.ban)) { ul.append(el('li', { class: 'st' }, 'Aucune orga invitée pour l’instant.')); return; }
+    if (!d.orgas.length && !(me && me.ban)) { ul.append(el('li', { class: 'st' }, t('Aucune orga invitée pour l’instant.'))); return; }
     for (const o of d.orgas) {
       const status = !o.trial ? '✓ ' + t('confirmée') : !o.active ? t(o.invite ? 'invitation en attente' : 'invitation expirée') : o.ready ? t('prête à être confirmée') : t('parrainée · {d} j · {n} action(s)', { d: o.days, n: o.actions });
       const li = el('li', {}, el('b', {}, o.label), el('span', { class: o.ready && o.trial ? 'ready' : 'st' }, status

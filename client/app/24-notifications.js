@@ -17,7 +17,7 @@
     pushZone = key;
     const res = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1], urgent: pushOpts.urgent, near: pushOpts.near, orders: pushOpts.orders, lang: I18N.lang }) });
-    if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || 'Abonnement impossible.'); }
+    if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || t('Abonnement impossible.')); }
     try { localStorage.setItem('cortege-push-zone', key); } catch {}
   }
   if (isIOS && !standalone) $('#pushHelp').textContent += ' ' + t('Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.');
@@ -45,8 +45,8 @@
     }
   }).catch(() => {});
   async function pushEnable() {
-    if (!pushOK) throw new Error(isIOS && !standalone ? 'Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.' : 'Notifications non prises en charge par ce navigateur.');
-    if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications refusées : autorise-les dans les réglages du téléphone.');
+    if (!pushOK) throw new Error(isIOS && !standalone ? t('Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.') : t('Notifications non prises en charge par ce navigateur.'));
+    if (await Notification.requestPermission() !== 'granted') throw new Error(t('Notifications refusées : autorise-les dans les réglages du téléphone.'));
     const reg = await navigator.serviceWorker.ready;
     pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
     await pushSend(pushSub, true);

@@ -43,7 +43,7 @@
           } });
           new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback' }).addTo(map);
         }
-        const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
+        const opts = { url: cfg.vector.url, lang: I18N.lang || 'fr', maxDataZoom: cfg.vector.maxzoom,
           attribution: OSM_ATTR + ' · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
         vl.addTo(map);

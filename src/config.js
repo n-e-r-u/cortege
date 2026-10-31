@@ -6,7 +6,13 @@ const path = require('path');
 
 const PORT = Number(process.env.PORT) || 8080;
 const EVENT_NAME = process.env.EVENT_NAME || 'Carte des mobilisations';
-const CENTER = (process.env.CENTER || '46.6,2.4').split(',').map(Number); // France entière par défaut
+// Centre de la carte à l'ouverture : France entière par défaut ; une valeur invalide est ignorée au lieu de casser la carte
+const CENTER = (() => {
+  const c = String(process.env.CENTER || '').split(',').map(Number);
+  if (c.length === 2 && c.every(Number.isFinite) && Math.abs(c[0]) <= 90 && Math.abs(c[1]) <= 180) return c;
+  if (process.env.CENTER) console.error('CENTER invalide (attendu : latitude,longitude) : centre par défaut.');
+  return [46.6, 2.4];
+})();
 const ZOOM = Number(process.env.ZOOM) || 6;
 // Accès admin ; vide = admin désactivé. Une clé trop courte est refusée (elle se devinerait).
 const ADMIN_KEY = (k => {

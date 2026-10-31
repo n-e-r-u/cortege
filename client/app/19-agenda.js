@@ -55,7 +55,7 @@
     const ol = $('#agList'); ol.textContent = '';
     $('#agEmpty').hidden = list.length > 0;
     $('#agEmpty').textContent = t(scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
-      : me ? 'Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».' : 'Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».');
+      : me ? t('Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».') : t('Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».'));
     let day = '';
     if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, t('{n} événements : les 200 premiers', { n: list.length })));
     for (const e of list.slice(0, 200)) {

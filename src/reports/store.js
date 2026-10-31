@@ -21,7 +21,7 @@ function saveReport(r) {
   if (r.cell && r.cell !== cell) dirtyCell(r.cell); // le point a glissé dans une autre case
   const notes = (r.notes || (r.note ? [{ x: r.note, t: r.t }] : [])).slice(0, NOTES_KEEP);
   r.note = notes[0] ? notes[0].x : ''; // la plus récente, pour les téléphones pas encore à jour
-  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,oid,trail,bk,bkla,bklo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  q(`INSERT INTO reports(id,cat,lat,lng,cell,note,t,exp,up,down,ver,voters,down_ips,ip,last,notes,dw,ct,fl,owner,trail,bk,bkla,bklo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET cat=excluded.cat, lat=excluded.lat, lng=excluded.lng, cell=excluded.cell, note=excluded.note, notes=excluded.notes, exp=excluded.exp, up=excluded.up,
        down=excluded.down, ver=excluded.ver, voters=excluded.voters, down_ips=excluded.down_ips, last=excluded.last, dw=excluded.dw, ct=excluded.ct, fl=excluded.fl, trail=excluded.trail, bk=excluded.bk, bkla=excluded.bkla, bklo=excluded.bklo`)
     .run(r.id, r.cat, r.lat, r.lng, cell, r.note || '', r.t, r.exp, r.up || 0, r.down || 0, r.ver || null,

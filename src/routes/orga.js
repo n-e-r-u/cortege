@@ -122,7 +122,7 @@ async function orgaRoutes(req, res, url, pathname) {
       const bnote = clean(b.note, NOTE_MAX);
       const out = tx(() => {
         const now = Date.now();
-        const cur = toReport(q('SELECT * FROM reports WHERE oid=? AND cat=? AND bk>0 AND exp>?').get(orga.id, role, now));
+        const cur = toReport(q('SELECT * FROM reports WHERE owner=? AND cat=? AND bk>0 AND exp>?').get(orga.id, role, now));
         if (req.method === 'DELETE') { if (cur) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); } return [200, { stopped: true }]; }
         const lat = Number(b.lat), lng = Number(b.lng);
         if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];

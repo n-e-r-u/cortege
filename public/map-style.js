@@ -37,7 +37,8 @@
     for (const k of Object.keys(o)) { const v = o[k]; if (v && typeof v === 'object') walk(v, seen, depth + 1); }
   }
   window.cortegeVectorLayer = function (P, opts) {
-    const labels = P.labelRules(F, 'fr');
+    // Noms des rues et des lieux dans la langue de l'appli quand la carte la connaît (sinon le nom local)
+    const labels = P.labelRules(F, opts.lang || 'fr');
     try { labels.forEach(r => walk(r.symbolizer)); } catch {}
     return P.leafletLayer({ ...opts, paintRules: P.paintRules(F), labelRules: labels, backgroundColor: F.background });
   };

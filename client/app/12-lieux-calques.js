@@ -44,8 +44,8 @@
     if (op) root.append(el('p', {}, 'Exploitée par : ', op));
     if (ct && CAM_TYPE[ct]) root.append(el('p', {}, t(CAM_TYPE[ct]) + (dir >= 0 && ct !== 'd' ? t(', orientée vers {dir}', { dir: compassFr(dir) }) : '') + '.'));
     else if (dir >= 0) root.append(el('p', {}, t('Orientée vers {dir}.', { dir: compassFr(dir) })));
-    root.append(el('p', { class: 'poi-tip' }, 'Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.'));
-    root.append(el('p', { class: 'fine' }, '© contributeurs OpenStreetMap'));
+    root.append(el('p', { class: 'poi-tip' }, t('Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.')));
+    root.append(el('p', { class: 'fine' }, t('© contributeurs OpenStreetMap')));
     return root;
   }
   const compassFr = d => t(['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'][Math.round(d / 45) % 8]);
@@ -67,9 +67,9 @@
     if (name) root.append(el('div', { class: 'pop-meta' }, k.label + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
     if (hours) root.append(el('p', { class: 'poi-h' }, '🕒 ', hoursFr(hours)));
     if (phone) root.append(el('p', {}, el('a', { href: 'tel:' + phone.replace(/[^\d+]/g, '') }, '📞 ' + phone)));
-    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, 'Pharmacie de garde (nuit, dimanche, jour férié) : appelle le ', el('a', { href: 'tel:3237' }, '3237'), '.'));
-    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? '🚑 Service d’urgences' : 'Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.'));
-    if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, 'Fontaine saisonnière : peut être coupée en hiver.'));
+    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le') + ' ', el('a', { href: 'tel:3237' }, '3237'), '.'));
+    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences') : t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.')));
+    if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;
   }

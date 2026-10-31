@@ -92,7 +92,7 @@
     const ab = $('#feedAnn'); ab.textContent = '';
     const anns = announcements.filter(a => a.kind === 'info').sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
     for (const a of anns) ab.append(annCard(a));
-    if (!anns.length) ab.append(el('p', { class: 'empty' }, 'Aucune annonce d’orga dans cette zone pour l’instant.'));
+    if (!anns.length) ab.append(el('p', { class: 'empty' }, t('Aucune annonce d’orga dans cette zone pour l’instant.')));
     feedAgenda(ref);
     feedBadge();
   }

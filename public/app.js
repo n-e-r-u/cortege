@@ -120,7 +120,7 @@
           } });
           new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback' }).addTo(map);
         }
-        const opts = { url: cfg.vector.url, lang: 'fr', maxDataZoom: cfg.vector.maxzoom,
+        const opts = { url: cfg.vector.url, lang: I18N.lang || 'fr', maxDataZoom: cfg.vector.maxzoom,
           attribution: OSM_ATTR + ' · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
         vl.addTo(map);
@@ -1114,8 +1114,8 @@
     if (op) root.append(el('p', {}, 'Exploitée par : ', op));
     if (ct && CAM_TYPE[ct]) root.append(el('p', {}, t(CAM_TYPE[ct]) + (dir >= 0 && ct !== 'd' ? t(', orientée vers {dir}', { dir: compassFr(dir) }) : '') + '.'));
     else if (dir >= 0) root.append(el('p', {}, t('Orientée vers {dir}.', { dir: compassFr(dir) })));
-    root.append(el('p', { class: 'poi-tip' }, 'Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.'));
-    root.append(el('p', { class: 'fine' }, '© contributeurs OpenStreetMap'));
+    root.append(el('p', { class: 'poi-tip' }, t('Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.')));
+    root.append(el('p', { class: 'fine' }, t('© contributeurs OpenStreetMap')));
     return root;
   }
   const compassFr = d => t(['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'][Math.round(d / 45) % 8]);
@@ -1137,9 +1137,9 @@
     if (name) root.append(el('div', { class: 'pop-meta' }, k.label + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
     if (hours) root.append(el('p', { class: 'poi-h' }, '🕒 ', hoursFr(hours)));
     if (phone) root.append(el('p', {}, el('a', { href: 'tel:' + phone.replace(/[^\d+]/g, '') }, '📞 ' + phone)));
-    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, 'Pharmacie de garde (nuit, dimanche, jour férié) : appelle le ', el('a', { href: 'tel:3237' }, '3237'), '.'));
-    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? '🚑 Service d’urgences' : 'Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.'));
-    if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, 'Fontaine saisonnière : peut être coupée en hiver.'));
+    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le') + ' ', el('a', { href: 'tel:3237' }, '3237'), '.'));
+    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences') : t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.')));
+    if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;
   }
@@ -1554,9 +1554,9 @@
       if (outcome === 'accepted') hideInstall(); else $('#btnInstallTool').hidden = true;
       return;
     }
-    if (inApp) return installHelp('Tu es dans le navigateur d’une appli (Instagram, TikTok…), qui ne peut pas installer Cortège. Touche le menu <b>⋯</b> en haut à droite puis <b>Ouvrir dans le navigateur</b>, et recommence depuis là.');
-    if (isIOS) return installHelp('Sur iPhone, dans <b>Safari</b> : touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>.');
-    installHelp('Ouvre le menu de ton navigateur (<b>⋮</b>) puis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>.');
+    if (inApp) return installHelp(t('Tu es dans le navigateur d’une appli (Instagram, TikTok…), qui ne peut pas installer Cortège. Touche le menu <b>⋯</b> en haut à droite puis <b>Ouvrir dans le navigateur</b>, et recommence depuis là.'));
+    if (isIOS) return installHelp(t('Sur iPhone, dans <b>Safari</b> : touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>.'));
+    installHelp(t('Ouvre le menu de ton navigateur (<b>⋮</b>) puis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>.'));
   }
   $('#btnInstall').onclick = doInstall;
   $('#btnInstallTool').onclick = doInstall;
@@ -1674,7 +1674,7 @@
     const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Orga-Key': orgaKey(), ...(opts.headers || {}) } });
     const body = await res.json().catch(() => ({}));
     if (res.status === 403) { setOrga(null); try { localStorage.removeItem('cortege-orga'); } catch {} }
-    if (!res.ok) throw new Error(body.error || 'Action impossible.');
+    if (!res.ok) throw new Error(body.error || t('Action impossible.'));
     return body;
   }
   function setOrga(o) {
@@ -1744,7 +1744,7 @@
     const ol = $('#annList'); ol.textContent = '';
     const list = mineAnns || announcements;
     $('#annListTitle').textContent = t(mineAnns ? (orga && orga.admin ? 'Toutes les annonces actives' : 'Tes annonces actives') : 'Annonces actives ici');
-    if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? 'Aucune annonce publiée.' : 'Aucune annonce active ici.')); return; }
+    if (!list.length) { ol.append(el('li', { class: 'empty' }, mineAnns ? t('Aucune annonce publiée.') : t('Aucune annonce active ici.'))); return; }
     for (const a of list) {
       const mine = orga && (orga.admin || (!!a.ob && a.ob === orga.ob));
       const del = el('button', { class: 'ghost' }, 'Retirer');
@@ -1796,7 +1796,7 @@
     const ul = $('#filleulList'); ul.textContent = '';
     if (me && me.ban) ul.append(el('li', {}, '⛔ ' + t('Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus.', { date: fmtExp(me.ban) })));
     let d; try { d = await orgaFetch('/api/orga/filleules'); } catch (e) { return; }
-    if (!d.orgas.length && !(me && me.ban)) { ul.append(el('li', { class: 'st' }, 'Aucune orga invitée pour l’instant.')); return; }
+    if (!d.orgas.length && !(me && me.ban)) { ul.append(el('li', { class: 'st' }, t('Aucune orga invitée pour l’instant.'))); return; }
     for (const o of d.orgas) {
       const status = !o.trial ? '✓ ' + t('confirmée') : !o.active ? t(o.invite ? 'invitation en attente' : 'invitation expirée') : o.ready ? t('prête à être confirmée') : t('parrainée · {d} j · {n} action(s)', { d: o.days, n: o.actions });
       const li = el('li', {}, el('b', {}, o.label), el('span', { class: o.ready && o.trial ? 'ready' : 'st' }, status
@@ -2015,7 +2015,7 @@
     const ol = $('#agList'); ol.textContent = '';
     $('#agEmpty').hidden = list.length > 0;
     $('#agEmpty').textContent = t(scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
-      : me ? 'Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».' : 'Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».');
+      : me ? t('Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».') : t('Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».'));
     let day = '';
     if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, t('{n} événements : les 200 premiers', { n: list.length })));
     for (const e of list.slice(0, 200)) {
@@ -2375,7 +2375,7 @@
     pushZone = key;
     const res = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sub: sub.toJSON(), lat: z[0], lng: z[1], urgent: pushOpts.urgent, near: pushOpts.near, orders: pushOpts.orders, lang: I18N.lang }) });
-    if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || 'Abonnement impossible.'); }
+    if (!res.ok) { pushZone = null; throw new Error((await res.json().catch(() => ({}))).error || t('Abonnement impossible.')); }
     try { localStorage.setItem('cortege-push-zone', key); } catch {}
   }
   if (isIOS && !standalone) $('#pushHelp').textContent += ' ' + t('Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée.');
@@ -2403,8 +2403,8 @@
     }
   }).catch(() => {});
   async function pushEnable() {
-    if (!pushOK) throw new Error(isIOS && !standalone ? 'Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.' : 'Notifications non prises en charge par ce navigateur.');
-    if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications refusées : autorise-les dans les réglages du téléphone.');
+    if (!pushOK) throw new Error(isIOS && !standalone ? t('Sur iPhone : installe d’abord l’appli sur l’écran d’accueil.') : t('Notifications non prises en charge par ce navigateur.'));
+    if (await Notification.requestPermission() !== 'granted') throw new Error(t('Notifications refusées : autorise-les dans les réglages du téléphone.'));
     const reg = await navigator.serviceWorker.ready;
     pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
     await pushSend(pushSub, true);
@@ -2542,7 +2542,7 @@
     const ab = $('#feedAnn'); ab.textContent = '';
     const anns = announcements.filter(a => a.kind === 'info').sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
     for (const a of anns) ab.append(annCard(a));
-    if (!anns.length) ab.append(el('p', { class: 'empty' }, 'Aucune annonce d’orga dans cette zone pour l’instant.'));
+    if (!anns.length) ab.append(el('p', { class: 'empty' }, t('Aucune annonce d’orga dans cette zone pour l’instant.')));
     feedAgenda(ref);
     feedBadge();
   }
