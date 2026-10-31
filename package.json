@@ -1,6 +1,6 @@
 {
   "name": "cortege",
-  "version": "2.8.1",
+  "version": "2.9.0",
   "description": "Waze des manifs : carte collaborative temps réel, OpenStreetMap, sans compte ni log.",
   "main": "server.js",
   "scripts": { "start": "node server.js", "build": "node tools/build-client.js", "test": "node --test test/*.test.js" },

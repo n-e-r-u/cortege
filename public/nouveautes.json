@@ -1,46 +1,89 @@
 {
-  "version": "2.8",
+  "version": "2.9",
   "items": [
     [
-      "📊 Bilans détaillés",
-      "Moments clés, durée de chaque danger, parcours des cortèges, arrêtés du jour, une page par ville, et les données à télécharger."
+      "🌍 Dans ta langue",
+      "Les noms des rues et des villes s’affichent dans la langue de l’appli, et les derniers textes encore en français sont traduits."
     ],
     [
-      "🗺️ Agenda, arrêtés, villes",
-      "De nouvelles pages publiques : l’agenda des manifs, les arrêtés en cours, tes droits et les legal teams, ville par ville."
+      "🧩 Code réorganisé",
+      "Le code de Cortège est rangé par fonction pour que d’autres puissent y contribuer plus facilement. Rien ne change pour toi."
     ]
   ],
   "items_en": [
     [
-      "📊 Detailed reports",
-      "Key moments, how long each danger lasted, march routes, the day’s orders, a page per city, and downloadable data."
+      "🌍 In your language",
+      "Street and city names now show in the app’s language, and the last texts still in French are translated."
     ],
     [
-      "🗺️ Calendar, orders, cities",
-      "New public pages: the protest calendar, current orders, your rights and legal teams, city by city."
+      "🧩 Reorganised code",
+      "Cortège’s code is now organised by feature so others can contribute more easily. Nothing changes for you."
     ]
   ],
   "items_es": [
     [
-      "📊 Balances detallados",
-      "Momentos clave, duración de cada peligro, recorridos de las manifestaciones, órdenes del día, una página por ciudad y los datos para descargar."
+      "🌍 En tu idioma",
+      "Los nombres de calles y ciudades se muestran en el idioma de la app, y los últimos textos que seguían en francés están traducidos."
     ],
     [
-      "🗺️ Agenda, órdenes, ciudades",
-      "Nuevas páginas públicas: la agenda de manifestaciones, las órdenes vigentes, tus derechos y los legal teams, ciudad por ciudad."
+      "🧩 Código reorganizado",
+      "El código de Cortège está ordenado por función para que otras personas puedan contribuir más fácilmente. Para ti no cambia nada."
     ]
   ],
   "items_ar": [
     [
-      "📊 حصائل مفصّلة",
-      "اللحظات الرئيسية، مدة كل خطر، مسارات المسيرات، قرارات اليوم، صفحة لكل مدينة، والبيانات للتنزيل."
+      "🌍 بلغتك",
+      "تظهر أسماء الشوارع والمدن بلغة التطبيق، وتُرجمت آخر النصوص التي كانت لا تزال بالفرنسية."
     ],
     [
-      "🗺️ المواعيد والقرارات والمدن",
-      "صفحات عامة جديدة: مواعيد المظاهرات، القرارات السارية، حقوقك، والفرق القانونية، مدينة بمدينة."
+      "🧩 شيفرة مُعاد تنظيمها",
+      "أصبحت شيفرة Cortège مرتبة حسب الوظيفة ليسهل على الآخرين المساهمة فيها. لا شيء يتغيّر بالنسبة لك."
     ]
   ],
   "history": [
+    {
+      "version": "2.9",
+      "items": [
+        [
+          "🌍 Dans ta langue",
+          "Les noms des rues et des villes s’affichent dans la langue de l’appli, et les derniers textes encore en français sont traduits."
+        ],
+        [
+          "🧩 Code réorganisé",
+          "Le code de Cortège est rangé par fonction pour que d’autres puissent y contribuer plus facilement. Rien ne change pour toi."
+        ]
+      ],
+      "items_en": [
+        [
+          "🌍 In your language",
+          "Street and city names now show in the app’s language, and the last texts still in French are translated."
+        ],
+        [
+          "🧩 Reorganised code",
+          "Cortège’s code is now organised by feature so others can contribute more easily. Nothing changes for you."
+        ]
+      ],
+      "items_es": [
+        [
+          "🌍 En tu idioma",
+          "Los nombres de calles y ciudades se muestran en el idioma de la app, y los últimos textos que seguían en francés están traducidos."
+        ],
+        [
+          "🧩 Código reorganizado",
+          "El código de Cortège está ordenado por función para que otras personas puedan contribuir más fácilmente. Para ti no cambia nada."
+        ]
+      ],
+      "items_ar": [
+        [
+          "🌍 بلغتك",
+          "تظهر أسماء الشوارع والمدن بلغة التطبيق، وتُرجمت آخر النصوص التي كانت لا تزال بالفرنسية."
+        ],
+        [
+          "🧩 شيفرة مُعاد تنظيمها",
+          "أصبحت شيفرة Cortège مرتبة حسب الوظيفة ليسهل على الآخرين المساهمة فيها. لا شيء يتغيّر بالنسبة لك."
+        ]
+      ]
+    },
     {
       "version": "2.8",
       "items": [

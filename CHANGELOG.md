@@ -2,6 +2,16 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.9.0
+
+- Code réorganisé, sans changement de comportement : `server.js` ne fait plus que démarrer le serveur, tout le reste est rangé par domaine dans `src/` (signalements, orgas, annonces, agenda, arrêtés, notifications, carte, lieux, bilans, pages, publication, routes). Le code du téléphone et de l’admin est écrit en morceaux dans `client/` et assemblé dans `public/` par `npm run build`. Voir `ARCHITECTURE.md`.
+- Le script de la page admin n’est plus intégré à `admin.html` (fichier `admin.js`).
+- Propriétaire d’un signalement : nouvelle colonne `owner` à la place de `oid`, un nom réservé par SQLite que certaines versions refusent d’ajouter (la position en direct des orgas pouvait planter). Les bases existantes sont reprises automatiquement.
+- Noms des rues et des villes sur la carte dans la langue de l’appli ; derniers textes encore en dur en français passés dans les traductions.
+- Traductions : fichiers Windows acceptés, balise non fermée bloquée, {valeur} oubliée signalée, fichiers écrits d’un coup.
+- `CENTER` invalide ignoré au lieu de casser la carte ; vérificateur avec délai maximal par fichier ; `/api/version` déclare aussi les fichiers de `src/`.
+- Merci à JadePrice (PR #4) pour l’audit et plusieurs de ces corrections.
+
 ## 2.8.1
 
 - Données structurées des événements (Google Search Console) : ajout de l’organisateur (l’orga qui a publié), de l’image, de l’entrée gratuite, de la fin (estimée à 3 h après le début) et de l’adresse.
