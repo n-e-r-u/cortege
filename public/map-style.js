@@ -40,8 +40,12 @@
     // Noms des rues et des lieux dans la langue de l'appli quand la carte la connaît (sinon le nom local)
     const labels = P.labelRules(F, opts.lang || 'fr');
     try { labels.forEach(r => walk(r.symbolizer)); } catch {}
-    return P.leafletLayer({ ...opts, paintRules: P.paintRules(F), labelRules: labels, backgroundColor: F.background });
+    // transparent : pas de fond peint sous les tuiles (hors de la zone du fichier de carte, le repli OpenStreetMap posé dessous reste visible ;
+    // le fond est alors celui du conteneur de la carte, de la même couleur)
+    const { transparent, ...rest } = opts;
+    return P.leafletLayer({ ...rest, paintRules: P.paintRules(F), labelRules: labels, backgroundColor: transparent ? undefined : F.background });
   };
   // Polices chargées avant le premier dessin (sinon le canvas utiliserait la police par défaut)
+  window.cortegeMapBackground = F.background;
   window.cortegeMapFonts = () => Promise.all(['400 12px Inter', '700 12px Inter'].map(f => document.fonts?.load?.(f).catch(() => {}))).catch(() => {});
 })();

@@ -118,9 +118,10 @@
             const b = this._tileCoordsToBounds(c);
             return !zones.some(([so, no, we, ea]) => b.getSouth() >= so && b.getNorth() <= no && b.getWest() >= we && b.getEast() <= ea);
           } });
-          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, className: 'osm-fallback' }).addTo(map);
+          // Avec une carte du monde légère sur le serveur, le repli ne sert qu'au-delà de ses zooms
+          new Fallback('/tiles/{z}/{x}/{y}.png', { maxZoom: 19, minZoom: cfg.vector.worldMaxZoom != null ? cfg.vector.worldMaxZoom + 1 : 0, className: 'osm-fallback' }).addTo(map);
         }
-        const opts = { url: cfg.vector.url, lang: I18N.lang || 'fr', maxDataZoom: cfg.vector.maxzoom,
+        const opts = { url: cfg.vector.url, lang: I18N.lang || 'fr', maxDataZoom: cfg.vector.maxzoom, transparent: zones.length > 0,
           attribution: OSM_ATTR + ' · Protomaps' };
         const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
         vl.addTo(map);

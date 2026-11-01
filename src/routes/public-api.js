@@ -7,7 +7,7 @@ const { DEPS } = require('../geo/departments');
 const { MIN, EVENT_NAME, CENTER, ZOOM, BRAND, VIOLENCE_URL, CONTACT_EMAIL, HOST_INFO, SOURCE_URL, DATA_DIR, UNDER_PASSENGER, TRUST_PROXY } = require('../config');
 const { NEXT } = require('./next');
 const { ORDER_KINDS } = require('../orders');
-const { PMTILES, pmOpen, pmTile, pmDecomp, pmInfo } = require('../geo/pmtiles');
+const { PMTILES, pmOpen, pmTileC, pmDecomp, pmInfo } = require('../geo/pmtiles');
 const { POI_KINDS } = require('../places/osm');
 const { STREAM_ON, sseClients } = require('../live/stream');
 const { TILE_PREFETCH } = require('../geo/tiles');
@@ -37,7 +37,7 @@ async function publicApiRoutes(req, res, url, pathname) {
     if (!routeCache.has(k)) {
       if (!quota('route:' + clientHash(req), 120, 5 * MIN)) return send(res, 429, { error: 'Trop de demandes.' });
       let r = null;
-      try { const h = await pmOpen(); r = await streetRoute(async (z, x, y) => { const t = await pmTile(z, x, y); return t ? pmDecomp(t, h.tileC) : null; }, Math.min(h.maxz, 15), a, b); }
+      try { const h = await pmOpen(); r = await streetRoute(async (z, x, y) => { const t = await pmTileC(z, x, y); return t ? pmDecomp(t.data, t.c) : null; }, Math.min(h.maxz, 15), a, b); }
       catch (e) { console.error('tracé du cortège', e.message); }
       routeCache.set(k, r); if (routeCache.size > 300) routeCache.delete(routeCache.keys().next().value);
     }

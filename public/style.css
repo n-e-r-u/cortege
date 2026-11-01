@@ -30,6 +30,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 #map { position: fixed; inset: 0; background: #1b1b1f; }
+body.vector #map { background: #141519; } /* même fond que la carte vectorielle (tuiles transparentes) */
 .leaflet-container { font: inherit; }
 body.raster .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6); }
 .leaflet-control-attribution { background: rgba(18,18,20,.7) !important; color: var(--muted) !important; font-size: 10px; }
