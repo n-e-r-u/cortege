@@ -31,7 +31,9 @@ Variables d'environnement :
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » |
 | `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
-| `TILE_PMTILES` | vide | Fichier PMTiles (tuiles vectorielles) : la carte vient du serveur lui-même, et « Prêt pour la manif » peut la garder hors ligne |
+| `TILE_PMTILES` | vide | Fichier(s) PMTiles (tuiles vectorielles), séparés par des virgules : un par pays (zone lue dans le `.geojson` du même nom), puis éventuellement une carte du monde légère pour les zooms éloignés. La carte vient du serveur lui-même, et « Prêt pour la manif » peut la garder hors ligne |
+| `PROFILES` | `fr` | Profils pays de l'instance (`profiles/*.json`), séparés par des virgules : `fr`, `us`, `de`… Le premier sert aussi hors de toutes les zones. Voir [INSTANCE.md](INSTANCE.md) |
+| `DEFAULT_LANG` | langue du premier profil | Langue des téléphones dont la langue n'est pas traduite |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |

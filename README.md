@@ -43,7 +43,7 @@ Bug, idée, traduction : ouvre une [issue](../../issues) ou lis [CONTRIBUTING.md
 
 ## Licence et crédits
 
-Licence [AGPL-3.0](LICENSE) : toute version modifiée mise en ligne doit publier son code.
+Licence [AGPL-3.0](LICENSE) : toute version modifiée mise en ligne doit publier son code. Toute instance garde aussi la mention d'origine dans son interface : voir les [conditions additionnelles](LICENSE-ADDITIONAL-TERMS.md).
 
 Données cartographiques © les contributeur·ices d'[OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL). Noms et positions des villes du digest : [GeoNames](https://www.geonames.org/) (CC BY 4.0), fichier `places.json`.
 Polices des stories : Inter et JetBrains Mono (SIL Open Font License), dans `public/vendor/fonts/`. Rendu de la carte vectorielle : [protomaps-leaflet](https://github.com/protomaps/protomaps-leaflet) (BSD-3-Clause). Fond de carte des stories : Natural Earth via world-atlas (domaine public).

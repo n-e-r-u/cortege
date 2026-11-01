@@ -15,6 +15,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/privacy.js` | Clés de hachage par période, empreintes d'IP et de téléphone, IP réelle derrière le proxy, accès Tor |
 | `src/util.js` | Petits outils sans état (distances, empreintes, nettoyage de texte, verrou de fichier) |
 | `src/categories.js` | Types de signalement et d'événement, fusion, alertes, vibrations |
+| `src/profiles.js`, `profiles/`, `geo/countries/` | Profils pays : noms des types, types masqués ou propres au pays, numéros, droits, unités ; contours des pays (Natural Earth) pour savoir quel profil s'applique où. Voir [docs/INSTANCE.md](docs/INSTANCE.md) |
 | `src/settings.js` | Réglages modifiés depuis l'admin, bandeau, nom affiché, pause |
 | `src/limits.js` | Limites anti-spam, quotas, plafonds des tables, mode manif renforcé |
 | `src/reports/` | Signalements : modèle et vue publique, stockage, votes « Plus là » et fiabilité |

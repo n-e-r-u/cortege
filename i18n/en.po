@@ -2857,3 +2857,6 @@ msgstr "Know your rights (ACLU)"
 #: profiles/us.json
 msgid "Les droits des manifestant·es, expliqués par l’ACLU."
 msgstr "Protesters’ rights, explained by the ACLU."
+
+msgid "Propulsé par <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un projet de Neru"
+msgstr "Powered by <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, a project by Neru"

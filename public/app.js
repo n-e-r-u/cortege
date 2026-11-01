@@ -94,6 +94,8 @@
   }
   if (cfg.violenceUrl) document.querySelectorAll('#violenceLink, .violence-inline').forEach(a => (a.href = cfg.violenceUrl));
   if (cfg.brand) {
+    // Sur l'instance d'origine, la mention « propulsé par » ferait doublon avec le crédit
+    if (cfg.brand.handle === 'neru') $('#poweredBy').hidden = true;
     document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
     document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => (a.href = cfg.brand.instagram));
     $('#brandLink').href = cfg.brand.instagram;
