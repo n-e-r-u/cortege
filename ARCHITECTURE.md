@@ -22,6 +22,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/orgas/` | Orgas : clés, parrainage, journal, noms réservés, demandes d'accès |
 | `src/legal.js`, `src/orders.js` | Annuaire des legal teams, arrêtés et restrictions |
 | `src/moderation.js`, `src/sweep.js` | File de modération, tableau des abus, ménage toutes les 30 s |
+| `src/i18n.js`, `i18n/` | Traductions : un fichier PO par langue dans `i18n/` (voir `i18n/LISEZMOI.md`), construites dans `public/lang/` |
 | `src/push.js` | Notifications Web Push (chiffrement et VAPID faits à la main) et traductions côté serveur |
 | `src/geo/` | Carte hébergée (PMTiles), proxy de tuiles, communes, départements, villes, recherche de lieux |
 | `src/places/` | Lieux permanents et caméras (OpenStreetMap, copie Geofabrik) |

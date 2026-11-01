@@ -26,18 +26,8 @@ const VAPID = (() => {
 })();
 const VAPID_KEY = crypto.createPrivateKey({ key: VAPID.jwk, format: 'jwk' });
 const PUSH_FAILS = 5, PUSH_NET_MAX = Number(process.env.PUSH_NET_MAX) || 60, PUSH_ZONES_MAX = 3000;
-// Textes des notifications dans la langue du téléphone : mêmes traductions que l'appli (public/lang/*.json, le français sert de clé)
-const PUSH_LANGS = ['fr', 'en', 'es', 'ar'];
-const LANG_DICT = {};
-for (const l of PUSH_LANGS.slice(1)) {
-  LANG_DICT[l] = {};
-  try { for (const [k, v] of Object.entries(JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'lang', l + '.json'), 'utf8')))) LANG_DICT[l][k.replace(/\s+/g, ' ').trim()] = v; } catch {}
-}
-function tr(lang, s, v) {
-  const d = LANG_DICT[lang], out = (d && d[String(s).replace(/\s+/g, ' ').trim()]) || s;
-  return v ? out.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : out;
-}
-const LOCALE = { fr: 'fr-FR', en: 'en-GB', es: 'es-ES', ar: 'ar-u-nu-latn' };
+// Textes des notifications dans la langue du téléphone : mêmes traductions que l'appli (src/i18n.js)
+const { LANGS: PUSH_LANGS, LOCALE, tr } = require('./i18n');
 try { // reprise de l'ancien fichier push.json, une seule fois
   if (fs.existsSync(PUSH_FILE)) {
     const old = JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8'));

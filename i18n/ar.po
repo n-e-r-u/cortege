@@ -1,0 +1,2735 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Cortège\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+"X-Language-Name: العربية\n"
+"X-Locale: ar-u-nu-latn\n"
+
+# --- 01-page ---
+msgid "Carte de la manifestation"
+msgstr "خريطة المظاهرة"
+
+msgid "Soutenir Cortège sur Ko-fi"
+msgstr "ادعم Cortège على Ko-fi"
+
+msgid "Installer l’appli"
+msgstr "تثبيت التطبيق"
+
+msgid "Chercher une ville"
+msgstr "البحث عن مدينة"
+
+msgid "Me localiser"
+msgstr "تحديد موقعي"
+
+msgid "Ce que montre la carte"
+msgstr "ما تعرضه الخريطة"
+
+msgid "Espace orga"
+msgstr "مساحة المنظّمين"
+
+msgid "Interpellation : prévenir un proche"
+msgstr "اعتقال: أبلغ شخصًا مقرّبًا"
+
+msgid "Navigation"
+msgstr "التنقّل"
+
+msgid "SOS : prévenir un proche"
+msgstr "SOS: أبلغ شخصًا مقرّبًا"
+
+msgid "Fermer"
+msgstr "إغلاق"
+
+msgid "Signalements affichés"
+msgstr "البلاغات المعروضة"
+
+msgid "ex. : Montpellier, Lyon 7e, place de la République"
+msgstr "مثال: Montpellier، Lyon 7e، place de la République"
+
+msgid "QR code vers l’appli Cortège"
+msgstr "رمز QR لتطبيق Cortège"
+
+msgid "ex. : Legal Team Montpellier"
+msgstr "مثال: Legal Team Montpellier"
+
+msgid "ex. : Montpellier"
+msgstr "مثال: Montpellier"
+
+msgid "adresse ou compte publié par le collectif, pas un contact perso"
+msgstr "عنوان أو حساب تنشره المجموعة، لا جهة اتصال شخصية"
+
+msgid "ex. : 2019"
+msgstr "مثال: 2019"
+
+msgid "ex. : syndicat local"
+msgstr "مثال: نقابة محلية"
+
+msgid "ex. : permanence jusqu’à 22 h"
+msgstr "مثال: مناوبة حتى الساعة 22"
+
+msgid "Nom affiché, ex. : Legal Team Nîmes"
+msgstr "الاسم المعروض، مثال: Legal Team Nîmes"
+
+msgid "Nom de l’orga invitée"
+msgstr "اسم الجهة المدعوّة"
+
+msgid "Zone"
+msgstr "المنطقة"
+
+msgid "ex. : Blocus lycée Jean-Monnet"
+msgstr "مثال: إغلاق ثانوية Jean-Monnet"
+
+msgid "ex. : place de la Comédie"
+msgstr "مثال: place de la Comédie"
+
+msgid "ex. : Sam"
+msgstr "مثال: سام"
+
+msgid "Qui est interpellé·e ?"
+msgstr "من الذي اعتُقل؟"
+
+msgid "Ajouter une précision (facultatif)"
+msgstr "أضف تفصيلًا (اختياري)"
+
+msgid "Cortège <span class=\"by\">par <b class=\"handle\">@neru</b></span>"
+msgstr "Cortège <span class=\"by\">من <b class=\"handle\">@neru</b></span>"
+
+msgid "<span class=\"dot\"></span><span class=\"txt\">Connexion…</span>"
+msgstr "<span class=\"dot\"></span><span class=\"txt\">جارٍ الاتصال…</span>"
+
+msgid "Soutenir"
+msgstr "ادعم"
+
+msgid "Mode manif"
+msgstr "وضع المظاهرة"
+
+msgid "Quitter"
+msgstr "خروج"
+
+msgid "Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable."
+msgstr "البلاغات متوقفة لبضع دقائق: يجري تنظيف موجة من البلاغات الكاذبة. يمكنك متابعة الاطلاع على الخريطة."
+
+msgid "Touche la carte : le premier point est le rendez-vous, les suivants tracent le parcours (facultatif)."
+msgstr "المس الخريطة: النقطة الأولى هي مكان التجمّع، والنقاط التالية ترسم المسار (اختياري)."
+
+msgid "Aucun point"
+msgstr "لا توجد نقاط"
+
+msgid "↶ Retirer"
+msgstr "↶ تراجع"
+
+msgid "Effacer"
+msgstr "مسح"
+
+msgid "Terminé"
+msgstr "تم"
+
+msgid "Carte"
+msgstr "الخريطة"
+
+msgid "Infos"
+msgstr "أخبار"
+
+msgid "Signaler"
+msgstr "أبلِغ"
+
+msgid "Droits"
+msgstr "الحقوق"
+
+msgid "Plus"
+msgstr "المزيد"
+
+msgid "Signalements"
+msgstr "البلاغات"
+
+msgid "Sur la carte"
+msgstr "على الخريطة"
+
+msgid "Arrêtés et restrictions"
+msgstr "القرارات والقيود"
+
+msgid "Tous les arrêtés en France"
+msgstr "كل القرارات في فرنسا"
+
+msgid "Annonces des orgas"
+msgstr "إعلانات المنظّمين"
+
+msgid "Agenda"
+msgstr "المواعيد"
+
+msgid "Rien d’annoncé à moins de 50 km."
+msgstr "لا شيء معلن في نطاق 50 كم."
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">☰</span><span><b>البلاغات في المنطقة</b><small>القائمة، من الأقرب إلى الأبعد</small></span>"
+
+msgid "<b>Cortège est gratuit et sans pub.</b> Tes dons servent à l’améliorer."
+msgstr "<b>Cortège مجاني ومن دون إعلانات.</b> تبرعاتك تساعد على تحسينه."
+
+msgid "Qu’est-ce qui se passe ici ?"
+msgstr "ماذا يحدث هنا؟"
+
+msgid "Place le viseur au bon endroit sur la carte, puis choisis."
+msgstr "ضع المؤشّر في المكان الصحيح على الخريطة، ثم اختر."
+
+msgid "Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class=\"inline-link\" href=\"/legal.html#regles\">Règles</a>"
+msgstr "لا أسماء ولا أوصاف جسدية ولا أرقام تعريف. نبلّغ عن مواقف، لا عن أشخاص. <a class=\"inline-link\" href=\"/legal.html#regles\">القواعد</a>"
+
+msgid "En attente de réseau"
+msgstr "بانتظار الشبكة"
+
+msgid "Ces signalements partent dès que ton téléphone capte. S’ils ont dépassé leur durée de vie entre-temps, ils ne sont pas publiés."
+msgstr "تُرسَل هذه البلاغات فور التقاط هاتفك للشبكة. إذا انتهت صلاحيتها في الأثناء، فلن تُنشر."
+
+msgid "Tout est parti."
+msgstr "أُرسل كل شيء."
+
+msgid "Réessayer maintenant"
+msgstr "أعد المحاولة الآن"
+
+msgid "Aller à une ville"
+msgstr "الانتقال إلى مدينة"
+
+msgid "Ville, quartier ou adresse"
+msgstr "مدينة أو حيّ أو عنوان"
+
+msgid "Signalements dans la zone affichée"
+msgstr "البلاغات في المنطقة المعروضة"
+
+msgid "Rien de signalé pour l’instant. Appuie sur « Signaler » pour ajouter le premier point."
+msgstr "لا بلاغات حتى الآن. اضغط «أبلِغ» لإضافة أول نقطة."
+
+msgid "Soutenir Cortège"
+msgstr "ادعم Cortège"
+
+msgid "Gratuit, sans pub, sans pistage. Tes dons servent à améliorer le projet."
+msgstr "مجاني، بلا إعلانات ولا تتبّع. تبرعاتك تساعد على تحسين المشروع."
+
+msgid "Faire un don sur Ko-fi"
+msgstr "تبرّع على Ko-fi"
+
+msgid "<b>Suivre <span class=\"handle\">@neru</span> sur Instagram</b><small>Pas un accident. Un système. Une chronique chaque jour.</small>"
+msgstr "<b>تابع <span class=\"handle\">@neru</span> على Instagram</b><small>ليست صدفة، بل نظام. حلقة جديدة كل يوم (بالفرنسية).</small>"
+
+msgid "Suivre"
+msgstr "تابِع"
+
+msgid "<b>Passer en mode manif</b><small>Carte, Signaler, SOS et legal team. Rien d’autre.</small>"
+msgstr "<b>التحويل إلى وضع المظاهرة</b><small>الخريطة، الإبلاغ، SOS والفريق القانوني. لا شيء غير ذلك.</small>"
+
+msgid "Avant de partir"
+msgstr "قبل الخروج"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🎒</span><span><b>Se préparer</b><small>La checklist</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">🎒</span><span><b>الاستعداد</b><small>قائمة التحقق</small></span>"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📶</span><span><b>Prêt pour la manif</b><small>Carte et numéros sans réseau</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">📶</span><span><b>جاهز للمظاهرة</b><small>الخريطة والأرقام دون شبكة</small></span>"
+
+msgid "Installer l’appli sur mon téléphone"
+msgstr "ثبّت التطبيق على هاتفي"
+
+msgid "Alertes"
+msgstr "التنبيهات"
+
+msgid "Notifications, vibrations et voix"
+msgstr "الإشعارات والاهتزاز والصوت"
+
+msgid "Faire grandir Cortège"
+msgstr "ساعد Cortège على الانتشار"
+
+msgid "<b>Partager</b><small>QR code à scanner</small>"
+msgstr "<b>مشاركة</b><small>رمز QR للمسح</small>"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🖨</span><span><b>Affiche</b><small>À imprimer pour ta ville</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">🖨</span><span><b>ملصق</b><small>للطباعة في مدينتك</small></span>"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🧩</span><span><b>Sur ton site</b><small>Intégrer la carte</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">🧩</span><span><b>على موقعك</b><small>تضمين الخريطة</small></span>"
+
+msgid "<b>Code ouvert</b><small>Sur GitHub</small>"
+msgstr "<b>مفتوح المصدر</b><small>على GitHub</small>"
+
+msgid "Legal team, street medics, collectif ?"
+msgstr "فريق قانوني، مسعفو شارع، مجموعة؟"
+
+msgid "Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone."
+msgstr "كن جهة منظِّمة معتمدة: ستتمكن من التحقق من البلاغات وحذف الكاذبة منها ونشر إعلانات لمنطقتك."
+
+msgid "Demander un accès orga"
+msgstr "اطلب صلاحية المنظِّم"
+
+msgid "Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule."
+msgstr "يُتحقَّق من كل طلب مع المجموعة عبر قنواتها العلنية. تُمنح الصلاحية للمجموعة، لا لشخص واحد أبدًا."
+
+msgid "Comment ça marche"
+msgstr "كيف يعمل"
+
+msgid "<b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres."
+msgstr "<b>موقعك يبقى على هاتفك.</b> يُستخدم لتوسيط الخريطة وتنبيهك. لتحميل البلاغات، لا يطلب التطبيق إلا بلاغات منطقتك بدقة بضعة كيلومترات. وتُقرَّب النقاط التي تبلّغ عنها إلى نحو عشرة أمتار."
+
+msgid "<b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor."
+msgstr "<b>لا حساب.</b> تُحذف البلاغات تلقائيًا عند انتهاء صلاحيتها. وكأي موقع، قد يحتفظ المستضيف بسجلات الاتصال: في الظروف الحساسة استخدم VPN أو Tor."
+
+msgid "<b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer."
+msgstr "<b>يتحقق المتظاهرون من البلاغات فيما بينهم.</b> «ما زال هنا» يمدّد النقطة، و«لم يعد هنا» يشكّك فيها ثم يخفيها عندما يؤكد ذلك عدد كافٍ من الحاضرين. ويمكن للمنظّمين المعتمدين التحقق منها أو حذفها."
+
+msgid "<b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone."
+msgstr "<b>الشبكة مزدحمة؟</b> افتح التطبيق قبل الخروج واضغط «جاهز للمظاهرة»: تبقى خريطة منطقتك وأرقام الفريق القانوني والمواعيد على هاتفك."
+
+msgid "<b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone."
+msgstr "<b>الشبكة مزدحمة؟</b> قبل الخروج، تصفّح مسار المظاهرة على الخريطة: تبقى أجزاء الخريطة المعروضة محفوظة على هاتفك."
+
+msgid "<b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque."
+msgstr "<b>اكتب رقم فريقك القانوني</b> بالقلم على ذراعك. قد يضيع الهاتف أو يُصادَر."
+
+msgid "Avec Tor."
+msgstr "عبر Tor."
+
+msgid "Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) :"
+msgstr "لدى Cortège أيضًا عنوان ‎.onion: لن يرى مزوّد الخدمة حتى أنك تستخدم التطبيق. افتحه في Tor Browser (حاسوب أو Android):"
+
+msgid "copier"
+msgstr "نسخ"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">📊</span><span><b>الحصيلة</b><small>المظاهرات السابقة</small></span>"
+
+msgid "Nouveautés"
+msgstr "الجديد"
+
+msgid "Version"
+msgstr "الإصدار"
+
+msgid "Réglages"
+msgstr "الإعدادات"
+
+msgid "🔔 Alertes et notifications"
+msgstr "🔔 التنبيهات والإشعارات"
+
+msgid "🎒 Bien se préparer"
+msgstr "🎒 استعدّ جيدًا"
+
+msgid "<b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span>"
+msgstr "<b>توفير البطارية</b><span>تحديث الخريطة كل 20 ثانية بدل 5، وGPS أقل دقة، وإيقاف البوصلة. لتصمد طوال مظاهرة طويلة.</span>"
+
+msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
+msgstr "<b>نص أكبر</b><span>تكبير الأزرار والنصوص في كل التطبيق.</span>"
+
+msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
+msgstr "<b>تباين أقوى</b><span>نصوص أكثر بياضًا وحواف أوضح، لضوء الشمس الساطع.</span>"
+
+msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
+msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>امسح كل شيء من هذا الهاتف</b><small>أبقِ إصبعك ضاغطًا لثانيتين</small></span>"
+
+msgid "Efface le contact SOS, la checklist, le point de ralliement, les réglages, la carte gardée hors ligne et l’accès orga, puis ferme Cortège. L’historique du navigateur n’est pas effacé : vide-le aussi depuis ses réglages."
+msgstr "يمسح جهة اتصال SOS وقائمة التحقق ونقطة التجمّع والإعدادات والخريطة المحفوظة دون اتصال وصلاحية المنظِّم، ثم يغلق Cortège. لا يُمسح سجلّ المتصفح: امسحه أيضًا من إعداداته."
+
+msgid "<a class=\"inline-link\" href=\"/legal.html\">Mentions légales, confidentialité et règles d’utilisation</a>"
+msgstr "<a class=\"inline-link\" href=\"/legal.html\">الإشعار القانوني والخصوصية وقواعد الاستخدام (بالفرنسية)</a>"
+
+msgid "Cortège est un projet de <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a>"
+msgstr "Cortège مشروع من <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a>"
+
+msgid "Fais scanner ce code"
+msgstr "دع الآخرين يمسحون هذا الرمز"
+
+msgid "Partager le lien"
+msgstr "مشاركة الرابط"
+
+msgid "Copier le lien"
+msgstr "نسخ الرابط"
+
+msgid "Monte la luminosité de ton écran. Le code s’affiche même sans réseau ; la personne en face aura besoin de data pour ouvrir l’appli la première fois."
+msgstr "ارفع سطوع شاشتك. يظهر الرمز حتى دون شبكة، لكن الشخص الآخر سيحتاج إلى بيانات لفتح التطبيق أول مرة."
+
+msgid "Cortège est un projet de"
+msgstr "Cortège مشروع من"
+
+# --- 02-page ---
+msgid "Lieux sur la carte"
+msgstr "أماكن على الخريطة"
+
+msgid "<b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span>"
+msgstr "<b>إظهار الأماكن</b><span>أماكن السلطة والأماكن المفيدة، حسب OpenStreetMap. تظهر عند التكبير، الأهم أولًا.</span>"
+
+msgid "Pharmacie de garde : appelle le 3237. Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
+msgstr "صيدلية مناوبة: اتصل بالرقم 3237. هل هناك مكان ناقص أو خاطئ؟ أبلغ عنه عبر عنوان الاتصال (صفحة «الإشعار القانوني») وسيُصحَّح."
+
+msgid "Le détail de chaque version est sur GitHub (fichier CHANGELOG)."
+msgstr "تفاصيل كل إصدار على GitHub (ملف CHANGELOG)."
+
+msgid "La carte sur ton site"
+msgstr "الخريطة على موقعك"
+
+msgid "Pour un média, un collectif ou un syndicat : la carte en direct de la zone affichée, en lecture seule, à coller dans une page web. Elle ne demande pas la position des visiteur·ices."
+msgstr "لوسيلة إعلام أو مجموعة أو نقابة: الخريطة المباشرة للمنطقة المعروضة، للقراءة فقط، لإدراجها في صفحة ويب. لا تطلب موقع الزوار."
+
+msgid "Copier le code"
+msgstr "نسخ الرمز"
+
+msgid "Aperçu"
+msgstr "معاينة"
+
+msgid "Devenir orga certifiée"
+msgstr "كن جهة منظِّمة معتمدة"
+
+msgid "Pour les collectifs : legal teams, street medics, orgas de manif, syndicats. Chaque demande est vérifiée par les canaux publics du collectif, et l’accès est remis au collectif, jamais à une personne seule."
+msgstr "للمجموعات: الفرق القانونية، مسعفو الشارع، منظّمو المظاهرات، النقابات. يُتحقَّق من كل طلب عبر القنوات العلنية للمجموعة، وتُمنح الصلاحية للمجموعة لا لشخص واحد أبدًا."
+
+msgid "Nom du collectif"
+msgstr "اسم المجموعة"
+
+msgid "Ville ou secteur"
+msgstr "المدينة أو المنطقة"
+
+msgid "Rôle"
+msgstr "الدور"
+
+msgid "Legal team"
+msgstr "الفريق القانوني"
+
+msgid "Street medics"
+msgstr "مسعفو الشارع"
+
+msgid "Orga de manif"
+msgstr "منظّمو مظاهرة"
+
+msgid "Syndicat"
+msgstr "نقابة"
+
+msgid "Média indépendant"
+msgstr "إعلام مستقل"
+
+msgid "Autre"
+msgstr "أخرى"
+
+msgid "Site ou compte public du collectif"
+msgstr "موقع المجموعة أو حسابها العلني"
+
+msgid "Canal officiel où te confirmer la demande"
+msgstr "القناة الرسمية لتأكيد طلبك"
+
+msgid "Existe depuis"
+msgstr "موجودة منذ"
+
+msgid "Orga qui peut se porter garante (facultatif)"
+msgstr "جهة يمكنها أن تزكّيك (اختياري)"
+
+msgid "Un mot (facultatif)"
+msgstr "كلمة (اختياري)"
+
+msgid "Envoyer la demande"
+msgstr "إرسال الطلب"
+
+msgid "Ces infos servent seulement à vérifier le collectif. Elles sont effacées dès que la demande est traitée, et au plus tard au bout de 30 jours."
+msgstr "تُستخدم هذه المعلومات فقط للتحقق من المجموعة، وتُحذف فور معالجة الطلب، وفي موعد أقصاه 30 يومًا."
+
+msgid "Aucun numéro de legal team connu pour l’instant. Demande-le aux orgas de ton cortège."
+msgstr "لا يوجد رقم معروف لفريق قانوني حاليًا. اطلبه من منظّمي مسيرتك."
+
+msgid "Écris le numéro au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré."
+msgstr "اكتب الرقم بالقلم على ذراعك: في الحجز لدى الشرطة سيُنزع منك هاتفك."
+
+msgid "Autres villes"
+msgstr "مدن أخرى"
+
+msgid "<b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span>"
+msgstr "<b>أنا أُعتقَل</b><span>أبلغ شخصًا مقرّبًا برسالة SMS بلمستين</span>"
+
+msgid "<b>Signaler une violence policière</b> <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>"
+msgstr "<b>الإبلاغ عن عنف الشرطة</b> <span>أدلِ بشهادتك لدى Ligue des droits de l’Homme (رابطة حقوق الإنسان الفرنسية) التي توثّق العنف خلال التحركات.</span>"
+
+msgid "En cas de"
+msgstr "في حال"
+
+msgid "Sommations et dispersion"
+msgstr "الإنذارات والتفريق"
+
+msgid "Un attroupement peut être dispersé par la force après <b>deux sommations</b> restées sans effet. Elles sont annoncées par haut-parleur ou par un signal (fusée rouge, signal sonore)."
+msgstr "يجوز تفريق التجمّع بالقوة بعد <b>إنذارين</b> («sommations») لم يُستجب لهما. يُعلَن عنهما بمكبّر الصوت أو بإشارة (شعلة حمراء أو إشارة صوتية)."
+
+msgid "Rester volontairement dans un attroupement <b>après les sommations</b> est un délit."
+msgstr "البقاء عمدًا في التجمّع <b>بعد الإنذارات</b> جنحة."
+
+msgid "<b>Si tu les entends :</b> éloigne-toi par une rue dégagée, sans courir vers les forces de l’ordre."
+msgstr "<b>إذا سمعتها:</b> ابتعد عبر شارع خالٍ، دون الركض نحو قوات الأمن."
+
+msgid "Contrôle d’identité"
+msgstr "التحقق من الهوية"
+
+msgid "Tu dois justifier ton identité <b>par tout moyen</b> : carte d’identité, passeport, permis, voire un témoin. Avoir une pièce sur toi n’est pas obligatoire, mais ça évite d’être retenu·e."
+msgstr "يجب أن تثبت هويتك <b>بأي وسيلة</b>: بطاقة هوية، جواز سفر، رخصة قيادة، أو حتى شاهد. حمل وثيقة ليس إلزاميًا، لكنه يجنّبك الاحتجاز."
+
+msgid "Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche."
+msgstr "دون إثبات، يمكن احتجازك للتحقق <b>4 ساعات كحد أقصى</b>، مع الحق في إبلاغ شخص مقرّب."
+
+msgid "Garde à vue"
+msgstr "الحجز لدى الشرطة"
+
+msgid "<b>Droit de te taire.</b> Tu donnes ton identité, et tu peux ne rien dire d’autre."
+msgstr "<b>الحق في الصمت.</b> تقدّم هويتك ويمكنك ألا تقول شيئًا آخر."
+
+msgid "<b>Demande un·e avocat·e tout de suite</b>, dès le début. Si tu n’en connais pas, un·e avocat·e commis·e d’office est gratuit·e."
+msgstr "<b>اطلب محاميًا فورًا</b>، منذ البداية. إن لم تكن تعرف محاميًا، فالمحامي المعيّن مجاني."
+
+msgid "Droit de faire prévenir un proche et ton employeur, de voir un médecin, d’avoir un·e interprète."
+msgstr "الحق في إبلاغ شخص مقرّب وصاحب العمل، ورؤية طبيب، والحصول على مترجم."
+
+msgid "Durée : 24 heures, prolongeable une fois de 24 heures pour la plupart des délits."
+msgstr "المدة: 24 ساعة، قابلة للتمديد مرة واحدة 24 ساعة لمعظم الجنح."
+
+msgid "<b>Ne signe rien</b> que tu n’as pas lu et compris. Tu peux refuser de signer un procès-verbal."
+msgstr "<b>لا توقّع على شيء</b> لم تقرأه وتفهمه. يمكنك رفض توقيع المحضر."
+
+msgid "Ton téléphone"
+msgstr "هاتفك"
+
+msgid "Refuser de donner le code de déverrouillage peut, dans certains cas, être poursuivi (Cour de cassation, 2022)."
+msgstr "رفض إعطاء رمز فتح الهاتف قد يُلاحَق قضائيًا في بعض الحالات (محكمة النقض الفرنسية، 2022)."
+
+msgid "<b>Avant de partir :</b> verrouille ton téléphone avec un code plutôt qu’avec l’empreinte ou le visage, et masque le contenu des notifications sur l’écran verrouillé."
+msgstr "<b>قبل الخروج:</b> اقفل هاتفك برمز بدل البصمة أو الوجه، وأخفِ محتوى الإشعارات على شاشة القفل."
+
+msgid "Pense aussi à sauvegarder tes photos ailleurs que sur le téléphone : il peut être saisi ou cassé."
+msgstr "احفظ صورك أيضًا في مكان آخر غير الهاتف: قد يُصادَر أو يُكسَر."
+
+msgid "Filmer"
+msgstr "التصوير"
+
+msgid "Filmer les forces de l’ordre en intervention est <b>légal</b>."
+msgstr "تصوير قوات الأمن أثناء تدخّلها <b>قانوني</b>."
+
+msgid "Diffuser des éléments permettant d’identifier un agent dans le but qu’on lui porte atteinte est un délit."
+msgstr "نشر عناصر تتيح التعرّف على عنصر أمن بهدف إلحاق الأذى به جنحة."
+
+msgid "Floute les visages avant de publier, ceux des manifestant·es aussi."
+msgstr "موّه الوجوه قبل النشر، ووجوه المتظاهرين أيضًا."
+
+msgid "Visage couvert"
+msgstr "الوجه المغطّى"
+
+msgid "Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit. La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer."
+msgstr "إخفاء الوجه عمدًا في مظاهرة تقع فيها اضطرابات أو يُحتمل وقوعها جنحة. ينص القانون على استثناء لـ<b>سبب مشروع</b> (صحي مثلًا) يجب أن تستطيع تبريره."
+
+msgid "Après une interpellation"
+msgstr "بعد الاعتقال"
+
+msgid "En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Demande-le."
+msgstr "في <b>المثول الفوري</b> أمام المحكمة («comparution immédiate») يمكنك طلب مهلة لتحضير دفاعك. اطلبها."
+
+msgid "Blessé·e : fais établir un <b>certificat médical</b> au plus vite, garde photos et témoignages, contacte ta legal team."
+msgstr "مصاب؟ استخرج <b>شهادة طبية</b> بأسرع وقت، واحتفظ بالصور والشهادات، وتواصل مع فريقك القانوني."
+
+msgid "Victime ou témoin de violences : <a class=\"inline-link violence-inline\" href=\"https://www.ldh-france.org/stop-violences-policieres/\" target=\"_blank\" rel=\"noopener noreferrer\">signale-les à la LDH</a>."
+msgstr "ضحية عنف أو شاهد عليه: <a class=\"inline-link violence-inline\" href=\"https://www.ldh-france.org/stop-violences-policieres/\" target=\"_blank\" rel=\"noopener noreferrer\">أبلغ عنه لدى LDH</a>."
+
+msgid "Informations générales sur le droit français, pas un conseil juridique. En cas d’interpellation, la seule personne à qui parler de l’affaire est ton avocat·e."
+msgstr "معلومات عامة عن القانون الفرنسي، وليست استشارة قانونية. في حال الاعتقال، الشخص الوحيد الذي تتحدث معه عن القضية هو محاميك."
+
+msgid "Efface tout ce que Cortège garde sur ce téléphone, puis ferme l’appli."
+msgstr "يمسح كل ما يحفظه Cortège على هذا الهاتف، ثم يغلق التطبيق."
+
+msgid "<span>Décryptage des luttes chaque jour : <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a></span> <a href=\"https://neru.tv\" target=\"_blank\" rel=\"noopener noreferrer\">neru.tv</a>"
+msgstr "<span>تحليل يومي للنضالات (بالفرنسية): <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a></span> <a href=\"https://neru.tv\" target=\"_blank\" rel=\"noopener noreferrer\">neru.tv</a>"
+
+msgid "Tu publies en tant que"
+msgstr "أنت تنشر باسم"
+
+msgid "L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier."
+msgstr "يتمركز الإعلان على <b>وسط الخريطة</b>: حرّك الخريطة قبل النشر."
+
+msgid "⚠ Ton accès orga n’existe que sur cet appareil."
+msgstr "⚠ صلاحيتك كمنظِّم موجودة على هذا الجهاز فقط."
+
+msgid "Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, « effacer l’historique »), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir."
+msgstr "إنها محفوظة في هذا المتصفح فقط: لا حساب ولا كلمة مرور لاستعادتها. إذا مسحت بيانات الموقع (الذاكرة المؤقتة، «مسح السجل») أو غيّرت المتصفح أو فقدت هذا الهاتف، تضيع الصلاحية نهائيًا. رابط الدعوة أو رمز QR يُستخدم مرة واحدة فقط ولا يسمح بالعودة."
+
+msgid "Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien."
+msgstr "لاستعادة الصلاحية، ستحتاج إلى دعوة جديدة من المشرف، مما يلغي الصلاحية القديمة."
+
+msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton plus bas)."
+msgstr "<b>الأكثر أمانًا: أضف جهازًا ثانيًا الآن</b> (الزر في الأسفل)."
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Annonce"
+msgstr "إعلان"
+
+msgid "Numéro legal team"
+msgstr "رقم الفريق القانوني"
+
+msgid "Message"
+msgstr "الرسالة"
+
+msgid "Importance"
+msgstr "الأهمية"
+
+msgid "Info"
+msgstr "معلومة"
+
+msgid "Urgent (vibre + notification)"
+msgstr "عاجل (اهتزاز + إشعار)"
+
+msgid "Annonce nationale (toute la France)"
+msgstr "إعلان وطني (كل فرنسا)"
+
+msgid "Ville"
+msgstr "المدينة"
+
+msgid "Numéro de téléphone"
+msgstr "رقم الهاتف"
+
+msgid "Précision (facultatif)"
+msgstr "تفصيل (اختياري)"
+
+msgid "Durée"
+msgstr "المدة"
+
+msgid "Le numéro apparaît dans « Mes droits » sous le nom de la ville, pour tout le monde (en premier pour les personnes les plus proches), jusqu’à ce que tu le retires."
+msgstr "يظهر الرقم في «الحقوق» تحت اسم المدينة، للجميع (أولًا للأقرب)، إلى أن تحذفه."
+
+msgid "Publier"
+msgstr "نشر"
+
+msgid "Publier une manif ou un blocus (avec parcours)"
+msgstr "انشر مظاهرة أو إغلاقًا (مع المسار)"
+
+msgid "Annonces actives dans la zone"
+msgstr "الإعلانات النشطة في المنطقة"
+
+msgid "Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux."
+msgstr "على الخريطة، افتح بلاغًا لتعلّمه «موثَّق» أو تحذفه إن كان كاذبًا."
+
+msgid "Inviter une orga"
+msgstr "دعوة جهة منظِّمة"
+
+msgid "Tu peux faire entrer une orga que tu connais (3 par semaine). Elle restera « parrainée » et plus surveillée jusqu’à ce que toi ou l’admin la confirmiez. Si elle est révoquée pour abus, tu ne pourras plus inviter pendant 30 jours : n’invite que des personnes de confiance."
+msgstr "يمكنك إدخال جهة تعرفها (3 في الأسبوع). تبقى «مزكّاة» وتحت مراقبة أكبر حتى تؤكدها أنت أو المشرف. إذا أُلغيت بسبب إساءة، لن تستطيع الدعوة لمدة 30 يومًا: لا تدعُ إلا من تثق بهم."
+
+msgid "Créer l’invitation"
+msgstr "إنشاء الدعوة"
+
+msgid "Mes orgas invitées"
+msgstr "الجهات التي دعوتها"
+
+msgid "Envoyer…"
+msgstr "إرسال…"
+
+msgid "Mes appareils"
+msgstr "أجهزتي"
+
+msgid "Ajouter un appareil"
+msgstr "إضافة جهاز"
+
+msgid "Quitter le mode orga sur ce téléphone"
+msgstr "الخروج من وضع المنظِّم على هذا الهاتف"
+
+msgid "Alertes sur ton téléphone"
+msgstr "التنبيهات على هاتفك"
+
+msgid "Une notification même quand l’appli est fermée. Le serveur ne connaît que ta zone, arrondie à environ 10 km, jamais ta position."
+msgstr "إشعار حتى عندما يكون التطبيق مغلقًا. لا يعرف الخادم إلا منطقتك مقرّبةً إلى نحو 10 كم، ولا يعرف موقعك أبدًا."
+
+msgid "<b>Annonces urgentes</b><span>Quand une orga de ta zone publie une alerte urgente (nasse annoncée, dispersion, legal team…).</span>"
+msgstr "<b>إعلانات عاجلة</b><span>عندما تنشر جهة منظِّمة في منطقتك تنبيهًا عاجلًا (تطويق مُعلَن، تفريق، فريق قانوني…).</span>"
+
+msgid "<b>Dangers signalés près de toi</b><span>Charge, tirs, milices fascistes, nasse, lacrymo, canon à eau, sommations, BAC, unités d’intervention, blindés… signalés dans ta zone. Au plus une alerte toutes les 3 minutes.</span>"
+msgstr "<b>أخطار مُبلَّغ عنها قربك</b><span>هجوم، إطلاق نار، ميليشيات فاشية، تطويق، غاز مسيل للدموع، مدفع مياه، إنذارات، BAC، وحدات تدخّل، مدرّعات… في منطقتك. تنبيه واحد على الأكثر كل 3 دقائق.</span>"
+
+msgid "Recevoir une notification de test"
+msgstr "استلام إشعار تجريبي"
+
+msgid "Le serveur t’envoie une vraie notification, comme pendant une manif. Mets le son ou le vibreur : en silencieux complet, le téléphone ne vibre pas."
+msgstr "يرسل لك الخادم إشعارًا حقيقيًا كما في المظاهرة. شغّل الصوت أو الاهتزاز: في الوضع الصامت التام لن يهتز الهاتف."
+
+msgid "Alerte vocale"
+msgstr "التنبيه الصوتي"
+
+msgid "<b>Annoncer les dangers à voix haute</b><span>Quand l’appli est ouverte, un danger signalé près de toi est lu à voix haute : pratique avec des écouteurs, sans regarder l’écran. La voix est celle du téléphone, rien ne part sur Internet.</span>"
+msgstr "<b>قراءة الأخطار بصوت عالٍ</b><span>عندما يكون التطبيق مفتوحًا، يُقرأ بصوت عالٍ أي خطر مُبلَّغ عنه قربك: مفيد مع السماعات ودون النظر إلى الشاشة. الصوت صوت هاتفك، ولا يُرسَل شيء عبر الإنترنت.</span>"
+
+msgid "Écouter un exemple"
+msgstr "استمع إلى مثال"
+
+msgid "Reconnaître le danger aux vibrations"
+msgstr "تعرّف على الخطر من الاهتزاز"
+
+msgid "Chaque danger a sa vibration, dans l’appli comme dans les notifications : pas besoin de sortir le téléphone."
+msgstr "لكل خطر اهتزازه، في التطبيق وفي الإشعارات: لا داعي لإخراج الهاتف."
+
+msgid "Les iPhone ne vibrent pas selon le type de danger (limite d’Apple). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications."
+msgstr "لا تهتز أجهزة iPhone حسب نوع الخطر (قيد من Apple). على iPhone، ثبّت التطبيق أولًا على الشاشة الرئيسية لاستلام الإشعارات."
+
+msgid "Bien se préparer"
+msgstr "استعدّ جيدًا"
+
+msgid "Checklist gardée sur ton téléphone."
+msgstr "قائمة تحقق محفوظة على هاتفك."
+
+msgid "1. Le sac"
+msgstr "1. الحقيبة"
+
+msgid "Chaussures fermées"
+msgstr "أحذية مغلقة"
+
+msgid "Vêtements couvrants"
+msgstr "ملابس ساترة"
+
+msgid "Lunettes de protection"
+msgstr "نظارات واقية"
+
+msgid "Masques FFP2 ou FFP3"
+msgstr "كمامات FFP2 أو FFP3"
+
+msgid "Sérum physiologique en dosettes"
+msgstr "محلول ملحي في عبوات صغيرة"
+
+msgid "Eau et de quoi manger"
+msgstr "ماء وما يؤكل"
+
+msgid "Numéros notés sur papier : proche, avocat·e, legal team"
+msgstr "أرقام مكتوبة على ورق: شخص مقرّب، محامٍ، فريق قانوني"
+
+msgid "Batterie externe"
+msgstr "بطارية خارجية"
+
+msgid "<b>Point légal :</b> masque, sérum et lunettes dans le sac ne sont pas une infraction. Ils peuvent quand même être confisqués."
+msgstr "<b>نقطة قانونية:</b> وجود كمامة ومحلول ملحي ونظارات في الحقيبة ليس مخالفة، لكن قد تُصادَر رغم ذلك."
+
+msgid "Lunettes plutôt que lentilles, pas de crème grasse : le gaz s’y accroche."
+msgstr "نظارات بدل العدسات اللاصقة، ولا كريمات دهنية: يلتصق بها الغاز."
+
+msgid "2. Le téléphone"
+msgstr "2. الهاتف"
+
+msgid "Signal installé"
+msgstr "تثبيت Signal"
+
+msgid "<b>Bitchat</b> installé : messagerie en Bluetooth, sans réseau"
+msgstr "تثبيت <b>Bitchat</b>: مراسلة عبر Bluetooth دون شبكة"
+
+msgid "Sauvegarde faite"
+msgstr "إجراء نسخة احتياطية"
+
+msgid "Déverrouillage par code, pas par empreinte ni visage"
+msgstr "فتح القفل برمز، لا بالبصمة ولا بالوجه"
+
+msgid "Appli prête sans réseau (carte, numéros, agenda) ·"
+msgstr "التطبيق جاهز دون شبكة (الخريطة، الأرقام، المواعيد) ·"
+
+msgid "le faire"
+msgstr "افعل ذلك"
+
+msgid "Un proche prévenu ·"
+msgstr "إبلاغ شخص مقرّب ·"
+
+msgid "contact SOS"
+msgstr "جهة اتصال SOS"
+
+msgid "3. Le groupe"
+msgstr "3. المجموعة"
+
+msgid "En binôme au minimum"
+msgstr "ضمن ثنائي على الأقل"
+
+msgid "Point de ralliement fixé"
+msgstr "تحديد نقطة تجمّع"
+
+msgid "Eau, sérum et soins répartis"
+msgstr "توزيع الماء والمحلول الملحي والإسعافات"
+
+msgid "Aucun point de ralliement."
+msgstr "لا توجد نقطة تجمّع."
+
+msgid "Placer sur la carte"
+msgstr "ضعها على الخريطة"
+
+msgid "Partager au groupe"
+msgstr "شاركها مع المجموعة"
+
+msgid "Le point reste sur ton téléphone, sauf si tu le partages."
+msgstr "تبقى النقطة على هاتفك ما لم تشاركها."
+
+msgid "4. Sur place"
+msgstr "4. في الميدان"
+
+msgid "Ne ramasse jamais une grenade ni un projectile."
+msgstr "لا تلتقط أبدًا قنبلة أو مقذوفًا."
+
+msgid "Filmer la police est légal. Floute les manifestant·es avant de publier."
+msgstr "تصوير الشرطة قانوني. موّه وجوه المتظاهرين قبل النشر."
+
+msgid "Blessé·e : street medic ou 112."
+msgstr "مصاب؟ مسعفو الشارع أو 112."
+
+msgid "5. Gaz lacrymogène"
+msgstr "5. الغاز المسيل للدموع"
+
+msgid "Rince les yeux à l’eau ou au sérum, sans frotter."
+msgstr "اغسل عينيك بالماء أو المحلول الملحي دون فرك."
+
+msgid "Retire les vêtements touchés, lave la peau à l’eau et au savon."
+msgstr "انزع الملابس المصابة واغسل جلدك بالماء والصابون."
+
+msgid "Gêne qui dure : street medic ou 112."
+msgstr "انزعاج مستمر؟ مسعفو الشارع أو 112."
+
+msgid "6. Interpellation : AMIS"
+msgstr "6. الاعتقال: الأساسيات"
+
+msgid "<b>A</b>vocat·e dès le début."
+msgstr "<b>محامٍ</b> منذ البداية."
+
+msgid "<b>M</b>édecin : examen sur demande."
+msgstr "<b>طبيب</b>: فحص عند الطلب."
+
+msgid "<b>I</b>nformer un proche."
+msgstr "<b>إبلاغ</b> شخص مقرّب."
+
+msgid "<b>S</b>ilence, après avoir donné ton identité."
+msgstr "<b>الصمت</b>، بعد تقديم هويتك."
+
+msgid "Aucune signature d’un procès-verbal inexact."
+msgstr "لا توقيع على محضر غير دقيق."
+
+msgid "Refuser photo, empreintes ou ADN est un délit en soi."
+msgstr "رفض التصوير أو البصمات أو الحمض النووي جنحة بحد ذاته."
+
+msgid "Tous mes droits"
+msgstr "كل حقوقي"
+
+msgid "Tout décocher pour la prochaine manif"
+msgstr "إلغاء كل التحديدات للمظاهرة القادمة"
+
+msgid "Déplace la carte pour mettre le viseur sur le point de ralliement."
+msgstr "حرّك الخريطة لوضع المؤشّر على نقطة التجمّع."
+
+msgid "Annuler"
+msgstr "إلغاء"
+
+msgid "Valider ce point"
+msgstr "تأكيد هذه النقطة"
+
+msgid "Prochaines mobilisations"
+msgstr "التحركات القادمة"
+
+msgid "Près de toi (50 km)"
+msgstr "قربك (50 كم)"
+
+msgid "Toute la France"
+msgstr "كل فرنسا"
+
+msgid "Proposer un blocus ou une manif"
+msgstr "اقترح إغلاقًا أو مظاهرة"
+
+msgid "Les propositions sont vérifiées avant d’apparaître. Les orgas publient directement depuis leur espace."
+msgstr "تُراجَع الاقتراحات قبل ظهورها. ينشر المنظّمون مباشرة من مساحتهم."
+
+msgid "Publier un événement"
+msgstr "نشر فعالية"
+
+msgid "Titre"
+msgstr "العنوان"
+
+msgid "Date et heure"
+msgstr "التاريخ والوقت"
+
+msgid "Lieu de rendez-vous"
+msgstr "مكان التجمّع"
+
+msgid "Placer le rendez-vous sur la carte"
+msgstr "ضع مكان التجمّع على الخريطة"
+
+msgid "Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours."
+msgstr "المس الخريطة لوضع مكان التجمّع، ثم نقاط المسار إن أردت."
+
+msgid "Le dernier point du parcours est la dispersion"
+msgstr "آخر نقطة في المسار هي مكان التفرّق"
+
+msgid "Aucun arrêté ni restriction connus en ce moment."
+msgstr "لا قرارات ولا قيود معروفة حاليًا."
+
+msgid "Signaler un arrêté ou un couvre-feu"
+msgstr "أبلغ عن قرار أو حظر تجوّل"
+
+msgid "Annonces des préfectures et des mairies, vérifiées avant d’apparaître. Elles ne remplacent pas le texte officiel : ouvre la source en cas de doute."
+msgstr "إعلانات المحافظات والبلديات، تُراجَع قبل ظهورها. لا تحلّ محل النص الرسمي: افتح المصدر عند الشك."
+
+msgid "Signaler un arrêté"
+msgstr "أبلغ عن قرار"
+
+msgid "Département"
+msgstr "المقاطعة"
+
+msgid "Commune (vide : tout le département)"
+msgstr "البلدية (فارغ: كل المقاطعة)"
+
+msgid "À partir de"
+msgstr "ابتداءً من"
+
+msgid "Jusqu’à"
+msgstr "حتى"
+
+msgid "Ajouter une mesure"
+msgstr "إضافة إجراء"
+
+msgid "Source (obligatoire)"
+msgstr "المصدر (إلزامي)"
+
+msgid "Lien vers le site de la préfecture ou de la mairie, leur compte officiel, ou un article de presse. Sans source fiable, la proposition est refusée."
+msgstr "رابط إلى موقع المحافظة أو البلدية أو حسابها الرسمي أو مقال صحفي. دون مصدر موثوق يُرفض الاقتراح."
+
+msgid "Envoyer pour vérification"
+msgstr "أرسل للتحقق"
+
+msgid "Choisis la personne à prévenir <b>avant la manif</b>. Son numéro reste sur ton téléphone : Cortège ne le voit jamais."
+msgstr "اختر الشخص الذي ستبلغه <b>قبل المظاهرة</b>. يبقى رقمه على هاتفك: لا يراه Cortège أبدًا."
+
+msgid "Prénom ou surnom"
+msgstr "الاسم أو اللقب"
+
+msgid "Son numéro"
+msgstr "رقمه"
+
+msgid "Enregistrer"
+msgstr "حفظ"
+
+msgid "C’est moi"
+msgstr "أنا"
+
+msgid "Quelqu’un de mon groupe"
+msgstr "شخص من مجموعتي"
+
+msgid "Message (tu peux le modifier)"
+msgstr "الرسالة (يمكنك تعديلها)"
+
+msgid "Envoyer par SMS à"
+msgstr "أرسل برسالة SMS إلى"
+
+msgid "Envoyer par une autre appli (Signal…)"
+msgstr "أرسل بتطبيق آخر (Signal…)"
+
+msgid "Le message part de ton téléphone, avec ton forfait : rien ne passe par Cortège. Après une interpellation, ton téléphone peut t’être retiré : envoie-le dès que tu peux, ou demande à quelqu’un de ton groupe de le faire."
+msgstr "تُرسل الرسالة من هاتفك وبباقتك: لا يمر شيء عبر Cortège. بعد الاعتقال قد يُنزع منك هاتفك: أرسلها فور استطاعتك، أو اطلب من أحد أفراد مجموعتك فعل ذلك."
+
+msgid "Changer de contact"
+msgstr "تغيير جهة الاتصال"
+
+msgid "Signalé"
+msgstr "تم الإبلاغ"
+
+msgid "Ajouter une précision"
+msgstr "أضف تفصيلًا"
+
+msgid "Ajouter"
+msgstr "إضافة"
+
+msgid "Pas de nom, pas de description physique, pas de matricule."
+msgstr "لا أسماء ولا أوصاف جسدية ولا أرقام تعريف."
+
+msgid "Cortège"
+msgstr "Cortège"
+
+msgid "La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Sans compte, sans pistage, partout en France. Par @neru."
+msgstr "خريطة المظاهرات المباشرة: شرطة مكافحة الشغب، غاز مسيل للدموع، تطويق، مسعفو الشارع، فريق قانوني. دون حساب ولا تتبّع، في كل فرنسا. من @neru."
+
+# --- 03-app ---
+msgid "Adresse .onion copiée"
+msgstr "تم نسخ عنوان ‎.onion"
+
+msgid "à l’instant"
+msgstr "الآن"
+
+msgid "il y a {m} min"
+msgstr "قبل {m} د"
+
+msgid "{m} min"
+msgstr "{m} د"
+
+msgid "Zone calme · {d}"
+msgstr "منطقة هادئة · {d}"
+
+msgid "(flèche : nord en haut)"
+msgstr "(السهم: الشمال للأعلى)"
+
+msgid "Zone calme la plus proche à {d}. Afficher sur la carte."
+msgstr "أقرب منطقة هادئة على بعد {d}. اعرضها على الخريطة."
+
+msgid "Merci : le danger voisin est signalé comme parti"
+msgstr "شكرًا: سُجِّل أن الخطر القريب قد زال"
+
+msgid "revu {ago}"
+msgstr "شوهد مجددًا {ago}"
+
+msgid "expire dans {d}"
+msgstr "ينتهي بعد {d}"
+
+msgid "Signalé par {n} personnes"
+msgstr "أبلغ عنه {n} أشخاص"
+
+msgid "Vérifié par {who}"
+msgstr "تحقّق منه {who}"
+
+msgid "une orga"
+msgstr "جهة منظِّمة"
+
+msgid "Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)"
+msgstr "أبلغ عنه هاتف موثوق اليوم (بلاغاته تتأكد غالبًا)"
+
+msgid "{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant."
+msgstr "{what} على بعد {d} (غير مؤكَّد بعد): المنطقة غير آمنة حاليًا."
+
+msgid "{what} à {d} : zone pas sûre pour l’instant."
+msgstr "{what} على بعد {d}: المنطقة غير آمنة حاليًا."
+
+msgid "C’est calme ici"
+msgstr "الوضع هادئ هنا"
+
+msgid "Contesté : {n} personne dit que c’est parti. Confirme si c’est toujours là."
+msgid_plural "Contesté : {n} personnes disent que c’est parti. Confirme si c’est toujours là."
+msgstr[0] "مُتنازَع عليه: {n} أشخاص يقولون إنه زال. أكّد إن كان لا يزال موجودًا."
+msgstr[1] "مُتنازَع عليه: شخص واحد يقول إنه زال. أكّد إن كان لا يزال موجودًا."
+msgstr[2] "مُتنازَع عليه: {n} أشخاص يقولون إنه زال. أكّد إن كان لا يزال موجودًا."
+msgstr[3] "مُتنازَع عليه: {n} أشخاص يقولون إنه زال. أكّد إن كان لا يزال موجودًا."
+msgstr[4] "مُتنازَع عليه: {n} أشخاص يقولون إنه زال. أكّد إن كان لا يزال موجودًا."
+msgstr[5] "مُتنازَع عليه: {n} أشخاص يقولون إنه زال. أكّد إن كان لا يزال موجودًا."
+
+msgid "Précision"
+msgstr "تفصيل"
+
+msgid "Toujours là"
+msgstr "ما زال هنا"
+
+msgid "Seulement sur place"
+msgstr "في الميدان فقط"
+
+msgid "Pas sur place"
+msgstr "لست في المكان"
+
+msgid "Plus là"
+msgstr "لم يعد هنا"
+
+msgid "Tu es à {d} : seules les personnes sur place peuvent dire que c’est parti."
+msgstr "أنت على بعد {d}: وحدهم الحاضرون في المكان يمكنهم القول إنه زال."
+
+msgid "Tu es sur place et tu ne vois plus rien ? Appuie sur « Plus là »."
+msgstr "أنت في المكان ولم تعد ترى شيئًا؟ اضغط «لم يعد هنا»."
+
+msgid "Vérifié"
+msgstr "موثَّق"
+
+msgid "Vérifier (orga)"
+msgstr "تحقّق (منظِّم)"
+
+msgid "Retirer (faux)"
+msgstr "حذف (كاذب)"
+
+msgid "Confirmer le retrait"
+msgstr "تأكيد الحذف"
+
+msgid "Prolonger"
+msgstr "تمديد"
+
+msgid "Modifier"
+msgstr "تعديل"
+
+msgid "Précision (vide = aucune)"
+msgstr "تفصيل (فارغ = لا شيء)"
+
+msgid "Réseau faible : mode léger activé (seuls les signalements passent)"
+msgstr "شبكة ضعيفة: تفعيل الوضع الخفيف (تمر البلاغات فقط)"
+
+msgid "Nouvelle version de Cortège"
+msgstr "إصدار جديد من Cortège"
+
+msgid "Mettre à jour"
+msgstr "تحديث"
+
+msgid "Mise à jour de Cortège…"
+msgstr "جارٍ تحديث Cortège…"
+
+msgid "En pause"
+msgstr "متوقف"
+
+msgid "En direct · mode léger"
+msgstr "مباشر · الوضع الخفيف"
+
+msgid "En direct"
+msgstr "مباشر"
+
+msgid "Reconnexion…"
+msgstr "جارٍ إعادة الاتصال…"
+
+msgid "Hors ligne, nouvel essai…"
+msgstr "غير متصل، إعادة المحاولة…"
+
+msgid "Connexion instable…"
+msgstr "اتصال غير مستقر…"
+
+msgid "il y a {h} h {m}"
+msgstr "قبل {h} س {m}"
+
+msgid "Pas de réseau"
+msgstr "لا شبكة"
+
+msgid "Réseau très faible"
+msgstr "شبكة ضعيفة جدًا"
+
+msgid "dernière situation connue {ago}"
+msgstr "آخر وضع معروف {ago}"
+
+msgid "Réseau faible : mode léger · mis à jour {ago}"
+msgstr "شبكة ضعيفة: الوضع الخفيف · حُدِّث {ago}"
+
+msgid "Sommations à {d} : rester devient un délit. Éloigne-toi par une rue dégagée."
+msgstr "إنذارات تفريق على بعد {d}: البقاء يصبح جنحة. ابتعد عبر شارع خالٍ."
+
+msgid "{what} à {d} de toi"
+msgstr "{what} على بعد {d} منك"
+
+msgid "Sommations à {d}. Éloigne-toi par une rue dégagée."
+msgstr "إنذارات تفريق على بعد {d}. ابتعد عبر شارع خالٍ."
+
+msgid "{what}, à {d}"
+msgstr "{what}، على بعد {d}"
+
+msgid "La carte te suit"
+msgstr "الخريطة تتبعك"
+
+msgid "Me recentrer"
+msgstr "أعد التوسيط عليّ"
+
+msgid "Géolocalisation indisponible sur cet appareil."
+msgstr "تحديد الموقع غير متاح على هذا الجهاز."
+
+msgid "Localisation refusée. Tu peux quand même signaler avec le viseur."
+msgstr "رُفض تحديد الموقع. يمكنك مع ذلك الإبلاغ باستخدام المؤشّر."
+
+msgid "Recherche de ta position…"
+msgstr "جارٍ البحث عن موقعك…"
+
+msgid "Recherche…"
+msgstr "جارٍ البحث…"
+
+msgid "Recherche indisponible."
+msgstr "البحث غير متاح."
+
+msgid "Aucun lieu trouvé en France."
+msgstr "لم يُعثر على أي مكان في فرنسا."
+
+msgid "Pas de réseau."
+msgstr "لا شبكة."
+
+msgid "🏢 Préfectures et sous-préfectures"
+msgstr "🏢 المحافظات والمحافظات الفرعية"
+
+msgid "🏛 Mairies"
+msgstr "🏛 البلديات"
+
+msgid "👮 Commissariats et gendarmeries"
+msgstr "👮 مراكز الشرطة والدرك"
+
+msgid "🔨 Tribunaux"
+msgstr "🔨 المحاكم"
+
+msgid "🔒 Centres de rétention"
+msgstr "🔒 مراكز الاحتجاز الإداري"
+
+msgid "🏥 Hôpitaux"
+msgstr "🏥 المستشفيات"
+
+msgid "💊 Pharmacies"
+msgstr "💊 الصيدليات"
+
+msgid "🚰 Eau potable"
+msgstr "🚰 مياه الشرب"
+
+msgid "📷 Caméras de surveillance"
+msgstr "📷 كاميرات المراقبة"
+
+msgid "lun"
+msgstr "الإثنين"
+
+msgid "mar"
+msgstr "الثلاثاء"
+
+msgid "mer"
+msgstr "الأربعاء"
+
+msgid "jeu"
+msgstr "الخميس"
+
+msgid "ven"
+msgstr "الجمعة"
+
+msgid "sam"
+msgstr "السبت"
+
+msgid "dim"
+msgstr "الأحد"
+
+msgid "fériés"
+msgstr "العطل الرسمية"
+
+msgid "Ouvert 24 h/24, 7 j/7"
+msgstr "مفتوح 24/7"
+
+msgid "fermé"
+msgstr "مغلق"
+
+msgid "Caméra dôme (peut tourner dans tous les sens)"
+msgstr "كاميرا قبّة (يمكنها الدوران في كل الاتجاهات)"
+
+msgid "Caméra fixe"
+msgstr "كاميرا ثابتة"
+
+msgid "Caméra orientable"
+msgstr "كاميرا قابلة للتوجيه"
+
+msgid "Caméra publique"
+msgstr "كاميرا عامة"
+
+msgid "Caméra privée"
+msgstr "كاميرا خاصة"
+
+msgid "Vidéosurveillance de la voie publique"
+msgstr "مراقبة بالفيديو للطريق العام"
+
+msgid "Caméra privée qui filme la rue"
+msgstr "كاميرا خاصة تصوّر الشارع"
+
+msgid "Exploitée par :"
+msgstr "يديرها:"
+
+msgid ", orientée vers {dir}"
+msgstr "، موجّهة نحو {dir}"
+
+msgid "Orientée vers {dir}."
+msgstr "موجّهة نحو {dir}."
+
+msgid "Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
+msgstr "إحصاء أجراه متطوعو OpenStreetMap وهو غير مكتمل. الشارع الخالي من الكاميرات على الخريطة ليس بالضرورة خاليًا منها."
+
+msgid "© contributeurs OpenStreetMap"
+msgstr "© مساهمو OpenStreetMap"
+
+msgid "le nord"
+msgstr "الشمال"
+
+msgid "le nord-est"
+msgstr "الشمال الشرقي"
+
+msgid "l’est"
+msgstr "الشرق"
+
+msgid "le sud-est"
+msgstr "الجنوب الشرقي"
+
+msgid "le sud"
+msgstr "الجنوب"
+
+msgid "le sud-ouest"
+msgstr "الجنوب الغربي"
+
+msgid "l’ouest"
+msgstr "الغرب"
+
+msgid "le nord-ouest"
+msgstr "الشمال الغربي"
+
+msgid "Lieu"
+msgstr "مكان"
+
+msgid "Pharmacie de garde (nuit, dimanche, jour férié) : appelle le"
+msgstr "صيدلية مناوبة (ليلًا، الأحد، العطل): اتصل بالرقم"
+
+msgid "🚑 Service d’urgences"
+msgstr "🚑 قسم الطوارئ"
+
+msgid "Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112."
+msgstr "الطوارئ: غير محدد. في حالة الطوارئ اتصل بـ 15 أو 112."
+
+msgid "Fontaine saisonnière : peut être coupée en hiver."
+msgstr "نافورة موسمية: قد تكون مقطوعة شتاءً."
+
+msgid "Lieu permanent · © contributeurs OpenStreetMap"
+msgstr "مكان دائم · © مساهمو OpenStreetMap"
+
+msgid "📅 Agenda"
+msgstr "📅 المواعيد"
+
+msgid "Manifs, blocus et rassemblements du moment, avec leur parcours"
+msgstr "المظاهرات والإغلاقات والتجمعات الحالية، مع مساراتها"
+
+msgid "Choisir les types de lieux"
+msgstr "اختر أنواع الأماكن"
+
+msgid "🏛 Lieux utiles"
+msgstr "🏛 أماكن مفيدة"
+
+msgid "Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
+msgstr "المحافظات، مراكز الشرطة، المحاكم، المستشفيات، الصيدليات، مياه الشرب. تظهر عند التكبير."
+
+msgid "Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque."
+msgstr "تظهر عند التكبير الأقصى. إحصاء تطوعي من OpenStreetMap وبعضها ناقص."
+
+msgid "Caméras affichées : zoome au plus près pour les voir"
+msgstr "تم إظهار الكاميرات: كبّر إلى الحد الأقصى لرؤيتها"
+
+msgid "Visible en zoomant au plus près. Rouge : publique. Orange : privée, filme la rue. Le cône montre la direction filmée quand elle est connue. Recensement bénévole et incomplet."
+msgstr "تظهر عند التكبير الأقصى. الأحمر: عامة. البرتقالي: خاصة تصوّر الشارع. يُظهر المخروط اتجاه التصوير عند معرفته. إحصاء تطوعي وغير مكتمل."
+
+msgid "Visible au zoom rue"
+msgstr "تظهر عند تكبير الشارع"
+
+msgid "Visible au zoom quartier"
+msgstr "تظهر عند تكبير الحي"
+
+msgid "Visible au zoom ville"
+msgstr "تظهر عند تكبير المدينة"
+
+msgid "Zoome sur l’endroit exact (ou active ta position) avant de signaler."
+msgstr "كبّر على المكان بدقة (أو فعّل موقعك) قبل الإبلاغ."
+
+msgid "Le viseur est sur ta position. Déplace la carte si c’est ailleurs."
+msgstr "المؤشّر على موقعك. حرّك الخريطة إن كان الأمر في مكان آخر."
+
+msgid "déjà là · {ago} · confirmer"
+msgstr "موجود · {ago} · أكّد"
+
+msgid ", déjà signalé, appuyer pour confirmer"
+msgstr "، مُبلَّغ عنه سابقًا، اضغط للتأكيد"
+
+msgid "{what} : signalé et vérifié (orga)"
+msgstr "{what}: تم الإبلاغ والتحقق (منظِّم)"
+
+msgid "{what} : signalé"
+msgstr "{what}: تم الإبلاغ"
+
+msgid "Tu l’avais déjà signalé : point mis à jour"
+msgstr "سبق أن أبلغت عنه: تم تحديث النقطة"
+
+msgid "Déjà signalé : ta confirmation est ajoutée ({n} personnes)"
+msgstr "مُبلَّغ عنه سابقًا: أُضيف تأكيدك ({n} أشخاص)"
+
+msgid "Envoi impossible. Réessaie."
+msgstr "تعذّر الإرسال. أعد المحاولة."
+
+msgid "{n} signalement en attente de réseau"
+msgid_plural "{n} signalements en attente de réseau"
+msgstr[0] "{n} بلاغات بانتظار الشبكة"
+msgstr[1] "بلاغ واحد بانتظار الشبكة"
+msgstr[2] "{n} بلاغات بانتظار الشبكة"
+msgstr[3] "{n} بلاغات بانتظار الشبكة"
+msgstr[4] "{n} بلاغات بانتظار الشبكة"
+msgstr[5] "{n} بلاغات بانتظار الشبكة"
+
+msgid "Annuler ce signalement"
+msgstr "إلغاء هذا البلاغ"
+
+msgid "Trop ancien, ne sera pas publié"
+msgstr "قديم جدًا، لن يُنشر"
+
+msgid "fait {ago}"
+msgstr "أُنشئ {ago}"
+
+msgid "Toujours pas de réseau."
+msgstr "لا شبكة حتى الآن."
+
+msgid "Signalement en attente envoyé"
+msgid_plural "{n} signalements en attente envoyés"
+msgstr[0] "أُرسلت {n} بلاغات معلّقة"
+msgstr[1] "أُرسل البلاغ المعلّق"
+msgstr[2] "أُرسلت {n} بلاغات معلّقة"
+msgstr[3] "أُرسلت {n} بلاغات معلّقة"
+msgstr[4] "أُرسلت {n} بلاغات معلّقة"
+msgstr[5] "أُرسلت {n} بلاغات معلّقة"
+
+msgid "1 trop ancien, pas publié"
+msgid_plural "{n} trop anciens, pas publiés"
+msgstr[0] "{n} قديمة جدًا، لم تُنشر"
+msgstr[1] "واحد قديم جدًا، لم يُنشر"
+msgstr[2] "{n} قديمة جدًا، لم تُنشر"
+msgstr[3] "{n} قديمة جدًا، لم تُنشر"
+msgstr[4] "{n} قديمة جدًا، لم تُنشر"
+msgstr[5] "{n} قديمة جدًا، لم تُنشر"
+
+msgid "Pas de réseau : signalement gardé, il partira dès que ça capte."
+msgstr "لا شبكة: حُفظ البلاغ وسيُرسل فور توفر الشبكة."
+
+msgid "ex. : une vingtaine, remontent vers la gare"
+msgstr "مثال: نحو عشرين، يتجهون نحو المحطة"
+
+msgid "ex. : le nuage s’étend vers la place"
+msgstr "مثال: السحابة تمتد نحو الساحة"
+
+msgid "ex. : sous l’abribus, côté nord"
+msgstr "مثال: تحت مظلة الحافلات، الجهة الشمالية"
+
+msgid "ex. : barrières, passage par la rue d’à côté"
+msgstr "مثال: حواجز، المرور عبر الشارع المجاور"
+
+msgid "Écris une précision."
+msgstr "اكتب تفصيلًا."
+
+msgid "Envoi impossible."
+msgstr "تعذّر الإرسال."
+
+msgid "Précision ajoutée"
+msgstr "أُضيف التفصيل"
+
+msgid "Vote impossible."
+msgstr "تعذّر التصويت."
+
+msgid "Merci, signalement prolongé"
+msgstr "شكرًا، تم تمديد البلاغ"
+
+msgid "Merci, c’est noté"
+msgstr "شكرًا، تم التسجيل"
+
+msgid "{n} personnes"
+msgstr "{n} أشخاص"
+
+msgid "Appli installée sur ton écran d’accueil"
+msgstr "تم تثبيت التطبيق على شاشتك الرئيسية"
+
+msgid "Tu es dans le navigateur d’une appli (Instagram, TikTok…), qui ne peut pas installer Cortège. Touche le menu <b>⋯</b> en haut à droite puis <b>Ouvrir dans le navigateur</b>, et recommence depuis là."
+msgstr "أنت داخل متصفح تطبيق (Instagram أو TikTok…) لا يمكنه تثبيت Cortège. المس القائمة <b>⋯</b> في الأعلى ثم <b>فتح في المتصفح</b>، وابدأ من هناك."
+
+msgid "Sur iPhone, dans <b>Safari</b> : touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>."
+msgstr "على iPhone، في <b>Safari</b>: المس زر <b>مشاركة</b> (المربع مع سهم للأعلى)، ثم <b>إضافة إلى الشاشة الرئيسية</b>، ثم <b>إضافة</b>."
+
+msgid "Ouvre le menu de ton navigateur (<b>⋮</b>) puis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>."
+msgstr "افتح قائمة المتصفح (<b>⋮</b>) ثم <b>تثبيت التطبيق</b> أو <b>إضافة إلى الشاشة الرئيسية</b>."
+
+msgid "Masquer cette annonce"
+msgstr "إخفاء هذا الإعلان"
+
+msgid "toute la France"
+msgstr "كل فرنسا"
+
+msgid "En savoir plus →"
+msgstr "اعرف المزيد ←"
+
+msgid "+ {n} autre annonce"
+msgid_plural "+ {n} autres annonces"
+msgstr[0] "+ {n} إعلانات أخرى"
+msgstr[1] "+ إعلان آخر"
+msgstr[2] "+ {n} إعلانات أخرى"
+msgstr[3] "+ {n} إعلانات أخرى"
+msgstr[4] "+ {n} إعلانات أخرى"
+msgstr[5] "+ {n} إعلانات أخرى"
+
+msgid "ici"
+msgstr "هنا"
+
+msgid "à {d} km"
+msgstr "على بعد {d} كم"
+
+msgid "Autour de ce point"
+msgstr "حول هذه النقطة"
+
+msgid "Appeler"
+msgstr "اتصال"
+
+msgid "Copier"
+msgstr "نسخ"
+
+msgid "Numéro copié"
+msgstr "تم نسخ الرقم"
+
+msgid "Annuaire"
+msgstr "الدليل"
+
+msgid "vérifié le {date}"
+msgstr "تم التحقق في {date}"
+
+msgid "source"
+msgstr "المصدر"
+
+msgid "Pour la mobilisation · publié {ago}"
+msgstr "للتحرك · نُشر {ago}"
+
+msgid "Joignable sur Signal"
+msgstr "متاح على Signal"
+
+msgid "Aucune legal team connue près de toi · la plus proche : {city} ({d})"
+msgstr "لا فريق قانوني معروف قربك · الأقرب: {city} ({d})"
+
+msgid "Autres villes ({n})"
+msgstr "مدن أخرى ({n})"
+
+msgid "La carte en direct des manifs, par @{h}"
+msgstr "خريطة المظاهرات المباشرة، من @{h}"
+
+msgid "Lien copié"
+msgstr "تم نسخ الرابط"
+
+msgid "Action impossible."
+msgstr "تعذّر تنفيذ الإجراء."
+
+msgid "ORGA · essai"
+msgstr "ORGA · تجربة"
+
+msgid "Publier une manif ou un blocus"
+msgstr "انشر مظاهرة أو إغلاقًا"
+
+msgid "Invitation impossible."
+msgstr "تعذّرت الدعوة."
+
+msgid "Appareil ajouté à l’espace orga {who}"
+msgstr "أُضيف الجهاز إلى مساحة المنظِّم {who}"
+
+msgid "Bienvenue {who} : ton accès orga est activé sur ce téléphone"
+msgstr "أهلًا {who}: تم تفعيل صلاحية المنظِّم على هذا الهاتف"
+
+msgid "Pas de réseau : rouvre l’invitation quand ça capte."
+msgstr "لا شبكة: أعد فتح الدعوة عند توفر الشبكة."
+
+msgid "Mode orga : {who}"
+msgstr "وضع المنظِّم: {who}"
+
+msgid "Prolongé : expire dans {d}"
+msgstr "تم التمديد: ينتهي بعد {d}"
+
+msgid "Signalement corrigé"
+msgstr "تم تصحيح البلاغ"
+
+msgid "Signalement marqué vérifié"
+msgstr "تم تعليم البلاغ كموثَّق"
+
+msgid "Signalement retiré"
+msgstr "تم حذف البلاغ"
+
+msgid "Pris en compte : vaut deux « Plus là » (période d’essai)"
+msgstr "تم الأخذ به: يُحتسب كصوتين «لم يعد هنا» (فترة تجريبية)"
+
+msgid "Toutes les annonces actives"
+msgstr "كل الإعلانات النشطة"
+
+msgid "Tes annonces actives"
+msgstr "إعلاناتك النشطة"
+
+msgid "Annonces actives ici"
+msgstr "الإعلانات النشطة هنا"
+
+msgid "Aucune annonce publiée."
+msgstr "لا إعلانات منشورة."
+
+msgid "Aucune annonce active ici."
+msgstr "لا إعلانات نشطة هنا."
+
+msgid "Retirer"
+msgstr "حذف"
+
+msgid "Annonce retirée"
+msgstr "تم حذف الإعلان"
+
+msgid "visible partout, rangé par ville"
+msgstr "ظاهر في كل مكان، مرتّب حسب المدينة"
+
+msgid "permanent"
+msgstr "دائم"
+
+msgid "(valable jusqu’au {date}, une seule fois)"
+msgstr "(صالح حتى {date}، لمرة واحدة)"
+
+msgid "Lien à usage unique, à ouvrir sur le bon appareil :"
+msgstr "رابط لاستخدام واحد، افتحه على الجهاز الصحيح:"
+
+msgid "Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien."
+msgstr "لاستعادة الصلاحية، ستحتاج إلى دعوة جديدة من {who} أو من المشرف، مما يلغي الصلاحية القديمة."
+
+msgid "{n} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès."
+msgstr "لدى {n} جهاز/أجهزة صلاحية الوصول إلى مساحة المنظِّم هذه (5 كحد أقصى). إضافة جهاز تنشئ رابطًا صالحًا 10 دقائق لفتحه على الجهاز الآخر (حاسوب، هاتف ثانٍ…). يحتفظ هذا الجهاز بصلاحيته."
+
+msgid "Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil."
+msgstr "صلاحيتك محددة مباشرة في إعدادات الخادم: اطلب من المشرف جهازًا آخر."
+
+msgid "Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus."
+msgstr "الدعوات موقوفة حتى {date}: أُلغيت جهة دعوتَها بسبب الإساءة."
+
+msgid "Aucune orga invitée pour l’instant."
+msgstr "لم تدعُ أي جهة حتى الآن."
+
+msgid "confirmée"
+msgstr "مؤكَّدة"
+
+msgid "invitation en attente"
+msgstr "دعوة معلّقة"
+
+msgid "invitation expirée"
+msgstr "دعوة منتهية"
+
+msgid "prête à être confirmée"
+msgstr "جاهزة للتأكيد"
+
+msgid "parrainée · {d} j · {n} action(s)"
+msgstr "مزكّاة · {d} يوم · {n} إجراء"
+
+msgid "Dernières actions"
+msgstr "آخر الإجراءات"
+
+msgid "Confirmer cette orga"
+msgstr "تأكيد هذه الجهة"
+
+msgid "{who} est confirmée"
+msgstr "تم تأكيد {who}"
+
+msgid "Nouvelle invitation (accès perdu)"
+msgstr "دعوة جديدة (فُقدت الصلاحية)"
+
+msgid "Nouvelle invitation"
+msgstr "دعوة جديدة"
+
+msgid "Confirmer : son accès actuel sera coupé"
+msgstr "تأكيد: ستُقطع صلاحيتها الحالية"
+
+msgid "Invitation pour {who}"
+msgstr "دعوة لـ {who}"
+
+msgid "Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé."
+msgstr "أرسلها عبر تطبيق مراسلة مشفّر (Signal). قُطعت الصلاحية القديمة لهذه الجهة."
+
+msgid "L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr "تمسح الجهة رمز QR هذا أو تفتح الرابط على هاتفها. أرسل الرابط عبر تطبيق مراسلة مشفّر (Signal)، وليس علنًا أبدًا."
+
+msgid "Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga."
+msgstr "امسح رمز QR هذا بالجهاز الآخر (أو افتح الرابط عليه). لا ترسله لأي شخص آخر: إنه يمنح الوصول إلى مساحتك كمنظِّم."
+
+msgid "Envoi impossible, réessaie."
+msgstr "تعذّر الإرسال، أعد المحاولة."
+
+msgid "Demande envoyée : on te recontacte par le canal du collectif"
+msgstr "أُرسل الطلب: سيُتواصل معك عبر قناة المجموعة"
+
+msgid "Pas de réseau : réessaie plus tard"
+msgstr "لا شبكة: أعد المحاولة لاحقًا"
+
+msgid "Numéro envoyé : il s’affichera après validation par l’admin"
+msgstr "أُرسل الرقم: سيظهر بعد موافقة المشرف"
+
+msgid "Annonce publiée"
+msgstr "نُشر الإعلان"
+
+msgid "Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)"
+msgstr "تأكيد: ستُفقد الصلاحية على هذا الجهاز (ستحتاج إلى دعوة جديدة)"
+
+msgid "Mode orga désactivé sur ce téléphone"
+msgstr "تم إيقاف وضع المنظِّم على هذا الهاتف"
+
+msgid "Publié par {who}"
+msgstr "نشره {who}"
+
+msgid "Voir la carte d’origine →"
+msgstr "عرض الخريطة الأصلية ←"
+
+msgid "Retirer cet événement"
+msgstr "حذف هذه الفعالية"
+
+msgid "Événement retiré"
+msgstr "تم حذف الفعالية"
+
+msgid "Dispersion prévue"
+msgstr "تفرّق متوقَّع"
+
+msgid "Dispersion prévue : {title}"
+msgstr "تفرّق متوقَّع: {title}"
+
+msgid "Aucune mobilisation annoncée pour l’instant."
+msgstr "لا تحركات معلنة حاليًا."
+
+msgid "Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France »."
+msgstr "لا شيء معلن في نطاق 50 كم منك. انظر «كل فرنسا»."
+
+msgid "Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France »."
+msgstr "لا شيء معلن في نطاق 50 كم من وسط الخريطة. فعّل موقعك أو انظر «كل فرنسا»."
+
+msgid "{n} événements : les 200 premiers"
+msgstr "{n} فعالية: أول 200"
+
+msgid "En cours"
+msgstr "جارٍ"
+
+msgid "Information"
+msgstr "معلومة"
+
+msgid "{day} à {hour}"
+msgstr "{day} الساعة {hour}"
+
+msgid "jusqu’au {date}"
+msgstr "حتى {date}"
+
+msgid "{day} de {from} à {to}"
+msgstr "{day} من {from} إلى {to}"
+
+msgid "du {from} au {to}"
+msgstr "من {from} إلى {to}"
+
+msgid "{name} (tout le département)"
+msgstr "{name} (كل المقاطعة)"
+
+msgid "Masquer ce bandeau"
+msgstr "إخفاء هذا الشريط"
+
+msgid "Arrêté en vigueur"
+msgstr "قرار ساري المفعول"
+
+msgid "Arrêté à venir"
+msgstr "قرار قادم"
+
+msgid "+{n} autre"
+msgid_plural "+{n} autres"
+msgstr[0] "+{n} أخرى"
+msgstr[1] "+{n} آخر"
+msgstr[2] "+{n} أخرى"
+msgstr[3] "+{n} أخرى"
+msgstr[4] "+{n} أخرى"
+msgstr[5] "+{n} أخرى"
+
+msgid "touche pour les détails"
+msgstr "المس للتفاصيل"
+
+msgid "Voir la zone sur la carte"
+msgstr "عرض المنطقة على الخريطة"
+
+msgid "Source :"
+msgstr "المصدر:"
+
+msgid "ouvrir"
+msgstr "فتح"
+
+msgid "Ici"
+msgstr "هنا"
+
+msgid "Ailleurs en France"
+msgstr "في أماكن أخرى من فرنسا"
+
+msgid "En France"
+msgstr "في فرنسا"
+
+msgid "Choisir…"
+msgstr "اختر…"
+
+msgid "Type de mesure"
+msgstr "نوع الإجراء"
+
+msgid "ex. : la manifestation de samedi est interdite"
+msgstr "مثال: مظاهرة السبت ممنوعة"
+
+msgid "Mesure"
+msgstr "الإجراء"
+
+msgid "Décris au moins une mesure."
+msgstr "صِف إجراءً واحدًا على الأقل."
+
+msgid "Indique le début et la fin."
+msgstr "حدّد البداية والنهاية."
+
+msgid "Merci ! L’arrêté apparaîtra une fois la source vérifiée."
+msgstr "شكرًا! سيظهر القرار بعد التحقق من المصدر."
+
+msgid "Pas de réseau : réessaie plus tard."
+msgstr "لا شبكة: أعد المحاولة لاحقًا."
+
+msgid "Rendez-vous placé"
+msgstr "تم وضع مكان التجمّع"
+
+msgid "Rendez-vous + {n} point de parcours"
+msgid_plural "Rendez-vous + {n} points de parcours"
+msgstr[0] "مكان التجمّع + {n} نقاط مسار"
+msgstr[1] "مكان التجمّع + نقطة مسار واحدة"
+msgstr[2] "مكان التجمّع + {n} نقاط مسار"
+msgstr[3] "مكان التجمّع + {n} نقاط مسار"
+msgstr[4] "مكان التجمّع + {n} نقاط مسار"
+msgstr[5] "مكان التجمّع + {n} نقاط مسار"
+
+msgid "Rendez-vous placé, sans parcours."
+msgstr "تم وضع مكان التجمّع، دون مسار."
+
+msgid "Rendez-vous placé, parcours de {d}."
+msgstr "تم وضع مكان التجمّع، مسار بطول {d}."
+
+msgid "Modifier sur la carte"
+msgstr "التعديل على الخريطة"
+
+msgid "Proposer une mobilisation"
+msgstr "اقترح تحركًا"
+
+msgid "Envoyer la proposition"
+msgstr "إرسال الاقتراح"
+
+msgid "Place d’abord le rendez-vous sur la carte."
+msgstr "ضع مكان التجمّع على الخريطة أولًا."
+
+msgid "Choisis la date et l’heure."
+msgstr "اختر التاريخ والوقت."
+
+msgid "Événement publié"
+msgstr "نُشرت الفعالية"
+
+msgid "Proposition envoyée : elle apparaîtra après vérification"
+msgstr "أُرسل الاقتراح: سيظهر بعد التحقق"
+
+msgid "Pas de réseau. Rien n’est parti."
+msgstr "لا شبكة. لم يُرسل شيء."
+
+msgid "Je viens d’être interpellé·e ({hour})"
+msgstr "تم اعتقالي للتو ({hour})"
+
+msgid "Quelqu’un de mon groupe vient d’être interpellé·e ({hour})"
+msgstr "تم اعتقال شخص من مجموعتي للتو ({hour})"
+
+msgid "ici : {url}"
+msgstr "هنا: {url}"
+
+msgid "Préviens la legal team : {phone} ({name})."
+msgstr "أبلغ الفريق القانوني: {phone} ({name})."
+
+msgid "Préviens la legal team de la manif."
+msgstr "أبلغ الفريق القانوني للمظاهرة."
+
+msgid "Message envoyé avec Cortège."
+msgstr "رسالة مرسلة عبر Cortège."
+
+msgid "Numéro invalide."
+msgstr "رقم غير صالح."
+
+msgid "Impossible d’enregistrer sur ce téléphone."
+msgstr "تعذّر الحفظ على هذا الهاتف."
+
+msgid "Contact enregistré sur ce téléphone"
+msgstr "حُفظت جهة الاتصال على هذا الهاتف"
+
+msgid "Message copié : colle-le dans ta messagerie"
+msgstr "نُسخت الرسالة: الصقها في تطبيق المراسلة"
+
+msgid "Économie de batterie"
+msgstr "توفير البطارية"
+
+msgid "Économie de batterie activée"
+msgstr "تم تفعيل توفير البطارية"
+
+msgid "Économie de batterie désactivée"
+msgstr "تم إيقاف توفير البطارية"
+
+msgid "Version {v}"
+msgstr "الإصدار {v}"
+
+msgid "Carte en direct des manifs (Cortège)"
+msgstr "خريطة المظاهرات المباشرة (Cortège)"
+
+msgid "Code copié"
+msgstr "تم نسخ الرمز"
+
+msgid "Batterie faible : active l’économie de batterie dans « Plus »"
+msgstr "البطارية ضعيفة: فعّل توفير البطارية في «المزيد»"
+
+msgid "Activées sur ce téléphone"
+msgstr "مفعّلة على هذا الهاتف"
+
+msgid "Pas encore activées"
+msgstr "غير مفعّلة بعد"
+
+msgid "Abonnement impossible."
+msgstr "تعذّر الاشتراك."
+
+msgid "Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée."
+msgstr "على iPhone، ثبّت التطبيق أولًا على الشاشة الرئيسية، ثم فعّل التنبيهات من التطبيق المثبّت."
+
+msgid "Envoi…"
+msgstr "جارٍ الإرسال…"
+
+msgid "Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone."
+msgstr "أرسلها الخادم. تصل خلال ثوانٍ (اقفل الهاتف لتراها كما في المظاهرة). لا شيء؟ تحقق من السماح بإشعارات المتصفح في إعدادات الهاتف."
+
+msgid "Pas de réseau : réessaie quand ça capte."
+msgstr "لا شبكة: أعد المحاولة عند توفر الشبكة."
+
+msgid "Sur iPhone : installe d’abord l’appli sur l’écran d’accueil."
+msgstr "على iPhone: ثبّت التطبيق أولًا على الشاشة الرئيسية."
+
+msgid "Notifications non prises en charge par ce navigateur."
+msgstr "هذا المتصفح لا يدعم الإشعارات."
+
+msgid "Notifications refusées : autorise-les dans les réglages du téléphone."
+msgstr "رُفضت الإشعارات: اسمح بها في إعدادات الهاتف."
+
+msgid "Notifications désactivées"
+msgstr "تم إيقاف الإشعارات"
+
+msgid "Alertes « danger près de toi » activées"
+msgstr "تم تفعيل تنبيهات «خطر قربك»"
+
+msgid "Annonces urgentes activées"
+msgstr "تم تفعيل الإعلانات العاجلة"
+
+msgid "Activé"
+msgstr "مفعّل"
+
+msgid "Désactivé"
+msgstr "متوقف"
+
+msgid "Activation impossible."
+msgstr "تعذّر التفعيل."
+
+msgid "rafale de petites vibrations"
+msgstr "سلسلة اهتزازات قصيرة"
+
+msgid "deux longues"
+msgstr "اهتزازتان طويلتان"
+
+msgid "trois longues"
+msgstr "ثلاث اهتزازات طويلة"
+
+msgid "deux moyennes"
+msgstr "اهتزازتان متوسطتان"
+
+msgid "trois moyennes"
+msgstr "ثلاث اهتزازات متوسطة"
+
+msgid "deux courtes puis une longue"
+msgstr "اهتزازتان قصيرتان ثم طويلة"
+
+msgid "deux courtes"
+msgstr "اهتزازتان قصيرتان"
+
+msgid "trois courtes"
+msgstr "ثلاث اهتزازات قصيرة"
+
+msgid "Essayer"
+msgstr "جرّب"
+
+msgid "Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications."
+msgstr "هذا الهاتف لا يسمح باهتزازات مخصّصة (وهذا حال أجهزة iPhone). على iPhone، ثبّت التطبيق أولًا على الشاشة الرئيسية لاستلام الإشعارات."
+
+msgid "{n} / {total} prêt"
+msgid_plural "{n} / {total} prêts"
+msgstr[0] "{n} / {total} جاهزة"
+msgstr[1] "{n} / {total} جاهز"
+msgstr[2] "{n} / {total} جاهزة"
+msgstr[3] "{n} / {total} جاهزة"
+msgstr[4] "{n} / {total} جاهزة"
+msgstr[5] "{n} / {total} جاهزة"
+
+msgid "Checklist remise à zéro"
+msgstr "تمت إعادة تعيين القائمة"
+
+msgid "Point de ralliement si on se perd en manif : {url}"
+msgstr "نقطة التجمّع إذا افترقنا في المظاهرة: {url}"
+
+msgid "Lien copié : colle-le dans ton groupe"
+msgstr "نُسخ الرابط: الصقه في مجموعتك"
+
+msgid "Point de ralliement"
+msgstr "نقطة التجمّع"
+
+msgid "🚩 Point de ralliement"
+msgstr "🚩 نقطة التجمّع"
+
+msgid "Visible seulement sur ton téléphone"
+msgstr "ظاهرة على هاتفك فقط"
+
+msgid "Partager"
+msgstr "مشاركة"
+
+msgid "Point de ralliement placé, à {d} de toi."
+msgstr "تم وضع نقطة التجمّع، على بعد {d} منك."
+
+msgid "Point de ralliement placé."
+msgstr "تم وضع نقطة التجمّع."
+
+msgid "Point de ralliement enregistré"
+msgstr "حُفظت نقطة التجمّع"
+
+msgid "Autour de ta position."
+msgstr "حول موقعك."
+
+msgid "Autour du centre de la carte. Active ta position pour voir ce qui te concerne."
+msgstr "حول وسط الخريطة. فعّل موقعك لترى ما يعنيك."
+
+msgid "Aucun arrêté connu ici. D’autres sont en vigueur ailleurs en France."
+msgstr "لا قرار معروف هنا. توجد قرارات أخرى سارية في أماكن أخرى من فرنسا."
+
+msgid "Aucune annonce d’orga dans cette zone pour l’instant."
+msgstr "لا إعلانات من المنظّمين في هذه المنطقة حاليًا."
+
+msgid "Mode manif. « Quitter » en haut pour revenir à l’appli complète."
+msgstr "وضع المظاهرة. «خروج» في الأعلى للعودة إلى التطبيق الكامل."
+
+msgid "{n} mètres"
+msgstr "{n} مترًا"
+
+msgid "{n} kilomètres"
+msgstr "{n} كيلومتر"
+
+msgid "Ce navigateur ne sait pas lire à voix haute."
+msgstr "هذا المتصفح لا يستطيع القراءة بصوت عالٍ."
+
+msgid "Alerte vocale activée"
+msgstr "تم تفعيل التنبيه الصوتي"
+
+msgid "Charge"
+msgstr "هجوم"
+
+msgid "Effacement…"
+msgstr "جارٍ المسح…"
+
+msgid "Garde le doigt appuyé 2 secondes pour tout effacer"
+msgstr "أبقِ إصبعك ضاغطًا لثانيتين لمسح كل شيء"
+
+msgid "Appuie encore une fois pour tout effacer"
+msgstr "اضغط مرة أخرى لمسح كل شيء"
+
+msgid "Dernière préparation : {date}"
+msgstr "آخر تحضير: {date}"
+
+msgid "Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie."
+msgstr "المنطقة كبيرة جدًا: كبّر على مدينتك أو على المسار ثم أعد المحاولة."
+
+msgid "Carte : {n} / {total} morceaux…"
+msgstr "الخريطة: {n} / {total} جزء…"
+
+msgid "Numéros, annonces, agenda et lieux…"
+msgstr "الأرقام والإعلانات والمواعيد والأماكن…"
+
+msgid "Ko"
+msgstr "ك.ب"
+
+msgid "Mo"
+msgstr "م.ب"
+
+msgid "Prêt : carte de la zone gardée ({size})"
+msgstr "جاهز: حُفظت خريطة المنطقة ({size})"
+
+msgid "Prêt"
+msgstr "جاهز"
+
+msgid "{n} numéro de legal team"
+msgid_plural "{n} numéros de legal team"
+msgstr[0] "{n} أرقام لفرق قانونية"
+msgstr[1] "رقم واحد لفريق قانوني"
+msgstr[2] "{n} أرقام لفرق قانونية"
+msgstr[3] "{n} أرقام لفرق قانونية"
+msgstr[4] "{n} أرقام لفرق قانونية"
+msgstr[5] "{n} أرقام لفرق قانونية"
+
+msgid "(le plus proche : {phone})"
+msgstr "(الأقرب: {phone})"
+
+msgid "annonces et agenda."
+msgstr "الإعلانات والمواعيد."
+
+msgid "{n} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau."
+msgstr "تعذّر حفظ {n} أجزاء من الخريطة، أعد المحاولة بشبكة أفضل."
+
+msgid "Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos."
+msgstr "إذا انقطعت الشبكة، سيفتح التطبيق رغم ذلك بهذه المعلومات."
+
+msgid "Pas encore confirmé. Confirme si tu le vois."
+msgstr "لم يتأكد بعد. أكّده إن رأيته."
+
+msgid "rafale très rapide"
+msgstr "سلسلة سريعة جدًا"
+
+msgid "trois courtes puis une longue"
+msgstr "ثلاث قصيرة ثم طويلة"
+
+msgid "une longue puis une courte"
+msgstr "طويلة ثم قصيرة"
+
+msgid "contributeurs OpenStreetMap"
+msgstr "مساهمو OpenStreetMap"
+
+# --- 04-serveur ---
+msgid "CRS / Gendarmes mobiles"
+msgstr "شرطة مكافحة الشغب (CRS / درك)"
+
+msgid "Police"
+msgstr "الشرطة"
+
+msgid "BAC / BRAV-M"
+msgstr "وحدات بلباس مدني أو دراجات (BAC، BRAV-M)"
+
+msgid "Nasse / encerclement"
+msgstr "تطويق / حصار"
+
+msgid "Interpellations"
+msgstr "اعتقالات"
+
+msgid "Lacrymo"
+msgstr "غاز مسيل للدموع"
+
+msgid "Canon à eau"
+msgstr "مدفع مياه"
+
+msgid "Point chaud"
+msgstr "نقطة ساخنة"
+
+msgid "Sommations"
+msgstr "إنذارات تفريق"
+
+msgid "Street medic"
+msgstr "مسعفو الشارع"
+
+msgid "Legal team / observateurs"
+msgstr "فريق قانوني / مراقبون"
+
+msgid "Presse"
+msgstr "صحافة"
+
+msgid "Zone calme / repli"
+msgstr "منطقة هادئة / انسحاب"
+
+msgid "Eau / sérum phy"
+msgstr "ماء / محلول ملحي"
+
+msgid "Tête de cortège"
+msgstr "مقدّمة المسيرة"
+
+msgid "Rue bloquée"
+msgstr "شارع مغلق"
+
+msgid "Blocus (lycée / fac)"
+msgstr "إغلاق (ثانوية / جامعة)"
+
+msgid "Manifestation"
+msgstr "مظاهرة"
+
+msgid "Rassemblement"
+msgstr "تجمّع"
+
+msgid "Assemblée générale"
+msgstr "جمعية عامة"
+
+msgid "Forces de l’ordre"
+msgstr "قوات الأمن"
+
+msgid "Danger"
+msgstr "خطر"
+
+msgid "Soutien"
+msgstr "دعم"
+
+msgid "Infos cortège"
+msgstr "معلومات المسيرة"
+
+msgid "Mairie"
+msgstr "البلدية"
+
+msgid "Préfecture"
+msgstr "المحافظة"
+
+msgid "Sous-préfecture"
+msgstr "محافظة فرعية"
+
+msgid "Commissariat"
+msgstr "مركز شرطة"
+
+msgid "Gendarmerie"
+msgstr "الدرك"
+
+msgid "Tribunal"
+msgstr "محكمة"
+
+msgid "Centre de rétention (CRA)"
+msgstr "مركز احتجاز إداري (CRA)"
+
+msgid "Hôpital"
+msgstr "مستشفى"
+
+msgid "Pharmacie"
+msgstr "صيدلية"
+
+msgid "Eau potable"
+msgstr "مياه الشرب"
+
+msgid "Caméra de surveillance"
+msgstr "كاميرا مراقبة"
+
+msgid "Manifestation interdite"
+msgstr "مظاهرة ممنوعة"
+
+msgid "Périmètre interdit"
+msgstr "محيط محظور"
+
+msgid "Couvre-feu"
+msgstr "حظر التجوّل"
+
+msgid "Transports"
+msgstr "النقل"
+
+msgid "Consigne"
+msgstr "تعليمات"
+
+msgid "Écris le message de l’annonce."
+msgstr "اكتب نص الإعلان."
+
+msgid "Numéro de téléphone invalide."
+msgstr "رقم هاتف غير صالح."
+
+msgid "Indique la ville de la legal team."
+msgstr "حدّد مدينة الفريق القانوني."
+
+msgid "Position invalide."
+msgstr "موقع غير صالح."
+
+msgid "Indique le nom du collectif."
+msgstr "حدّد اسم المجموعة."
+
+msgid "Indique la ville ou le secteur."
+msgstr "حدّد المدينة أو المنطقة."
+
+msgid "Donne le lien public du collectif (site, Instagram…), en https://"
+msgstr "أعطِ الرابط العلني للمجموعة (موقع، Instagram…) بصيغة https://"
+
+msgid "Indique le canal officiel du collectif où te confirmer la demande."
+msgstr "حدّد القناة الرسمية للمجموعة لتأكيد الطلب."
+
+msgid "Trop de demandes en attente, réessaie dans quelques jours."
+msgstr "طلبات معلّقة كثيرة، أعد المحاولة بعد أيام."
+
+msgid "Date invalide."
+msgstr "تاريخ غير صالح."
+
+msgid "Donne un titre (ex. : Blocus lycée Jean-Monnet)."
+msgstr "أعطِ عنوانًا (مثال: إغلاق ثانوية Jean-Monnet)."
+
+msgid "Indique le lieu de rendez-vous."
+msgstr "حدّد مكان التجمّع."
+
+msgid "Date invalide (dans les 3 prochains mois)."
+msgstr "تاريخ غير صالح (خلال الأشهر الثلاثة القادمة)."
+
+msgid "Parcours invalide."
+msgstr "مسار غير صالح."
+
+msgid "Trop d’envois d’un coup. Réessaie dans quelques minutes."
+msgstr "إرسالات كثيرة دفعة واحدة. أعد المحاولة بعد دقائق."
+
+msgid "Tu as déjà 3 propositions en attente de validation."
+msgstr "لديك 3 اقتراحات بانتظار الموافقة."
+
+msgid "Trop de propositions en attente, réessaie plus tard."
+msgstr "اقتراحات معلّقة كثيرة، أعد المحاولة لاحقًا."
+
+msgid "Introuvable."
+msgstr "غير موجود."
+
+msgid "Carte indisponible."
+msgstr "الخريطة غير متاحة."
+
+msgid "Requête refusée."
+msgstr "رُفض الطلب."
+
+msgid "Trop de demandes : réessaie dans quelques minutes."
+msgstr "طلبات كثيرة: أعد المحاولة بعد دقائق."
+
+msgid "Trop de demandes d’un coup. Réessaie plus tard."
+msgstr "طلبات كثيرة دفعة واحدة. أعد المحاولة لاحقًا."
+
+msgid "Service de notification non pris en charge."
+msgstr "خدمة الإشعارات غير مدعومة."
+
+msgid "Abonnement invalide."
+msgstr "اشتراك غير صالح."
+
+msgid "Trop de demandes, réessaie plus tard."
+msgstr "طلبات كثيرة، أعد المحاولة لاحقًا."
+
+msgid "Trop d’abonnements, réessaie plus tard."
+msgstr "اشتراكات كثيرة، أعد المحاولة لاحقًا."
+
+msgid "Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications."
+msgstr "هذا الهاتف غير مشترك على الخادم. أوقف الإشعارات ثم فعّلها مجددًا."
+
+msgid "Trois essais au plus toutes les 5 minutes."
+msgstr "ثلاث محاولات كحد أقصى كل 5 دقائق."
+
+msgid "Tape au moins 2 lettres."
+msgstr "اكتب حرفين على الأقل."
+
+msgid "Trop de recherches, patiente un peu."
+msgstr "عمليات بحث كثيرة، انتظر قليلًا."
+
+msgid "Recherche indisponible pour l’instant."
+msgstr "البحث غير متاح حاليًا."
+
+msgid "Signalement expiré."
+msgstr "انتهت صلاحية البلاغ."
+
+msgid "Annonce déjà retirée."
+msgstr "الإعلان محذوف سابقًا."
+
+msgid "Événement introuvable."
+msgstr "الفعالية غير موجودة."
+
+msgid "Déjà expiré."
+msgstr "منتهي الصلاحية سابقًا."
+
+msgid "Annonce introuvable."
+msgstr "الإعلان غير موجود."
+
+msgid "Catégorie inconnue."
+msgstr "فئة غير معروفة."
+
+msgid "Ce type de signalement est désactivé pour l’instant."
+msgstr "هذا النوع من البلاغات معطّل حاليًا."
+
+msgid "Signalement trop ancien, il n’a pas été publié."
+msgstr "البلاغ قديم جدًا، لم يُنشر."
+
+msgid "Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt."
+msgstr "البلاغات متوقفة لبضع دقائق (موجة بلاغات كاذبة). أعد المحاولة قريبًا."
+
+msgid "Trop de signalements d’un coup. Réessaie dans quelques minutes."
+msgstr "بلاغات كثيرة دفعة واحدة. أعد المحاولة بعد دقائق."
+
+msgid "Un danger est signalé à moins de 100 m : la zone ne peut pas être marquée calme."
+msgstr "يوجد خطر مُبلَّغ عنه على أقل من 100 م: لا يمكن وسم المنطقة بالهادئة."
+
+msgid "Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent."
+msgstr "بلاغات كثيرة من شبكتك في هذه المنطقة. أكّد البلاغات الموجودة بدلًا من ذلك."
+
+msgid "Zone saturée, réessaie dans quelques minutes."
+msgstr "المنطقة مزدحمة، أعد المحاولة بعد دقائق."
+
+msgid "Carte saturée, réessaie plus tard."
+msgstr "الخريطة مزدحمة، أعد المحاولة لاحقًا."
+
+msgid "Lien orga invalide ou expiré."
+msgstr "رابط المنظِّم غير صالح أو منتهٍ."
+
+msgid "Trop d’envois, patiente un peu."
+msgstr "إرسالات كثيرة، انتظر قليلًا."
+
+msgid "Déjà pris en compte."
+msgstr "تم احتسابه سابقًا."
+
+msgid "Trop de votes, patiente un peu."
+msgstr "أصوات كثيرة، انتظر قليلًا."
+
+msgid "Trop d’essais, réessaie dans quelques minutes."
+msgstr "محاولات كثيرة، أعد المحاولة بعد دقائق."
+
+msgid "Invitation invalide."
+msgstr "دعوة غير صالحة."
+
+msgid "Lien expiré ou déjà utilisé. Demande-en un nouveau."
+msgstr "الرابط منتهٍ أو مستخدم سابقًا. اطلب رابطًا جديدًا."
+
+msgid "Seules les orgas confirmées peuvent inviter."
+msgstr "وحدها الجهات المؤكَّدة يمكنها الدعوة."
+
+msgid "Donne un nom à l’orga invitée."
+msgstr "أعطِ اسمًا للجهة المدعوّة."
+
+msgid "Orga introuvable parmi tes invitées."
+msgstr "الجهة غير موجودة بين من دعوتهم."
+
+msgid "Déjà confirmée."
+msgstr "مؤكَّدة سابقًا."
+
+msgid "Pas encore prête : il faut au moins 7 jours, 10 actions et aucun incident. Seul·e l’admin peut la confirmer avant."
+msgstr "ليست جاهزة بعد: يلزم 7 أيام على الأقل و10 إجراءات ودون أي حادث. وحده المشرف يمكنه تأكيدها قبل ذلك."
+
+msgid "Pas possible pour un accès défini par l’admin dans les réglages du serveur."
+msgstr "غير ممكن لصلاحية حدّدها المشرف في إعدادات الخادم."
+
+msgid "Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info »."
+msgstr "لا يمكن نشر إعلانات عاجلة خلال الفترة التجريبية. انشره كـ«معلومة»."
+
+msgid "Événement déjà retiré."
+msgstr "الفعالية محذوفة سابقًا."
+
+msgid "Seule l’orga qui l’a publié peut le retirer."
+msgstr "وحدها الجهة التي نشرته يمكنها حذفه."
+
+msgid "Seul·e l’auteur·ice peut retirer cette annonce."
+msgstr "وحده كاتب الإعلان يمكنه حذفه."
+
+msgid "Seule l’orga qui l’a signalé peut le modifier."
+msgstr "وحدها الجهة التي أبلغت عنه يمكنها تعديله."
+
+msgid "Déjà prolongé au maximum."
+msgstr "ممدَّد إلى الحد الأقصى سابقًا."
+
+msgid "Déjà confirmé."
+msgstr "مؤكَّد سابقًا."
+
+msgid "Trop de retraits d’un coup : le retrait est suspendu quelques minutes."
+msgstr "عمليات حذف كثيرة دفعة واحدة: الحذف موقوف لبضع دقائق."
+
+msgid "Trop de retraits d’un coup : le retrait est suspendu quelques minutes. L’admin est prévenu·e."
+msgstr "عمليات حذف كثيرة دفعة واحدة: الحذف موقوف لبضع دقائق. تم إبلاغ المشرف."
+
+msgid "Une orga porte déjà ce nom."
+msgstr "توجد جهة تحمل هذا الاسم."
+
+msgid "Orga introuvable."
+msgstr "الجهة غير موجودة."
+
+msgid "Carte des mobilisations"
+msgstr "خريطة التحركات"
+
+msgid "Unités d’intervention (BRI, RAID, GIGN)"
+msgstr "وحدات التدخّل (BRI، RAID، GIGN)"
+
+msgid "Blindé (Centaure, VBRG)"
+msgstr "مدرّعة (Centaure، VBRG)"
+
+msgid "Tirs LBD / grenades"
+msgstr "إطلاق LBD / قنابل"
+
+msgid "Militaires (Sentinelle)"
+msgstr "عسكريون (عملية Sentinelle)"
+
+# --- 05-v26 ---
+msgid "Cortège · Carte des manifs en direct, sans compte"
+msgstr "Cortège · خريطة المظاهرات مباشرة، بلا حساب"
+
+msgid "Tout l’agenda"
+msgstr "كل المواعيد"
+
+msgid "＋ Annoncer une manif"
+msgstr "＋ أعلن عن مظاهرة"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📣</span><span><b>Organiser une manif</b><small>L’annoncer dans l’agenda de Cortège</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">📣</span><span><b>نظّم مظاهرة</b><small>أعلن عنها في مواعيد Cortège</small></span>"
+
+msgid "<b>Nouveaux arrêtés dans ta zone</b><span>Manif interdite, périmètre interdit, couvre-feu… dès qu’un arrêté de ta zone est ajouté à Cortège.</span>"
+msgstr "<b>قرارات جديدة في منطقتك</b><span>مظاهرة ممنوعة، محيط ممنوع، حظر تجوّل… فور إضافة قرار يخص منطقتك إلى Cortège.</span>"
+
+msgid "Alertes « nouvel arrêté » activées"
+msgstr "تنبيهات «قرار جديد» مفعّلة"
+
+msgid "{x} près de ta zone"
+msgstr "{x} قرب منطقتك"
+
+msgid "Signalé à l’instant. Ouvre Cortège pour voir où exactement."
+msgstr "أُبلغ عنه للتو. افتح Cortège لترى المكان بالضبط."
+
+msgid "National"
+msgstr "وطني"
+
+msgid "Demain : {t}"
+msgstr "غدًا: {t}"
+
+msgid "Journée de mobilisation {d}. Ouvre Cortège pour voir l’agenda et les numéros utiles."
+msgstr "يوم تعبئة {d}. افتح Cortège لترى المواعيد والأرقام المفيدة."
+
+msgid "Test Cortège"
+msgstr "اختبار Cortège"
+
+msgid "Les notifications marchent : tu seras prévenu·e ici."
+msgstr "الإشعارات تعمل: ستصلك التنبيهات هنا."
+
+msgid "Nouvel arrêté à partir du {d}. Ouvre Cortège pour voir la zone et la source."
+msgstr "قرار جديد ابتداءً من {d}. افتح Cortège لترى المنطقة والمصدر."
+
+msgid "{n} nouveaux arrêtés dans ta zone"
+msgstr "{n} قرارات جديدة في منطقتك"
+
+# --- 06-v263 ---
+msgid "Milice / groupe fasciste"
+msgstr "ميليشيا / جماعة فاشية"
+
+msgid "une longue, deux courtes, une longue"
+msgstr "واحد طويل، اثنان قصيران، واحد طويل"
+
+msgid "Combien, direction, armes visibles. Pas de nom ni de photo."
+msgstr "كم عددهم، الاتجاه، أسلحة ظاهرة. لا أسماء ولا صور."
+
+msgid "Attaque d’un groupe fasciste"
+msgstr "هجوم من جماعة فاشية"
+
+msgid "<b>Reste groupé·e</b> et ne pars pas seul·e : les attaques visent d’abord les personnes isolées, y compris après la manif."
+msgstr "<b>ابقَ ضمن مجموعة</b> ولا تغادر وحدك: تستهدف الاعتداءات أولًا الأشخاص المنعزلين، حتى بعد المظاهرة."
+
+msgid "Va vers le service d’ordre, les street medics ou un endroit fréquenté."
+msgstr "توجّه نحو فريق التنظيم أو المسعفين الميدانيين أو مكان مزدحم."
+
+msgid "<b>Signale-les sur la carte</b> (☠️) pour prévenir les autres : combien, direction, armes visibles. Pas de nom ni de photo de personnes."
+msgstr "<b>أبلغ عنهم على الخريطة</b> (☠️) لتحذير الآخرين: كم عددهم، الاتجاه، أسلحة ظاهرة. لا أسماء ولا صور لأشخاص."
+
+msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, va au commissariat ou écris au procureur de la République ; la legal team peut t’aider."
+msgstr "إذا أُصبت: اتصل بالرقم <b>15</b> أو <b>112</b>. لتقديم شكوى، توجّه إلى مركز الشرطة أو راسل المدعي العام (procureur de la République)؛ يمكن للفريق القانوني مساعدتك."
+
+# --- 07-v265 ---
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée."
+msgstr "فترة تجريبية: «تحقّق» يُحتسب تأكيدًا قويًا و«إزالة» يُحتسب بلاغَي «لم يعد هنا». تظهر إعلاناتك وأرقام الفريق القانوني والفعاليات بعد موافقة الإدارة. تأتي الإعلانات العاجلة وعلامة «تم التحقق» بعد تأكيد المنظمة."
+
+msgid "En attente de validation par l’admin : pas encore visible"
+msgstr "بانتظار موافقة الإدارة: غير ظاهر بعد"
+
+msgid "Annonce envoyée : elle s’affichera après validation par l’admin"
+msgstr "تم إرسال الإعلان: سيظهر بعد موافقة الإدارة"
+
+msgid "Trop de vérifications d’un coup : c’est suspendu quelques minutes. L’admin est prévenu·e."
+msgstr "عدد كبير جدًا من عمليات التحقق دفعة واحدة: متوقف لبضع دقائق. تم إبلاغ الإدارة."
+
+# --- 08-v27 ---
+msgid "Queue de cortège"
+msgstr "مؤخرة المسيرة"
+
+msgid "En direct : position partagée par {who}"
+msgstr "مباشر: موقع يشاركه {who}"
+
+msgid "Avance {dir}, environ {v} km/h"
+msgstr "تتقدّم {dir}، نحو {v} كم/س"
+
+msgid "vers le nord"
+msgstr "نحو الشمال"
+
+msgid "vers le nord-est"
+msgstr "نحو الشمال الشرقي"
+
+msgid "vers l’est"
+msgstr "نحو الشرق"
+
+msgid "vers le sud-est"
+msgstr "نحو الجنوب الشرقي"
+
+msgid "vers le sud"
+msgstr "نحو الجنوب"
+
+msgid "vers le sud-ouest"
+msgstr "نحو الجنوب الغربي"
+
+msgid "vers l’ouest"
+msgstr "نحو الغرب"
+
+msgid "vers le nord-ouest"
+msgstr "نحو الشمال الغربي"
+
+msgid "{n} min"
+msgstr "{n} د"
+
+msgid "{h} h {m}"
+msgstr "{h} س {m}"
+
+msgid "Parcours « {title} » : {p} % fait"
+msgstr "المسار «{title}»: أُنجز {p}٪"
+
+msgid "fin dans environ {d}"
+msgstr "ينتهي بعد نحو {d}"
+
+msgid "Arrive près de toi dans environ {d}"
+msgstr "تصل قربك بعد نحو {d}"
+
+msgid "Cortège : environ {d}"
+msgstr "المسيرة: نحو {d}"
+
+msgid "Ma position en direct"
+msgstr "موقعي المباشر"
+
+msgid "Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt."
+msgstr "ليعثروا عليك بسهولة: تتحدّث نقطتك تلقائيًا كل 30 ثانية ما دام التطبيق مفتوحًا على هذا الهاتف. وتختفي بعد 3 دقائق من الإيقاف."
+
+msgid "Je suis"
+msgstr "أنا"
+
+msgid "Pendant"
+msgstr "لمدة"
+
+msgid "📣 la tête de cortège"
+msgstr "📣 مقدمة المسيرة"
+
+msgid "🔚 la queue de cortège"
+msgstr "🔚 مؤخرة المسيرة"
+
+msgid "⛑️ street medic"
+msgstr "⛑️ مسعف ميداني"
+
+msgid "⚖️ legal team"
+msgstr "⚖️ الفريق القانوني"
+
+msgid "🎥 presse"
+msgstr "🎥 صحافة"
+
+msgid "1 h"
+msgstr "1 س"
+
+msgid "2 h"
+msgstr "2 س"
+
+msgid "4 h"
+msgstr "4 س"
+
+msgid "Partager ma position"
+msgstr "مشاركة موقعي"
+
+msgid "Arrêter le partage"
+msgstr "إيقاف المشاركة"
+
+msgid "En attente de ta position…"
+msgstr "بانتظار موقعك…"
+
+msgid "Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte."
+msgstr "تمت مشاركة الموقع عند {h}، حتى {end}. أبقِ التطبيق مفتوحًا."
+
+msgid "Partage arrêté : ton point disparaît de la carte."
+msgstr "توقّفت المشاركة: تختفي نقطتك من الخريطة."
+
+msgid "Partage de position terminé"
+msgstr "انتهت مشاركة الموقع"
+
+msgid "Active d’abord ta position (bouton ◎)"
+msgstr "فعّل موقعك أولًا (زر ◎)"
+
+msgid "Le partage de position est réservé aux orgas confirmées."
+msgstr "مشاركة الموقع مخصّصة للمنظمات المؤكَّدة فقط."
+
+msgid "Rôle inconnu."
+msgstr "دور غير معروف."
+
+# --- 09-v271 ---
+msgid "Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus."
+msgstr "حتى لا يُكشف أبدًا إلى أين تذهب بعد المظاهرة: تتوقف المشاركة تلقائيًا إذا ابتعدت أكثر من 2 كم، أو إذا لم تؤكد كل 30 دقيقة أنك ما زلت هناك، وبعد 4 ساعات كحدّ أقصى."
+
+msgid "30 min"
+msgstr "30 د"
+
+msgid "Position partagée en direct"
+msgstr "الموقع مُشارَك مباشرة"
+
+msgid "Oui, je continue"
+msgstr "نعم، أواصل"
+
+msgid "Arrêter"
+msgstr "إيقاف"
+
+msgid "Plus rien autour de toi : tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}."
+msgstr "لا شيء حولك الآن: هل ما زلت في المظاهرة؟ دون رد، تتوقف المشاركة بعد {d}."
+
+msgid "Tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}."
+msgstr "هل ما زلت في المظاهرة؟ دون رد، تتوقف المشاركة بعد {d}."
+
+msgid "Position partagée en direct ({role})"
+msgstr "الموقع مُشارَك مباشرة ({role})"
+
+msgid "Pas de réponse : partage de position arrêté"
+msgstr "لا رد: توقفت مشاركة الموقع"
+
+msgid "Partage prolongé, merci"
+msgstr "تستمر المشاركة، شكرًا"
+
+msgid "Tu t’es éloigné·e de plus de 2 km de la manif : partage de position arrêté."
+msgstr "ابتعدت أكثر من 2 كم عن المظاهرة: توقفت مشاركة الموقع."
+
+msgid "Partage arrêté au bout de 4 h. Relance-le si besoin."
+msgstr "توقفت المشاركة بعد 4 ساعات. أعد تشغيلها إن لزم."
+
+msgid "Cortège : environ {d} à vol d’oiseau"
+msgstr "المسيرة: نحو {d} في خط مستقيم"
+
+# --- 10-v28 ---
+msgid "l’admin : viens me voir pour un accès orga"
+msgstr "المسؤول: تعال لرؤيتي للحصول على وصول منظمة"
+
+msgid "Message affiché sur ton point (facultatif)"
+msgstr "رسالة تظهر على نقطتك (اختياري)"
+
+msgid "ex. : devant la fontaine, viens me voir"
+msgstr "مثال: أمام النافورة، تعال لرؤيتي"
+
+msgid "Point de rencontre orga"
+msgstr "نقطة لقاء المنظمات"
+
+msgid "Type inconnu."
+msgstr "نوع غير معروف."
+
+# --- 11-v210 ---
+msgid "Déplacer"
+msgstr "نقل"
+
+msgid "Retirer ma voix"
+msgstr "سحب بلاغي"
+
+msgid "Retirer (erreur)"
+msgstr "إزالة (خطأ)"
+
+msgid "Tu as envoyé ce signalement."
+msgstr "أنت أرسلت هذا البلاغ."
+
+msgid "Ta voix est retirée, le point reste pour les autres"
+msgstr "سُحب بلاغك، وتبقى النقطة للآخرين"
+
+msgid "Point déplacé"
+msgstr "نُقلت النقطة"
+
+msgid "Fais glisser le point à sa place (150 m au plus)"
+msgstr "اسحب النقطة إلى مكانها (150 م كحد أقصى)"
+
+msgid "Seul le téléphone qui l’a envoyé peut le retirer ou le déplacer, et seulement le jour même."
+msgstr "فقط الهاتف الذي أرسله يمكنه إزالته أو نقله، وفي اليوم نفسه فقط."
+
+msgid "Trop d’essais, patiente un peu."
+msgstr "محاولات كثيرة، انتظر قليلًا."
+
+msgid "Vérifié par une orga : le point reste sur la carte."
+msgstr "تحقّق منه منظِّم: تبقى النقطة على الخريطة."
+
+msgid "D’autres l’ont déjà confirmé : il ne peut plus être déplacé."
+msgstr "أكّده آخرون بالفعل: لم يعد ممكنًا نقله."
+
+msgid "Trop tard : un point ne se déplace que dans les 10 minutes."
+msgstr "فات الأوان: لا يمكن نقل النقطة إلا خلال 10 دقائق."
+
+msgid "Trop loin : 150 m au plus. Retire-le et signale-le au bon endroit."
+msgstr "بعيد جدًا: 150 م كحد أقصى. أزله وأبلغ عنه في المكان الصحيح."
+
+msgid "Action inconnue."
+msgstr "إجراء غير معروف."
+
+# --- 12-v210b ---
+msgid "Temps réel indisponible, interrogation régulière."
+msgstr "التحديث المباشر غير متاح، يجري التحقق بانتظام."
+
+msgid "Donne un titre à la journée (affiché en bandeau)."
+msgstr "أعطِ اليوم عنوانًا (يظهر كشريط)."
+
+msgid "Zone :"
+msgstr "المنطقة:"
+
+msgid "Invitations suspendues jusqu’au"
+msgstr "الدعوات معلّقة حتى"
+
+msgid "Réservé à l’admin."
+msgstr "للمشرف فقط."
+
+msgid "Inconnu."
+msgstr "غير معروف."
+
+msgid "Bilan non publié."
+msgstr "الحصيلة غير منشورة."
+
+msgid "Les points de cette journée ne sont plus disponibles."
+msgstr "لم تعد نقاط هذا اليوم متاحة."
+
+msgid "Points invalides."
+msgstr "نقاط غير صالحة."
+
+msgid "Pas de carte hébergée."
+msgstr "لا توجد خريطة مستضافة."
+
+msgid "Trop loin."
+msgstr "بعيد جدًا."
+
+msgid "Trop de demandes."
+msgstr "طلبات كثيرة جدًا."
+
+msgid "Pas de chemin trouvé."
+msgstr "لم يُعثر على مسار."
+
+msgid "Digest désactivé : ajoute ADMIN_KEY dans les variables du serveur."
+msgstr "الملخص معطّل: أضف ADMIN_KEY إلى متغيرات الخادم."
+
+msgid "Clé incorrecte."
+msgstr "مفتاح غير صحيح."
+

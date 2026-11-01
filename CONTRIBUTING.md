@@ -8,6 +8,10 @@ Ouvre une « issue » avec le modèle qui correspond (bug ou idée). Plus c'est 
 
 **Une faille de sécurité ne se signale jamais dans une issue publique** : voir [SECURITY.md](SECURITY.md).
 
+## Traduire
+
+Un fichier par langue dans [`i18n/`](i18n/LISEZMOI.md), au format PO (Poedit, Weblate). Pour ajouter une langue, copie `i18n/cortege.pot`, traduis, et propose le fichier : pas besoin de toucher au code.
+
 ## Proposer du code
 
 1. Fais un fork, puis une branche pour ton changement.

@@ -1,0 +1,2712 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Cortège\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Language-Name: Français\n"
+"X-Locale: fr-FR\n"
+
+# --- 01-page ---
+msgid "Carte de la manifestation"
+msgstr ""
+
+msgid "Soutenir Cortège sur Ko-fi"
+msgstr ""
+
+msgid "Installer l’appli"
+msgstr ""
+
+msgid "Chercher une ville"
+msgstr ""
+
+msgid "Me localiser"
+msgstr ""
+
+msgid "Ce que montre la carte"
+msgstr ""
+
+msgid "Espace orga"
+msgstr ""
+
+msgid "Interpellation : prévenir un proche"
+msgstr ""
+
+msgid "Navigation"
+msgstr ""
+
+msgid "SOS : prévenir un proche"
+msgstr ""
+
+msgid "Fermer"
+msgstr ""
+
+msgid "Signalements affichés"
+msgstr ""
+
+msgid "ex. : Montpellier, Lyon 7e, place de la République"
+msgstr ""
+
+msgid "QR code vers l’appli Cortège"
+msgstr ""
+
+msgid "ex. : Legal Team Montpellier"
+msgstr ""
+
+msgid "ex. : Montpellier"
+msgstr ""
+
+msgid "adresse ou compte publié par le collectif, pas un contact perso"
+msgstr ""
+
+msgid "ex. : 2019"
+msgstr ""
+
+msgid "ex. : syndicat local"
+msgstr ""
+
+msgid "ex. : permanence jusqu’à 22 h"
+msgstr ""
+
+msgid "Nom affiché, ex. : Legal Team Nîmes"
+msgstr ""
+
+msgid "Nom de l’orga invitée"
+msgstr ""
+
+msgid "Zone"
+msgstr ""
+
+msgid "ex. : Blocus lycée Jean-Monnet"
+msgstr ""
+
+msgid "ex. : place de la Comédie"
+msgstr ""
+
+msgid "ex. : Sam"
+msgstr ""
+
+msgid "Qui est interpellé·e ?"
+msgstr ""
+
+msgid "Ajouter une précision (facultatif)"
+msgstr ""
+
+msgid "Cortège <span class=\"by\">par <b class=\"handle\">@neru</b></span>"
+msgstr ""
+
+msgid "<span class=\"dot\"></span><span class=\"txt\">Connexion…</span>"
+msgstr ""
+
+msgid "Soutenir"
+msgstr ""
+
+msgid "Mode manif"
+msgstr ""
+
+msgid "Quitter"
+msgstr ""
+
+msgid "Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable."
+msgstr ""
+
+msgid "Touche la carte : le premier point est le rendez-vous, les suivants tracent le parcours (facultatif)."
+msgstr ""
+
+msgid "Aucun point"
+msgstr ""
+
+msgid "↶ Retirer"
+msgstr ""
+
+msgid "Effacer"
+msgstr ""
+
+msgid "Terminé"
+msgstr ""
+
+msgid "Carte"
+msgstr ""
+
+msgid "Infos"
+msgstr ""
+
+msgid "Signaler"
+msgstr ""
+
+msgid "Droits"
+msgstr ""
+
+msgid "Plus"
+msgstr ""
+
+msgid "Signalements"
+msgstr ""
+
+msgid "Sur la carte"
+msgstr ""
+
+msgid "Arrêtés et restrictions"
+msgstr ""
+
+msgid "Tous les arrêtés en France"
+msgstr ""
+
+msgid "Annonces des orgas"
+msgstr ""
+
+msgid "Agenda"
+msgstr ""
+
+msgid "Rien d’annoncé à moins de 50 km."
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span>"
+msgstr ""
+
+msgid "<b>Cortège est gratuit et sans pub.</b> Tes dons servent à l’améliorer."
+msgstr ""
+
+msgid "Qu’est-ce qui se passe ici ?"
+msgstr ""
+
+msgid "Place le viseur au bon endroit sur la carte, puis choisis."
+msgstr ""
+
+msgid "Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class=\"inline-link\" href=\"/legal.html#regles\">Règles</a>"
+msgstr ""
+
+msgid "En attente de réseau"
+msgstr ""
+
+msgid "Ces signalements partent dès que ton téléphone capte. S’ils ont dépassé leur durée de vie entre-temps, ils ne sont pas publiés."
+msgstr ""
+
+msgid "Tout est parti."
+msgstr ""
+
+msgid "Réessayer maintenant"
+msgstr ""
+
+msgid "Aller à une ville"
+msgstr ""
+
+msgid "Ville, quartier ou adresse"
+msgstr ""
+
+msgid "Signalements dans la zone affichée"
+msgstr ""
+
+msgid "Rien de signalé pour l’instant. Appuie sur « Signaler » pour ajouter le premier point."
+msgstr ""
+
+msgid "Soutenir Cortège"
+msgstr ""
+
+msgid "Gratuit, sans pub, sans pistage. Tes dons servent à améliorer le projet."
+msgstr ""
+
+msgid "Faire un don sur Ko-fi"
+msgstr ""
+
+msgid "<b>Suivre <span class=\"handle\">@neru</span> sur Instagram</b><small>Pas un accident. Un système. Une chronique chaque jour.</small>"
+msgstr ""
+
+msgid "Suivre"
+msgstr ""
+
+msgid "<b>Passer en mode manif</b><small>Carte, Signaler, SOS et legal team. Rien d’autre.</small>"
+msgstr ""
+
+msgid "Avant de partir"
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🎒</span><span><b>Se préparer</b><small>La checklist</small></span>"
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📶</span><span><b>Prêt pour la manif</b><small>Carte et numéros sans réseau</small></span>"
+msgstr ""
+
+msgid "Installer l’appli sur mon téléphone"
+msgstr ""
+
+msgid "Alertes"
+msgstr ""
+
+msgid "Notifications, vibrations et voix"
+msgstr ""
+
+msgid "Faire grandir Cortège"
+msgstr ""
+
+msgid "<b>Partager</b><small>QR code à scanner</small>"
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🖨</span><span><b>Affiche</b><small>À imprimer pour ta ville</small></span>"
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🧩</span><span><b>Sur ton site</b><small>Intégrer la carte</small></span>"
+msgstr ""
+
+msgid "<b>Code ouvert</b><small>Sur GitHub</small>"
+msgstr ""
+
+msgid "Legal team, street medics, collectif ?"
+msgstr ""
+
+msgid "Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone."
+msgstr ""
+
+msgid "Demander un accès orga"
+msgstr ""
+
+msgid "Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule."
+msgstr ""
+
+msgid "Comment ça marche"
+msgstr ""
+
+msgid "<b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres."
+msgstr ""
+
+msgid "<b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor."
+msgstr ""
+
+msgid "<b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer."
+msgstr ""
+
+msgid "<b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone."
+msgstr ""
+
+msgid "<b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone."
+msgstr ""
+
+msgid "<b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque."
+msgstr ""
+
+msgid "Avec Tor."
+msgstr ""
+
+msgid "Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) :"
+msgstr ""
+
+msgid "copier"
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span>"
+msgstr ""
+
+msgid "Nouveautés"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Réglages"
+msgstr ""
+
+msgid "🔔 Alertes et notifications"
+msgstr ""
+
+msgid "🎒 Bien se préparer"
+msgstr ""
+
+msgid "<b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span>"
+msgstr ""
+
+msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
+msgstr ""
+
+msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
+msgstr ""
+
+msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
+msgstr ""
+
+msgid "Efface le contact SOS, la checklist, le point de ralliement, les réglages, la carte gardée hors ligne et l’accès orga, puis ferme Cortège. L’historique du navigateur n’est pas effacé : vide-le aussi depuis ses réglages."
+msgstr ""
+
+msgid "<a class=\"inline-link\" href=\"/legal.html\">Mentions légales, confidentialité et règles d’utilisation</a>"
+msgstr ""
+
+msgid "Cortège est un projet de <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a>"
+msgstr ""
+
+msgid "Fais scanner ce code"
+msgstr ""
+
+msgid "Partager le lien"
+msgstr ""
+
+msgid "Copier le lien"
+msgstr ""
+
+msgid "Monte la luminosité de ton écran. Le code s’affiche même sans réseau ; la personne en face aura besoin de data pour ouvrir l’appli la première fois."
+msgstr ""
+
+msgid "Cortège est un projet de"
+msgstr ""
+
+# --- 02-page ---
+msgid "Lieux sur la carte"
+msgstr ""
+
+msgid "<b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span>"
+msgstr ""
+
+msgid "Pharmacie de garde : appelle le 3237. Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
+msgstr ""
+
+msgid "Le détail de chaque version est sur GitHub (fichier CHANGELOG)."
+msgstr ""
+
+msgid "La carte sur ton site"
+msgstr ""
+
+msgid "Pour un média, un collectif ou un syndicat : la carte en direct de la zone affichée, en lecture seule, à coller dans une page web. Elle ne demande pas la position des visiteur·ices."
+msgstr ""
+
+msgid "Copier le code"
+msgstr ""
+
+msgid "Aperçu"
+msgstr ""
+
+msgid "Devenir orga certifiée"
+msgstr ""
+
+msgid "Pour les collectifs : legal teams, street medics, orgas de manif, syndicats. Chaque demande est vérifiée par les canaux publics du collectif, et l’accès est remis au collectif, jamais à une personne seule."
+msgstr ""
+
+msgid "Nom du collectif"
+msgstr ""
+
+msgid "Ville ou secteur"
+msgstr ""
+
+msgid "Rôle"
+msgstr ""
+
+msgid "Legal team"
+msgstr ""
+
+msgid "Street medics"
+msgstr ""
+
+msgid "Orga de manif"
+msgstr ""
+
+msgid "Syndicat"
+msgstr ""
+
+msgid "Média indépendant"
+msgstr ""
+
+msgid "Autre"
+msgstr ""
+
+msgid "Site ou compte public du collectif"
+msgstr ""
+
+msgid "Canal officiel où te confirmer la demande"
+msgstr ""
+
+msgid "Existe depuis"
+msgstr ""
+
+msgid "Orga qui peut se porter garante (facultatif)"
+msgstr ""
+
+msgid "Un mot (facultatif)"
+msgstr ""
+
+msgid "Envoyer la demande"
+msgstr ""
+
+msgid "Ces infos servent seulement à vérifier le collectif. Elles sont effacées dès que la demande est traitée, et au plus tard au bout de 30 jours."
+msgstr ""
+
+msgid "Aucun numéro de legal team connu pour l’instant. Demande-le aux orgas de ton cortège."
+msgstr ""
+
+msgid "Écris le numéro au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré."
+msgstr ""
+
+msgid "Autres villes"
+msgstr ""
+
+msgid "<b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span>"
+msgstr ""
+
+msgid "<b>Signaler une violence policière</b> <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>"
+msgstr ""
+
+msgid "En cas de"
+msgstr ""
+
+msgid "Sommations et dispersion"
+msgstr ""
+
+msgid "Un attroupement peut être dispersé par la force après <b>deux sommations</b> restées sans effet. Elles sont annoncées par haut-parleur ou par un signal (fusée rouge, signal sonore)."
+msgstr ""
+
+msgid "Rester volontairement dans un attroupement <b>après les sommations</b> est un délit."
+msgstr ""
+
+msgid "<b>Si tu les entends :</b> éloigne-toi par une rue dégagée, sans courir vers les forces de l’ordre."
+msgstr ""
+
+msgid "Contrôle d’identité"
+msgstr ""
+
+msgid "Tu dois justifier ton identité <b>par tout moyen</b> : carte d’identité, passeport, permis, voire un témoin. Avoir une pièce sur toi n’est pas obligatoire, mais ça évite d’être retenu·e."
+msgstr ""
+
+msgid "Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche."
+msgstr ""
+
+msgid "Garde à vue"
+msgstr ""
+
+msgid "<b>Droit de te taire.</b> Tu donnes ton identité, et tu peux ne rien dire d’autre."
+msgstr ""
+
+msgid "<b>Demande un·e avocat·e tout de suite</b>, dès le début. Si tu n’en connais pas, un·e avocat·e commis·e d’office est gratuit·e."
+msgstr ""
+
+msgid "Droit de faire prévenir un proche et ton employeur, de voir un médecin, d’avoir un·e interprète."
+msgstr ""
+
+msgid "Durée : 24 heures, prolongeable une fois de 24 heures pour la plupart des délits."
+msgstr ""
+
+msgid "<b>Ne signe rien</b> que tu n’as pas lu et compris. Tu peux refuser de signer un procès-verbal."
+msgstr ""
+
+msgid "Ton téléphone"
+msgstr ""
+
+msgid "Refuser de donner le code de déverrouillage peut, dans certains cas, être poursuivi (Cour de cassation, 2022)."
+msgstr ""
+
+msgid "<b>Avant de partir :</b> verrouille ton téléphone avec un code plutôt qu’avec l’empreinte ou le visage, et masque le contenu des notifications sur l’écran verrouillé."
+msgstr ""
+
+msgid "Pense aussi à sauvegarder tes photos ailleurs que sur le téléphone : il peut être saisi ou cassé."
+msgstr ""
+
+msgid "Filmer"
+msgstr ""
+
+msgid "Filmer les forces de l’ordre en intervention est <b>légal</b>."
+msgstr ""
+
+msgid "Diffuser des éléments permettant d’identifier un agent dans le but qu’on lui porte atteinte est un délit."
+msgstr ""
+
+msgid "Floute les visages avant de publier, ceux des manifestant·es aussi."
+msgstr ""
+
+msgid "Visage couvert"
+msgstr ""
+
+msgid "Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit. La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer."
+msgstr ""
+
+msgid "Après une interpellation"
+msgstr ""
+
+msgid "En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Demande-le."
+msgstr ""
+
+msgid "Blessé·e : fais établir un <b>certificat médical</b> au plus vite, garde photos et témoignages, contacte ta legal team."
+msgstr ""
+
+msgid "Victime ou témoin de violences : <a class=\"inline-link violence-inline\" href=\"https://www.ldh-france.org/stop-violences-policieres/\" target=\"_blank\" rel=\"noopener noreferrer\">signale-les à la LDH</a>."
+msgstr ""
+
+msgid "Informations générales sur le droit français, pas un conseil juridique. En cas d’interpellation, la seule personne à qui parler de l’affaire est ton avocat·e."
+msgstr ""
+
+msgid "Efface tout ce que Cortège garde sur ce téléphone, puis ferme l’appli."
+msgstr ""
+
+msgid "<span>Décryptage des luttes chaque jour : <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a></span> <a href=\"https://neru.tv\" target=\"_blank\" rel=\"noopener noreferrer\">neru.tv</a>"
+msgstr ""
+
+msgid "Tu publies en tant que"
+msgstr ""
+
+msgid "L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier."
+msgstr ""
+
+msgid "⚠ Ton accès orga n’existe que sur cet appareil."
+msgstr ""
+
+msgid "Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, « effacer l’historique »), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir."
+msgstr ""
+
+msgid "Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien."
+msgstr ""
+
+msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton plus bas)."
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Annonce"
+msgstr ""
+
+msgid "Numéro legal team"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Importance"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+msgid "Urgent (vibre + notification)"
+msgstr ""
+
+msgid "Annonce nationale (toute la France)"
+msgstr ""
+
+msgid "Ville"
+msgstr ""
+
+msgid "Numéro de téléphone"
+msgstr ""
+
+msgid "Précision (facultatif)"
+msgstr ""
+
+msgid "Durée"
+msgstr ""
+
+msgid "Le numéro apparaît dans « Mes droits » sous le nom de la ville, pour tout le monde (en premier pour les personnes les plus proches), jusqu’à ce que tu le retires."
+msgstr ""
+
+msgid "Publier"
+msgstr ""
+
+msgid "Publier une manif ou un blocus (avec parcours)"
+msgstr ""
+
+msgid "Annonces actives dans la zone"
+msgstr ""
+
+msgid "Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux."
+msgstr ""
+
+msgid "Inviter une orga"
+msgstr ""
+
+msgid "Tu peux faire entrer une orga que tu connais (3 par semaine). Elle restera « parrainée » et plus surveillée jusqu’à ce que toi ou l’admin la confirmiez. Si elle est révoquée pour abus, tu ne pourras plus inviter pendant 30 jours : n’invite que des personnes de confiance."
+msgstr ""
+
+msgid "Créer l’invitation"
+msgstr ""
+
+msgid "Mes orgas invitées"
+msgstr ""
+
+msgid "Envoyer…"
+msgstr ""
+
+msgid "Mes appareils"
+msgstr ""
+
+msgid "Ajouter un appareil"
+msgstr ""
+
+msgid "Quitter le mode orga sur ce téléphone"
+msgstr ""
+
+msgid "Alertes sur ton téléphone"
+msgstr ""
+
+msgid "Une notification même quand l’appli est fermée. Le serveur ne connaît que ta zone, arrondie à environ 10 km, jamais ta position."
+msgstr ""
+
+msgid "<b>Annonces urgentes</b><span>Quand une orga de ta zone publie une alerte urgente (nasse annoncée, dispersion, legal team…).</span>"
+msgstr ""
+
+msgid "<b>Dangers signalés près de toi</b><span>Charge, tirs, milices fascistes, nasse, lacrymo, canon à eau, sommations, BAC, unités d’intervention, blindés… signalés dans ta zone. Au plus une alerte toutes les 3 minutes.</span>"
+msgstr ""
+
+msgid "Recevoir une notification de test"
+msgstr ""
+
+msgid "Le serveur t’envoie une vraie notification, comme pendant une manif. Mets le son ou le vibreur : en silencieux complet, le téléphone ne vibre pas."
+msgstr ""
+
+msgid "Alerte vocale"
+msgstr ""
+
+msgid "<b>Annoncer les dangers à voix haute</b><span>Quand l’appli est ouverte, un danger signalé près de toi est lu à voix haute : pratique avec des écouteurs, sans regarder l’écran. La voix est celle du téléphone, rien ne part sur Internet.</span>"
+msgstr ""
+
+msgid "Écouter un exemple"
+msgstr ""
+
+msgid "Reconnaître le danger aux vibrations"
+msgstr ""
+
+msgid "Chaque danger a sa vibration, dans l’appli comme dans les notifications : pas besoin de sortir le téléphone."
+msgstr ""
+
+msgid "Les iPhone ne vibrent pas selon le type de danger (limite d’Apple). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications."
+msgstr ""
+
+msgid "Bien se préparer"
+msgstr ""
+
+msgid "Checklist gardée sur ton téléphone."
+msgstr ""
+
+msgid "1. Le sac"
+msgstr ""
+
+msgid "Chaussures fermées"
+msgstr ""
+
+msgid "Vêtements couvrants"
+msgstr ""
+
+msgid "Lunettes de protection"
+msgstr ""
+
+msgid "Masques FFP2 ou FFP3"
+msgstr ""
+
+msgid "Sérum physiologique en dosettes"
+msgstr ""
+
+msgid "Eau et de quoi manger"
+msgstr ""
+
+msgid "Numéros notés sur papier : proche, avocat·e, legal team"
+msgstr ""
+
+msgid "Batterie externe"
+msgstr ""
+
+msgid "<b>Point légal :</b> masque, sérum et lunettes dans le sac ne sont pas une infraction. Ils peuvent quand même être confisqués."
+msgstr ""
+
+msgid "Lunettes plutôt que lentilles, pas de crème grasse : le gaz s’y accroche."
+msgstr ""
+
+msgid "2. Le téléphone"
+msgstr ""
+
+msgid "Signal installé"
+msgstr ""
+
+msgid "<b>Bitchat</b> installé : messagerie en Bluetooth, sans réseau"
+msgstr ""
+
+msgid "Sauvegarde faite"
+msgstr ""
+
+msgid "Déverrouillage par code, pas par empreinte ni visage"
+msgstr ""
+
+msgid "Appli prête sans réseau (carte, numéros, agenda) ·"
+msgstr ""
+
+msgid "le faire"
+msgstr ""
+
+msgid "Un proche prévenu ·"
+msgstr ""
+
+msgid "contact SOS"
+msgstr ""
+
+msgid "3. Le groupe"
+msgstr ""
+
+msgid "En binôme au minimum"
+msgstr ""
+
+msgid "Point de ralliement fixé"
+msgstr ""
+
+msgid "Eau, sérum et soins répartis"
+msgstr ""
+
+msgid "Aucun point de ralliement."
+msgstr ""
+
+msgid "Placer sur la carte"
+msgstr ""
+
+msgid "Partager au groupe"
+msgstr ""
+
+msgid "Le point reste sur ton téléphone, sauf si tu le partages."
+msgstr ""
+
+msgid "4. Sur place"
+msgstr ""
+
+msgid "Ne ramasse jamais une grenade ni un projectile."
+msgstr ""
+
+msgid "Filmer la police est légal. Floute les manifestant·es avant de publier."
+msgstr ""
+
+msgid "Blessé·e : street medic ou 112."
+msgstr ""
+
+msgid "5. Gaz lacrymogène"
+msgstr ""
+
+msgid "Rince les yeux à l’eau ou au sérum, sans frotter."
+msgstr ""
+
+msgid "Retire les vêtements touchés, lave la peau à l’eau et au savon."
+msgstr ""
+
+msgid "Gêne qui dure : street medic ou 112."
+msgstr ""
+
+msgid "6. Interpellation : AMIS"
+msgstr ""
+
+msgid "<b>A</b>vocat·e dès le début."
+msgstr ""
+
+msgid "<b>M</b>édecin : examen sur demande."
+msgstr ""
+
+msgid "<b>I</b>nformer un proche."
+msgstr ""
+
+msgid "<b>S</b>ilence, après avoir donné ton identité."
+msgstr ""
+
+msgid "Aucune signature d’un procès-verbal inexact."
+msgstr ""
+
+msgid "Refuser photo, empreintes ou ADN est un délit en soi."
+msgstr ""
+
+msgid "Tous mes droits"
+msgstr ""
+
+msgid "Tout décocher pour la prochaine manif"
+msgstr ""
+
+msgid "Déplace la carte pour mettre le viseur sur le point de ralliement."
+msgstr ""
+
+msgid "Annuler"
+msgstr ""
+
+msgid "Valider ce point"
+msgstr ""
+
+msgid "Prochaines mobilisations"
+msgstr ""
+
+msgid "Près de toi (50 km)"
+msgstr ""
+
+msgid "Toute la France"
+msgstr ""
+
+msgid "Proposer un blocus ou une manif"
+msgstr ""
+
+msgid "Les propositions sont vérifiées avant d’apparaître. Les orgas publient directement depuis leur espace."
+msgstr ""
+
+msgid "Publier un événement"
+msgstr ""
+
+msgid "Titre"
+msgstr ""
+
+msgid "Date et heure"
+msgstr ""
+
+msgid "Lieu de rendez-vous"
+msgstr ""
+
+msgid "Placer le rendez-vous sur la carte"
+msgstr ""
+
+msgid "Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours."
+msgstr ""
+
+msgid "Le dernier point du parcours est la dispersion"
+msgstr ""
+
+msgid "Aucun arrêté ni restriction connus en ce moment."
+msgstr ""
+
+msgid "Signaler un arrêté ou un couvre-feu"
+msgstr ""
+
+msgid "Annonces des préfectures et des mairies, vérifiées avant d’apparaître. Elles ne remplacent pas le texte officiel : ouvre la source en cas de doute."
+msgstr ""
+
+msgid "Signaler un arrêté"
+msgstr ""
+
+msgid "Département"
+msgstr ""
+
+msgid "Commune (vide : tout le département)"
+msgstr ""
+
+msgid "À partir de"
+msgstr ""
+
+msgid "Jusqu’à"
+msgstr ""
+
+msgid "Ajouter une mesure"
+msgstr ""
+
+msgid "Source (obligatoire)"
+msgstr ""
+
+msgid "Lien vers le site de la préfecture ou de la mairie, leur compte officiel, ou un article de presse. Sans source fiable, la proposition est refusée."
+msgstr ""
+
+msgid "Envoyer pour vérification"
+msgstr ""
+
+msgid "Choisis la personne à prévenir <b>avant la manif</b>. Son numéro reste sur ton téléphone : Cortège ne le voit jamais."
+msgstr ""
+
+msgid "Prénom ou surnom"
+msgstr ""
+
+msgid "Son numéro"
+msgstr ""
+
+msgid "Enregistrer"
+msgstr ""
+
+msgid "C’est moi"
+msgstr ""
+
+msgid "Quelqu’un de mon groupe"
+msgstr ""
+
+msgid "Message (tu peux le modifier)"
+msgstr ""
+
+msgid "Envoyer par SMS à"
+msgstr ""
+
+msgid "Envoyer par une autre appli (Signal…)"
+msgstr ""
+
+msgid "Le message part de ton téléphone, avec ton forfait : rien ne passe par Cortège. Après une interpellation, ton téléphone peut t’être retiré : envoie-le dès que tu peux, ou demande à quelqu’un de ton groupe de le faire."
+msgstr ""
+
+msgid "Changer de contact"
+msgstr ""
+
+msgid "Signalé"
+msgstr ""
+
+msgid "Ajouter une précision"
+msgstr ""
+
+msgid "Ajouter"
+msgstr ""
+
+msgid "Pas de nom, pas de description physique, pas de matricule."
+msgstr ""
+
+msgid "Cortège"
+msgstr ""
+
+msgid "La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Sans compte, sans pistage, partout en France. Par @neru."
+msgstr ""
+
+# --- 03-app ---
+msgid "Adresse .onion copiée"
+msgstr ""
+
+msgid "à l’instant"
+msgstr ""
+
+msgid "il y a {m} min"
+msgstr ""
+
+msgid "{m} min"
+msgstr ""
+
+msgid "Zone calme · {d}"
+msgstr ""
+
+msgid "(flèche : nord en haut)"
+msgstr ""
+
+msgid "Zone calme la plus proche à {d}. Afficher sur la carte."
+msgstr ""
+
+msgid "Merci : le danger voisin est signalé comme parti"
+msgstr ""
+
+msgid "revu {ago}"
+msgstr ""
+
+msgid "expire dans {d}"
+msgstr ""
+
+msgid "Signalé par {n} personnes"
+msgstr ""
+
+msgid "Vérifié par {who}"
+msgstr ""
+
+msgid "une orga"
+msgstr ""
+
+msgid "Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)"
+msgstr ""
+
+msgid "{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant."
+msgstr ""
+
+msgid "{what} à {d} : zone pas sûre pour l’instant."
+msgstr ""
+
+msgid "C’est calme ici"
+msgstr ""
+
+msgid "Contesté : {n} personne dit que c’est parti. Confirme si c’est toujours là."
+msgid_plural "Contesté : {n} personnes disent que c’est parti. Confirme si c’est toujours là."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Précision"
+msgstr ""
+
+msgid "Toujours là"
+msgstr ""
+
+msgid "Seulement sur place"
+msgstr ""
+
+msgid "Pas sur place"
+msgstr ""
+
+msgid "Plus là"
+msgstr ""
+
+msgid "Tu es à {d} : seules les personnes sur place peuvent dire que c’est parti."
+msgstr ""
+
+msgid "Tu es sur place et tu ne vois plus rien ? Appuie sur « Plus là »."
+msgstr ""
+
+msgid "Vérifié"
+msgstr ""
+
+msgid "Vérifier (orga)"
+msgstr ""
+
+msgid "Retirer (faux)"
+msgstr ""
+
+msgid "Confirmer le retrait"
+msgstr ""
+
+msgid "Prolonger"
+msgstr ""
+
+msgid "Modifier"
+msgstr ""
+
+msgid "Précision (vide = aucune)"
+msgstr ""
+
+msgid "Réseau faible : mode léger activé (seuls les signalements passent)"
+msgstr ""
+
+msgid "Nouvelle version de Cortège"
+msgstr ""
+
+msgid "Mettre à jour"
+msgstr ""
+
+msgid "Mise à jour de Cortège…"
+msgstr ""
+
+msgid "En pause"
+msgstr ""
+
+msgid "En direct · mode léger"
+msgstr ""
+
+msgid "En direct"
+msgstr ""
+
+msgid "Reconnexion…"
+msgstr ""
+
+msgid "Hors ligne, nouvel essai…"
+msgstr ""
+
+msgid "Connexion instable…"
+msgstr ""
+
+msgid "il y a {h} h {m}"
+msgstr ""
+
+msgid "Pas de réseau"
+msgstr ""
+
+msgid "Réseau très faible"
+msgstr ""
+
+msgid "dernière situation connue {ago}"
+msgstr ""
+
+msgid "Réseau faible : mode léger · mis à jour {ago}"
+msgstr ""
+
+msgid "Sommations à {d} : rester devient un délit. Éloigne-toi par une rue dégagée."
+msgstr ""
+
+msgid "{what} à {d} de toi"
+msgstr ""
+
+msgid "Sommations à {d}. Éloigne-toi par une rue dégagée."
+msgstr ""
+
+msgid "{what}, à {d}"
+msgstr ""
+
+msgid "La carte te suit"
+msgstr ""
+
+msgid "Me recentrer"
+msgstr ""
+
+msgid "Géolocalisation indisponible sur cet appareil."
+msgstr ""
+
+msgid "Localisation refusée. Tu peux quand même signaler avec le viseur."
+msgstr ""
+
+msgid "Recherche de ta position…"
+msgstr ""
+
+msgid "Recherche…"
+msgstr ""
+
+msgid "Recherche indisponible."
+msgstr ""
+
+msgid "Aucun lieu trouvé en France."
+msgstr ""
+
+msgid "Pas de réseau."
+msgstr ""
+
+msgid "🏢 Préfectures et sous-préfectures"
+msgstr ""
+
+msgid "🏛 Mairies"
+msgstr ""
+
+msgid "👮 Commissariats et gendarmeries"
+msgstr ""
+
+msgid "🔨 Tribunaux"
+msgstr ""
+
+msgid "🔒 Centres de rétention"
+msgstr ""
+
+msgid "🏥 Hôpitaux"
+msgstr ""
+
+msgid "💊 Pharmacies"
+msgstr ""
+
+msgid "🚰 Eau potable"
+msgstr ""
+
+msgid "📷 Caméras de surveillance"
+msgstr ""
+
+msgid "lun"
+msgstr ""
+
+msgid "mar"
+msgstr ""
+
+msgid "mer"
+msgstr ""
+
+msgid "jeu"
+msgstr ""
+
+msgid "ven"
+msgstr ""
+
+msgid "sam"
+msgstr ""
+
+msgid "dim"
+msgstr ""
+
+msgid "fériés"
+msgstr ""
+
+msgid "Ouvert 24 h/24, 7 j/7"
+msgstr ""
+
+msgid "fermé"
+msgstr ""
+
+msgid "Caméra dôme (peut tourner dans tous les sens)"
+msgstr ""
+
+msgid "Caméra fixe"
+msgstr ""
+
+msgid "Caméra orientable"
+msgstr ""
+
+msgid "Caméra publique"
+msgstr ""
+
+msgid "Caméra privée"
+msgstr ""
+
+msgid "Vidéosurveillance de la voie publique"
+msgstr ""
+
+msgid "Caméra privée qui filme la rue"
+msgstr ""
+
+msgid "Exploitée par :"
+msgstr ""
+
+msgid ", orientée vers {dir}"
+msgstr ""
+
+msgid "Orientée vers {dir}."
+msgstr ""
+
+msgid "Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
+msgstr ""
+
+msgid "© contributeurs OpenStreetMap"
+msgstr ""
+
+msgid "le nord"
+msgstr ""
+
+msgid "le nord-est"
+msgstr ""
+
+msgid "l’est"
+msgstr ""
+
+msgid "le sud-est"
+msgstr ""
+
+msgid "le sud"
+msgstr ""
+
+msgid "le sud-ouest"
+msgstr ""
+
+msgid "l’ouest"
+msgstr ""
+
+msgid "le nord-ouest"
+msgstr ""
+
+msgid "Lieu"
+msgstr ""
+
+msgid "Pharmacie de garde (nuit, dimanche, jour férié) : appelle le"
+msgstr ""
+
+msgid "🚑 Service d’urgences"
+msgstr ""
+
+msgid "Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112."
+msgstr ""
+
+msgid "Fontaine saisonnière : peut être coupée en hiver."
+msgstr ""
+
+msgid "Lieu permanent · © contributeurs OpenStreetMap"
+msgstr ""
+
+msgid "📅 Agenda"
+msgstr ""
+
+msgid "Manifs, blocus et rassemblements du moment, avec leur parcours"
+msgstr ""
+
+msgid "Choisir les types de lieux"
+msgstr ""
+
+msgid "🏛 Lieux utiles"
+msgstr ""
+
+msgid "Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
+msgstr ""
+
+msgid "Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque."
+msgstr ""
+
+msgid "Caméras affichées : zoome au plus près pour les voir"
+msgstr ""
+
+msgid "Visible en zoomant au plus près. Rouge : publique. Orange : privée, filme la rue. Le cône montre la direction filmée quand elle est connue. Recensement bénévole et incomplet."
+msgstr ""
+
+msgid "Visible au zoom rue"
+msgstr ""
+
+msgid "Visible au zoom quartier"
+msgstr ""
+
+msgid "Visible au zoom ville"
+msgstr ""
+
+msgid "Zoome sur l’endroit exact (ou active ta position) avant de signaler."
+msgstr ""
+
+msgid "Le viseur est sur ta position. Déplace la carte si c’est ailleurs."
+msgstr ""
+
+msgid "déjà là · {ago} · confirmer"
+msgstr ""
+
+msgid ", déjà signalé, appuyer pour confirmer"
+msgstr ""
+
+msgid "{what} : signalé et vérifié (orga)"
+msgstr ""
+
+msgid "{what} : signalé"
+msgstr ""
+
+msgid "Tu l’avais déjà signalé : point mis à jour"
+msgstr ""
+
+msgid "Déjà signalé : ta confirmation est ajoutée ({n} personnes)"
+msgstr ""
+
+msgid "Envoi impossible. Réessaie."
+msgstr ""
+
+msgid "{n} signalement en attente de réseau"
+msgid_plural "{n} signalements en attente de réseau"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Annuler ce signalement"
+msgstr ""
+
+msgid "Trop ancien, ne sera pas publié"
+msgstr ""
+
+msgid "fait {ago}"
+msgstr ""
+
+msgid "Toujours pas de réseau."
+msgstr ""
+
+msgid "Signalement en attente envoyé"
+msgid_plural "{n} signalements en attente envoyés"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "1 trop ancien, pas publié"
+msgid_plural "{n} trop anciens, pas publiés"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Pas de réseau : signalement gardé, il partira dès que ça capte."
+msgstr ""
+
+msgid "ex. : une vingtaine, remontent vers la gare"
+msgstr ""
+
+msgid "ex. : le nuage s’étend vers la place"
+msgstr ""
+
+msgid "ex. : sous l’abribus, côté nord"
+msgstr ""
+
+msgid "ex. : barrières, passage par la rue d’à côté"
+msgstr ""
+
+msgid "Écris une précision."
+msgstr ""
+
+msgid "Envoi impossible."
+msgstr ""
+
+msgid "Précision ajoutée"
+msgstr ""
+
+msgid "Vote impossible."
+msgstr ""
+
+msgid "Merci, signalement prolongé"
+msgstr ""
+
+msgid "Merci, c’est noté"
+msgstr ""
+
+msgid "{n} personnes"
+msgstr ""
+
+msgid "Appli installée sur ton écran d’accueil"
+msgstr ""
+
+msgid "Tu es dans le navigateur d’une appli (Instagram, TikTok…), qui ne peut pas installer Cortège. Touche le menu <b>⋯</b> en haut à droite puis <b>Ouvrir dans le navigateur</b>, et recommence depuis là."
+msgstr ""
+
+msgid "Sur iPhone, dans <b>Safari</b> : touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>."
+msgstr ""
+
+msgid "Ouvre le menu de ton navigateur (<b>⋮</b>) puis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>."
+msgstr ""
+
+msgid "Masquer cette annonce"
+msgstr ""
+
+msgid "toute la France"
+msgstr ""
+
+msgid "En savoir plus →"
+msgstr ""
+
+msgid "+ {n} autre annonce"
+msgid_plural "+ {n} autres annonces"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "ici"
+msgstr ""
+
+msgid "à {d} km"
+msgstr ""
+
+msgid "Autour de ce point"
+msgstr ""
+
+msgid "Appeler"
+msgstr ""
+
+msgid "Copier"
+msgstr ""
+
+msgid "Numéro copié"
+msgstr ""
+
+msgid "Annuaire"
+msgstr ""
+
+msgid "vérifié le {date}"
+msgstr ""
+
+msgid "source"
+msgstr ""
+
+msgid "Pour la mobilisation · publié {ago}"
+msgstr ""
+
+msgid "Joignable sur Signal"
+msgstr ""
+
+msgid "Aucune legal team connue près de toi · la plus proche : {city} ({d})"
+msgstr ""
+
+msgid "Autres villes ({n})"
+msgstr ""
+
+msgid "La carte en direct des manifs, par @{h}"
+msgstr ""
+
+msgid "Lien copié"
+msgstr ""
+
+msgid "Action impossible."
+msgstr ""
+
+msgid "ORGA · essai"
+msgstr ""
+
+msgid "Publier une manif ou un blocus"
+msgstr ""
+
+msgid "Invitation impossible."
+msgstr ""
+
+msgid "Appareil ajouté à l’espace orga {who}"
+msgstr ""
+
+msgid "Bienvenue {who} : ton accès orga est activé sur ce téléphone"
+msgstr ""
+
+msgid "Pas de réseau : rouvre l’invitation quand ça capte."
+msgstr ""
+
+msgid "Mode orga : {who}"
+msgstr ""
+
+msgid "Prolongé : expire dans {d}"
+msgstr ""
+
+msgid "Signalement corrigé"
+msgstr ""
+
+msgid "Signalement marqué vérifié"
+msgstr ""
+
+msgid "Signalement retiré"
+msgstr ""
+
+msgid "Pris en compte : vaut deux « Plus là » (période d’essai)"
+msgstr ""
+
+msgid "Toutes les annonces actives"
+msgstr ""
+
+msgid "Tes annonces actives"
+msgstr ""
+
+msgid "Annonces actives ici"
+msgstr ""
+
+msgid "Aucune annonce publiée."
+msgstr ""
+
+msgid "Aucune annonce active ici."
+msgstr ""
+
+msgid "Retirer"
+msgstr ""
+
+msgid "Annonce retirée"
+msgstr ""
+
+msgid "visible partout, rangé par ville"
+msgstr ""
+
+msgid "permanent"
+msgstr ""
+
+msgid "(valable jusqu’au {date}, une seule fois)"
+msgstr ""
+
+msgid "Lien à usage unique, à ouvrir sur le bon appareil :"
+msgstr ""
+
+msgid "Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien."
+msgstr ""
+
+msgid "{n} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès."
+msgstr ""
+
+msgid "Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil."
+msgstr ""
+
+msgid "Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus."
+msgstr ""
+
+msgid "Aucune orga invitée pour l’instant."
+msgstr ""
+
+msgid "confirmée"
+msgstr ""
+
+msgid "invitation en attente"
+msgstr ""
+
+msgid "invitation expirée"
+msgstr ""
+
+msgid "prête à être confirmée"
+msgstr ""
+
+msgid "parrainée · {d} j · {n} action(s)"
+msgstr ""
+
+msgid "Dernières actions"
+msgstr ""
+
+msgid "Confirmer cette orga"
+msgstr ""
+
+msgid "{who} est confirmée"
+msgstr ""
+
+msgid "Nouvelle invitation (accès perdu)"
+msgstr ""
+
+msgid "Nouvelle invitation"
+msgstr ""
+
+msgid "Confirmer : son accès actuel sera coupé"
+msgstr ""
+
+msgid "Invitation pour {who}"
+msgstr ""
+
+msgid "Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé."
+msgstr ""
+
+msgid "L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr ""
+
+msgid "Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga."
+msgstr ""
+
+msgid "Envoi impossible, réessaie."
+msgstr ""
+
+msgid "Demande envoyée : on te recontacte par le canal du collectif"
+msgstr ""
+
+msgid "Pas de réseau : réessaie plus tard"
+msgstr ""
+
+msgid "Numéro envoyé : il s’affichera après validation par l’admin"
+msgstr ""
+
+msgid "Annonce publiée"
+msgstr ""
+
+msgid "Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)"
+msgstr ""
+
+msgid "Mode orga désactivé sur ce téléphone"
+msgstr ""
+
+msgid "Publié par {who}"
+msgstr ""
+
+msgid "Voir la carte d’origine →"
+msgstr ""
+
+msgid "Retirer cet événement"
+msgstr ""
+
+msgid "Événement retiré"
+msgstr ""
+
+msgid "Dispersion prévue"
+msgstr ""
+
+msgid "Dispersion prévue : {title}"
+msgstr ""
+
+msgid "Aucune mobilisation annoncée pour l’instant."
+msgstr ""
+
+msgid "Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France »."
+msgstr ""
+
+msgid "Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France »."
+msgstr ""
+
+msgid "{n} événements : les 200 premiers"
+msgstr ""
+
+msgid "En cours"
+msgstr ""
+
+msgid "Information"
+msgstr ""
+
+msgid "{day} à {hour}"
+msgstr ""
+
+msgid "jusqu’au {date}"
+msgstr ""
+
+msgid "{day} de {from} à {to}"
+msgstr ""
+
+msgid "du {from} au {to}"
+msgstr ""
+
+msgid "{name} (tout le département)"
+msgstr ""
+
+msgid "Masquer ce bandeau"
+msgstr ""
+
+msgid "Arrêté en vigueur"
+msgstr ""
+
+msgid "Arrêté à venir"
+msgstr ""
+
+msgid "+{n} autre"
+msgid_plural "+{n} autres"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "touche pour les détails"
+msgstr ""
+
+msgid "Voir la zone sur la carte"
+msgstr ""
+
+msgid "Source :"
+msgstr ""
+
+msgid "ouvrir"
+msgstr ""
+
+msgid "Ici"
+msgstr ""
+
+msgid "Ailleurs en France"
+msgstr ""
+
+msgid "En France"
+msgstr ""
+
+msgid "Choisir…"
+msgstr ""
+
+msgid "Type de mesure"
+msgstr ""
+
+msgid "ex. : la manifestation de samedi est interdite"
+msgstr ""
+
+msgid "Mesure"
+msgstr ""
+
+msgid "Décris au moins une mesure."
+msgstr ""
+
+msgid "Indique le début et la fin."
+msgstr ""
+
+msgid "Merci ! L’arrêté apparaîtra une fois la source vérifiée."
+msgstr ""
+
+msgid "Pas de réseau : réessaie plus tard."
+msgstr ""
+
+msgid "Rendez-vous placé"
+msgstr ""
+
+msgid "Rendez-vous + {n} point de parcours"
+msgid_plural "Rendez-vous + {n} points de parcours"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Rendez-vous placé, sans parcours."
+msgstr ""
+
+msgid "Rendez-vous placé, parcours de {d}."
+msgstr ""
+
+msgid "Modifier sur la carte"
+msgstr ""
+
+msgid "Proposer une mobilisation"
+msgstr ""
+
+msgid "Envoyer la proposition"
+msgstr ""
+
+msgid "Place d’abord le rendez-vous sur la carte."
+msgstr ""
+
+msgid "Choisis la date et l’heure."
+msgstr ""
+
+msgid "Événement publié"
+msgstr ""
+
+msgid "Proposition envoyée : elle apparaîtra après vérification"
+msgstr ""
+
+msgid "Pas de réseau. Rien n’est parti."
+msgstr ""
+
+msgid "Je viens d’être interpellé·e ({hour})"
+msgstr ""
+
+msgid "Quelqu’un de mon groupe vient d’être interpellé·e ({hour})"
+msgstr ""
+
+msgid "ici : {url}"
+msgstr ""
+
+msgid "Préviens la legal team : {phone} ({name})."
+msgstr ""
+
+msgid "Préviens la legal team de la manif."
+msgstr ""
+
+msgid "Message envoyé avec Cortège."
+msgstr ""
+
+msgid "Numéro invalide."
+msgstr ""
+
+msgid "Impossible d’enregistrer sur ce téléphone."
+msgstr ""
+
+msgid "Contact enregistré sur ce téléphone"
+msgstr ""
+
+msgid "Message copié : colle-le dans ta messagerie"
+msgstr ""
+
+msgid "Économie de batterie"
+msgstr ""
+
+msgid "Économie de batterie activée"
+msgstr ""
+
+msgid "Économie de batterie désactivée"
+msgstr ""
+
+msgid "Version {v}"
+msgstr ""
+
+msgid "Carte en direct des manifs (Cortège)"
+msgstr ""
+
+msgid "Code copié"
+msgstr ""
+
+msgid "Batterie faible : active l’économie de batterie dans « Plus »"
+msgstr ""
+
+msgid "Activées sur ce téléphone"
+msgstr ""
+
+msgid "Pas encore activées"
+msgstr ""
+
+msgid "Abonnement impossible."
+msgstr ""
+
+msgid "Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée."
+msgstr ""
+
+msgid "Envoi…"
+msgstr ""
+
+msgid "Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone."
+msgstr ""
+
+msgid "Pas de réseau : réessaie quand ça capte."
+msgstr ""
+
+msgid "Sur iPhone : installe d’abord l’appli sur l’écran d’accueil."
+msgstr ""
+
+msgid "Notifications non prises en charge par ce navigateur."
+msgstr ""
+
+msgid "Notifications refusées : autorise-les dans les réglages du téléphone."
+msgstr ""
+
+msgid "Notifications désactivées"
+msgstr ""
+
+msgid "Alertes « danger près de toi » activées"
+msgstr ""
+
+msgid "Annonces urgentes activées"
+msgstr ""
+
+msgid "Activé"
+msgstr ""
+
+msgid "Désactivé"
+msgstr ""
+
+msgid "Activation impossible."
+msgstr ""
+
+msgid "rafale de petites vibrations"
+msgstr ""
+
+msgid "deux longues"
+msgstr ""
+
+msgid "trois longues"
+msgstr ""
+
+msgid "deux moyennes"
+msgstr ""
+
+msgid "trois moyennes"
+msgstr ""
+
+msgid "deux courtes puis une longue"
+msgstr ""
+
+msgid "deux courtes"
+msgstr ""
+
+msgid "trois courtes"
+msgstr ""
+
+msgid "Essayer"
+msgstr ""
+
+msgid "Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications."
+msgstr ""
+
+msgid "{n} / {total} prêt"
+msgid_plural "{n} / {total} prêts"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Checklist remise à zéro"
+msgstr ""
+
+msgid "Point de ralliement si on se perd en manif : {url}"
+msgstr ""
+
+msgid "Lien copié : colle-le dans ton groupe"
+msgstr ""
+
+msgid "Point de ralliement"
+msgstr ""
+
+msgid "🚩 Point de ralliement"
+msgstr ""
+
+msgid "Visible seulement sur ton téléphone"
+msgstr ""
+
+msgid "Partager"
+msgstr ""
+
+msgid "Point de ralliement placé, à {d} de toi."
+msgstr ""
+
+msgid "Point de ralliement placé."
+msgstr ""
+
+msgid "Point de ralliement enregistré"
+msgstr ""
+
+msgid "Autour de ta position."
+msgstr ""
+
+msgid "Autour du centre de la carte. Active ta position pour voir ce qui te concerne."
+msgstr ""
+
+msgid "Aucun arrêté connu ici. D’autres sont en vigueur ailleurs en France."
+msgstr ""
+
+msgid "Aucune annonce d’orga dans cette zone pour l’instant."
+msgstr ""
+
+msgid "Mode manif. « Quitter » en haut pour revenir à l’appli complète."
+msgstr ""
+
+msgid "{n} mètres"
+msgstr ""
+
+msgid "{n} kilomètres"
+msgstr ""
+
+msgid "Ce navigateur ne sait pas lire à voix haute."
+msgstr ""
+
+msgid "Alerte vocale activée"
+msgstr ""
+
+msgid "Charge"
+msgstr ""
+
+msgid "Effacement…"
+msgstr ""
+
+msgid "Garde le doigt appuyé 2 secondes pour tout effacer"
+msgstr ""
+
+msgid "Appuie encore une fois pour tout effacer"
+msgstr ""
+
+msgid "Dernière préparation : {date}"
+msgstr ""
+
+msgid "Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie."
+msgstr ""
+
+msgid "Carte : {n} / {total} morceaux…"
+msgstr ""
+
+msgid "Numéros, annonces, agenda et lieux…"
+msgstr ""
+
+msgid "Ko"
+msgstr ""
+
+msgid "Mo"
+msgstr ""
+
+msgid "Prêt : carte de la zone gardée ({size})"
+msgstr ""
+
+msgid "Prêt"
+msgstr ""
+
+msgid "{n} numéro de legal team"
+msgid_plural "{n} numéros de legal team"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "(le plus proche : {phone})"
+msgstr ""
+
+msgid "annonces et agenda."
+msgstr ""
+
+msgid "{n} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau."
+msgstr ""
+
+msgid "Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos."
+msgstr ""
+
+msgid "Pas encore confirmé. Confirme si tu le vois."
+msgstr ""
+
+msgid "rafale très rapide"
+msgstr ""
+
+msgid "trois courtes puis une longue"
+msgstr ""
+
+msgid "une longue puis une courte"
+msgstr ""
+
+msgid "contributeurs OpenStreetMap"
+msgstr ""
+
+# --- 04-serveur ---
+#. Type de signalement : unités de police et de gendarmerie spécialisées dans le maintien de l'ordre. Traduire par l'équivalent local (riot police…).
+msgid "CRS / Gendarmes mobiles"
+msgstr ""
+
+#. Type de signalement : police en uniforme.
+msgid "Police"
+msgstr ""
+
+#. Type de signalement : policiers en civil (BAC) ou à moto (BRAV-M), souvent les plus violents. Équivalent local : plainclothes / bike units…
+msgid "BAC / BRAV-M"
+msgstr ""
+
+#. Type de signalement : les forces de l'ordre encerclent la foule et l'empêchent de sortir (kettling).
+msgid "Nasse / encerclement"
+msgstr ""
+
+msgid "Interpellations"
+msgstr ""
+
+msgid "Lacrymo"
+msgstr ""
+
+msgid "Canon à eau"
+msgstr ""
+
+msgid "Point chaud"
+msgstr ""
+
+#. Type de signalement : l'ordre officiel de dispersion avant une charge (dispersal order).
+msgid "Sommations"
+msgstr ""
+
+#. Type de signalement : secouristes bénévoles des manifestations.
+msgid "Street medic"
+msgstr ""
+
+#. Type de signalement : équipe juridique bénévole et observateurs (legal observers).
+msgid "Legal team / observateurs"
+msgstr ""
+
+msgid "Presse"
+msgstr ""
+
+msgid "Zone calme / repli"
+msgstr ""
+
+#. Type de signalement : point d'eau ou de sérum physiologique (contre les gaz).
+msgid "Eau / sérum phy"
+msgstr ""
+
+msgid "Tête de cortège"
+msgstr ""
+
+msgid "Rue bloquée"
+msgstr ""
+
+msgid "Blocus (lycée / fac)"
+msgstr ""
+
+msgid "Manifestation"
+msgstr ""
+
+msgid "Rassemblement"
+msgstr ""
+
+msgid "Assemblée générale"
+msgstr ""
+
+msgid "Forces de l’ordre"
+msgstr ""
+
+msgid "Danger"
+msgstr ""
+
+msgid "Soutien"
+msgstr ""
+
+msgid "Infos cortège"
+msgstr ""
+
+msgid "Mairie"
+msgstr ""
+
+msgid "Préfecture"
+msgstr ""
+
+msgid "Sous-préfecture"
+msgstr ""
+
+msgid "Commissariat"
+msgstr ""
+
+msgid "Gendarmerie"
+msgstr ""
+
+msgid "Tribunal"
+msgstr ""
+
+msgid "Centre de rétention (CRA)"
+msgstr ""
+
+msgid "Hôpital"
+msgstr ""
+
+msgid "Pharmacie"
+msgstr ""
+
+msgid "Eau potable"
+msgstr ""
+
+msgid "Caméra de surveillance"
+msgstr ""
+
+msgid "Manifestation interdite"
+msgstr ""
+
+msgid "Périmètre interdit"
+msgstr ""
+
+msgid "Couvre-feu"
+msgstr ""
+
+msgid "Transports"
+msgstr ""
+
+msgid "Consigne"
+msgstr ""
+
+msgid "Écris le message de l’annonce."
+msgstr ""
+
+msgid "Numéro de téléphone invalide."
+msgstr ""
+
+msgid "Indique la ville de la legal team."
+msgstr ""
+
+msgid "Position invalide."
+msgstr ""
+
+msgid "Indique le nom du collectif."
+msgstr ""
+
+msgid "Indique la ville ou le secteur."
+msgstr ""
+
+msgid "Donne le lien public du collectif (site, Instagram…), en https://"
+msgstr ""
+
+msgid "Indique le canal officiel du collectif où te confirmer la demande."
+msgstr ""
+
+msgid "Trop de demandes en attente, réessaie dans quelques jours."
+msgstr ""
+
+msgid "Date invalide."
+msgstr ""
+
+msgid "Donne un titre (ex. : Blocus lycée Jean-Monnet)."
+msgstr ""
+
+msgid "Indique le lieu de rendez-vous."
+msgstr ""
+
+msgid "Date invalide (dans les 3 prochains mois)."
+msgstr ""
+
+msgid "Parcours invalide."
+msgstr ""
+
+msgid "Trop d’envois d’un coup. Réessaie dans quelques minutes."
+msgstr ""
+
+msgid "Tu as déjà 3 propositions en attente de validation."
+msgstr ""
+
+msgid "Trop de propositions en attente, réessaie plus tard."
+msgstr ""
+
+msgid "Introuvable."
+msgstr ""
+
+msgid "Carte indisponible."
+msgstr ""
+
+msgid "Requête refusée."
+msgstr ""
+
+msgid "Trop de demandes : réessaie dans quelques minutes."
+msgstr ""
+
+msgid "Trop de demandes d’un coup. Réessaie plus tard."
+msgstr ""
+
+msgid "Service de notification non pris en charge."
+msgstr ""
+
+msgid "Abonnement invalide."
+msgstr ""
+
+msgid "Trop de demandes, réessaie plus tard."
+msgstr ""
+
+msgid "Trop d’abonnements, réessaie plus tard."
+msgstr ""
+
+msgid "Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications."
+msgstr ""
+
+msgid "Trois essais au plus toutes les 5 minutes."
+msgstr ""
+
+msgid "Tape au moins 2 lettres."
+msgstr ""
+
+msgid "Trop de recherches, patiente un peu."
+msgstr ""
+
+msgid "Recherche indisponible pour l’instant."
+msgstr ""
+
+msgid "Signalement expiré."
+msgstr ""
+
+msgid "Annonce déjà retirée."
+msgstr ""
+
+msgid "Événement introuvable."
+msgstr ""
+
+msgid "Déjà expiré."
+msgstr ""
+
+msgid "Annonce introuvable."
+msgstr ""
+
+msgid "Catégorie inconnue."
+msgstr ""
+
+msgid "Ce type de signalement est désactivé pour l’instant."
+msgstr ""
+
+msgid "Signalement trop ancien, il n’a pas été publié."
+msgstr ""
+
+msgid "Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt."
+msgstr ""
+
+msgid "Trop de signalements d’un coup. Réessaie dans quelques minutes."
+msgstr ""
+
+msgid "Un danger est signalé à moins de 100 m : la zone ne peut pas être marquée calme."
+msgstr ""
+
+msgid "Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent."
+msgstr ""
+
+msgid "Zone saturée, réessaie dans quelques minutes."
+msgstr ""
+
+msgid "Carte saturée, réessaie plus tard."
+msgstr ""
+
+msgid "Lien orga invalide ou expiré."
+msgstr ""
+
+msgid "Trop d’envois, patiente un peu."
+msgstr ""
+
+msgid "Déjà pris en compte."
+msgstr ""
+
+msgid "Trop de votes, patiente un peu."
+msgstr ""
+
+msgid "Trop d’essais, réessaie dans quelques minutes."
+msgstr ""
+
+msgid "Invitation invalide."
+msgstr ""
+
+msgid "Lien expiré ou déjà utilisé. Demande-en un nouveau."
+msgstr ""
+
+msgid "Seules les orgas confirmées peuvent inviter."
+msgstr ""
+
+msgid "Donne un nom à l’orga invitée."
+msgstr ""
+
+msgid "Orga introuvable parmi tes invitées."
+msgstr ""
+
+msgid "Déjà confirmée."
+msgstr ""
+
+msgid "Pas encore prête : il faut au moins 7 jours, 10 actions et aucun incident. Seul·e l’admin peut la confirmer avant."
+msgstr ""
+
+msgid "Pas possible pour un accès défini par l’admin dans les réglages du serveur."
+msgstr ""
+
+msgid "Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info »."
+msgstr ""
+
+msgid "Événement déjà retiré."
+msgstr ""
+
+msgid "Seule l’orga qui l’a publié peut le retirer."
+msgstr ""
+
+msgid "Seul·e l’auteur·ice peut retirer cette annonce."
+msgstr ""
+
+msgid "Seule l’orga qui l’a signalé peut le modifier."
+msgstr ""
+
+msgid "Déjà prolongé au maximum."
+msgstr ""
+
+msgid "Déjà confirmé."
+msgstr ""
+
+msgid "Trop de retraits d’un coup : le retrait est suspendu quelques minutes."
+msgstr ""
+
+msgid "Trop de retraits d’un coup : le retrait est suspendu quelques minutes. L’admin est prévenu·e."
+msgstr ""
+
+msgid "Une orga porte déjà ce nom."
+msgstr ""
+
+msgid "Orga introuvable."
+msgstr ""
+
+msgid "Carte des mobilisations"
+msgstr ""
+
+#. Type de signalement : unités d'élite (équivalent local : SWAT…).
+msgid "Unités d’intervention (BRI, RAID, GIGN)"
+msgstr ""
+
+#. Type de signalement : véhicule blindé de la gendarmerie.
+msgid "Blindé (Centaure, VBRG)"
+msgstr ""
+
+#. Type de signalement : tirs de balles en caoutchouc (LBD) ou de grenades.
+msgid "Tirs LBD / grenades"
+msgstr ""
+
+#. Type de signalement : militaires qui gardent des bâtiments (opération Sentinelle), sans maintien de l'ordre.
+msgid "Militaires (Sentinelle)"
+msgstr ""
+
+# --- 05-v26 ---
+msgid "Cortège · Carte des manifs en direct, sans compte"
+msgstr ""
+
+msgid "Tout l’agenda"
+msgstr ""
+
+msgid "＋ Annoncer une manif"
+msgstr ""
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📣</span><span><b>Organiser une manif</b><small>L’annoncer dans l’agenda de Cortège</small></span>"
+msgstr ""
+
+msgid "<b>Nouveaux arrêtés dans ta zone</b><span>Manif interdite, périmètre interdit, couvre-feu… dès qu’un arrêté de ta zone est ajouté à Cortège.</span>"
+msgstr ""
+
+msgid "Alertes « nouvel arrêté » activées"
+msgstr ""
+
+msgid "{x} près de ta zone"
+msgstr ""
+
+msgid "Signalé à l’instant. Ouvre Cortège pour voir où exactement."
+msgstr ""
+
+msgid "National"
+msgstr ""
+
+msgid "Demain : {t}"
+msgstr ""
+
+msgid "Journée de mobilisation {d}. Ouvre Cortège pour voir l’agenda et les numéros utiles."
+msgstr ""
+
+msgid "Test Cortège"
+msgstr ""
+
+msgid "Les notifications marchent : tu seras prévenu·e ici."
+msgstr ""
+
+msgid "Nouvel arrêté à partir du {d}. Ouvre Cortège pour voir la zone et la source."
+msgstr ""
+
+msgid "{n} nouveaux arrêtés dans ta zone"
+msgstr ""
+
+# --- 06-v263 ---
+#. Type de signalement : groupe d'extrême droite qui attaque les manifestant·es.
+msgid "Milice / groupe fasciste"
+msgstr ""
+
+msgid "une longue, deux courtes, une longue"
+msgstr ""
+
+msgid "Combien, direction, armes visibles. Pas de nom ni de photo."
+msgstr ""
+
+msgid "Attaque d’un groupe fasciste"
+msgstr ""
+
+msgid "<b>Reste groupé·e</b> et ne pars pas seul·e : les attaques visent d’abord les personnes isolées, y compris après la manif."
+msgstr ""
+
+msgid "Va vers le service d’ordre, les street medics ou un endroit fréquenté."
+msgstr ""
+
+msgid "<b>Signale-les sur la carte</b> (☠️) pour prévenir les autres : combien, direction, armes visibles. Pas de nom ni de photo de personnes."
+msgstr ""
+
+msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, va au commissariat ou écris au procureur de la République ; la legal team peut t’aider."
+msgstr ""
+
+# --- 07-v265 ---
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée."
+msgstr ""
+
+msgid "En attente de validation par l’admin : pas encore visible"
+msgstr ""
+
+msgid "Annonce envoyée : elle s’affichera après validation par l’admin"
+msgstr ""
+
+msgid "Trop de vérifications d’un coup : c’est suspendu quelques minutes. L’admin est prévenu·e."
+msgstr ""
+
+# --- 08-v27 ---
+msgid "Queue de cortège"
+msgstr ""
+
+msgid "En direct : position partagée par {who}"
+msgstr ""
+
+msgid "Avance {dir}, environ {v} km/h"
+msgstr ""
+
+msgid "vers le nord"
+msgstr ""
+
+msgid "vers le nord-est"
+msgstr ""
+
+msgid "vers l’est"
+msgstr ""
+
+msgid "vers le sud-est"
+msgstr ""
+
+msgid "vers le sud"
+msgstr ""
+
+msgid "vers le sud-ouest"
+msgstr ""
+
+msgid "vers l’ouest"
+msgstr ""
+
+msgid "vers le nord-ouest"
+msgstr ""
+
+msgid "{n} min"
+msgstr ""
+
+msgid "{h} h {m}"
+msgstr ""
+
+msgid "Parcours « {title} » : {p} % fait"
+msgstr ""
+
+msgid "fin dans environ {d}"
+msgstr ""
+
+msgid "Arrive près de toi dans environ {d}"
+msgstr ""
+
+msgid "Cortège : environ {d}"
+msgstr ""
+
+msgid "Ma position en direct"
+msgstr ""
+
+msgid "Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt."
+msgstr ""
+
+msgid "Je suis"
+msgstr ""
+
+msgid "Pendant"
+msgstr ""
+
+msgid "📣 la tête de cortège"
+msgstr ""
+
+msgid "🔚 la queue de cortège"
+msgstr ""
+
+msgid "⛑️ street medic"
+msgstr ""
+
+msgid "⚖️ legal team"
+msgstr ""
+
+msgid "🎥 presse"
+msgstr ""
+
+msgid "1 h"
+msgstr ""
+
+msgid "2 h"
+msgstr ""
+
+msgid "4 h"
+msgstr ""
+
+msgid "Partager ma position"
+msgstr ""
+
+msgid "Arrêter le partage"
+msgstr ""
+
+msgid "En attente de ta position…"
+msgstr ""
+
+msgid "Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte."
+msgstr ""
+
+msgid "Partage arrêté : ton point disparaît de la carte."
+msgstr ""
+
+msgid "Partage de position terminé"
+msgstr ""
+
+msgid "Active d’abord ta position (bouton ◎)"
+msgstr ""
+
+msgid "Le partage de position est réservé aux orgas confirmées."
+msgstr ""
+
+msgid "Rôle inconnu."
+msgstr ""
+
+# --- 09-v271 ---
+msgid "Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus."
+msgstr ""
+
+msgid "30 min"
+msgstr ""
+
+msgid "Position partagée en direct"
+msgstr ""
+
+msgid "Oui, je continue"
+msgstr ""
+
+msgid "Arrêter"
+msgstr ""
+
+msgid "Plus rien autour de toi : tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}."
+msgstr ""
+
+msgid "Tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}."
+msgstr ""
+
+msgid "Position partagée en direct ({role})"
+msgstr ""
+
+msgid "Pas de réponse : partage de position arrêté"
+msgstr ""
+
+msgid "Partage prolongé, merci"
+msgstr ""
+
+msgid "Tu t’es éloigné·e de plus de 2 km de la manif : partage de position arrêté."
+msgstr ""
+
+msgid "Partage arrêté au bout de 4 h. Relance-le si besoin."
+msgstr ""
+
+msgid "Cortège : environ {d} à vol d’oiseau"
+msgstr ""
+
+# --- 10-v28 ---
+msgid "l’admin : viens me voir pour un accès orga"
+msgstr ""
+
+msgid "Message affiché sur ton point (facultatif)"
+msgstr ""
+
+msgid "ex. : devant la fontaine, viens me voir"
+msgstr ""
+
+msgid "Point de rencontre orga"
+msgstr ""
+
+msgid "Type inconnu."
+msgstr ""
+
+# --- 11-v210 ---
+msgid "Déplacer"
+msgstr ""
+
+msgid "Retirer ma voix"
+msgstr ""
+
+msgid "Retirer (erreur)"
+msgstr ""
+
+msgid "Tu as envoyé ce signalement."
+msgstr ""
+
+msgid "Ta voix est retirée, le point reste pour les autres"
+msgstr ""
+
+msgid "Point déplacé"
+msgstr ""
+
+msgid "Fais glisser le point à sa place (150 m au plus)"
+msgstr ""
+
+msgid "Seul le téléphone qui l’a envoyé peut le retirer ou le déplacer, et seulement le jour même."
+msgstr ""
+
+msgid "Trop d’essais, patiente un peu."
+msgstr ""
+
+msgid "Vérifié par une orga : le point reste sur la carte."
+msgstr ""
+
+msgid "D’autres l’ont déjà confirmé : il ne peut plus être déplacé."
+msgstr ""
+
+msgid "Trop tard : un point ne se déplace que dans les 10 minutes."
+msgstr ""
+
+msgid "Trop loin : 150 m au plus. Retire-le et signale-le au bon endroit."
+msgstr ""
+
+msgid "Action inconnue."
+msgstr ""
+
+# --- 12-v210b ---
+msgid "Temps réel indisponible, interrogation régulière."
+msgstr ""
+
+msgid "Donne un titre à la journée (affiché en bandeau)."
+msgstr ""
+
+msgid "Zone :"
+msgstr ""
+
+msgid "Invitations suspendues jusqu’au"
+msgstr ""
+
+msgid "Réservé à l’admin."
+msgstr ""
+
+msgid "Inconnu."
+msgstr ""
+
+msgid "Bilan non publié."
+msgstr ""
+
+msgid "Les points de cette journée ne sont plus disponibles."
+msgstr ""
+
+msgid "Points invalides."
+msgstr ""
+
+msgid "Pas de carte hébergée."
+msgstr ""
+
+msgid "Trop loin."
+msgstr ""
+
+msgid "Trop de demandes."
+msgstr ""
+
+msgid "Pas de chemin trouvé."
+msgstr ""
+
+msgid "Digest désactivé : ajoute ADMIN_KEY dans les variables du serveur."
+msgstr ""
+
+msgid "Clé incorrecte."
+msgstr ""
+

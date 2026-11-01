@@ -826,6 +826,15 @@ test('traductions : fichiers valides, mêmes textes dans chaque langue', () => {
   assert.deepEqual(Object.keys(es).sort(), Object.keys(en).sort());
   assert.deepEqual(Object.keys(ar).sort(), Object.keys(en).sort());
   for (const k of ['Signaler', 'Droits', 'Mode manif', 'Garde à vue']) assert.ok(en[k] && es[k] && ar[k], k);
+  // Pluriels : une forme par cas de la langue (6 en arabe), et la liste des langues pour le téléphone
+  const k = '{n} signalement en attente de réseau';
+  assert.equal(ar[k].length, 6); assert.equal(en[k].length, 2); assert.deepEqual(ar[''].plural, ['zero', 'one', 'two', 'few', 'many', 'other']);
+  const idx = L('index'); assert.ok(idx[0].code === 'fr' && idx.some(x => x.code === 'ar' && x.dir === 'rtl'));
+});
+
+test('langues : liste servie au téléphone, avec la langue de secours de l’instance', async () => {
+  const js = await fetch(B + '/lang/langs.js').then(r => r.text());
+  assert.match(js, /window\.CORTEGE_LANGS=\[/); assert.match(js, /"code":"es"/); assert.match(js, /CORTEGE_DEFAULT_LANG="fr"/);
 });
 
 test('son propre signalement : retiré sans trace, déplacé de peu, sa voix seulement si d’autres l’ont confirmé', async () => {

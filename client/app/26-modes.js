@@ -31,7 +31,12 @@
   $('#btnVoiceTest').onclick = () => say(t('{what}, à {d}', { what: CAT.charge ? CAT.charge.label : t('Charge'), d: spokenDist(120) }));
 
   // ---- Langue ----
-  $('#optLang').value = I18N.lang;
+  // Les langues disponibles sur le serveur (une langue ajoutée y apparaît toute seule), chacune écrite dans sa langue
+  if (Array.isArray(I18N.list) && I18N.list.length) {
+    const sel = $('#optLang'); sel.textContent = '';
+    for (const x of I18N.list) sel.append(el('option', { value: x.code, lang: x.code, ...(x.dir === 'rtl' ? { dir: 'rtl' } : {}) }, x.name));
+  }
+  $('#optLang').value = I18N.code || I18N.lang;
   $('#optLang').addEventListener('change', e => { I18N.set(e.target.value); reloadForUpdate(); });
 
   // ---- Tout effacer d'un geste : appui long de 2 secondes (au clavier : deux fois Entrée) ----

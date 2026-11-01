@@ -2,6 +2,7 @@
 // Routes des pages publiques : plan du site, bilans (/manif/…), pages de contenu, carte d'un créneau, tuiles vectorielles.
 const { CATEGORIES } = require('../categories');
 const { NEXT } = require('./next');
+const { langsJs } = require('../i18n');
 const { PMTILES, serveVectorTile } = require('../geo/pmtiles');
 const { PUBLIC_URL_REAL, sitemapXml, GOOGLE_VERIFY, pubPage, pubCsv, cityDayPage } = require('../pages/bilans');
 const { bump } = require('../limits');
@@ -17,6 +18,8 @@ const { tx } = require('../db');
 
 async function pagesRoutes(req, res, url, pathname) {
   if (req.method === 'GET' && (pathname === '/presse' || pathname === '/presse/')) return serveStatic(req, res, '/presse.html');
+  // Langues disponibles, lues avant i18n.js (une langue ajoutée sur le serveur apparaît toute seule)
+  if (req.method === 'GET' && pathname === '/lang/langs.js') return send(res, 200, langsJs(), { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache' });
   // Référencement : robots.txt, plan du site, et fichier de validation de Google Search Console (GOOGLE_SITE_VERIFICATION=google0123….html)
   if (req.method === 'GET' && pathname === '/robots.txt')
     return send(res, 200, `User-agent: *\nDisallow: /api/\nAllow: /\n\nSitemap: ${PUBLIC_URL_REAL(req)}/sitemap.xml\n`, { 'Cache-Control': 'public, max-age=3600' });
