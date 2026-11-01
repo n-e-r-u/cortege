@@ -1,0 +1,33 @@
+{
+  "code": "de",
+  "name": "Allemagne",
+  "area": "de",
+  "lang": "de",
+  "units": "metric",
+  "emergency": { "medical": "112", "general": "112", "police": "110" },
+  "labels": {
+    "crs": "Police anti-émeute (Bereitschaftspolizei)",
+    "bac": "Unité d’interpellation (BFE)",
+    "inter": "Unités d’intervention (SEK, GSG 9)",
+    "blinde": "Véhicule spécial (Sonderwagen)",
+    "nasse": "Nasse (Kessel)",
+    "lacrymo": "Lacrymo / spray au poivre",
+    "sommations": "Annonces de la police (Durchsagen)",
+    "medic": "Street medics (Demosanis)",
+    "legal": "Legal team (EA)"
+  },
+  "hidden": ["militaires"],
+  "extra": [],
+  "rights": [
+    { "title": "Si la police t’interpelle", "items": [
+      "Donne seulement ton identité (nom, adresse, date de naissance). Pour le reste, tu as le droit de te taire : « Ich mache keine Angaben ».",
+      "Ne signe rien et appelle l’EA (Ermittlungsausschuss), la legal team des manifs."
+    ] },
+    { "title": "Avant de partir", "items": [
+      "Écris au stylo sur ton bras le numéro de l’EA de ta ville.",
+      "Se masquer le visage pendant une manifestation est interdit en Allemagne (Vermummungsverbot)."
+    ] }
+  ],
+  "violence": null,
+  "orders": false
+}

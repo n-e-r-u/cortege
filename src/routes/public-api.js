@@ -6,6 +6,7 @@ const { CATEGORIES, MERGE, GROUPS, EVENT_TYPES, VIBES, ALERT_CATS } = require('.
 const { DEPS } = require('../geo/departments');
 const { MIN, EVENT_NAME, CENTER, ZOOM, BRAND, VIOLENCE_URL, CONTACT_EMAIL, HOST_INFO, SOURCE_URL, DATA_DIR, UNDER_PASSENGER, TRUST_PROXY } = require('../config');
 const { NEXT } = require('./next');
+const { clientProfiles } = require('../profiles');
 const { ORDER_KINDS } = require('../orders');
 const { PMTILES, pmOpen, pmTileC, pmDecomp, pmInfo } = require('../geo/pmtiles');
 const { POI_KINDS } = require('../places/osm');
@@ -48,7 +49,7 @@ async function publicApiRoutes(req, res, url, pathname) {
     { const S = settings(), banner = bannerNow();
     return send(res, 200, { event: banner || EVENT_NAME, banner: !!banner, center: S.view ? [S.view.lat, S.view.lng] : CENTER, zoom: S.view ? S.view.zoom : ZOOM,
       alertRadius: S.alertRadius || 300, nearKm: nearKm(), poiKinds: POI_KINDS, orderKinds: ORDER_KINDS, deps: DEPS.map(d => [d.c, d.n]), cfgh: cfgHash(),
-      brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
+      brand: BRAND, violenceUrl: VIOLENCE_URL, contact: CONTACT_EMAIL, hostInfo: HOST_INFO, sourceUrl: SOURCE_URL, categories: CATEGORIES, profiles: clientProfiles(), merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
   
   // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
   if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {

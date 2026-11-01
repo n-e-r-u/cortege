@@ -70,7 +70,7 @@
       const row = el('div', { class: 'row' });
       for (const c of cfg.categories.filter(c => c.group === g.id && !c.beaconOnly)) {
         const b = el('button', { class: 'cat', 'data-cat': c.id, style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
-        if (c.off) b.hidden = true;
+        if (c.off || !catHere(c)) b.hidden = true;
         b.onclick = () => submit(c.id);
         row.append(b);
       }
@@ -78,6 +78,15 @@
     }
   })();
 
+  // Profil pays qui change (tu passes la frontière, ou tu regardes un autre pays) : noms et types disponibles mis à jour
+  document.addEventListener('cortege-profile', () => {
+    for (const b of document.querySelectorAll('#catGrid .cat')) {
+      const c = CAT[b.dataset.cat]; if (!c) continue;
+      b.hidden = !!c.off || !catHere(c);
+      const tx = [...b.childNodes].find(n => n.nodeType === 3); if (tx) tx.nodeValue = c.label;
+    }
+    if (typeof regroup === 'function') regroup();
+  });
   // Point visé = position du viseur à l'écran
   const target = () => map.containerPointToLatLng([map.getSize().x / 2, aimY()]);
   // ---- File d'attente hors ligne ----

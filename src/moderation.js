@@ -2,7 +2,8 @@
 const { MIN } = require('./config');
 const { VOTES } = require('./reports/votes');
 const { distKm } = require('./util');
-const { inFrance, whereOf } = require('./geo/communes');
+const { whereOf } = require('./geo/communes');
+const { inZone } = require('./profiles');
 const { isDanger, CALM_KILL_M, CAT } = require('./categories');
 const { nearby } = require('./reports/store');
 const { publicView, toReport } = require('./reports/model');
@@ -48,12 +49,12 @@ function modQueue(now = Date.now()) {
       series = danger && nearby('calme', x.lat, x.lng, CALM_KILL_M, now).some(c => !c.r.ct);
       why.push(series ? 'series' : 'new');
     }
-    const abroad = !inFrance(x.lat, x.lng), iso = isolated(x);
+    const abroad = !inZone(x.lat, x.lng), iso = isolated(x);
     if (iso) why.push('isolated');
     if (abroad) why.push('abroad');
     if (!why.length) continue;
     const prio = x.ct > 0 && danger ? 1 : series ? 2 : iso || x.ct > 0 ? 3 : x.down > 0 || abroad ? 4 : 5;
-    out.push({ ...publicView(toReport(x)), dw: x.dw || 0, fl: x.fl || 0, ct: x.ct || 0, place: abroad ? 'Hors de France' : whereOf(x.lat, x.lng).name,
+    out.push({ ...publicView(toReport(x)), dw: x.dw || 0, fl: x.fl || 0, ct: x.ct || 0, place: abroad ? 'Hors zone' : whereOf(x.lat, x.lng).name,
       group: CAT[x.cat] ? CAT[x.cat].group : '', why, prio, low: prio === 5 });
   }
   out.sort((a, b) => a.prio - b.prio || b.t - a.t);

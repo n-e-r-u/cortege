@@ -766,7 +766,7 @@ const MOD_WHY = {
   series: () => 'Danger signalé près d’une zone calme par un téléphone qui en a signalé près de plusieurs zones calmes en peu de temps. Peut-être une tentative de faire fuir les gens d’un endroit sûr.',
   new: () => 'Pas encore confirmé : envoyé par un téléphone tout récent pendant le mode manif renforcé. Il s’affiche avec la mention « Pas encore confirmé ». Rien à faire, sauf si tu sais qu’il est faux.',
   isolated: () => 'Isolé : aucun autre signalement à moins de 500 km. Souvent un test ou une position fausse.',
-  abroad: () => 'Hors de France : visible sur la carte en direct, mais pas compté dans les bilans.',
+  abroad: () => 'Hors zone : visible sur la carte en direct, mais pas compté dans les bilans.',
 };
 const MOD_TAG = { 1: ['Urgent', 'var(--fdo)'], 2: ['À regarder', 'var(--danger)'], 3: ['À regarder', 'var(--danger)'], 4: ['Info', 'var(--info)'], 5: ['Info', 'var(--muted, #888)'] };
 let modData = [];

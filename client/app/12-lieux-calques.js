@@ -67,8 +67,11 @@
     if (name) root.append(el('div', { class: 'pop-meta' }, k.label + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
     if (hours) root.append(el('p', { class: 'poi-h' }, '🕒 ', hoursFr(hours)));
     if (phone) root.append(el('p', {}, el('a', { href: 'tel:' + phone.replace(/[^\d+]/g, '') }, '📞 ' + phone)));
-    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le') + ' ', el('a', { href: 'tel:3237' }, '3237'), '.'));
-    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences') : t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.')));
+    // Numéros du pays (profil) : le 3237 n'existe qu'en France, le 15 et le 112 en Europe, le 911 aux États-Unis…
+    const pf = profileAt(x[2], x[3]), em = pf.emergency || {};
+    if (kind === 'pharma' && em.pharmacy) root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le') + ' ', el('a', { href: 'tel:' + em.pharmacy }, em.pharmacy), '.'));
+    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences')
+      : pf.code === 'fr' ? t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.') : t('Urgences : pas indiqué. En cas d’urgence, appelle le {n}.', { n: em.medical || em.general || '112' })));
     if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;

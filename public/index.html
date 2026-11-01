@@ -353,7 +353,8 @@
     <span class="switch-txt"><b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span></span>
   </label>
   <div id="poiList"></div>
-  <p class="fine">Pharmacie de garde : appelle le 3237. Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé.</p>
+  <p class="fine" data-profile="fr">Pharmacie de garde : appelle le 3237.</p>
+  <p class="fine">Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé.</p>
 </section>
 
 <section class="sheet" id="sheetNews" hidden aria-labelledby="nwTitle">
@@ -434,6 +435,8 @@
     </details>
   </div>
   <button class="sos-wide" id="btnSosRights"><b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span></button>
+  <!-- Droits propres au pays : la France ici ; les autres pays viennent de leur profil (profiles/*.json) -->
+  <div data-profile="fr">
   <a class="violence-btn" id="violenceLink" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">
     <b>Signaler une violence policière</b>
     <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>
@@ -512,6 +515,8 @@
     <span>Décryptage des luttes chaque jour : <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a></span>
     <a href="https://neru.tv" target="_blank" rel="noopener noreferrer">neru.tv</a>
   </div>
+  </div>
+  <div id="rightsProfile"></div>
 </section>
 
 <!-- Espace orga -->
@@ -721,7 +726,7 @@
     </ul>
   </details>
 
-  <details class="right">
+  <details class="right" data-profile="fr">
     <summary>6. Interpellation : AMIS</summary>
     <ul>
       <li><b>A</b>vocat·e dès le début.</li>

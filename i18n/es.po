@@ -356,8 +356,11 @@ msgstr "Lugares en el mapa"
 msgid "<b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span>"
 msgstr "<b>Mostrar lugares</b><span>Lugares de poder y lugares útiles, según OpenStreetMap. Aparecen al hacer zoom, los más importantes primero.</span>"
 
-msgid "Pharmacie de garde : appelle le 3237. Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
-msgstr "Farmacia de guardia: llama al 3237. ¿Falta un lugar o está mal? Avísalo a la dirección de contacto (página «Aviso legal») y se corregirá."
+msgid "Pharmacie de garde : appelle le 3237."
+msgstr "Farmacia de guardia: llama al 3237."
+
+msgid "Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
+msgstr "¿Falta un lugar o está mal? Avísalo a la dirección de contacto (página «Aviso legal») y se corregirá."
 
 msgid "Le détail de chaque version est sur GitHub (fichier CHANGELOG)."
 msgstr "El detalle de cada versión está en GitHub (archivo CHANGELOG)."
@@ -2697,3 +2700,160 @@ msgstr "Resumen desactivado: añade ADMIN_KEY a las variables del servidor."
 msgid "Clé incorrecte."
 msgstr "Clave incorrecta."
 
+
+# --- 2.10 ---
+#: client/app/12-lieux-calques.js
+msgid "Urgences : pas indiqué. En cas d’urgence, appelle le {n}."
+msgstr "Urgencias: no indicado. En caso de emergencia, llama al {n}."
+
+#: src/routes/reports.js
+msgid "Ce type de signalement n’existe pas ici."
+msgstr "Este tipo de aviso no existe aquí."
+
+#: profiles/de.json
+msgid "Police anti-émeute (Bereitschaftspolizei)"
+msgstr "Policía antidisturbios (Bereitschaftspolizei)"
+
+#: profiles/de.json
+msgid "Unité d’interpellation (BFE)"
+msgstr "Unidad de detenciones (BFE)"
+
+#: profiles/de.json
+msgid "Unités d’intervention (SEK, GSG 9)"
+msgstr "Unidades de intervención (SEK, GSG 9)"
+
+#: profiles/de.json
+msgid "Véhicule spécial (Sonderwagen)"
+msgstr "Vehículo especial (Sonderwagen)"
+
+#: profiles/de.json
+msgid "Nasse (Kessel)"
+msgstr "Encapsulamiento (Kessel)"
+
+#: profiles/de.json
+msgid "Lacrymo / spray au poivre"
+msgstr "Gas lacrimógeno / spray de pimienta"
+
+#: profiles/de.json
+msgid "Annonces de la police (Durchsagen)"
+msgstr "Avisos de la policía (Durchsagen)"
+
+#: profiles/de.json
+msgid "Street medics (Demosanis)"
+msgstr "Street medics (Demosanis)"
+
+#: profiles/de.json
+msgid "Legal team (EA)"
+msgstr "Equipo legal (EA)"
+
+#: profiles/de.json
+msgid "Si la police t’interpelle"
+msgstr "Si la policía te detiene"
+
+#: profiles/de.json
+msgid "Donne seulement ton identité (nom, adresse, date de naissance). Pour le reste, tu as le droit de te taire : « Ich mache keine Angaben »."
+msgstr "Da solo tu identidad (nombre, dirección, fecha de nacimiento). Para lo demás, tienes derecho a callarte: «Ich mache keine Angaben»."
+
+#: profiles/de.json
+msgid "Ne signe rien et appelle l’EA (Ermittlungsausschuss), la legal team des manifs."
+msgstr "No firmes nada y llama al EA (Ermittlungsausschuss), el equipo legal de las manifestaciones."
+
+#: profiles/de.json
+msgid "Écris au stylo sur ton bras le numéro de l’EA de ta ville."
+msgstr "Apunta con bolígrafo en el brazo el número del EA de tu ciudad."
+
+#: profiles/de.json
+msgid "Se masquer le visage pendant une manifestation est interdit en Allemagne (Vermummungsverbot)."
+msgstr "Taparse la cara durante una manifestación está prohibido en Alemania (Vermummungsverbot)."
+
+#: profiles/us.json
+msgid "Police anti-émeute"
+msgstr "Policía antidisturbios"
+
+#: profiles/us.json
+msgid "Policiers en civil / à vélo"
+msgstr "Policías de paisano / en bicicleta"
+
+#: profiles/us.json
+msgid "Garde nationale"
+msgstr "Guardia Nacional"
+
+#: profiles/us.json
+msgid "Unités d’intervention (SWAT)"
+msgstr "Unidades de intervención (SWAT)"
+
+#: profiles/us.json
+msgid "Véhicule blindé (MRAP, BearCat)"
+msgstr "Vehículo blindado (MRAP, BearCat)"
+
+#: profiles/us.json
+msgid "Tirs (balles en caoutchouc, pepper balls)"
+msgstr "Disparos (balas de goma, pepper balls)"
+
+#: profiles/us.json
+msgid "Ordre de dispersion"
+msgstr "Orden de dispersión"
+
+#: profiles/us.json
+msgid "Legal observers"
+msgstr "Observadores legales"
+
+#: profiles/us.json
+msgid "Occupation (lycée / fac)"
+msgstr "Ocupación (instituto / universidad)"
+
+#: profiles/us.json
+msgid "ICE / agents fédéraux"
+msgstr "ICE / agentes federales"
+
+#: profiles/us.json
+msgid "Si la police t’arrête"
+msgstr "Si la policía te para"
+
+#: profiles/us.json
+msgid "<b>Tu as le droit de garder le silence.</b> Dis-le à voix haute : « I am going to remain silent. I want a lawyer. »"
+msgstr "<b>Tienes derecho a guardar silencio.</b> Dilo en voz alta: «I am going to remain silent. I want a lawyer.»"
+
+#: profiles/us.json
+msgid "Demande « Am I free to go? » (suis-je libre de partir ?). Si oui, pars calmement."
+msgstr "Pregunta «Am I free to go?» (¿puedo irme?). Si es así, vete con calma."
+
+#: profiles/us.json
+msgid "Ne consens à aucune fouille : « I do not consent to a search ». Ne résiste pas physiquement."
+msgstr "No consientas ningún registro: «I do not consent to a search». No te resistas físicamente."
+
+#: profiles/us.json
+msgid "Ne signe rien et ne réponds à aucune question sans avocat·e."
+msgstr "No firmes nada y no respondas a ninguna pregunta sin abogado/a."
+
+#: profiles/us.json
+msgid "Écris au stylo sur ton bras le numéro de la hotline juridique de ta ville (souvent tenue par la National Lawyers Guild)."
+msgstr "Apunta con bolígrafo en el brazo el número de la línea legal de tu ciudad (a menudo de la National Lawyers Guild)."
+
+#: profiles/us.json
+msgid "Filmer la police dans l’espace public est en général légal, à distance et sans gêner son action."
+msgstr "Grabar a la policía en el espacio público suele ser legal, a distancia y sin interferir."
+
+#: profiles/us.json
+msgid "Si des agents de l’ICE se présentent"
+msgstr "Si se presentan agentes de ICE"
+
+#: profiles/us.json
+msgid "Tu n’as pas à ouvrir ta porte sans mandat signé par un·e juge : demande à le voir, glissé sous la porte ou contre la vitre."
+msgstr "No tienes que abrir la puerta sin una orden firmada por un juez: pide verla, deslizada bajo la puerta o contra la ventana."
+
+#: profiles/us.json
+msgid "Garde le silence et ne signe aucun document."
+msgstr "Guarda silencio y no firmes ningún documento."
+
+#: profiles/us.json
+msgid "Ne mens pas et ne présente pas de faux papiers."
+msgstr "No mientas ni presentes documentos falsos."
+
+#: profiles/us.json
+msgid "Connaître tes droits (ACLU)"
+msgstr "Conoce tus derechos (ACLU)"
+
+#: profiles/us.json
+msgid "Les droits des manifestant·es, expliqués par l’ACLU."
+msgstr "Los derechos de quienes se manifiestan, explicados por la ACLU."

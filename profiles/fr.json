@@ -1,0 +1,14 @@
+{
+  "code": "fr",
+  "name": "France",
+  "area": "france",
+  "lang": "fr",
+  "units": "metric",
+  "emergency": { "medical": "15", "general": "112", "pharmacy": "3237" },
+  "labels": {},
+  "hidden": [],
+  "extra": [],
+  "rights": null,
+  "violence": null,
+  "orders": true
+}

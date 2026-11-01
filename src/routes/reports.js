@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const { ADMIN_KEY, NOTE_MAX, MIN, RATE, MAX_PER_NET_ZONE, MAX_PER_ZONE, MAX_REPORTS } = require('../config');
 const { CATEGORIES, GROUPS, CAT, isDanger, CALM_KILL_M, MERGE, ALERT_CATS } = require('../categories');
 const { NEXT } = require('./next');
+const { catAllowed } = require('../profiles');
 const { abuseOnce, abuseLog, calmSeries, SERIES, snapshotContested } = require('../moderation');
 const { cellId } = require('../live/files');
 const { clientHash, deviceHash } = require('../privacy');
@@ -63,6 +64,7 @@ async function reportsRoutes(req, res, url, pathname) {
     if (cat.off) return send(res, 400, { error: 'Ce type de signalement est désactivé pour l’instant.' });
     if (cat.beaconOnly) return send(res, 400, { error: 'Type inconnu.' });
     if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return send(res, 400, { error: 'Position invalide.' });
+    if (!catAllowed(cat.id, lat, lng)) return send(res, 400, { error: 'Ce type de signalement n’existe pas ici.' });
     const note = String(b.note || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, NOTE_MAX);
     const ipH = clientHash(req), dev = deviceHash(req);
     // Orga confirmée (ni en essai, ni parrainée en attente) : son signalement est vérifié d'office et dure deux fois plus longtemps

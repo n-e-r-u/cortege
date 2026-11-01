@@ -4,6 +4,23 @@
   const normCity = c => String(c || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
   const dayFr = x => new Date(x).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'short', year: 'numeric' });
   const kmTxt = m => m < 1000 ? t('ici') : t('à {d} km', { d: m < 10000 ? (m / 1000).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') : Math.round(m / 1000) });
+  // Droits du pays (hors France, dont le contenu est dans la page) : sections du profil pays, et lien vers une association
+  function renderRightsProfile() {
+    const box = $('#rightsProfile'); if (!box) return;
+    box.textContent = '';
+    if (profile.violence && profile.violence.url) box.append(el('a', { class: 'violence-btn', href: profile.violence.url, target: '_blank', rel: 'noopener noreferrer' },
+      el('b', {}, t(profile.violence.label)), el('span', {}, t(profile.violence.desc || ''))));
+    if (!Array.isArray(profile.rights) || !profile.rights.length) return;
+    box.append(el('h3', { class: 'menu-group' }, t('En cas de')));
+    for (const sec of profile.rights) {
+      const ul = el('ul');
+      // Textes du profil (fichier du serveur, gras autorisé) traduits dans la langue de l'appli
+      for (const it of sec.items || []) { const li = document.createElement('li'); li.innerHTML = t(it); ul.append(li); }
+      box.append(el('details', { class: 'right' }, el('summary', {}, t(sec.title)), ul));
+    }
+  }
+  document.addEventListener('cortege-profile', renderRightsProfile);
+  renderRightsProfile();
   function legalGroups() {
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
     const rows = [

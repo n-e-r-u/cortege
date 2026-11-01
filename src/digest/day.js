@@ -5,7 +5,8 @@ const { ARCHIVE_DIR, archLine } = require('./archive');
 const { CAT, BASE_TTL } = require('../categories');
 const { MIN } = require('../config');
 const { activeReports } = require('../reports/store');
-const { inFrance, whereOf } = require('../geo/communes');
+const { whereOf } = require('../geo/communes');
+const { inZone } = require('../profiles');
 const { parisDay } = require('../time');
 
 // ---- Lignes d'une journée (digest et pages publiques) ----
@@ -19,7 +20,7 @@ function dayRows(date) {
   // Les bilans ne comptent que la France (métropole et outre-mer) : les points envoyés d'ailleurs restent sur la carte en direct,
   // mais ne faussent ni les totaux ni les cartes. On garde seulement leur nombre.
   const fr = [], abroad = [];
-  for (const r of rows) (inFrance(r.lat, r.lng) ? fr : abroad).push(r);
+  for (const r of rows) (inZone(r.lat, r.lng) ? fr : abroad).push(r);
   // Villes : chaque point est rattaché à sa commune (contours OSM) ou, à défaut, à sa ville ou à son agglomération
   const zones = {}, names = {};
   for (const r of fr) {
@@ -32,6 +33,6 @@ function dayRows(date) {
   return { rows: fr, zones, abroad: abroad.length };
 }
 // Nombre de signalements en France d'un jour archivé (comparaison sur 14 jours)
-const dayCountFr = d => dedupeRows(readArchiveDay(d)).filter(r => inFrance(r.lat, r.lng)).length;
+const dayCountFr = d => dedupeRows(readArchiveDay(d)).filter(r => inZone(r.lat, r.lng)).length;
 
 module.exports = { dayRows, dayCountFr };

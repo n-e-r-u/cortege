@@ -7,6 +7,8 @@ const fs = require('fs');
 const path = require('path');
 
 const { PORT, EVENT_NAME, DATA_DIR, MIN } = require('./src/config');
+// Profils pays chargés en premier : ils complètent la liste des types de signalement (types propres à un pays)
+require('./src/profiles');
 const { q, isBusy, setMeta } = require('./src/db');
 const { send } = require('./src/http/respond');
 const { gate } = require('./src/http/saturation');

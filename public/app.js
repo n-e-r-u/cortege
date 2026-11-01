@@ -42,9 +42,45 @@
       throw e;
     } finally { clearTimeout(to); }
   })();
+  // Nom d'origine (français) de chaque type, gardé pour le profil pays
+  for (const c of cfg.categories || []) c.src = c.label;
   // Libellés venus du serveur (en français) : traduits ici une fois pour toutes
   for (const list of [cfg.categories, cfg.groups, cfg.poiKinds, cfg.orderKinds, cfg.eventTypes]) for (const x of list || []) if (x.label) x.label = t(x.label);
   const CAT = Object.fromEntries(cfg.categories.map(c => [c.id, c]));
+  // ---- Profils pays : noms des types, types masqués ou propres au pays, unités, numéros, droits (profiles/*.json sur le serveur) ----
+  // Le profil actif est celui de l'endroit où tu es (sinon du centre de la carte). Hors de toutes les zones : le premier.
+  const PROFILES = Array.isArray(cfg.profiles) && cfg.profiles.length ? cfg.profiles
+    : [{ code: 'fr', labels: {}, hidden: [], units: 'metric', emergency: { medical: '15', general: '112', pharmacy: '3237' }, rights: null }];
+  let profile = null;
+  const ringHas = (ring, lat, lng) => { let ins = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) ins = !ins; } return ins; };
+  // Près du bord d'une zone (contour simplifié qui coupe une ville côtière) : compte dedans
+  const nearRing = (ring, lat, lng, km) => { const k = Math.cos(lat * Math.PI / 180), P = [lng * k, lat];
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const A = [ring[j][0] * k, ring[j][1]], B = [ring[i][0] * k, ring[i][1]];
+      if (Math.abs(A[1] - lat) > 2 && Math.abs(B[1] - lat) > 2) continue;
+      const dx = B[0] - A[0], dy = B[1] - A[1], L2 = dx * dx + dy * dy, s = L2 ? Math.max(0, Math.min(1, ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / L2)) : 0;
+      if (Math.hypot(P[0] - A[0] - s * dx, P[1] - A[1] - s * dy) * 111 <= km) return true;
+    } return false; };
+  function profileAt(lat, lng) {
+    const others = PROFILES.filter(p => p.area && p.bbox);
+    for (const p of others) {
+      const b = p.bbox; if (lat < b[0] - 0.5 || lat > b[2] + 0.5 || lng < b[1] - 0.7 || lng > b[3] + 0.7) continue;
+      if (p.area.some(r => ringHas(r, lat, lng))) return p;
+    }
+    for (const p of others) if (p.area.some(r => nearRing(r, lat, lng, 30))) return p;
+    return PROFILES[0];
+  }
+  // Un type existe-t-il là où tu regardes ? (masqué par le profil, ou propre à un autre pays)
+  const catHere = c => !(profile.hidden || []).includes(c.id) && (!c.profiles || c.profiles.includes(profile.code));
+  function applyProfile(p) {
+    if (p === profile) return;
+    profile = p;
+    for (const c of cfg.categories) c.label = t((p.labels && p.labels[c.id]) || c.src);
+    document.querySelectorAll('[data-profile]').forEach(e => { e.hidden = !e.dataset.profile.split(' ').includes(p.code); });
+    document.dispatchEvent(new CustomEvent('cortege-profile'));
+  }
+  applyProfile(PROFILES[0]);
   let ALERT_RADIUS = cfg.alertRadius || 300;   // mètres (réglable par l'admin)
   const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
@@ -143,12 +179,19 @@
   let evHidden = false; try { evHidden = localStorage.getItem('cortege-ev-hidden') === '1'; } catch {}
   let evCount = () => 0;       // nombre d'événements affichables, défini avec l'agenda
   let me = null, meMarker = null, watchId = null, meAcc = Infinity, meAt = 0;
+  // Profil pays de l'endroit où tu es (sinon du centre de la carte), recalculé quand la carte bouge
+  const updateProfile = () => { const c = map.getCenter(), at = me || [c.lat, c.lng]; applyProfile(profileAt(at[0], at[1])); };
+  map.on('moveend', updateProfile);
+  updateProfile();
 
   // ---- Utilitaires ----
   const ago = x => { const m = Math.round((Date.now() - x) / MIN); return m < 1 ? t('à l’instant') : t('il y a {m} min', { m }); };
   const left = exp => { const m = Math.max(0, Math.round((exp - Date.now()) / MIN)); return t('{m} min', { m }); };
   const dist = (a, b) => map.distance(a, b);
-  const fmtDist = m => m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
+  // Distances : mètres et kilomètres, ou pieds et miles selon le pays (profil)
+  const fmtDist = m => profile.units === 'imperial'
+    ? (m < 160 ? `${Math.round(m * 3.28084 / 10) * 10} ft` : `${(m / 1609.34).toFixed(1)} mi`)
+    : m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
   function toast(msg) {
     const el = $('#toast'); el.textContent = t(msg); el.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);
@@ -1150,8 +1193,11 @@
     if (name) root.append(el('div', { class: 'pop-meta' }, k.label + (me ? ' · ' + fmtDist(dist(me, [x[2], x[3]])) : '')));
     if (hours) root.append(el('p', { class: 'poi-h' }, '🕒 ', hoursFr(hours)));
     if (phone) root.append(el('p', {}, el('a', { href: 'tel:' + phone.replace(/[^\d+]/g, '') }, '📞 ' + phone)));
-    if (kind === 'pharma') root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le') + ' ', el('a', { href: 'tel:3237' }, '3237'), '.'));
-    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences') : t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.')));
+    // Numéros du pays (profil) : le 3237 n'existe qu'en France, le 15 et le 112 en Europe, le 911 aux États-Unis…
+    const pf = profileAt(x[2], x[3]), em = pf.emergency || {};
+    if (kind === 'pharma' && em.pharmacy) root.append(el('p', { class: 'poi-tip' }, t('Pharmacie de garde (nuit, dimanche, jour férié) : appelle le') + ' ', el('a', { href: 'tel:' + em.pharmacy }, em.pharmacy), '.'));
+    if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences')
+      : pf.code === 'fr' ? t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.') : t('Urgences : pas indiqué. En cas d’urgence, appelle le {n}.', { n: em.medical || em.general || '112' })));
     if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;
@@ -1335,7 +1381,7 @@
       const row = el('div', { class: 'row' });
       for (const c of cfg.categories.filter(c => c.group === g.id && !c.beaconOnly)) {
         const b = el('button', { class: 'cat', 'data-cat': c.id, style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
-        if (c.off) b.hidden = true;
+        if (c.off || !catHere(c)) b.hidden = true;
         b.onclick = () => submit(c.id);
         row.append(b);
       }
@@ -1343,6 +1389,15 @@
     }
   })();
 
+  // Profil pays qui change (tu passes la frontière, ou tu regardes un autre pays) : noms et types disponibles mis à jour
+  document.addEventListener('cortege-profile', () => {
+    for (const b of document.querySelectorAll('#catGrid .cat')) {
+      const c = CAT[b.dataset.cat]; if (!c) continue;
+      b.hidden = !!c.off || !catHere(c);
+      const tx = [...b.childNodes].find(n => n.nodeType === 3); if (tx) tx.nodeValue = c.label;
+    }
+    if (typeof regroup === 'function') regroup();
+  });
   // Point visé = position du viseur à l'écran
   const target = () => map.containerPointToLatLng([map.getSize().x / 2, aimY()]);
   // ---- File d'attente hors ligne ----
@@ -1633,6 +1688,23 @@
   const normCity = c => String(c || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
   const dayFr = x => new Date(x).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'short', year: 'numeric' });
   const kmTxt = m => m < 1000 ? t('ici') : t('à {d} km', { d: m < 10000 ? (m / 1000).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') : Math.round(m / 1000) });
+  // Droits du pays (hors France, dont le contenu est dans la page) : sections du profil pays, et lien vers une association
+  function renderRightsProfile() {
+    const box = $('#rightsProfile'); if (!box) return;
+    box.textContent = '';
+    if (profile.violence && profile.violence.url) box.append(el('a', { class: 'violence-btn', href: profile.violence.url, target: '_blank', rel: 'noopener noreferrer' },
+      el('b', {}, t(profile.violence.label)), el('span', {}, t(profile.violence.desc || ''))));
+    if (!Array.isArray(profile.rights) || !profile.rights.length) return;
+    box.append(el('h3', { class: 'menu-group' }, t('En cas de')));
+    for (const sec of profile.rights) {
+      const ul = el('ul');
+      // Textes du profil (fichier du serveur, gras autorisé) traduits dans la langue de l'appli
+      for (const it of sec.items || []) { const li = document.createElement('li'); li.innerHTML = t(it); ul.append(li); }
+      box.append(el('details', { class: 'right' }, el('summary', {}, t(sec.title)), ul));
+    }
+  }
+  document.addEventListener('cortege-profile', renderRightsProfile);
+  renderRightsProfile();
   function legalGroups() {
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
     const rows = [

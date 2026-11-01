@@ -1,0 +1,42 @@
+{
+  "code": "us",
+  "name": "États-Unis",
+  "area": "us",
+  "lang": "en",
+  "units": "imperial",
+  "emergency": { "medical": "911", "general": "911", "poison": "1-800-222-1222" },
+  "labels": {
+    "crs": "Police anti-émeute",
+    "bac": "Policiers en civil / à vélo",
+    "militaires": "Garde nationale",
+    "inter": "Unités d’intervention (SWAT)",
+    "blinde": "Véhicule blindé (MRAP, BearCat)",
+    "tirs": "Tirs (balles en caoutchouc, pepper balls)",
+    "sommations": "Ordre de dispersion",
+    "legal": "Legal observers",
+    "blocus": "Occupation (lycée / fac)"
+  },
+  "hidden": [],
+  "extra": [
+    { "id": "ice", "group": "fdo", "label": "ICE / agents fédéraux", "glyph": "🛂", "ttl": 30, "alert": true, "merge": { "r": 150, "move": true } }
+  ],
+  "rights": [
+    { "title": "Si la police t’arrête", "items": [
+      "<b>Tu as le droit de garder le silence.</b> Dis-le à voix haute : « I am going to remain silent. I want a lawyer. »",
+      "Demande « Am I free to go? » (suis-je libre de partir ?). Si oui, pars calmement.",
+      "Ne consens à aucune fouille : « I do not consent to a search ». Ne résiste pas physiquement.",
+      "Ne signe rien et ne réponds à aucune question sans avocat·e."
+    ] },
+    { "title": "Avant de partir", "items": [
+      "Écris au stylo sur ton bras le numéro de la hotline juridique de ta ville (souvent tenue par la National Lawyers Guild).",
+      "Filmer la police dans l’espace public est en général légal, à distance et sans gêner son action."
+    ] },
+    { "title": "Si des agents de l’ICE se présentent", "items": [
+      "Tu n’as pas à ouvrir ta porte sans mandat signé par un·e juge : demande à le voir, glissé sous la porte ou contre la vitre.",
+      "Garde le silence et ne signe aucun document.",
+      "Ne mens pas et ne présente pas de faux papiers."
+    ] }
+  ],
+  "violence": { "label": "Connaître tes droits (ACLU)", "desc": "Les droits des manifestant·es, expliqués par l’ACLU.", "url": "https://www.aclu.org/know-your-rights/protesters-rights" },
+  "orders": false
+}

@@ -7,12 +7,15 @@ const { ROOT } = require('./config');
 
 const DIR = path.join(ROOT, 'public', 'lang');
 const norm = s => String(s).replace(/\s+/g, ' ').trim();
-// Langue de secours de l'instance : celle des téléphones dont la langue n'est pas disponible
-const DEFAULT_LANG = process.env.DEFAULT_LANG || 'fr';
+// Langue de secours de l'instance (téléphones dont la langue n'est pas disponible) : DEFAULT_LANG, sinon la langue
+// du premier profil pays (anglais pour une instance américaine), sinon le français
+const firstProfileLang = (() => { try { const c = String(process.env.PROFILES || 'fr').split(',')[0].trim();
+  return JSON.parse(fs.readFileSync(path.join(ROOT, 'profiles', c + '.json'), 'utf8')).lang; } catch { return null; } })();
 let INDEX = [];
 try { INDEX = JSON.parse(fs.readFileSync(path.join(DIR, 'index.json'), 'utf8')); } catch {}
 if (!INDEX.some(x => x.code === 'fr')) INDEX.unshift({ code: 'fr', base: 'fr', name: 'Français', dir: 'ltr', locale: 'fr-FR', n: 0 });
 const LANGS = INDEX.map(x => x.code);
+const DEFAULT_LANG = [process.env.DEFAULT_LANG, firstProfileLang, 'fr'].find(l => l && LANGS.includes(l));
 const DICT = {};
 for (const x of INDEX) {
   DICT[x.code] = {};
@@ -26,6 +29,6 @@ function tr(lang, s, v) {
 }
 // Liste des langues pour le téléphone (/lang/langs.js), chargée avant i18n.js
 const langsJs = () => `window.CORTEGE_LANGS=${JSON.stringify(INDEX.map(({ code, base, name, dir, locale, plural, n }) => ({ code, base, name, dir, locale, plural, n })))};`
-  + `window.CORTEGE_DEFAULT_LANG=${JSON.stringify(LANGS.includes(DEFAULT_LANG) ? DEFAULT_LANG : 'fr')};\n`;
+  + `window.CORTEGE_DEFAULT_LANG=${JSON.stringify(DEFAULT_LANG)};\n`;
 
 module.exports = { LANGS, LOCALE, DEFAULT_LANG, tr, langOf, langsJs };

@@ -2,7 +2,10 @@
   const ago = x => { const m = Math.round((Date.now() - x) / MIN); return m < 1 ? t('à l’instant') : t('il y a {m} min', { m }); };
   const left = exp => { const m = Math.max(0, Math.round((exp - Date.now()) / MIN)); return t('{m} min', { m }); };
   const dist = (a, b) => map.distance(a, b);
-  const fmtDist = m => m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
+  // Distances : mètres et kilomètres, ou pieds et miles selon le pays (profil)
+  const fmtDist = m => profile.units === 'imperial'
+    ? (m < 160 ? `${Math.round(m * 3.28084 / 10) * 10} ft` : `${(m / 1609.34).toFixed(1)} mi`)
+    : m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
   function toast(msg) {
     const el = $('#toast'); el.textContent = t(msg); el.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);

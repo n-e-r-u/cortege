@@ -96,6 +96,15 @@ function scanCode() {
     for (const m of s.matchAll(new RegExp(`(?<![\\w.])(?:t|toast|tr\\([^,()\\n]{1,30},)\\s*\\(?${lit}`, 'g'))) add(un(m[1]), null, ref);
     if (ref.startsWith('src') && !ref.includes('admin')) for (const m of s.matchAll(new RegExp(`error: ${lit}`, 'g'))) add(un(m[1]), null, ref);
   }
+  // Profils pays : noms des types, droits, liens (textes en français, traduits comme le reste)
+  const pdir = path.join(ROOT, 'profiles');
+  if (fs.existsSync(pdir)) for (const f of fs.readdirSync(pdir).filter(f => f.endsWith('.json')).sort()) {
+    const p = JSON.parse(fs.readFileSync(path.join(pdir, f), 'utf8')), ref = 'profiles/' + f;
+    for (const v of Object.values(p.labels || {})) add(v, null, ref);
+    for (const x of p.extra || []) add(x.label, null, ref);
+    for (const sec of p.rights || []) { add(sec.title, null, ref); for (const it of sec.items || []) add(it, null, ref); }
+    if (p.violence) { add(p.violence.label, null, ref); if (p.violence.desc) add(p.violence.desc, null, ref); }
+  }
   return found;
 }
 if (process.argv.includes('--pot')) {

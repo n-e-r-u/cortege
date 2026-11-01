@@ -356,8 +356,11 @@ msgstr "Places on the map"
 msgid "<b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span>"
 msgstr "<b>Show places</b><span>Places of power and useful places, from OpenStreetMap. They appear as you zoom in, the most important first.</span>"
 
-msgid "Pharmacie de garde : appelle le 3237. Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
-msgstr "Pharmacy on duty: call 3237. A place is missing or wrong? Report it to the contact address (“Legal notice” page) and it will be fixed."
+msgid "Pharmacie de garde : appelle le 3237."
+msgstr "Pharmacy on duty: call 3237."
+
+msgid "Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
+msgstr "A place is missing or wrong? Report it to the contact address (“Legal notice” page) and it will be fixed."
 
 msgid "Le détail de chaque version est sur GitHub (fichier CHANGELOG)."
 msgstr "Details of each version are on GitHub (CHANGELOG file)."
@@ -2697,3 +2700,160 @@ msgstr "Digest disabled: add ADMIN_KEY to the server variables."
 msgid "Clé incorrecte."
 msgstr "Wrong key."
 
+
+# --- 2.10 ---
+#: client/app/12-lieux-calques.js
+msgid "Urgences : pas indiqué. En cas d’urgence, appelle le {n}."
+msgstr "Emergency department: not stated. In an emergency, call {n}."
+
+#: src/routes/reports.js
+msgid "Ce type de signalement n’existe pas ici."
+msgstr "This type of report doesn’t exist here."
+
+#: profiles/de.json
+msgid "Police anti-émeute (Bereitschaftspolizei)"
+msgstr "Riot police (Bereitschaftspolizei)"
+
+#: profiles/de.json
+msgid "Unité d’interpellation (BFE)"
+msgstr "Arrest unit (BFE)"
+
+#: profiles/de.json
+msgid "Unités d’intervention (SEK, GSG 9)"
+msgstr "Special forces (SEK, GSG 9)"
+
+#: profiles/de.json
+msgid "Véhicule spécial (Sonderwagen)"
+msgstr "Armoured vehicle (Sonderwagen)"
+
+#: profiles/de.json
+msgid "Nasse (Kessel)"
+msgstr "Kettle (Kessel)"
+
+#: profiles/de.json
+msgid "Lacrymo / spray au poivre"
+msgstr "Tear gas / pepper spray"
+
+#: profiles/de.json
+msgid "Annonces de la police (Durchsagen)"
+msgstr "Police announcements (Durchsagen)"
+
+#: profiles/de.json
+msgid "Street medics (Demosanis)"
+msgstr "Street medics (Demosanis)"
+
+#: profiles/de.json
+msgid "Legal team (EA)"
+msgstr "Legal team (EA)"
+
+#: profiles/de.json
+msgid "Si la police t’interpelle"
+msgstr "If the police stop you"
+
+#: profiles/de.json
+msgid "Donne seulement ton identité (nom, adresse, date de naissance). Pour le reste, tu as le droit de te taire : « Ich mache keine Angaben »."
+msgstr "Only give your identity (name, address, date of birth). For everything else, you have the right to stay silent: “Ich mache keine Angaben”."
+
+#: profiles/de.json
+msgid "Ne signe rien et appelle l’EA (Ermittlungsausschuss), la legal team des manifs."
+msgstr "Don’t sign anything and call the EA (Ermittlungsausschuss), the protest legal team."
+
+#: profiles/de.json
+msgid "Écris au stylo sur ton bras le numéro de l’EA de ta ville."
+msgstr "Write your city’s EA number on your arm in pen."
+
+#: profiles/de.json
+msgid "Se masquer le visage pendant une manifestation est interdit en Allemagne (Vermummungsverbot)."
+msgstr "Covering your face during a protest is prohibited in Germany (Vermummungsverbot)."
+
+#: profiles/us.json
+msgid "Police anti-émeute"
+msgstr "Riot police"
+
+#: profiles/us.json
+msgid "Policiers en civil / à vélo"
+msgstr "Plainclothes / bike police"
+
+#: profiles/us.json
+msgid "Garde nationale"
+msgstr "National Guard"
+
+#: profiles/us.json
+msgid "Unités d’intervention (SWAT)"
+msgstr "SWAT teams"
+
+#: profiles/us.json
+msgid "Véhicule blindé (MRAP, BearCat)"
+msgstr "Armoured vehicle (MRAP, BearCat)"
+
+#: profiles/us.json
+msgid "Tirs (balles en caoutchouc, pepper balls)"
+msgstr "Rubber bullets / pepper balls"
+
+#: profiles/us.json
+msgid "Ordre de dispersion"
+msgstr "Dispersal order"
+
+#: profiles/us.json
+msgid "Legal observers"
+msgstr "Legal observers"
+
+#: profiles/us.json
+msgid "Occupation (lycée / fac)"
+msgstr "Occupation (school / campus)"
+
+#: profiles/us.json
+msgid "ICE / agents fédéraux"
+msgstr "ICE / federal agents"
+
+#: profiles/us.json
+msgid "Si la police t’arrête"
+msgstr "If the police stop you"
+
+#: profiles/us.json
+msgid "<b>Tu as le droit de garder le silence.</b> Dis-le à voix haute : « I am going to remain silent. I want a lawyer. »"
+msgstr "<b>You have the right to remain silent.</b> Say it out loud: “I am going to remain silent. I want a lawyer.”"
+
+#: profiles/us.json
+msgid "Demande « Am I free to go? » (suis-je libre de partir ?). Si oui, pars calmement."
+msgstr "Ask “Am I free to go?”. If yes, leave calmly."
+
+#: profiles/us.json
+msgid "Ne consens à aucune fouille : « I do not consent to a search ». Ne résiste pas physiquement."
+msgstr "Don’t consent to any search: “I do not consent to a search”. Don’t resist physically."
+
+#: profiles/us.json
+msgid "Ne signe rien et ne réponds à aucune question sans avocat·e."
+msgstr "Don’t sign anything and don’t answer any questions without a lawyer."
+
+#: profiles/us.json
+msgid "Écris au stylo sur ton bras le numéro de la hotline juridique de ta ville (souvent tenue par la National Lawyers Guild)."
+msgstr "Write your city’s legal hotline number on your arm in pen (often run by the National Lawyers Guild)."
+
+#: profiles/us.json
+msgid "Filmer la police dans l’espace public est en général légal, à distance et sans gêner son action."
+msgstr "Filming the police in public is generally legal, from a distance and without interfering."
+
+#: profiles/us.json
+msgid "Si des agents de l’ICE se présentent"
+msgstr "If ICE agents show up"
+
+#: profiles/us.json
+msgid "Tu n’as pas à ouvrir ta porte sans mandat signé par un·e juge : demande à le voir, glissé sous la porte ou contre la vitre."
+msgstr "You don’t have to open your door without a warrant signed by a judge: ask to see it, slid under the door or held to the window."
+
+#: profiles/us.json
+msgid "Garde le silence et ne signe aucun document."
+msgstr "Stay silent and don’t sign any document."
+
+#: profiles/us.json
+msgid "Ne mens pas et ne présente pas de faux papiers."
+msgstr "Don’t lie and don’t show false documents."
+
+#: profiles/us.json
+msgid "Connaître tes droits (ACLU)"
+msgstr "Know your rights (ACLU)"
+
+#: profiles/us.json
+msgid "Les droits des manifestant·es, expliqués par l’ACLU."
+msgstr "Protesters’ rights, explained by the ACLU."

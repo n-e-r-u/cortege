@@ -66,4 +66,8 @@
   let evHidden = false; try { evHidden = localStorage.getItem('cortege-ev-hidden') === '1'; } catch {}
   let evCount = () => 0;       // nombre d'événements affichables, défini avec l'agenda
   let me = null, meMarker = null, watchId = null, meAcc = Infinity, meAt = 0;
+  // Profil pays de l'endroit où tu es (sinon du centre de la carte), recalculé quand la carte bouge
+  const updateProfile = () => { const c = map.getCenter(), at = me || [c.lat, c.lng]; applyProfile(profileAt(at[0], at[1])); };
+  map.on('moveend', updateProfile);
+  updateProfile();
 
