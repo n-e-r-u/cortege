@@ -2853,3 +2853,6 @@ msgstr ""
 #: profiles/us.json
 msgid "Les droits des manifestant·es, expliqués par l’ACLU."
 msgstr ""
+
+msgid "Propulsé par <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un projet de Neru"
+msgstr ""
