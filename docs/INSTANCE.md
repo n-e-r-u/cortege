@@ -78,7 +78,7 @@ Si la langue de ton pays manque : Administration › Langues › « Faire tradui
 
 ## 6. La mention d'origine
 
-Le nom, le logo et les liens de ton instance sont libres (Administration › Réglages, `public/brand/logo.png`). La mention « Propulsé par Cortège, un projet de Neru », avec le lien vers le dépôt d'origine, doit rester visible dans le menu : voir [les conditions additionnelles de la licence](../LICENSE-ADDITIONAL-TERMS.md). Le code modifié doit aussi rester public (AGPL).
+Le nom, le logo et les liens de ton instance sont libres (Administration › Réglages, `public/brand/logo.png`). La mention « Propulsé par Cortège, un projet de Neru », avec les liens de l'auteur (dépôt d'origine, neru.tv, Instagram, Ko-fi), doit rester visible dans le menu ; tes propres liens s'y ajoutent sans la remplacer : voir [les conditions additionnelles de la licence](../LICENSE-ADDITIONAL-TERMS.md). Le code modifié doit aussi rester public (AGPL).
 
 ## 7. Partager tes améliorations
 

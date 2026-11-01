@@ -11,6 +11,7 @@ Configurer l'instance depuis l'admin, sans toucher au serveur ni redémarrer :
 - **Réglages › L'instance** : nom de la carte, email de contact, hébergeur, lien violences policières, lien du code source, pseudo, Instagram, site, lien de soutien. Les variables d'environnement ne servent plus que de valeurs de départ.
 - **Serveur** : version en ligne et version publiée sur le dépôt (vérifiée au plus toutes les 6 h, seulement à l'ouverture de l'admin), commande de mise à jour à copier, mémoire, disques, base, cartes hébergées, dernière sauvegarde. Rien ne s'installe depuis l'admin.
 - Sauvegarde : le script note la date et la taille de la dernière sauvegarde (lues par l'onglet Serveur) et sauvegarde aussi les traductions déposées. À réinstaller une fois : `sudo install -m 700 tools/cortege-backup.sh /usr/local/sbin/cortege-backup`.
+- Mention d'origine renforcée : « Propulsé par Cortège, un projet de Neru » et les liens GitHub, neru.tv, Instagram et Ko-fi restent affichés (menu de l'appli, pages des bilans) quelle que soit la marque choisie pour l'instance ; seule une instance qui affiche déjà exactement ces liens s'en passe. Conditions additionnelles de la licence mises à jour.
 - Les téléphones ouverts appliquent un changement de pays, de types ou de marque en se rechargeant la prochaine fois que l'appli passe en arrière-plan.
 
 ## 2.10.0

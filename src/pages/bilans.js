@@ -6,7 +6,7 @@ const { CAT } = require('../categories');
 const { CITY_PAGE_MIN } = require('../digest/pub');
 const { ORDER_KIND } = require('../orders');
 const { ROOT, MIN } = require('../config');
-const { instance } = require('../instance');
+const { instance, showCredit, CREDIT } = require('../instance');
 const { cityIndex } = require('./cities');
 const { distM } = require('../util');
 
@@ -53,6 +53,7 @@ function pubShell(req, { title, desc, body, ld }) {
 <nav class="links" aria-label="Pages">${[['/', 'Carte'], ['/agenda', 'Agenda'], ['/arretes', 'Arrêtés'], ['/manif', 'Bilans'], ['/villes', 'Villes'], ['/droits', 'Tes droits'], ['/legal-teams', 'Legal teams']]
   .map(([u, l]) => `<a href="${u}"${here.endsWith(u) && u !== '/' ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</nav>${body}
 <div class="cta"><a class="main" href="/">Ouvrir la carte</a><a href="${htmlEsc(BRAND.instagram || '/')}" rel="noopener">${BRAND.handle ? 'Suivre @' + htmlEsc(BRAND.handle) : 'Suivre le projet'}</a></div>
+${showCredit() ? `<p class="fine">Propulsé par <a href="${CREDIT.repo}" rel="noopener">Cortège</a>, un projet de Neru · <a href="${CREDIT.site}" rel="noopener">neru.tv</a> · <a href="${CREDIT.instagram}" rel="noopener">Instagram @neru</a> · <a href="${CREDIT.kofi}" rel="noopener">Ko-fi</a></p>` : ''}
 <p class="fine">Signalements anonymes envoyés par les manifestant·es : ce ne sont pas des faits vérifiés, ils sont confirmés ou contestés par les autres sur place. Positions à une dizaine de mètres près ; rien sur les personnes qui ont signalé.</p></main></body></html>`;
 }
 const GOOGLE_VERIFY = /^google[\w-]{6,60}\.html$/.test(process.env.GOOGLE_SITE_VERIFICATION || '') ? process.env.GOOGLE_SITE_VERIFICATION : '';

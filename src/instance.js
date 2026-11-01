@@ -42,6 +42,11 @@ function cleanInstance(b) {
   if (Object.keys(ob).length) out.brand = ob;
   return out;
 }
+// Liens de Neru, affichés sur toute instance avec la mention d'origine (LICENSE-ADDITIONAL-TERMS.md), quels que soient
+// les liens choisis pour l'instance. Seule une instance qui affiche déjà exactement ces liens (celle de Neru) s'en passe.
+const CREDIT = { repo: 'https://github.com/n-e-r-u/cortege', site: 'https://neru.tv', instagram: 'https://www.instagram.com/neru/', kofi: 'https://ko-fi.com/neru' };
+const showCredit = () => { const b = instance().brand;
+  return !(b.handle === 'neru' && /^https:\/\/(www\.)?instagram\.com\/neru\/?$/.test(b.instagram || '') && /^https:\/\/(www\.)?neru\.tv\/?$/.test(b.site || '') && /^https:\/\/ko-fi\.com\/neru\/?$/.test(b.kofi || '')); };
 function saveInstance(o) { setMeta('instance', JSON.stringify(o)); C.at = 0; overrides(); }
 
-module.exports = { instance, cleanInstance, saveInstance, INSTANCE_DEFAULTS: DEFAULTS };
+module.exports = { instance, cleanInstance, saveInstance, INSTANCE_DEFAULTS: DEFAULTS, CREDIT, showCredit };

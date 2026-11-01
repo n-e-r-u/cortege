@@ -308,6 +308,7 @@ details.right b { color: var(--fg); }
 .violence-btn b::after { content: " →"; }
 .violence-btn span { font-size: 13px; color: var(--muted); }
 .inline-link { color: var(--accent); font-weight: 700; }
+.powered p { margin: 4px 0; } .powered-links a { color: var(--accent); }
 
 /* ---- Feuilles : croix toujours visible (en-tête collant) + fond cliquable pour fermer ---- */
 .sheet-head { position: sticky; top: -16px; z-index: 3; margin: -16px -16px 6px; padding: 14px 16px 10px; background: var(--surface); border-radius: 20px 20px 0 0; }

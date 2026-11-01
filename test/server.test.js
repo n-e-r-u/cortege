@@ -872,8 +872,12 @@ test('admin : réglages de l’instance sans redémarrer (vide = valeur du serve
   assert.ok(cfg.brand.instagram, 'champ non rempli : valeur du serveur');
   const bilan = await fetch(B + '/manif').then(r => r.text());
   assert.match(bilan, /@demo/, 'les pages du serveur suivent la marque');
+  assert.equal(cfg.credit, true, 'autre marque : mention et liens de Neru affichés');
+  for (const u of ['github.com/n-e-r-u/cortege', 'neru.tv', 'instagram.com/neru/', 'ko-fi.com/neru']) assert.ok(bilan.includes(u), 'lien gardé : ' + u);
   await admin('/api/admin/instance', {});
-  assert.equal((await fetch(B + '/api/config').then(r => r.json())).event, 'Carte des mobilisations');
+  const back = await fetch(B + '/api/config').then(r => r.json());
+  assert.equal(back.event, 'Carte des mobilisations');
+  assert.equal(back.credit, false, 'instance de Neru : pas de doublon');
 });
 
 test('admin : pays activés et corrigés sans redémarrer, export du profil', async () => {

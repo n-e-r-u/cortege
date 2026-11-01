@@ -92,14 +92,17 @@
   }
   if (cfg.violenceUrl) document.querySelectorAll('#violenceLink, .violence-inline').forEach(a => (a.href = cfg.violenceUrl));
   if (cfg.brand) {
-    // Sur l'instance d'origine, la mention « propulsé par » ferait doublon avec le crédit
-    if (cfg.brand.handle === 'neru') $('#poweredBy').hidden = true;
-    document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + cfg.brand.handle));
-    document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => (a.href = cfg.brand.instagram));
-    $('#brandLink').href = cfg.brand.instagram;
-    document.querySelectorAll('a[href="https://ko-fi.com/neru"]').forEach(a => { if (cfg.brand.kofi) a.href = cfg.brand.kofi; else a.hidden = true; });
-    const siteLabel = cfg.brand.site.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    document.querySelectorAll('a[href="https://neru.tv"]').forEach(a => { a.href = cfg.brand.site; if (!a.querySelector('svg')) a.textContent = siteLabel; });
+    // Mention d'origine et liens de Neru (GitHub, site, Instagram, Ko-fi) : toujours là, sauf sur une instance qui affiche déjà
+    // exactement ces liens (celle de Neru), où ils feraient doublon. Les liens de l'instance ne remplacent jamais ceux-là.
+    const B = cfg.brand;
+    $('#poweredBy').hidden = cfg.credit === false;
+    const notCredit = a => !a.closest('#poweredBy');
+    document.querySelectorAll('.handle').forEach(n => (n.textContent = '@' + B.handle));
+    document.querySelectorAll('a[href="https://www.instagram.com/neru/"]').forEach(a => { if (notCredit(a)) a.href = B.instagram; });
+    $('#brandLink').href = B.instagram;
+    document.querySelectorAll('a[href="https://ko-fi.com/neru"]').forEach(a => { if (!notCredit(a)) return; if (B.kofi) a.href = B.kofi; else a.hidden = true; });
+    const siteLabel = (B.site || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    document.querySelectorAll('a[href="https://neru.tv"]').forEach(a => { if (!notCredit(a)) return; a.href = B.site; if (!a.querySelector('svg')) a.textContent = siteLabel; });
   }
 
   // Logo absent : on le masque (fait ici et pas dans le HTML, que la politique de sécurité interdit)
