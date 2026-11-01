@@ -56,6 +56,18 @@
     root.append(el('p', { class: 'pop-hint' }, where === 'far'
       ? t('Tu es à {d} : seules les personnes sur place peuvent dire que c’est parti.', { d: fmtDist(dist(me, [r.lat, r.lng])) })
       : t('Tu es sur place et tu ne vois plus rien ? Appuie sur « Plus là ».')));
+    // Envoyé par ce téléphone : le retirer (posé par erreur) ou le déplacer (mal placé)
+    if (sent.has(r.id)) {
+      const alone = !r.up && !r.ver, btns = [];
+      if (alone && !r.live && Date.now() - r.t < 10 * MIN) { const mv = el('button', { class: 'secondary' }, '✥ ' + t('Déplacer')); mv.onclick = () => moveOwn(r); btns.push(mv); }
+      if (r.up) { const wd = el('button', { class: 'secondary' }, t('Retirer ma voix')); wd.onclick = () => ownSelf(r.id, { action: 'remove' }); btns.push(wd); }
+      else if (alone) {
+        const rmv = el('button', { class: 'danger' }, t('Retirer (erreur)'));
+        rmv.onclick = () => { if (rmv.dataset.armed) ownSelf(r.id, { action: 'remove' }); else { rmv.dataset.armed = '1'; rmv.textContent = t('Confirmer le retrait'); } };
+        btns.push(rmv);
+      }
+      if (btns.length) root.append(el('p', { class: 'pop-hint' }, t('Tu as envoyé ce signalement.')), el('div', { class: 'pop-actions own' }, ...btns));
+    }
     if (orga) {
       const ok = el('button', { class: 'yes' }, '✓ ' + t(r.ver ? 'Vérifié' : 'Vérifier (orga)'));
       const rm = el('button', { class: 'danger' }, t('Retirer (faux)'));

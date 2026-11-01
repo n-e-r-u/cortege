@@ -827,3 +827,28 @@ test('traductions : fichiers valides, mêmes textes dans chaque langue', () => {
   assert.deepEqual(Object.keys(ar).sort(), Object.keys(en).sort());
   for (const k of ['Signaler', 'Droits', 'Mode manif', 'Garde à vue']) assert.ok(en[k] && es[k] && ar[k], k);
 });
+
+test('son propre signalement : retiré sans trace, déplacé de peu, sa voix seulement si d’autres l’ont confirmé', async () => {
+  const me = phone(), other = phone(), p = place();
+  const a = (await post('/api/reports', { cat: 'eau', ...p }, me)).j;
+  // Un autre téléphone ne peut ni le retirer ni le déplacer
+  assert.equal((await post(`/api/reports/${a.id}/self`, { action: 'remove' }, other)).s, 403);
+  // Déplacé de 50 m : oui ; de 500 m : non
+  const mv = await post(`/api/reports/${a.id}/self`, { action: 'move', lat: p.lat + 0.00045, lng: p.lng }, me);
+  assert.equal(mv.s, 200); assert.ok(Math.abs(mv.j.lat - (p.lat + 0.00045)) < 1e-4);
+  assert.equal((await post(`/api/reports/${a.id}/self`, { action: 'move', lat: p.lat + 0.005, lng: p.lng }, me)).s, 400);
+  // Retiré : plus sur la carte, et rien dans l'archive des bilans
+  assert.deepEqual((await post(`/api/reports/${a.id}/self`, { action: 'remove' }, me)).j, { removed: true });
+  assert.equal(row(a.id), undefined);
+  const arch = fs.readdirSync(DIR + '/d/archive').map(f => fs.readFileSync(DIR + '/d/archive/' + f, 'utf8')).join('');
+  assert.ok(!arch.includes(require('crypto').createHash('sha1').update('a|' + a.id).digest('base64url').slice(0, 10)), 'pas archivé');
+  // Confirmé par quelqu'un d'autre : l'auteur retire sa voix, le point reste, et il ne se déplace plus
+  const p2 = place(), b = (await post('/api/reports', { cat: 'eau', ...p2 }, me)).j;
+  await post('/api/reports', { cat: 'eau', ...p2 }, other);
+  assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'move', lat: p2.lat + 0.0002, lng: p2.lng }, me)).s, 409);
+  const w = await post(`/api/reports/${b.id}/self`, { action: 'remove' }, me);
+  assert.equal(w.s, 200); assert.equal(w.j.withdrawn, true); assert.equal(w.j.up, 0);
+  assert.ok(row(b.id), 'le point reste');
+  // L'autre est maintenant l'auteur : il peut le retirer
+  assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'remove' }, other)).j.removed, true);
+});

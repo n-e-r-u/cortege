@@ -101,6 +101,33 @@
     };
   })();
   const rid = () => { const b = new Uint8Array(9); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, '0')).join(''); };
+  // Signalements envoyés par ce téléphone (gardés sur le téléphone, 1 jour) : les retirer s'ils sont posés par erreur, ou les déplacer
+  const sent = new Map((() => { try { return JSON.parse(localStorage.getItem('cortege-sent') || '[]'); } catch { return []; } })().filter(([, t0]) => Date.now() - t0 < 24 * 60 * MIN));
+  const sentSave = () => { try { localStorage.setItem('cortege-sent', JSON.stringify([...sent].slice(-100))); } catch {} };
+  function sentAdd(id) { sent.set(id, Date.now()); sentSave(); }
+  async function ownSelf(id, body) {
+    try {
+      const res = await fetch(`/api/reports/${id}/self`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify(body) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) { if (res.status === 403 || res.status === 404) { sent.delete(id); sentSave(); } toast(out.error || 'Action impossible.'); return null; }
+      if (out.removed || out.withdrawn) { sent.delete(id); sentSave(); }
+      if (out.removed) drop(id); else if (out.id) upsert(out);
+      regroup();
+      toast(out.removed ? 'Signalement retiré' : out.withdrawn ? 'Ta voix est retirée, le point reste pour les autres' : 'Point déplacé');
+      etag = null; sync();
+      return out;
+    } catch { toast('Pas de réseau.'); return null; }
+  }
+  // Déplacer son point : un repère à faire glisser, posé au-dessus de la carte le temps du geste
+  function moveOwn(r) {
+    map.closePopup();
+    map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17));
+    const tmp = L.marker([r.lat, r.lng], { draggable: true, icon: icon(r, true), zIndexOffset: 1000 }).addTo(map);
+    const done = () => { if (map.hasLayer(tmp)) map.removeLayer(tmp); };
+    tmp.on('dragend', () => { const ll = tmp.getLatLng(); done(); ownSelf(r.id, { action: 'move', lat: ll.lat, lng: ll.lng }); });
+    setTimeout(done, 60_000);
+    toast('Fais glisser le point à sa place (150 m au plus)');
+  }
   // Réponse inexploitable (pas de réseau, serveur hôte saturé sans message) : on garde pour plus tard
   async function postReport(it) {
     const headers = { 'Content-Type': 'application/json', 'X-Device': DEVICE };
@@ -108,6 +135,7 @@
     const res = await fetch('/api/reports', { method: 'POST', headers, body: JSON.stringify({ cat: it.cat, lat: it.lat, lng: it.lng, note: it.note, t: it.t }) });
     const body = await res.json().catch(() => null);
     if (body && body.mine && body.id) mineAdd(body.id);
+    if (res.status === 201 && body && body.id) sentAdd(body.id); // envoyé par ce téléphone : il pourra le retirer ou le déplacer
     if (!body && res.status >= 500) throw new Error('indisponible');
     return { status: res.status, body: body || {} };
   }

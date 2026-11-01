@@ -16,15 +16,15 @@ const { deviceAge, firstConfirm, repAdd, devRep, TRUST, CONTEST, contestNeed, VO
 const { getPub } = require('../digest/pub');
 const { isAdmin, orgaOf } = require('../orgas/auth');
 const { listEvents } = require('../events/store');
-const { nearby, saveReport, dropReport, getReport } = require('../reports/store');
+const { nearby, saveReport, dropReport, discardReport, getReport } = require('../reports/store');
 const { orgaLog } = require('../orgas/log');
 const { ARCHIVE_DIR } = require('../digest/archive');
 const { pausedUntil } = require('../settings');
 const { pushNearLater } = require('../push');
 const { q, tx } = require('../db');
-const { round } = require('../util');
+const { round, validLatLng, distM } = require('../util');
 const { send, readJson } = require('../http/respond');
-const { strictUntil, allow, bump } = require('../limits');
+const { strictUntil, allow, bump, quota } = require('../limits');
 const { sweep } = require('../sweep');
 const { toReport, addTrail, addNote, publicView } = require('../reports/model');
 const { parisDay } = require('../time');
@@ -169,6 +169,42 @@ async function reportsRoutes(req, res, url, pathname) {
     return send(res, ...result);
   }
   
+  // Son propre signalement (le téléphone qui l'a envoyé, reconnu à son empreinte du jour) :
+  // - retirer un point posé par erreur, tant que personne d'autre ne l'a confirmé (supprimé sans trace dans les bilans) ;
+  //   s'il a été confirmé, l'auteur retire seulement sa voix : le point reste pour les autres ;
+  // - le déplacer s'il est mal placé : dans les 10 premières minutes, de 150 m au plus, tant que personne ne l'a confirmé.
+  const own = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/self$/);
+  if (req.method === 'POST' && own) {
+    const b = await readJson(req);
+    const dev = deviceHash(req);
+    const result = tx(() => {
+      const now = Date.now();
+      const r = getReport(own[1], now);
+      if (!r) return [404, { error: 'Signalement expiré.' }];
+      if (r.voters[0] !== dev) return [403, { error: 'Seul le téléphone qui l’a envoyé peut le retirer ou le déplacer, et seulement le jour même.' }];
+      if (!quota('self:' + dev, 20, 10 * MIN, now)) return [429, { error: 'Trop d’essais, patiente un peu.' }];
+      if (b.action === 'remove') {
+        if (!r.up && !r.ver) { discardReport(r.id); return [200, { removed: true }]; }
+        if (!r.up) return [409, { error: 'Vérifié par une orga : le point reste sur la carte.' }];
+        r.voters = r.voters.slice(1); r.up--;
+        r.notes = (r.notes || []).filter(n => n.d !== dev);
+        saveReport(r);
+        return [200, { ...publicView(r), withdrawn: true }];
+      }
+      if (b.action === 'move') {
+        if (r.up || r.ver || r.bk) return [409, { error: 'D’autres l’ont déjà confirmé : il ne peut plus être déplacé.' }];
+        if (now - r.t > 10 * MIN) return [409, { error: 'Trop tard : un point ne se déplace que dans les 10 minutes.' }];
+        const lat = Number(b.lat), lng = Number(b.lng);
+        if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
+        if (distM({ lat, lng }, r) > 150) return [400, { error: 'Trop loin : 150 m au plus. Retire-le et signale-le au bon endroit.' }];
+        r.lat = round(lat); r.lng = round(lng);
+        saveReport(r);
+        return [200, publicView(r)];
+      }
+      return [400, { error: 'Action inconnue.' }];
+    });
+    return send(res, ...result);
+  }
   const vote = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/vote$/);
   if (req.method === 'POST' && vote) {
     const b = await readJson(req);

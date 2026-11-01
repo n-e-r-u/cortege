@@ -36,4 +36,11 @@ function dropReport(id, outcome) {
   return !!r;
 }
 
-module.exports = { nearby, getReport, activeReports, saveReport, dropReport };
+// Retiré par son auteur (posé par erreur) : supprimé sans laisser de trace dans l'archive ni dans les bilans
+function discardReport(id) {
+  const r = q('DELETE FROM reports WHERE id=? RETURNING cell').get(id);
+  if (r) dirtyCell(r.cell);
+  return !!r;
+}
+
+module.exports = { nearby, getReport, activeReports, saveReport, dropReport, discardReport };
