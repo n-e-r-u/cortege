@@ -35,3 +35,28 @@ $('#setForm').addEventListener('submit', async e => {
   catch (err) { alertMsg(err.message); }
 });
 $('#tabSettings').onclick = () => { showTab('Settings'); loadSettings(); };
+
+// ---- L'instance : nom, contact, liens, marque, hébergeur (vide = valeur du serveur) ----
+const INST = [['#inEvent', 'event'], ['#inContact', 'contact'], ['#inViolence', 'violenceUrl'], ['#inSource', 'sourceUrl'], ['#inHost', 'hostInfo'],
+  ['#inHandle', 'brand.handle'], ['#inInsta', 'brand.instagram'], ['#inSite', 'brand.site'], ['#inKofi', 'brand.kofi']];
+const pick = (o, k) => k.split('.').reduce((x, p) => (x ? x[p] : undefined), o);
+async function loadInstance() {
+  let d; try { d = await api('/api/admin/instance'); } catch (e) { alertMsg(e.message); return; }
+  for (const [sel, k] of INST) { $(sel).value = pick(d.set, k) || ''; $(sel).placeholder = pick(d.defaults, k) || '(vide)'; }
+}
+$('#instForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const body = { brand: {} };
+  for (const [sel, k] of INST) { const v = $(sel).value.trim(); if (k.startsWith('brand.')) body.brand[k.slice(6)] = v; else body[k] = v; }
+  try { await api('/api/admin/instance', { method: 'POST', body: JSON.stringify(body) }); $('#inMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; loadInstance(); }
+  catch (err) { alertMsg(err.message); }
+});
+$('#tabSettings').addEventListener('click', loadInstance);
+
+// Téléchargement d'un fichier de l'admin (la clé passe dans l'en-tête, pas dans l'adresse)
+async function adminDownload(url, name) {
+  const r = await fetch(url, { headers: { 'X-Admin-Key': KEY } });
+  if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.error || 'Téléchargement impossible.'); }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+}

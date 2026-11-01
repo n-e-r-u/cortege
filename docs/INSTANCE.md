@@ -18,13 +18,20 @@ Dans certains pays, la police demande couramment aux hébergeurs les données qu
 
 ## 2. Installer
 
-Suis [INSTALLATION.md](INSTALLATION.md), puis règle :
+Suis [INSTALLATION.md](INSTALLATION.md), puis dans le fichier de configuration du serveur :
 
 ```bash
-PROFILES=us                 # le profil de ton pays (ou plusieurs : fr,de)
-DEFAULT_LANG=en             # facultatif : la langue du premier profil sinon
 TILE_PMTILES=/var/lib/cortege-map/usa.pmtiles,/var/lib/cortege-map/monde.pmtiles
 ```
+
+Le reste se règle dans l'admin, sans redémarrer :
+
+- **Réglages** : nom de la carte, contact, hébergeur, liens, ta marque ;
+- **Pays** : les pays de ton instance, le pays principal, les corrections de leur profil ;
+- **Langues** : les langues proposées, la langue par défaut, les traductions déposées ;
+- **Serveur** : version, mise à jour disponible, disque, mémoire, cartes, dernière sauvegarde.
+
+Les variables `PROFILES`, `DEFAULT_LANG`, `EVENT_NAME`, `CONTACT_EMAIL`, `BRAND_*`… ne servent plus que de valeurs de départ.
 
 ## 3. La carte de ton pays
 
@@ -44,7 +51,9 @@ Mets d'abord les fichiers des pays, puis celui du monde, dans `TILE_PMTILES`. Ho
 
 ## 4. Le profil de ton pays
 
-Copie un profil existant (`profiles/us.json`, `profiles/de.json`) et adapte-le :
+Si ton pays a déjà un profil, active-le dans Administration › Pays. Tu peux y corriger les noms des types, les numéros d'urgence et les droits ; « Exporter » te donne le fichier à proposer au dépôt d'origine.
+
+Pour un pays sans profil, copie un profil existant (`profiles/us.json`, `profiles/de.json`) et adapte-le :
 
 | Champ | Rôle |
 |---|---|
@@ -65,11 +74,11 @@ Ensuite `node tools/i18n-build.js --pot` ajoute les nouveaux textes aux traducti
 
 ## 5. La langue
 
-Si la langue de ton pays manque, ajoute-la : voir [i18n/LISEZMOI.md](../i18n/LISEZMOI.md). Elle apparaît toute seule dans l'appli.
+Si la langue de ton pays manque : Administration › Langues › « Faire traduire dans une nouvelle langue » donne le fichier à envoyer à la personne qui traduit. Quand elle te le renvoie, dépose-le au même endroit : il est vérifié, mis en ligne sans redémarrer, et reste caché tant que tu ne coches pas la langue. Voir aussi [i18n/LISEZMOI.md](../i18n/LISEZMOI.md).
 
 ## 6. La mention d'origine
 
-Le nom, le logo et les liens de ton instance sont libres (`BRAND_*`, `public/brand/logo.png`). La mention « Propulsé par Cortège, un projet de Neru », avec le lien vers le dépôt d'origine, doit rester visible dans le menu : voir [les conditions additionnelles de la licence](../LICENSE-ADDITIONAL-TERMS.md). Le code modifié doit aussi rester public (AGPL).
+Le nom, le logo et les liens de ton instance sont libres (Administration › Réglages, `public/brand/logo.png`). La mention « Propulsé par Cortège, un projet de Neru », avec le lien vers le dépôt d'origine, doit rester visible dans le menu : voir [les conditions additionnelles de la licence](../LICENSE-ADDITIONAL-TERMS.md). Le code modifié doit aussi rester public (AGPL).
 
 ## 7. Partager tes améliorations
 

@@ -135,6 +135,9 @@ function pmInfo() {
   return { url: '/vt/{z}/{x}/{y}.mvt', minzoom: Math.min(...open.map(f => f.h.minz)), maxzoom: Math.max(...all.map(f => f.h.maxz)), bounds,
     zones: regional.flatMap(f => f.zones), ...(world ? { worldMaxZoom: world.h.maxz } : {}) };
 }
+// Pour l'admin : chaque fichier de carte, sa taille et ce qu'il couvre
+const pmFilesInfo = () => pmFiles.map(f => { let bytes = null; try { bytes = fs.statSync(f.file).size; } catch {}
+  return { name: path.basename(f.file), bytes, world: !!f.world, open: !!f.h, minz: f.h ? f.h.minz : null, maxz: f.h ? f.h.maxz : null, zones: f.zones }; });
 // Rétrocompatibilité : zones du fichier principal
 const PM_ZONES = [];
 if (pmFiles.length) pmOpen().then(() => {
@@ -154,4 +157,4 @@ async function serveVectorTile(req, res, z, x, y) {
   res.writeHead(200, headers); res.end(data);
 }
 
-module.exports = { PMTILES, PM_FILES: FILES, PM_ZONES, pmDecomp, pmOpen, pmTile, pmTileC, pmInfo, serveVectorTile };
+module.exports = { PMTILES, PM_FILES: FILES, PM_ZONES, pmFilesInfo, pmDecomp, pmOpen, pmTile, pmTileC, pmInfo, serveVectorTile };

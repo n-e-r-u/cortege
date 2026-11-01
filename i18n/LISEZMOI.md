@@ -11,7 +11,17 @@ Un fichier par langue, au format PO, le format standard des logiciels libres. Il
 
 Le texte français sert d'identifiant (`msgid`). Les `{valeurs}` entre accolades et les balises (`<b>`, `<small>`…) doivent rester dans la traduction.
 
-## Ajouter une langue
+## Ajouter une langue depuis l'admin
+
+Le plus simple, sans toucher au serveur : Administration › Langues.
+
+1. « Faire traduire dans une nouvelle langue » : donne le code (`de`, `it`, `pt-BR`…) et le nom de la langue. Tu reçois un fichier prêt pour Poedit, en-tête et pluriels remplis.
+2. Quand la personne te le renvoie, « Déposer une traduction » le vérifie (balises, valeurs, nombre de formes du pluriel) et le met en ligne sans redémarrer.
+3. Une langue nouvelle reste cachée : coche-la quand elle est assez avancée. Un texte pas encore traduit s'affiche en français.
+
+Un fichier déposé est gardé dans le dossier de données du serveur et passe devant le fichier livré du même code. Pour en faire profiter toutes les instances, propose-le aussi sur le dépôt.
+
+## Ajouter une langue dans le dépôt
 
 1. Copie `cortege.pot` en `de.po` (le code de la langue : `de`, `it`, `pt`…).
 2. Dans l'en-tête, renseigne :

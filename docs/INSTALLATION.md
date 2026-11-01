@@ -8,32 +8,32 @@ Tout ce qu'il faut pour héberger ta propre instance. Pour découvrir l'appli, c
 node server.js            # Node 22.13+ (24 conseillé) ; ouvre http://localhost:8080
 ```
 
-Variables d'environnement :
+Variables d'environnement. Celles marquées « admin » se règlent aussi dans l'administration, sans redémarrer : la variable ne sert alors que de valeur de départ.
 
 | Variable | Défaut ou exemple | Rôle |
 |---|---|---|
 | `PORT` | `8080` | Port d'écoute |
-| `EVENT_NAME` | `Carte des mobilisations` | Texte sous le logo par défaut (modifiable aussi dans Administration › Réglages, avec des dates) |
+| `EVENT_NAME` | `Carte des mobilisations` | Texte sous le logo par défaut (modifiable dans Administration › Réglages, avec des dates) |
 | `CENTER` / `ZOOM` | `46.6,2.4` / `6` | Vue d'ouverture par défaut quand la position n'est pas partagée (modifiable aussi dans Réglages) |
 | `ADMIN_KEY` | vide | Clé d'accès à l'administration, aléatoire, 12 caractères minimum (32 conseillés). Vide = administration désactivée |
 | `ORGA_KEYS` | vide | Accès orga / legal team : `Nom affiché:clé,Autre nom:clé2` (clés de 12 caractères minimum) |
-| `CONTACT_EMAIL` | vide | Adresse de contact (mentions légales, bouton « Demander un accès orga »). Obligatoire avant lancement |
-| `HOST_INFO` | vide | Coordonnées complètes de l'hébergeur pour les mentions légales |
-| `SOURCE_URL` | dépôt d'origine | Lien du dépôt du code (affiché dans le menu et les mentions légales) |
+| `CONTACT_EMAIL` | vide | Adresse de contact (mentions légales, bouton « Demander un accès orga »). Obligatoire avant lancement (admin) |
+| `HOST_INFO` | vide | Coordonnées complètes de l'hébergeur pour les mentions légales (admin) |
+| `SOURCE_URL` | dépôt d'origine | Lien du dépôt du code (affiché dans le menu et les mentions légales) (admin) |
 | `LEGAL_WATCH` | `1` | `0` coupe la veille quotidienne des sources de l'annuaire des legal teams |
-| `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » |
+| `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » (admin) |
 | `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme et du journal des orgas (jours) |
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel. Les en-têtes du proxy ne sont crus que pour les connexions venant de la machine elle-même (ou de `PROXY_IPS`) |
 | `PROXY_IPS` | vide | Adresses du proxy s'il n'est pas sur la même machine (ex. passerelle Docker `172.17.0.1`), séparées par des virgules |
 | `CLOUDFLARE` | `0` | `1` seulement si l'instance est vraiment derrière Cloudflare : l'en-tête `CF-Connecting-IP` est alors cru. Sinon il est ignoré (n'importe qui peut l'envoyer) |
 | `ONION_SECRET` | vide | Valeur secrète que le bloc .onion de Caddy met dans `X-Cortege-Onion` (au lieu de `1`) : personne ne peut se faire passer pour Tor, même si le site public ne supprime pas l'en-tête |
-| `BRAND_HANDLE` | `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») |
-| `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » |
-| `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) |
+| `BRAND_HANDLE` | `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») (admin) |
+| `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » (admin) |
+| `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) (admin) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
 | `TILE_PMTILES` | vide | Fichier(s) PMTiles (tuiles vectorielles), séparés par des virgules : un par pays (zone lue dans le `.geojson` du même nom), puis éventuellement une carte du monde légère pour les zooms éloignés. La carte vient du serveur lui-même, et « Prêt pour la manif » peut la garder hors ligne |
-| `PROFILES` | `fr` | Profils pays de l'instance (`profiles/*.json`), séparés par des virgules : `fr`, `us`, `de`… Le premier sert aussi hors de toutes les zones. Voir [INSTANCE.md](INSTANCE.md) |
-| `DEFAULT_LANG` | langue du premier profil | Langue des téléphones dont la langue n'est pas traduite |
+| `PROFILES` | `fr` | Profils pays de l'instance (`profiles/*.json`), séparés par des virgules : `fr`, `us`, `de`… Le premier sert aussi hors de toutes les zones. Voir [INSTANCE.md](INSTANCE.md) (admin › Pays) |
+| `DEFAULT_LANG` | langue du premier profil | Langue des téléphones dont la langue n'est pas traduite (admin) |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
 | `TILE_UA` | — | User-Agent avec un contact, exigé par la politique OSM |
 | `ADMIN_LABEL` | `Cortège` | Nom affiché sur les annonces publiées par l’admin |

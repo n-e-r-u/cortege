@@ -106,6 +106,7 @@ button.danger { background: transparent; border: 1px solid #e5484d; color: #ff9a
 .newlink code { font: 14px/1.4 ui-monospace, Menlo, monospace; overflow-wrap: anywhere; color: var(--fg); }
 .newlink .row { display: flex; flex-wrap: wrap; gap: 8px; }
 .warn { color: var(--danger); font-size: 13px; margin: 0; }
+.lg-bar { display: block; height: 6px; max-width: 260px; margin-top: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; } .lg-bar i { display: block; height: 100%; background: var(--accent); }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 .stack > label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
 textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; resize: vertical; }
@@ -123,6 +124,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .cat-table label.check { display: flex; align-items: center; gap: 10px; min-height: 40px; }
 .cat-table .base { min-width: 9ch; }
 .cat-table input[type=number] { width: 84px; height: 36px; }
+#coCats input:not([type]) { width: min(320px, 45vw); height: 36px; }
 .cat-table .base { color: var(--muted); font-size: 12px; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
 .kv dt { color: var(--muted); } .kv dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -172,6 +174,9 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabAbuse" aria-selected="false" aria-controls="panelAbuse"><span class="ni" aria-hidden="true">⚠</span>Abus</button>
     <div class="nav-group" role="presentation">Configuration</div>
     <button class="tab" role="tab" id="tabSettings" aria-selected="false" aria-controls="panelSettings"><span class="ni" aria-hidden="true">⚙</span>Réglages</button>
+    <button class="tab" role="tab" id="tabCountries" aria-selected="false" aria-controls="panelCountries"><span class="ni" aria-hidden="true">🌍</span>Pays</button>
+    <button class="tab" role="tab" id="tabLangs" aria-selected="false" aria-controls="panelLangs"><span class="ni" aria-hidden="true">🗣</span>Langues</button>
+    <button class="tab" role="tab" id="tabServer" aria-selected="false" aria-controls="panelServer"><span class="ni" aria-hidden="true">🖥</span>Serveur <span id="srvBadge"></span></button>
   </nav>
   <div class="admin-main">
 
@@ -303,8 +308,103 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
         <div class="cat-table" id="setCats"></div>
       </section>
       <div class="controls"><button type="submit">Enregistrer les réglages</button><span class="fine" id="setMsg"></span></div>
-      <p class="fine">Appliqué tout de suite sur le serveur, et sur les téléphones à leur prochaine mise à jour (quelques secondes). Les clés, les chemins et les liens restent dans le fichier de configuration du serveur.</p>
+      <p class="fine">Appliqué tout de suite sur le serveur, et sur les téléphones à leur prochaine mise à jour (quelques secondes).</p>
     </form>
+    <form class="panel" id="instForm">
+      <section class="card">
+        <h2>L’instance</h2>
+        <p class="fine">Un champ vide reprend la valeur du fichier de configuration du serveur (affichée en grisé). Les clés, les secrets et les chemins restent dans ce fichier.</p>
+        <div class="edit-form">
+          <label>Nom de la carte (bandeau par défaut)<input id="inEvent" maxlength="60"></label>
+          <label>Email de contact<input id="inContact" type="email" maxlength="120"></label>
+          <label>Lien « signaler une violence policière »<input id="inViolence" type="url" maxlength="300"></label>
+          <label>Lien du code source (obligatoire avec la licence)<input id="inSource" type="url" maxlength="300"></label>
+        </div>
+        <label class="stack" style="margin-top:8px">Hébergeur (mentions légales : nom, adresse, téléphone)<textarea id="inHost" rows="2" maxlength="300"></textarea></label>
+      </section>
+      <section class="card">
+        <h2>Ta marque</h2>
+        <div class="edit-form">
+          <label>Pseudo (sans @)<input id="inHandle" maxlength="30"></label>
+          <label>Lien Instagram<input id="inInsta" type="url" maxlength="300"></label>
+          <label>Site<input id="inSite" type="url" maxlength="300"></label>
+          <label>Lien de soutien (Ko-fi…)<input id="inKofi" type="url" maxlength="300"></label>
+        </div>
+        <p class="fine">Affichés dans le menu de l’appli, sur les bilans et les affiches. Sur une autre instance que celle de Neru, la mention « Propulsé par Cortège, un projet de Neru » reste affichée (conditions de la licence).</p>
+      </section>
+      <div class="controls"><button type="submit">Enregistrer l’instance</button><span class="fine" id="inMsg"></span></div>
+    </form>
+  </section>
+
+  <section class="panel" id="panelCountries" role="tabpanel" aria-labelledby="tabCountries" hidden>
+    <section class="card">
+      <h2>Pays couverts</h2>
+      <p class="fine">Coche les pays de ton instance. Le pays principal sert aussi partout ailleurs. Chaque pays a ses noms de forces de l’ordre, ses numéros d’urgence et ses droits, appliqués là où se trouve la personne.</p>
+      <ul class="org-list" id="coList"></ul>
+      <div class="controls"><button type="button" id="coSave">Enregistrer les pays</button><span class="fine" id="coMsg"></span></div>
+      <p class="fine">Une carte détaillée se télécharge sur le serveur (voir le guide d’une nouvelle instance). Sans elle, la carte du pays s’affiche avec le fond OpenStreetMap.</p>
+    </section>
+    <section class="card" id="coEdit" hidden>
+      <h2 id="coEditTitle">Modifier</h2>
+      <div class="edit-form">
+        <label>Nom du pays<input id="coName" maxlength="40"></label>
+        <label>Unités<select id="coUnits"><option value="metric">mètres, km</option><option value="imperial">pieds, miles</option></select></label>
+        <label>Urgences médicales<input id="coMed" maxlength="20" inputmode="tel"></label>
+        <label>Numéro d’urgence général<input id="coGen" maxlength="20" inputmode="tel"></label>
+        <label>Police<input id="coPol" maxlength="20" inputmode="tel"></label>
+        <label>Pharmacie de garde<input id="coPha" maxlength="20" inputmode="tel"></label>
+      </div>
+      <h3>Noms des types de signalement</h3>
+      <p class="fine">Vide = nom d’origine (en grisé). Décoche un type qui n’existe pas dans ce pays.</p>
+      <div class="cat-table" id="coCats"></div>
+      <h3>Tes droits</h3>
+      <p class="fine">Une ligne qui commence par # est un titre ; chaque autre ligne est un conseil. Vide = pas de section propre au pays.</p>
+      <textarea id="coRights" rows="10" style="width:100%;box-sizing:border-box"></textarea>
+      <div class="edit-form">
+        <label>Lien « signaler une violence » propre au pays<input id="coViolUrl" type="url" maxlength="300"></label>
+        <label>Texte du lien<input id="coViolLabel" maxlength="80"></label>
+      </div>
+      <p class="fine">Un texte changé ici s’affiche tel quel dans toutes les langues, tant qu’il n’est pas ajouté aux traductions. Pour en faire profiter les autres instances, exporte le fichier et propose-le sur le dépôt.</p>
+      <div class="controls"><button type="button" id="coEditSave">Enregistrer ce pays</button><button type="button" class="ghost" id="coEditCancel">Fermer</button><span class="fine" id="coEditMsg"></span></div>
+    </section>
+  </section>
+
+  <section class="panel" id="panelLangs" role="tabpanel" aria-labelledby="tabLangs" hidden>
+    <section class="card">
+      <h2>Langues de l’appli</h2>
+      <p class="fine" id="lgIntro"></p>
+      <ul class="org-list" id="lgList"></ul>
+      <p class="fine">Une langue non proposée n’apparaît pas dans l’appli ; les téléphones réglés dans cette langue reçoivent la langue par défaut.</p>
+    </section>
+    <section class="card">
+      <h2>Déposer une traduction</h2>
+      <p class="fine">Le fichier .po renvoyé par la personne qui traduit (Poedit, Weblate). Il est vérifié avant d’être mis en ligne : balises, {valeurs}, pluriels. Une langue nouvelle reste cachée jusqu’à ce que tu la proposes.</p>
+      <div class="controls"><input type="file" id="lgFile" accept=".po,text/x-gettext-translation"><button type="button" id="lgUpload">Vérifier et mettre en ligne</button></div>
+      <p class="fine" id="lgUpMsg"></p>
+      <ul class="fine" id="lgProblems"></ul>
+    </section>
+    <section class="card">
+      <h2>Faire traduire dans une nouvelle langue</h2>
+      <div class="controls">
+        <label>Code<input id="lgNewCode" maxlength="10" placeholder="de, it, pt-BR…" style="width:120px"></label>
+        <label style="flex:1;min-width:180px">Nom de la langue, écrit dans la langue<input id="lgNewName" maxlength="40" placeholder="Deutsch"></label>
+        <button type="button" id="lgNewDl">Télécharger le fichier à traduire</button>
+      </div>
+      <p class="fine">Le fichier est prêt pour Poedit (gratuit) : en-tête rempli, règle du pluriel de la langue. Les mots de terrain (BAC, nasse, sommations…) ont une note d’explication. <a href="#" id="lgPot">Télécharger le modèle seul (cortege.pot)</a></p>
+    </section>
+  </section>
+
+  <section class="panel" id="panelServer" role="tabpanel" aria-labelledby="tabServer" hidden>
+    <section class="card" id="srvUpdate" hidden>
+      <h2>Mise à jour disponible</h2>
+      <p id="srvUpdateText"></p>
+      <div class="newlink"><div class="row"><code id="srvCmd"></code><button type="button" class="ghost" id="srvCopy">Copier</button></div></div>
+      <p class="fine">À lancer sur le serveur. Les téléphones se mettent à jour tout seuls juste après. <a id="srvChangelog" rel="noopener" target="_blank">Ce qui change</a></p>
+    </section>
+    <section class="card"><h2>Version</h2><dl class="kv" id="srvVersion"></dl><div class="controls"><button type="button" class="ghost" id="srvCheck">Vérifier maintenant</button></div></section>
+    <section class="card"><h2>Ressources</h2><dl class="kv" id="srvRes"></dl></section>
+    <section class="card"><h2>Cartes hébergées</h2><dl class="kv" id="srvMaps"></dl></section>
+    <section class="card"><h2>Sauvegarde</h2><dl class="kv" id="srvBackup"></dl><p class="fine" id="srvBackupHelp"></p></section>
   </section>
 
   <section class="panel" id="panelOrgas" role="tabpanel" aria-labelledby="tabOrgas">

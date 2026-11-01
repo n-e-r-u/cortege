@@ -861,3 +861,75 @@ test('son propre signalement : retiré sans trace, déplacé de peu, sa voix seu
   // L'autre est maintenant l'auteur : il peut le retirer
   assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'remove' }, other)).j.removed, true);
 });
+
+test('admin : réglages de l’instance sans redémarrer (vide = valeur du serveur)', async () => {
+  const bad = await admin('/api/admin/instance', { contact: 'pas un mail' });
+  assert.equal(bad.s, 400);
+  const ok = await admin('/api/admin/instance', { event: 'Carte de test', contact: 'contact@exemple.org', brand: { handle: '@demo', site: 'https://demo.example' } });
+  assert.equal(ok.s, 200); assert.equal(ok.j.values.brand.handle, 'demo');
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.equal(cfg.event, 'Carte de test'); assert.equal(cfg.contact, 'contact@exemple.org'); assert.equal(cfg.brand.site, 'https://demo.example');
+  assert.ok(cfg.brand.instagram, 'champ non rempli : valeur du serveur');
+  const bilan = await fetch(B + '/manif').then(r => r.text());
+  assert.match(bilan, /@demo/, 'les pages du serveur suivent la marque');
+  await admin('/api/admin/instance', {});
+  assert.equal((await fetch(B + '/api/config').then(r => r.json())).event, 'Carte des mobilisations');
+});
+
+test('admin : pays activés et corrigés sans redémarrer, export du profil', async () => {
+  const list = await fetch(B + '/api/admin/countries', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.deepEqual(list.list.filter(p => p.active).map(p => p.code), ['fr']);
+  assert.equal(list.list.find(p => p.code === 'fr').map.kind, 'detail', 'la carte de test couvre la France');
+  assert.equal((await admin('/api/admin/countries/active', { codes: [] })).s, 400, 'au moins un pays');
+  assert.equal((await admin('/api/admin/countries/active', { codes: ['fr', 'us'] })).s, 200);
+  let cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.deepEqual(cfg.profiles.map(p => p.code), ['fr', 'us']);
+  assert.ok(cfg.categories.some(c => c.id === 'ice'), 'type propre aux États-Unis envoyé');
+  // Un signalement ICE à New York passe ; à Paris, non
+  assert.equal((await post('/api/reports', { cat: 'ice', lat: 40.71, lng: -74.0 })).s, 201);
+  assert.equal((await post('/api/reports', { cat: 'ice', lat: 48.85, lng: 2.35 })).s, 400);
+  // Correction du profil américain
+  assert.equal((await admin('/api/admin/countries/us', { emergency: { general: 'abc' } })).s, 400);
+  assert.equal((await admin('/api/admin/countries/us', { labels: { crs: 'Riot police (test)' }, hidden: ['militaires'] })).s, 200);
+  cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.equal(cfg.profiles[1].labels.crs, 'Riot police (test)');
+  const exp = await fetch(B + '/api/admin/countries/us/export', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.equal(exp.labels.crs, 'Riot police (test)'); assert.equal(exp.code, 'us'); assert.ok(!exp.polys && !exp.clientArea, 'pas de contours dans l’export');
+  await fetch(B + '/api/admin/countries/us', { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  assert.notEqual((await fetch(B + '/api/config').then(r => r.json())).profiles[1].labels.crs, 'Riot police (test)');
+  // Désactivé : ICE n'existe plus nulle part
+  await admin('/api/admin/countries/active', { codes: ['fr'] });
+  cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.ok(!cfg.categories.some(c => c.id === 'ice'));
+  assert.equal((await post('/api/reports', { cat: 'ice', lat: 40.72, lng: -74.0 })).s, 400);
+});
+
+test('admin : traduction déposée, vérifiée, cachée puis proposée, retirée', async () => {
+  const K = { headers: { 'x-admin-key': ADMIN } };
+  const tpl = await fetch(B + '/api/admin/langs/it.po?name=Italiano', K).then(r => r.text());
+  assert.match(tpl, /Language: it\\n/); assert.match(tpl, /Plural-Forms: nplurals=2; plural=\(n != 1\);/);
+  const good = tpl.replace('msgid "Signaler"\nmsgstr ""', 'msgid "Signaler"\nmsgstr "Segnala"');
+  assert.notEqual(good, tpl);
+  const bad = await admin('/api/admin/langs/upload', { text: good.replace('msgstr "Segnala"', 'msgstr "Segnala <b>"'), file: 'it.po' });
+  assert.equal(bad.s, 400); assert.ok(bad.j.problems.length);
+  const up = await admin('/api/admin/langs/upload', { text: good, file: 'traduction.po' });
+  assert.equal(up.s, 200); assert.equal(up.j.code, 'it'); assert.equal(up.j.active, false, 'langue nouvelle : cachée');
+  assert.doesNotMatch(await fetch(B + '/lang/langs.js').then(r => r.text()), /"it"/);
+  await admin('/api/admin/langs/prefs', { off: [] });
+  assert.match(await fetch(B + '/lang/langs.js').then(r => r.text()), /"code":"it"/);
+  assert.equal((await fetch(B + '/lang/it.json').then(r => r.json())).Signaler, 'Segnala');
+  assert.equal((await admin('/api/admin/langs/prefs', { def: 'it' })).s, 200);
+  assert.match(await fetch(B + '/lang/langs.js').then(r => r.text()), /CORTEGE_DEFAULT_LANG="it"/);
+  assert.equal((await admin('/api/admin/langs/prefs', { off: ['it'] })).s, 400, 'la langue par défaut reste proposée');
+  await admin('/api/admin/langs/prefs', { def: '' });
+  const del = await fetch(B + '/api/admin/langs/it', { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } }).then(r => r.json());
+  assert.ok(!del.langs.some(l => l.code === 'it'));
+  assert.equal((await fetch(B + '/lang/it.json')).status, 404);
+});
+
+test('admin : état du serveur (sans aller sur internet)', async () => {
+  const d = await fetch(B + '/api/admin/server?check=0', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.match(d.version, /^\d+\.\d+/); assert.match(d.update, /git -C .+ pull && sudo systemctl restart cortege/);
+  assert.equal(d.maps.length, 1); assert.ok(d.db > 0); assert.ok(d.disk.data.free > 0);
+  assert.equal((await fetch(B + '/api/admin/server?check=0')).status, 403, 'clé obligatoire');
+});

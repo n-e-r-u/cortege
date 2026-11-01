@@ -6,11 +6,11 @@ const longDate = d => new Date(d + 'T12:00:00Z').toLocaleDateString('fr-FR', { w
 let KEY = '';
 try { KEY = localStorage.getItem('cortege-admin') || ''; $('#key').value = KEY; } catch {}
 const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Admin-Key': KEY, ...(opts.headers || {}) } })
-  .then(async r => { const b = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(b.error || 'Erreur.'), { status: r.status }); return b; });
+  .then(async r => { const b = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(b.error || 'Erreur.'), { status: r.status, problems: b.problems }); return b; });
 
 async function login() {
   KEY = $('#key').value;
-  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); }
+  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); srvBadge(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false; document.querySelector('main').classList.add('wide');
@@ -23,7 +23,7 @@ if (KEY) login();
 
 const navLabel = b => b.querySelector('.ni').textContent + '  ' + [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Orders', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings']) {
+  for (const t of ['Orgas', 'Anns', 'Orders', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings', 'Countries', 'Langs', 'Server']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }

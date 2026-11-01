@@ -2,6 +2,17 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.10.1
+
+Configurer l'instance depuis l'admin, sans toucher au serveur ni redémarrer :
+
+- **Pays** : cocher les pays de l'instance et choisir le pays principal ; voir si chacun a une carte hébergée ; corriger un profil (noms des types, types masqués, numéros d'urgence, droits, lien violences policières), revenir au fichier d'origine, exporter le profil corrigé pour le proposer au dépôt. Les types d'un pays désactivé (ICE) disparaissent de l'appli.
+- **Langues** : déposer le fichier .po renvoyé par la personne qui traduit (vérifié comme par `tools/i18n-build.js`, mis en ligne sans redémarrage) ; part traduite de chaque langue ; langues proposées ou cachées (une langue nouvelle reste cachée jusqu'à ce que tu la coches) ; langue par défaut ; fichier prêt pour Poedit pour une nouvelle langue.
+- **Réglages › L'instance** : nom de la carte, email de contact, hébergeur, lien violences policières, lien du code source, pseudo, Instagram, site, lien de soutien. Les variables d'environnement ne servent plus que de valeurs de départ.
+- **Serveur** : version en ligne et version publiée sur le dépôt (vérifiée au plus toutes les 6 h, seulement à l'ouverture de l'admin), commande de mise à jour à copier, mémoire, disques, base, cartes hébergées, dernière sauvegarde. Rien ne s'installe depuis l'admin.
+- Sauvegarde : le script note la date et la taille de la dernière sauvegarde (lues par l'onglet Serveur) et sauvegarde aussi les traductions déposées. À réinstaller une fois : `sudo install -m 700 tools/cortege-backup.sh /usr/local/sbin/cortege-backup`.
+- Les téléphones ouverts appliquent un changement de pays, de types ou de marque en se rechargeant la prochaine fois que l'appli passe en arrière-plan.
+
 ## 2.10.0
 
 - Retirer ou déplacer son propre signalement : le téléphone qui a envoyé un point peut le retirer s’il est posé par erreur (supprimé sans trace dans les bilans) tant que personne d’autre ne l’a confirmé, sinon il retire seulement sa voix ; il peut aussi le déplacer de 150 m au plus dans les 10 premières minutes.

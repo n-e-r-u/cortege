@@ -4,9 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
-const { ADMIN_KEY, ORGAS, EVENT_NAME, CENTER, ZOOM, MIN, DATA_DIR } = require('../config');
+const { ADMIN_KEY, ORGAS, CENTER, ZOOM, MIN, DATA_DIR } = require('../config');
+const { instance } = require('../instance');
+const { activeCategories } = require('../profiles');
+const { adminConfigRoutes } = require('./admin-config');
 const { APP_VERSION } = require('../http/version');
-const { BASE_TTL, CATEGORIES } = require('../categories');
+const { BASE_TTL } = require('../categories');
 const { DEPS } = require('../geo/departments');
 const { NEXT } = require('./next');
 const { activeReports, getReport, saveReport } = require('../reports/store');
@@ -113,8 +116,8 @@ async function adminRoutes(req, res, url, pathname) {
     }
     // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---
     if (req.method === 'GET' && pathname === '/api/admin/settings')
-      return send(res, 200, { settings: settings(), defaults: { event: EVENT_NAME, center: CENTER, zoom: ZOOM, alertRadius: 300, nearKm: 10, ttl: BASE_TTL },
-        categories: CATEGORIES.map(c => ({ id: c.id, label: c.label, glyph: c.glyph, group: c.group, ttl: c.ttl, base: BASE_TTL[c.id], off: !!c.off })) });
+      return send(res, 200, { settings: settings(), defaults: { event: instance().event, center: CENTER, zoom: ZOOM, alertRadius: 300, nearKm: 10, ttl: BASE_TTL },
+        categories: activeCategories().map(c => ({ id: c.id, label: c.label, glyph: c.glyph, group: c.group, ttl: c.ttl, base: BASE_TTL[c.id], off: !!c.off })) });
     if (req.method === 'POST' && pathname === '/api/admin/settings') {
       const s = cleanSettings(await readJson(req, 8192));
       saveSettings(s);
@@ -463,6 +466,9 @@ async function adminRoutes(req, res, url, pathname) {
       });
       return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Orga introuvable.' });
     }
+    // Instance, pays, langues, serveur
+    const cfgR = await adminConfigRoutes(req, res, url, pathname);
+    if (cfgR !== NEXT) return cfgR;
     return send(res, 404, { error: 'Inconnu.' });
   }
   return NEXT;

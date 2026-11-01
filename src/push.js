@@ -4,7 +4,8 @@ const path = require('path');
 const crypto = require('crypto');
 const https = require('https');
 const { CAT, VIBES } = require('./categories');
-const { DATA_DIR, ROOT, CONTACT_EMAIL, PUBLIC_URL, MIN } = require('./config');
+const { DATA_DIR, ROOT, PUBLIC_URL, MIN } = require('./config');
+const { instance } = require('./instance');
 const { distKm } = require('./util');
 const { settings } = require('./settings');
 const { tx, q } = require('./db');
@@ -61,7 +62,7 @@ function vapidAuth(endpoint) {
   if (hit && now - hit.at < 30 * 60_000) return hit.h;
   const exp = Math.floor(now / 1000) + 3600;
   const enc = o => Buffer.from(JSON.stringify(o)).toString('base64url');
-  const data = enc({ typ: 'JWT', alg: 'ES256' }) + '.' + enc({ aud, exp, sub: CONTACT_EMAIL ? 'mailto:' + CONTACT_EMAIL : PUBLIC_URL });
+  const data = enc({ typ: 'JWT', alg: 'ES256' }) + '.' + enc({ aud, exp, sub: instance().contact ? 'mailto:' + instance().contact : PUBLIC_URL });
   const sig = crypto.sign('sha256', Buffer.from(data), { key: VAPID_KEY, dsaEncoding: 'ieee-p1363' }).toString('base64url');
   const h = `vapid t=${data}.${sig}, k=${VAPID.pub}`;
   jwtCache.set(aud, { h, at: now });

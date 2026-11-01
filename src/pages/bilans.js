@@ -5,7 +5,8 @@ const path = require('path');
 const { CAT } = require('../categories');
 const { CITY_PAGE_MIN } = require('../digest/pub');
 const { ORDER_KIND } = require('../orders');
-const { ROOT, BRAND, MIN } = require('../config');
+const { ROOT, MIN } = require('../config');
+const { instance } = require('../instance');
 const { cityIndex } = require('./cities');
 const { distM } = require('../util');
 
@@ -42,6 +43,7 @@ nav.links{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}nav.links a{paddin
 ul.tl{list-style:none;padding:0;margin:0}ul.tl li{padding:6px 0;border-bottom:1px solid #2a2a30}ul.tl time{display:inline-block;min-width:64px;color:#ec9fa4;font-variant-numeric:tabular-nums;font-weight:700}
 ul.orders{padding-left:18px}ul.orders>li{margin:10px 0}ul.orders ul{margin:4px 0;padding-left:18px}.rights details{border-bottom:1px solid #2a2a30;padding:8px 0}.rights summary{font-weight:700;cursor:pointer}ul.days{list-style:none;padding:0}ul.days li{margin:8px 0}ul.days a{display:flex;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#1c1c20;border:1px solid #34343c;color:#f2f1f4;text-decoration:none}`;
 function pubShell(req, { title, desc, body, ld }) {
+  const BRAND = instance().brand;
   const base = PUBLIC_URL_REAL(req), here = base + String(req.url || '/').split('?')[0].replace(/\/$/, '');
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${htmlEsc(title)}</title><meta name="description" content="${htmlEsc(desc)}"><link rel="canonical" href="${htmlEsc(here || base + '/')}">${ld ? jsonLd(ld) : ''}

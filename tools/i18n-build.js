@@ -14,65 +14,10 @@
 // comme le navigateur les choisit (Intl.PluralRules). Aucune dépendance.
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..'), SRC = path.join(ROOT, 'i18n'), OUT = path.join(ROOT, 'public', 'lang');
-const norm = s => String(s).replace(/\s+/g, ' ').trim();
-const tags = s => (s.match(/<[^>]+>/g) || []).sort().join('');
-const vars = s => new Set((s.match(/\{[\p{L}\p{N}_]{1,40}\}/gu) || []).map(v => v.slice(1, -1)));
-const balanced = s => {
-  const st = [];
-  for (const m of s.matchAll(/<\/?([a-zA-Z][\w-]*)([^>]*)>/g)) {
-    if ((m[2] && m[2].trim().endsWith('/')) || /^(br|img|hr|input)$/i.test(m[1])) continue;
-    const name = m[1].toLowerCase();
-    if (m[0][1] === '/') { if (st.pop() !== name) return false; } else st.push(name);
-  }
-  return st.length === 0;
-};
-const RTL = new Set(['ar', 'he', 'fa', 'ur', 'ps', 'ku', 'yi']);
-const ORDER = ['zero', 'one', 'two', 'few', 'many', 'other'];
-// Formes du pluriel utilisées pour les nombres entiers, dans l'ordre de Plural-Forms
-function pluralCats(lang) {
-  try { const pr = new Intl.PluralRules(lang), seen = new Set(); for (let n = 0; n <= 200; n++) seen.add(pr.select(n)); return ORDER.filter(c => seen.has(c)); }
-  catch { return ['one', 'other']; }
-}
-
-// ---- Lecture d'un fichier PO ----
-function unq(s) {
-  return s.slice(1, -1).replace(/\\(.)/g, (m, c) => ({ n: '\n', t: '\t', '"': '"', '\\': '\\' }[c] ?? c));
-}
-function parsePo(text, file) {
-  const entries = [], lines = text.replace(/\r\n?/g, '\n').split('\n');
-  let e = null, key = null;
-  const flush = () => { if (e && e.msgid !== undefined) entries.push(e); e = null; key = null; };
-  lines.forEach((raw, i) => {
-    const line = raw.trim();
-    if (!line) { flush(); return; }
-    if (line.startsWith('#')) {
-      if (e && e.msgid !== undefined) flush();
-      e ||= { comments: [], line: i + 1 };
-      if (line.startsWith('#,') && /\bfuzzy\b/.test(line)) e.fuzzy = true;
-      e.comments.push(raw);
-      return;
-    }
-    const m = line.match(/^(msgctxt|msgid_plural|msgid|msgstr(?:\[(\d+)\])?)\s+(".*")$/);
-    if (m) {
-      if (m[1] === 'msgid' && e && e.msgid !== undefined) flush();
-      e ||= { comments: [], line: i + 1 };
-      key = m[1].startsWith('msgstr[') ? 'msgstr' + m[2] : m[1];
-      e[key] = unq(m[3]);
-      return;
-    }
-    if (line.startsWith('"') && e && key) { e[key] += unq(line); return; }
-    throw new Error(`${file}:${i + 1} : ligne illisible « ${line.slice(0, 60)} »`);
-  });
-  flush();
-  return entries;
-}
-const headerOf = entries => {
-  const h = entries.find(x => x.msgid === '');
-  return Object.fromEntries(String(h ? h.msgstr || '' : '').split('\n').map(l => l.split(/:\s*/)).filter(x => x.length > 1).map(([k, ...v]) => [k, v.join(':').trim()]));
-};
+const { norm, pluralCats, parsePo, headerOf, dictOf: dictOfL, metaOf, LANG_CODE } = require('../src/i18n-po');
 
 // ---- Fichiers de langue ----
-const poFiles = fs.readdirSync(SRC).filter(f => /^[a-z]{2,3}(-[A-Za-z]{2,4})?\.po$/.test(f)).sort();
+const poFiles = fs.readdirSync(SRC).filter(f => f.endsWith('.po') && LANG_CODE.test(f.slice(0, -3))).sort();
 let errors = 0, warnings = 0;
 const err = m => { console.error(m); errors++; }, warn = m => { console.warn(m); warnings++; };
 const langs = {};
@@ -135,34 +80,7 @@ if (process.argv.includes('--pot')) {
 }
 
 // ---- Construction ----
-function dictOf(L) {
-  const cats = pluralCats(L.base), d = {};
-  for (const e of L.entries) {
-    if (!e.msgid || e.fuzzy) continue;
-    const where = `${L.file}:${e.line}`, fr = norm(e.msgid);
-    const check = (tr, ref) => {
-      if (tags(tr) !== tags(ref)) err(`${where} : balises différentes`);
-      if (!balanced(tr)) err(`${where} : balise non fermée`);
-      for (const v of vars(tr)) if (!vars(ref).has(v)) err(`${where} : {${v}} inconnu`);
-    };
-    if (e.msgid_plural !== undefined) {
-      const forms = cats.map((_, i) => norm(e['msgstr' + i] || ''));
-      if (!forms.some(Boolean)) continue;
-      if (forms.some(x => !x)) { err(`${where} : ${cats.length} formes du pluriel attendues (${cats.join(', ')})`); continue; }
-      const all = new Set([...vars(e.msgid), ...vars(e.msgid_plural)]);
-      forms.forEach(x => { check(x, e.msgid_plural); });
-      for (const v of all) if (!forms.some(x => vars(x).has(v))) warn(`${where} : {${v}} absent de toutes les formes`);
-      d[fr] = forms;
-    } else {
-      const tr = norm(e.msgstr || '');
-      if (!tr) continue;
-      check(tr, e.msgid);
-      for (const v of vars(e.msgid)) if (!vars(tr).has(v)) warn(`${where} : {${v}} absent (vérifie que c'est voulu)`);
-      d[fr] = tr;
-    }
-  }
-  return d;
-}
+const dictOf = L => dictOfL(L, err, warn);
 const built = {};
 for (const L of Object.values(langs)) {
   const own = dictOf(L);
@@ -170,8 +88,7 @@ for (const L of Object.values(langs)) {
   if (L.code !== L.base && !baseL && L.base !== 'fr') warn(`${L.file} : pas de ${L.base}.po, la variante est utilisée seule`);
   const dict = { ...(baseL ? dictOf(baseL) : {}), ...own };
   const h = { ...(baseL ? baseL.header : {}), ...L.header };
-  const meta = { code: L.code, base: L.base, name: h['X-Language-Name'] || L.code, dir: RTL.has(L.base) ? 'rtl' : 'ltr',
-    locale: h['X-Locale'] || L.code, plural: pluralCats(L.base), n: Object.keys(dict).length };
+  const meta = metaOf(L.code, L.base, h, Object.keys(dict).length);
   built[L.code] = { meta, dict };
 }
 if (process.argv[2] && !process.argv[2].startsWith('--')) {

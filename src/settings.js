@@ -59,7 +59,8 @@ function bannerNow(now = Date.now()) {
   if (b && b.text && (!b.from || d >= b.from) && (!b.to || d <= b.to)) return b.text;
   return null;
 }
-const cfgHash = () => { const s = settings(); return crypto.createHash('sha1').update(JSON.stringify([s, bannerNow()])).digest('base64url').slice(0, 10); };
+// Empreinte de tout ce que l'admin peut changer sans redémarrer (réglages, instance, pays, langues) : le téléphone relit sa configuration quand elle change
+const cfgHash = () => { const s = settings(); return crypto.createHash('sha1').update(JSON.stringify([s, bannerNow(), ...['instance', 'profiles', 'profileEdits', 'langs'].map(k => getMeta(k) || '')])).digest('base64url').slice(0, 10); };
 
 const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p > now ? p : 0; };
 

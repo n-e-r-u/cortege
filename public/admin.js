@@ -6,11 +6,11 @@ const longDate = d => new Date(d + 'T12:00:00Z').toLocaleDateString('fr-FR', { w
 let KEY = '';
 try { KEY = localStorage.getItem('cortege-admin') || ''; $('#key').value = KEY; } catch {}
 const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Admin-Key': KEY, ...(opts.headers || {}) } })
-  .then(async r => { const b = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(b.error || 'Erreur.'), { status: r.status }); return b; });
+  .then(async r => { const b = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(b.error || 'Erreur.'), { status: r.status, problems: b.problems }); return b; });
 
 async function login() {
   KEY = $('#key').value;
-  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); }
+  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); srvBadge(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false; document.querySelector('main').classList.add('wide');
@@ -23,7 +23,7 @@ if (KEY) login();
 
 const navLabel = b => b.querySelector('.ni').textContent + '  ' + [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
 function showTab(which) {
-  for (const t of ['Orgas', 'Anns', 'Orders', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings']) {
+  for (const t of ['Orgas', 'Anns', 'Orders', 'Legal', 'Agenda', 'Reports', 'Journal', 'Abuse', 'Digest', 'Live', 'Mod', 'Mobs', 'Places', 'Settings', 'Countries', 'Langs', 'Server']) {
     $('#tab' + t).setAttribute('aria-selected', String(t === which));
     $('#panel' + t).hidden = t !== which;
   }
@@ -949,6 +949,31 @@ $('#setForm').addEventListener('submit', async e => {
   catch (err) { alertMsg(err.message); }
 });
 $('#tabSettings').onclick = () => { showTab('Settings'); loadSettings(); };
+
+// ---- L'instance : nom, contact, liens, marque, hébergeur (vide = valeur du serveur) ----
+const INST = [['#inEvent', 'event'], ['#inContact', 'contact'], ['#inViolence', 'violenceUrl'], ['#inSource', 'sourceUrl'], ['#inHost', 'hostInfo'],
+  ['#inHandle', 'brand.handle'], ['#inInsta', 'brand.instagram'], ['#inSite', 'brand.site'], ['#inKofi', 'brand.kofi']];
+const pick = (o, k) => k.split('.').reduce((x, p) => (x ? x[p] : undefined), o);
+async function loadInstance() {
+  let d; try { d = await api('/api/admin/instance'); } catch (e) { alertMsg(e.message); return; }
+  for (const [sel, k] of INST) { $(sel).value = pick(d.set, k) || ''; $(sel).placeholder = pick(d.defaults, k) || '(vide)'; }
+}
+$('#instForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const body = { brand: {} };
+  for (const [sel, k] of INST) { const v = $(sel).value.trim(); if (k.startsWith('brand.')) body.brand[k.slice(6)] = v; else body[k] = v; }
+  try { await api('/api/admin/instance', { method: 'POST', body: JSON.stringify(body) }); $('#inMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; loadInstance(); }
+  catch (err) { alertMsg(err.message); }
+});
+$('#tabSettings').addEventListener('click', loadInstance);
+
+// Téléchargement d'un fichier de l'admin (la clé passe dans l'en-tête, pas dans l'adresse)
+async function adminDownload(url, name) {
+  const r = await fetch(url, { headers: { 'X-Admin-Key': KEY } });
+  if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.error || 'Téléchargement impossible.'); }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+}
 // ==== Carte d'un créneau : image PNG des signalements actifs pendant un créneau, autour d'un lieu ====
 const { COL: SLOT_COL, FAM: SLOT_FAM } = window.cortegeCreneau;
 let slotData = null;
@@ -991,3 +1016,204 @@ $('#slotCsv').onclick = () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv' }));
   a.download = `cortege-${dg.date}-${slotData.from.replace(':', 'h')}-${slotData.to.replace(':', 'h')}.csv`; document.body.append(a); a.click(); a.remove();
 };
+// ---- Pays : pays couverts, pays principal, état de la carte, corrections du profil ----
+let coData = null, coEditing = null;
+const MAP_TXT = { detail: f => `carte détaillée (${f.file})`, world: f => `carte du monde seulement (zoom ${f.maxz} au plus), puis fond OpenStreetMap`, osm: () => 'pas de carte hébergée : fond OpenStreetMap' };
+async function loadCountries() {
+  try { coData = await api('/api/admin/countries'); } catch (e) { alertMsg(e.message); return; }
+  const ul = $('#coList'); ul.textContent = '';
+  for (const p of coData.list) {
+    const li = document.createElement('li'), info = document.createElement('div'), acts = document.createElement('div');
+    const on = document.createElement('label'); on.className = 'check';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = p.active; cb.className = 'co-on'; cb.dataset.code = p.code;
+    const b = document.createElement('b'); b.textContent = p.current.name || p.code;
+    on.append(cb, ' ', b, ` (${p.code})`);
+    const main = document.createElement('label'); main.className = 'check';
+    const rb = document.createElement('input'); rb.type = 'radio'; rb.name = 'coMain'; rb.value = p.code; rb.checked = p.main;
+    main.append(rb, ' pays principal');
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.textContent = [MAP_TXT[p.map.kind](p.map), p.extra.length ? 'types en plus : ' + p.extra.join(', ') : '', p.orders ? 'arrêtés' : '', p.edited ? 'modifié dans l’admin' : ''].filter(Boolean).join(' · ');
+    info.append(on, document.createElement('br'), main, meta);
+    acts.className = 'acts';
+    const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'ghost'; ed.textContent = 'Modifier'; ed.onclick = () => editCountry(p.code);
+    const ex = document.createElement('button'); ex.type = 'button'; ex.className = 'ghost'; ex.textContent = 'Exporter';
+    ex.onclick = () => adminDownload(`/api/admin/countries/${p.code}/export`, p.code + '.json').catch(e => alertMsg(e.message));
+    acts.append(ed, ex);
+    if (p.edited) {
+      const rv = document.createElement('button'); rv.type = 'button'; rv.className = 'ghost'; rv.textContent = 'Revenir à l’origine';
+      rv.onclick = async () => {
+        if (rv.dataset.armed !== '1') { rv.dataset.armed = '1'; rv.textContent = 'Confirmer'; setTimeout(() => { rv.dataset.armed = ''; rv.textContent = 'Revenir à l’origine'; }, 4000); return; }
+        try { await api('/api/admin/countries/' + p.code, { method: 'DELETE' }); if (coEditing === p.code) $('#coEdit').hidden = true; loadCountries(); } catch (e) { alertMsg(e.message); }
+      };
+      acts.append(rv);
+    }
+    li.append(info, acts); ul.append(li);
+  }
+}
+$('#coSave').onclick = async () => {
+  const on = [...document.querySelectorAll('#coList .co-on')].filter(c => c.checked).map(c => c.dataset.code);
+  const main = document.querySelector('#coList input[name=coMain]:checked')?.value;
+  if (!on.length) return alertMsg('Garde au moins un pays.');
+  if (!main || !on.includes(main)) return alertMsg('Le pays principal doit être coché.');
+  try { await api('/api/admin/countries/active', { method: 'POST', body: JSON.stringify({ codes: [main, ...on.filter(c => c !== main)] }) });
+    $('#coMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '. Les téléphones l’appliquent à leur prochaine ouverture de l’appli.'; loadCountries(); }
+  catch (e) { alertMsg(e.message); }
+};
+// Droits : « # Titre » puis une ligne par conseil
+const rightsToText = r => (r || []).map(s => '# ' + s.title + '\n' + s.items.join('\n')).join('\n\n');
+function textToRights(t) {
+  const out = [];
+  for (const raw of t.split('\n')) {
+    const l = raw.trim(); if (!l) continue;
+    if (l.startsWith('#')) out.push({ title: l.replace(/^#+\s*/, ''), items: [] });
+    else { if (!out.length) out.push({ title: 'Tes droits', items: [] }); out[out.length - 1].items.push(l.replace(/^[-•*]\s*/, '')); }
+  }
+  return out.filter(s => s.title && s.items.length);
+}
+function editCountry(code) {
+  const p = coData.list.find(x => x.code === code); if (!p) return;
+  coEditing = code;
+  const c = p.current, o = p.original;
+  $('#coEditTitle').textContent = 'Modifier : ' + (c.name || code);
+  $('#coName').value = c.name || ''; $('#coUnits').value = c.units || 'metric';
+  const em = c.emergency || {};
+  for (const [sel, k] of [['#coMed', 'medical'], ['#coGen', 'general'], ['#coPol', 'police'], ['#coPha', 'pharmacy']]) $(sel).value = em[k] || '';
+  const box = $('#coCats'); box.textContent = '';
+  for (const cat of coData.categories) {
+    if (cat.profiles && !cat.profiles.includes(code)) continue;
+    const on = document.createElement('label'); on.className = 'check';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !(c.hidden || []).includes(cat.id); cb.dataset.cat = cat.id; cb.className = 'co-show';
+    on.append(cb, ' ' + cat.glyph + ' ' + cat.label);
+    const inp = document.createElement('input'); inp.maxLength = 60; inp.dataset.cat = cat.id; inp.className = 'co-label';
+    inp.value = (c.labels || {})[cat.id] || ''; inp.placeholder = (o.labels || {})[cat.id] || cat.label; inp.setAttribute('aria-label', 'Nom : ' + cat.label);
+    box.append(on, inp, document.createElement('span'));
+  }
+  $('#coRights').value = rightsToText(c.rights);
+  $('#coViolUrl').value = c.violence?.url || ''; $('#coViolLabel').value = c.violence?.label || '';
+  $('#coEditMsg').textContent = '';
+  $('#coEdit').hidden = false; $('#coEdit').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+$('#coEditCancel').onclick = () => { $('#coEdit').hidden = true; coEditing = null; };
+$('#coEditSave').onclick = async () => {
+  if (!coEditing) return;
+  const labels = {}, hidden = [];
+  document.querySelectorAll('#coCats .co-label').forEach(i => { if (i.value.trim()) labels[i.dataset.cat] = i.value.trim(); });
+  document.querySelectorAll('#coCats .co-show').forEach(cb => { if (!cb.checked) hidden.push(cb.dataset.cat); });
+  // Les noms d'origine restent ceux du fichier (un champ vide les reprend)
+  const p = coData.list.find(x => x.code === coEditing);
+  for (const [id, v] of Object.entries(p.original.labels || {})) if (!labels[id]) labels[id] = v;
+  const body = { name: $('#coName').value.trim(), units: $('#coUnits').value, labels, hidden,
+    emergency: { medical: $('#coMed').value.trim(), general: $('#coGen').value.trim(), police: $('#coPol').value.trim(), pharmacy: $('#coPha').value.trim() },
+    rights: textToRights($('#coRights').value),
+    violence: $('#coViolUrl').value.trim() ? { url: $('#coViolUrl').value.trim(), label: $('#coViolLabel').value.trim(), ...(p.current.violence?.desc ? { desc: p.current.violence.desc } : {}) } : null };
+  try { await api('/api/admin/countries/' + coEditing, { method: 'POST', body: JSON.stringify(body) });
+    $('#coEditMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; await loadCountries(); editCountry(coEditing); $('#coEditMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; }
+  catch (e) { alertMsg(e.message); }
+};
+$('#tabCountries').onclick = () => { showTab('Countries'); loadCountries(); };
+// ---- Langues : traductions livrées ou déposées, langues proposées, langue par défaut ----
+let lgData = null;
+async function loadLangs(d) {
+  if (d) lgData = d; else { try { lgData = await api('/api/admin/langs'); } catch (e) { alertMsg(e.message); return; } }
+  $('#lgIntro').textContent = `${lgData.total} textes à traduire dans l’appli. Langue par défaut, pour les téléphones dont la langue n’est pas proposée : ${lgData.langs.find(l => l.code === lgData.def)?.name || lgData.def}.`;
+  const ul = $('#lgList'); ul.textContent = '';
+  for (const l of lgData.langs) {
+    const li = document.createElement('li'), info = document.createElement('div'), acts = document.createElement('div');
+    const on = document.createElement('label'); on.className = 'check';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = l.active; cb.disabled = l.code === 'fr';
+    cb.onchange = () => saveLangPrefs({ off: lgData.langs.filter(x => x.code !== 'fr' && (x.code === l.code ? !cb.checked : !x.active)).map(x => x.code) });
+    const b = document.createElement('b'); b.textContent = l.name; b.dir = l.dir;
+    on.append(cb, ' ', b, ` (${l.code})`, cb.disabled ? ' · texte d’origine' : ' · proposée');
+    const def = document.createElement('label'); def.className = 'check';
+    const rb = document.createElement('input'); rb.type = 'radio'; rb.name = 'lgDef'; rb.checked = l.code === lgData.def; rb.disabled = !l.active;
+    rb.onchange = () => saveLangPrefs({ def: l.code });
+    def.append(rb, ' par défaut');
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.textContent = [l.code === 'fr' ? (l.n ? `${l.n} correction(s) du français` : 'aucune correction') : `${l.pct ?? '?'} % traduit (${fmtN(l.n)} texte${l.n > 1 ? 's' : ''})`,
+      l.src === 'upload' ? (l.over ? 'fichier déposé dans l’admin, à la place du fichier livré' : 'fichier déposé dans l’admin') : 'livrée avec Cortège'].join(' · ');
+    if (l.code !== 'fr' && l.pct != null) { const bar = document.createElement('span'), fill = document.createElement('i'); bar.className = 'lg-bar';
+      fill.style.width = l.pct + '%'; bar.append(fill); meta.append(bar); }
+    info.append(on, document.createElement('br'), def, meta);
+    acts.className = 'acts';
+    if (l.hasPo) { const dl = document.createElement('button'); dl.type = 'button'; dl.className = 'ghost'; dl.textContent = 'Télécharger le .po';
+      dl.onclick = () => adminDownload(`/api/admin/langs/${l.code}.po`, l.code + '.po').catch(e => alertMsg(e.message)); acts.append(dl); }
+    if (l.src === 'upload') {
+      const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'ghost'; rm.textContent = l.over ? 'Revenir au fichier livré' : 'Retirer';
+      rm.onclick = async () => {
+        if (rm.dataset.armed !== '1') { rm.dataset.armed = '1'; const t = rm.textContent; rm.textContent = 'Confirmer'; setTimeout(() => { rm.dataset.armed = ''; rm.textContent = t; }, 4000); return; }
+        try { loadLangs(await api('/api/admin/langs/' + l.code, { method: 'DELETE' })); } catch (e) { alertMsg(e.message); }
+      };
+      acts.append(rm);
+    }
+    li.append(info, acts); ul.append(li);
+  }
+}
+async function saveLangPrefs(body) {
+  try { loadLangs(await api('/api/admin/langs/prefs', { method: 'POST', body: JSON.stringify(body) })); }
+  catch (e) { alertMsg(e.message); loadLangs(); }
+}
+$('#lgUpload').onclick = async () => {
+  const f = $('#lgFile').files[0]; $('#lgProblems').textContent = '';
+  if (!f) return alertMsg('Choisis d’abord un fichier .po.');
+  if (f.size > 2_500_000) return alertMsg('Fichier trop gros pour une traduction.');
+  $('#lgUpMsg').textContent = 'Vérification…';
+  try {
+    const r = await api('/api/admin/langs/upload', { method: 'POST', body: JSON.stringify({ text: await f.text(), file: f.name }) });
+    $('#lgUpMsg').textContent = `${r.name} (${r.code}) en ligne : ${fmtN(r.n)} texte${r.n > 1 ? 's' : ''} traduit${r.n > 1 ? 's' : ''}.` + (r.active ? '' : ' Coche-la dans la liste pour la proposer dans l’appli.')
+      + (r.warnings.length ? ` ${r.warnings.length} point(s) à vérifier :` : '');
+    for (const w of r.warnings) { const li = document.createElement('li'); li.textContent = w; $('#lgProblems').append(li); }
+    $('#lgFile').value = ''; loadLangs();
+  } catch (e) {
+    $('#lgUpMsg').textContent = e.message;
+    for (const p of e.problems || []) { const li = document.createElement('li'); li.textContent = p; $('#lgProblems').append(li); }
+  }
+};
+$('#lgNewDl').onclick = () => {
+  const code = $('#lgNewCode').value.trim().replace('_', '-'), name = $('#lgNewName').value.trim();
+  if (!/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(code)) return alertMsg('Code de langue attendu : de, it, pt-BR…');
+  adminDownload(`/api/admin/langs/${code}.po?name=${encodeURIComponent(name || code)}`, code + '.po').catch(e => alertMsg(e.message));
+};
+$('#lgPot').onclick = e => { e.preventDefault(); adminDownload('/api/admin/langs/cortege.pot', 'cortege.pot').catch(err => alertMsg(err.message)); };
+$('#tabLangs').onclick = () => { showTab('Langs'); loadLangs(); };
+// ---- Serveur : version, mise à jour disponible, ressources, cartes, sauvegarde ----
+const octets = n => n == null ? 'inconnu' : n >= 1e9 ? (n / 1e9).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' Go' : n >= 1e6 ? Math.round(n / 1e6) + ' Mo' : Math.round(n / 1e3) + ' ko';
+const duree = s => s < 3600 ? Math.round(s / 60) + ' min' : s < 172800 ? Math.round(s / 3600) + ' h' : Math.round(s / 86400) + ' j';
+const libre = d => d ? `${octets(d.free)} libres sur ${octets(d.total)} (${Math.round(d.free / d.total * 100)} %)` : 'inconnu';
+async function loadServer(check = true) {
+  let d; try { d = await api('/api/admin/server' + (check ? '' : '?check=0')); } catch (e) { alertMsg(e.message); return; }
+  $('#srvBadge').textContent = d.newer ? '1' : '';
+  $('#srvUpdate').hidden = !d.newer;
+  if (d.newer) {
+    $('#srvUpdateText').textContent = `La version ${d.latest} est publiée ; ton serveur fait tourner la ${d.version}.`;
+    $('#srvCmd').textContent = d.update;
+    $('#srvChangelog').hidden = !d.changelog; if (d.changelog) $('#srvChangelog').href = d.changelog;
+  }
+  kv($('#srvVersion'), [
+    ['En ligne', d.version],
+    ['Publiée', d.latest ? d.latest + (d.newer ? ' (plus récente)' : ' (à jour)') : d.latestErr || 'pas encore vérifiée'],
+    ['Vérifiée', d.latestAt ? `${dayFr(d.latestAt)} à ${hhmm(d.latestAt)}` : 'inconnu'],
+    ['Node', d.node],
+    ['Commande de mise à jour', d.update],
+  ]);
+  kv($('#srvRes'), [
+    ['Cortège tourne depuis', duree(d.uptime)],
+    ['Machine allumée depuis', duree(d.host.uptime)],
+    ['Charge (1, 5, 15 min)', d.host.load.join(' · ') + ` pour ${d.host.cpus} cœurs`],
+    ['Mémoire', d.mem ? `${octets(d.mem.free)} libres sur ${octets(d.mem.total)} · Cortège : ${octets(d.rss)}` : 'inconnu'],
+    ['Disque des données', libre(d.disk.data)],
+    ...(d.disk.tiles ? [['Disque des cartes', libre(d.disk.tiles)]] : []),
+    ['Base de données', octets(d.db)],
+    ['Dernier plantage', d.crash ? `${dayFr(d.crash.t)} à ${hhmm(d.crash.t)} : ${d.crash.msg}` : 'aucun'],
+  ]);
+  kv($('#srvMaps'), d.maps.length ? d.maps.map(m => [m.name, `${octets(m.bytes)} · ${m.world ? 'monde' : 'régionale'}${m.open ? ` · zoom ${m.minz} à ${m.maxz}` : ' · illisible'}`])
+    : [['Aucune', 'fond OpenStreetMap partout (voir le guide d’une nouvelle instance pour héberger une carte)']]);
+  const old = d.backup && Date.now() - d.backup.t > 36 * 3600_000;
+  kv($('#srvBackup'), [['Dernière sauvegarde', d.backup ? `${dayFr(d.backup.t)} à ${hhmm(d.backup.t)}${d.backup.bytes ? ' · ' + octets(d.backup.bytes) : ''}${old ? ' ⚠ plus d’un jour' : ''}` : 'inconnue']]);
+  $('#srvBackupHelp').textContent = d.backup ? 'Faite chaque nuit par le minuteur du serveur, chiffrée : seule ta clé secrète, gardée hors du serveur, peut l’ouvrir.'
+    : 'Le script de sauvegarde n’a pas encore indiqué de date. S’il est installé, mets-le à jour une fois sur le serveur : sudo install -m 700 tools/cortege-backup.sh /usr/local/sbin/cortege-backup (depuis le dossier de l’appli).';
+}
+$('#srvCheck').onclick = () => loadServer(true);
+$('#srvCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#srvCmd').textContent); $('#srvCopy').textContent = 'Copié'; setTimeout(() => ($('#srvCopy').textContent = 'Copier'), 2000); } catch { alertMsg($('#srvCmd').textContent); } };
+$('#tabServer').onclick = () => { showTab('Server'); loadServer(true); };
+// Pastille « mise à jour disponible » dès la connexion
+function srvBadge() { api('/api/admin/server').then(d => { $('#srvBadge').textContent = d.newer ? '1' : ''; }).catch(() => {}); }

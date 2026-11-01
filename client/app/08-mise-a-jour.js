@@ -12,6 +12,7 @@
   }
   // Réglages changés par l'admin (bandeau, catégories, rayon d'alerte) : relus sans recharger l'appli
   let cfgSeen = cfg.cfgh || null;
+  let cfgShape = JSON.stringify([cfg.profiles, (cfg.categories || []).map(k => k.id), cfg.brand, cfg.violenceUrl, cfg.contact, cfg.hostInfo]);
   async function checkCfg(h) {
     if (!h || h === cfgSeen) return;
     cfgSeen = h;
@@ -21,7 +22,10 @@
       cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
       ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
       for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
-      document.querySelectorAll('#catGrid .cat').forEach(b => { b.hidden = !!(CAT[b.dataset.cat] && CAT[b.dataset.cat].off); });
+      document.querySelectorAll('#catGrid .cat').forEach(b => { b.hidden = !!(CAT[b.dataset.cat] && CAT[b.dataset.cat].off) || !catHere(CAT[b.dataset.cat] || {}); });
+      // Pays, types ou marque changés dans l'admin : appliqués en rechargeant l'appli dès qu'elle passe en arrière-plan
+      const shape = x => JSON.stringify([x.profiles, (x.categories || []).map(k => k.id), x.brand, x.violenceUrl, x.contact, x.hostInfo]);
+      if (shape(c) !== cfgShape) { cfgShape = shape(c); document.addEventListener('visibilitychange', () => { if (document.hidden) reloadForUpdate(); }, { once: true }); }
     } catch { cfgSeen = null; }
   }
   function checkBuild(b) {

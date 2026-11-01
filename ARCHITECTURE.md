@@ -16,14 +16,14 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/util.js` | Petits outils sans état (distances, empreintes, nettoyage de texte, verrou de fichier) |
 | `src/categories.js` | Types de signalement et d'événement, fusion, alertes, vibrations |
 | `src/profiles.js`, `profiles/`, `geo/countries/` | Profils pays : noms des types, types masqués ou propres au pays, numéros, droits, unités ; contours des pays (Natural Earth) pour savoir quel profil s'applique où. Voir [docs/INSTANCE.md](docs/INSTANCE.md) |
-| `src/settings.js` | Réglages modifiés depuis l'admin, bandeau, nom affiché, pause |
+| `src/settings.js`, `src/instance.js` | Réglages modifiés depuis l'admin : bandeau, nom affiché, pause ; nom de la carte, contact, liens, marque (les variables d'environnement servent de valeurs de départ) |
 | `src/limits.js` | Limites anti-spam, quotas, plafonds des tables, mode manif renforcé |
 | `src/reports/` | Signalements : modèle et vue publique, stockage, votes « Plus là » et fiabilité |
 | `src/announcements/`, `src/events/` | Annonces et agenda (stockage, création, import du 17 octobre) |
 | `src/orgas/` | Orgas : clés, parrainage, journal, noms réservés, demandes d'accès |
 | `src/legal.js`, `src/orders.js` | Annuaire des legal teams, arrêtés et restrictions |
 | `src/moderation.js`, `src/sweep.js` | File de modération, tableau des abus, ménage toutes les 30 s |
-| `src/i18n.js`, `i18n/` | Traductions : un fichier PO par langue dans `i18n/` (voir `i18n/LISEZMOI.md`), construites dans `public/lang/` |
+| `src/i18n.js`, `src/i18n-po.js`, `i18n/` | Traductions : un fichier PO par langue dans `i18n/` (voir `i18n/LISEZMOI.md`), construites dans `public/lang/` ; langues déposées dans l'admin (dossier de données), langues proposées et langue par défaut |
 | `src/push.js` | Notifications Web Push (chiffrement et VAPID faits à la main) et traductions côté serveur |
 | `src/geo/` | Carte hébergée (PMTiles), proxy de tuiles, communes, départements, villes, recherche de lieux |
 | `src/places/` | Lieux permanents et caméras (OpenStreetMap, copie Geofabrik) |
@@ -31,7 +31,8 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/pages/` | Pages HTML fabriquées par le serveur : bilans, agenda, arrêtés, villes, droits |
 | `src/live/` | Publication des fichiers `live/`, minuteur, temps réel (Server-Sent Events) |
 | `src/http/` | Réponses, fichiers statiques et politique de sécurité, version en ligne, protection contre la saturation |
-| `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin, signalements, orgas, fichiers |
+| `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin (dont `admin-config.js` : instance, pays, langues, serveur), signalements, orgas, fichiers |
+| `src/server-info.js` | État du serveur pour l'admin : version publiée, disque, mémoire, cartes, dernière sauvegarde |
 | `src/mobs.js`, `src/migrate.js` | Journées de mobilisation prévues, reprise des anciennes données |
 | `client/app/`, `client/admin/` | Le code du téléphone et de la page admin, en morceaux numérotés par fonction (carte, synchro, signaler, orga, agenda…) |
 | `public/` | Ce que sert le serveur : la web app, l'admin, les pages statiques, les traductions (`public/lang/`, construites depuis `i18n/`) |
