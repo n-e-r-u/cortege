@@ -2873,3 +2873,24 @@ msgstr ""
 
 msgid "Propulsé par <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un projet de Neru"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?"
+msgstr ""
+
+#: client/app/18-position-direct.js
+msgid "Connexion perdue : partage de position arrêté"
+msgstr ""
+
+#: src/events/create.js
+msgid "Trop de propositions en attente depuis ce réseau. Réessaie plus tard."
+msgstr ""
+
+#: src/routes/orga.js
+msgid "Tu ne peux pas confirmer d’orga pour le moment."
+msgstr ""
+
+#: src/routes/orga.js
+msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
+msgstr ""

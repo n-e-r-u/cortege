@@ -2,6 +2,23 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.10.2
+
+Correctifs de sécurité, issus d'un audit complet du code :
+
+- Signalements : l'auteur d'un point est maintenant enregistré à part. Retirer ou déplacer un point reste réservé au téléphone qui l'a posé, même après beaucoup de confirmations ; retirer sa voix ne donne la main à personne d'autre. Renvoyer le même signalement ne remet plus à zéro les contestations et ne prolonge plus le point au-delà du plafond habituel.
+- Balises de position des orgas : un vote ou une fusion ne touche plus à leur durée ; une balise arrêtée (plus d'envoi depuis 3 min) ne repart plus d'elle-même, il faut la relancer. Le journal des orgas ne garde plus aucune position de balise.
+- Tor : l'en-tête qui signale le passage par l'adresse .onion n'est pris en compte que si `ONION_SECRET` ou `ONION_HOST` est défini. Tout le trafic Tor compte pour un seul réseau dans les contestations, les propositions et les demandes d'accès orga, partage un compteur commun d'essais de clé orga (`ONION_KEY_TRIES`) et un plafond d'abonnements aux notifications (`PUSH_ONION_MAX`). Le verrouillage des clés se ferme en cas d'erreur au lieu de s'ouvrir.
+- Orgas en essai : le nombre de retraits est limité comme pour les orgas parrainées ; une orga en essai ou suspendue ne peut pas confirmer ses filleules.
+- Propositions d'arrêtés et d'événements : 5 en attente au plus par réseau, retirées après 7 jours sans validation. Demandes d'accès orga : 5 par jour et par réseau, gardées 14 jours.
+- Veille des legal teams : une adresse IP écrite directement dans le lien est vérifiée comme les autres (le réseau interne reste inaccessible, y compris sous forme IPv6). Corrige aussi la veille des sources en nom de domaine, qui échouait toujours avec les versions récentes de Node.
+- Effacement d'urgence : les anciens fichiers `state.json` et `push.json` (et leurs copies `.repris-…`) sont supprimés ; la reprise les supprime désormais au lieu de les renommer.
+- Sauvegarde : le fichier de suivi est écrit par l'utilisateur de l'appli et non plus par root. À réinstaller une fois : `sudo install -m 700 tools/cortege-backup.sh /usr/local/sbin/cortege-backup`.
+- Import du 17 octobre : 400 événements au plus (`IMPORT_17OCT_MAX`) ; l'agenda publié garde toujours les événements des orgas et de l'admin avant ceux importés.
+- Appli : un lien `?orga=` demande confirmation avant de remplacer une clé déjà enregistrée ; « Tout effacer » attend la fin de la suppression des données locales ; les fiches de droits n'affichent que du texte (et du gras). Exports CSV protégés contre les formules de tableur. Ajout d'un `.dockerignore`.
+
+Conseil : ajoute `ONION_SECRET` dans `/etc/cortege.env` (et la même valeur dans le bloc .onion de Caddy) si ton instance a une adresse .onion.
+
 ## 2.10.1
 
 Configurer l'instance depuis l'admin, sans toucher au serveur ni redémarrer :

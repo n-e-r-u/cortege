@@ -2860,3 +2860,24 @@ msgstr "Los derechos de quienes se manifiestan, explicados por la ACLU."
 
 msgid "Propulsé par <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un projet de Neru"
 msgstr "Funciona con <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un proyecto de Neru"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?"
+msgstr "Este enlace sustituye la clave de orga guardada en este teléfono por otra. ¿Continuar?"
+
+#: client/app/18-position-direct.js
+msgid "Connexion perdue : partage de position arrêté"
+msgstr "Conexión perdida: se detuvo el envío de la ubicación"
+
+#: src/events/create.js
+msgid "Trop de propositions en attente depuis ce réseau. Réessaie plus tard."
+msgstr "Demasiadas propuestas pendientes desde esta red. Vuelve a intentarlo más tarde."
+
+#: src/routes/orga.js
+msgid "Tu ne peux pas confirmer d’orga pour le moment."
+msgstr "Por ahora no puedes confirmar una orga."
+
+#: src/routes/orga.js
+msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
+msgstr "Envío de ubicación detenido (nada enviado desde hace 3 min). Vuelve a activarlo si hace falta."

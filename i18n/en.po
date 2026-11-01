@@ -2860,3 +2860,24 @@ msgstr "Protesters’ rights, explained by the ACLU."
 
 msgid "Propulsé par <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un projet de Neru"
 msgstr "Powered by <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, a project by Neru"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?"
+msgstr "This link replaces the orga key saved on this phone with a different one. Continue?"
+
+#: client/app/18-position-direct.js
+msgid "Connexion perdue : partage de position arrêté"
+msgstr "Connection lost: location sharing stopped"
+
+#: src/events/create.js
+msgid "Trop de propositions en attente depuis ce réseau. Réessaie plus tard."
+msgstr "Too many pending proposals from this network. Try again later."
+
+#: src/routes/orga.js
+msgid "Tu ne peux pas confirmer d’orga pour le moment."
+msgstr "You can't confirm an orga right now."
+
+#: src/routes/orga.js
+msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
+msgstr "Location sharing stopped (nothing sent for 3 min). Start it again if needed."

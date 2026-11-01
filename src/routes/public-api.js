@@ -16,7 +16,7 @@ const { TILE_PREFETCH } = require('../geo/tiles');
 const { abuseOnce } = require('../moderation');
 const { activeReports } = require('../reports/store');
 const { annActive, annView } = require('../announcements/store');
-const { clientHash, ONION_HOST, deviceHash, PRIVATE_IP, clientIp } = require('../privacy');
+const { clientHash, ONION_HOST, deviceHash, PRIVATE_IP, clientIp, viaOnion } = require('../privacy');
 const { geoCache, nominatim, placeName } = require('../geo/search');
 const { nearKm, VAPID, PUSH_HOSTS, pushCount, PUSH_MAX, PUSH_NET_MAX, PUSH_LANGS, pushOne, tr, pushStat } = require('../push');
 const { publicView } = require('../reports/model');
@@ -26,6 +26,8 @@ const { send, readJson } = require('../http/respond');
 const { settings, bannerNow, cfgHash } = require('../settings');
 const { q, tx, DatabaseSync } = require('../db');
 const { validLatLng, distM, sha, h8 } = require('../util');
+
+const PUSH_ONION_MAX = Number(process.env.PUSH_ONION_MAX) || 2000;
 
 async function publicApiRoutes(req, res, url, pathname) {
   // Tracé du cortège entre la queue et la tête, par les rues de la carte hébergée (positions publiques, rien sur la personne qui demande)
@@ -75,6 +77,8 @@ async function publicApiRoutes(req, res, url, pathname) {
       if (!known && pushCount() >= PUSH_MAX) return false;
       // Nouveaux abonnements : au plus PUSH_NET_MAX par réseau et par 6 h (une machine ne peut pas remplir la liste)
       if (!known && !quota('pushnet:' + clientHash(req), PUSH_NET_MAX, 6 * 60 * MIN)) { abuseOnce('abonnements en rafale', deviceHash(req), 60 * MIN, { net: clientHash(req) }); return 'rate'; }
+      // Par Tor, l'identifiant de téléphone se change à volonté : plafond commun à tout Tor pour les nouveaux abonnements
+      if (!known && viaOnion(req) && !quota('pushnet:onion', PUSH_ONION_MAX, 6 * 60 * MIN)) { abuseOnce('abonnements en rafale (Tor)', deviceHash(req), 60 * MIN, {}); return 'rate'; }
       const urg = b.urgent === false ? 0 : 1, near = b.near === true && hasZone ? 1 : 0, ord = b.orders === false || !hasZone ? 0 : 1;
       const lang = PUSH_LANGS.includes(b.lang) ? b.lang : 'fr';
       q(`INSERT INTO push(id,e,k,a,lat,lng,t,urg,near,lang,ord) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET e=excluded.e, k=excluded.k, a=excluded.a,

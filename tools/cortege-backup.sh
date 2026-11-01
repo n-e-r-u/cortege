@@ -35,5 +35,8 @@ chmod 640 "$OUT"; chgrp "$READER" "$OUT" 2>/dev/null || true
 ln -sfn "$(basename "$OUT")" "$DEST/latest.tar.gz.age"
 find "$DEST" -name 'cortege-*.tar.gz.age' -mtime +"$KEEP" -delete
 # Date et taille de la dernière sauvegarde, lues par l'admin (onglet Serveur) ; rien d'autre n'en sort
-printf '{"t":%s,"bytes":%s}\n' "$(date +%s)" "$(stat -c %s "$OUT")" > "$DATA/backup-last.json"; chmod 644 "$DATA/backup-last.json"
+# Écrit par l'utilisateur de l'appli (jamais par root) dans un fichier temporaire puis renommé : un lien symbolique posé dans
+# le dossier des données ne peut pas faire écrire root ailleurs.
+printf '{"t":%s,"bytes":%s}\n' "$(date +%s)" "$(stat -c %s "$OUT")" | runuser -u "$APP_USER" -- sh -c \
+  't=$(mktemp "$1/.backup-last.XXXXXX") && cat > "$t" && chmod 644 "$t" && mv -f "$t" "$1/backup-last.json"' sh "$DATA"
 echo "Sauvegarde : $OUT ($(du -h "$OUT" | cut -f1))"

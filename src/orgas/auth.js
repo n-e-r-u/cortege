@@ -2,7 +2,7 @@
 
 const { ADMIN_KEY, ORGAS, RATE } = require('../config');
 const { keyEq, sha } = require('../util');
-const { clientHash } = require('../privacy');
+const { clientHash, viaOnion } = require('../privacy');
 const { q } = require('../db');
 const { bump } = require('../limits');
 const { readOrgas } = require('./store');
@@ -10,13 +10,18 @@ const { adminLabel } = require('../settings');
 
 // Clés admin / orga : au-delà de 10 essais ratés en 5 min depuis un même réseau, tout est refusé,
 // même la bonne clé (empêche de deviner une clé en essayant en boucle).
-const KEY_TRIES = 10;
-const keySlot = req => 'key:' + clientHash(req);
+// Par Tor, chaque téléphone a son propre compteur, plus un compteur commun à tout Tor (ONION_KEY_TRIES) :
+// changer d'identifiant à chaque essai ne redonne pas d'essais.
+// En cas d'erreur de la base, on refuse (le verrou reste fermé) plutôt que de laisser essayer sans limite.
+const KEY_TRIES = 10, ONION_KEY_TRIES = Number(process.env.ONION_KEY_TRIES) || 30;
+const keySlots = req => [['key:' + clientHash(req), KEY_TRIES], ...(viaOnion(req) ? [['key:onion', ONION_KEY_TRIES]] : [])];
 function keyLocked(req) {
-  try { const r = q('SELECT t, reports FROM rate WHERE k=?').get(keySlot(req)); return !!r && Date.now() - r.t <= RATE.windowMs && r.reports >= KEY_TRIES; }
-  catch { return false; }
+  try {
+    const now = Date.now();
+    return keySlots(req).some(([k, max]) => { const r = q('SELECT t, reports FROM rate WHERE k=?').get(k); return !!r && now - r.t <= RATE.windowMs && r.reports >= max; });
+  } catch { return true; }
 }
-function keyFailed(req) { try { bump(keySlot(req), 'report', Infinity, Date.now()); } catch {} }
+function keyFailed(req) { try { for (const [k] of keySlots(req)) bump(k, 'report', Infinity, Date.now()); } catch {} }
 function isAdmin(req) {
   const k = String(req.headers['x-admin-key'] || '');
   if (!ADMIN_KEY || !k || keyLocked(req)) return false;

@@ -22,7 +22,8 @@ function migrateJson() {
     setMeta('migrated', now);
     return true;
   });
-  if (done) { try { fs.renameSync(f, f + '.repris-' + now); } catch {} console.log('Données reprises de state.json'); }
+  // Le fichier repris est supprimé (et non renommé) : une copie oubliée survivrait à l'effacement d'urgence
+  if (done) { try { fs.unlinkSync(f); } catch {} console.log('Données reprises de state.json'); }
 }
 
 module.exports = { migrateJson };

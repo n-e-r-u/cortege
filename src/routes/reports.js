@@ -8,7 +8,7 @@ const { NEXT } = require('./next');
 const { catAllowed } = require('../profiles');
 const { abuseOnce, abuseLog, calmSeries, SERIES, snapshotContested } = require('../moderation');
 const { cellId } = require('../live/files');
-const { clientHash, deviceHash } = require('../privacy');
+const { clientHash, deviceHash, netHash } = require('../privacy');
 const { commIndex } = require('../geo/communes');
 const { createEvent } = require('../events/create');
 const { createOrder } = require('../orders');
@@ -27,7 +27,7 @@ const { round, validLatLng, distM } = require('../util');
 const { send, readJson } = require('../http/respond');
 const { strictUntil, allow, bump, quota } = require('../limits');
 const { sweep } = require('../sweep');
-const { toReport, addTrail, addNote, publicView } = require('../reports/model');
+const { toReport, addTrail, addNote, publicView, authorOf } = require('../reports/model');
 const { parisDay } = require('../time');
 
 async function reportsRoutes(req, res, url, pathname) {
@@ -92,16 +92,23 @@ async function reportsRoutes(req, res, url, pathname) {
       if (hit) {
         const r = toReport(hit.r), self = r.voters.includes(dev);
         if (!self) { r.voters.push(dev); r.up++; firstConfirm(r); }
-        // Preuve plus fraîche que les « Plus là » : on les efface
-        if (t0 >= (r.last || r.t)) { r.down = 0; r.downIps = []; r.dw = 0; r.ct = 0; }
+        // Preuve plus fraîche que les « Plus là », venue d'un autre téléphone : comme pour un vote « Toujours là »,
+        // un point contesté ne redevient normal que si la contestation est faible. L'auteur qui renvoie son point n'efface rien.
+        if (!self && t0 >= (r.last || r.t)) {
+          if (!r.ct) { r.down = 0; r.downIps = []; r.dw = 0; }
+          else if ((r.dw || 0) < contestNeed(r)) { r.ct = 0; r.down = 0; r.downIps = []; r.dw = 0; }
+        }
         // Point qui suit (forces mobiles, tête, queue) : il se déplace, sauf s'il est partagé en direct par une orga (sa position fait foi)
         if (m.move && !r.bk && t0 >= (r.last || r.t) && (r.lat !== pos.lat || r.lng !== pos.lng)) { addTrail(r, now); r.lat = pos.lat; r.lng = pos.lng; }
         if (note) addNote(r, note, dev, t0);
-        r.last = Math.max(r.last || r.t, t0);
-        r.exp = Math.max(r.exp, t0 + ttl);
+        // Seul un autre téléphone prolonge le point, plafonné à 4× la durée de base (une orga confirmée peut aller jusqu'à sa propre durée).
+        // Une position d'orga en direct est seulement confirmée : seule l'orga fait vivre sa durée.
+        if (!self && !r.bk) {
+          r.last = Math.max(r.last || r.t, t0);
+          r.exp = Math.min(Math.max(r.exp, t0 + ttl), sure ? Math.max(r.t + 4 * base, t0 + ttl) : r.t + 4 * base);
+        }
         if (sure) {
-          r.exp = Math.min(r.exp, Math.max(r.t + 4 * base, t0 + ttl));
-          if (!r.ver) { repAdd(r.voters[0], 'good', 2); r.ver = orga.label; orgaLog(orga, 'vérifié (signalement)', { r }); }
+          if (!r.ver) { repAdd(authorOf(r), 'good', 2); r.ver = orga.label; orgaLog(orga, 'vérifié (signalement)', { r }); }
           if (r.fl === -1) r.fl = 0;
         }
         saveReport(r);
@@ -119,7 +126,7 @@ async function reportsRoutes(req, res, url, pathname) {
       }
       if (q('SELECT COUNT(*) n FROM reports WHERE exp>?').get(now).n >= MAX_REPORTS) return [503, { error: 'Carte saturée, réessaie plus tard.' }];
       const r = { id: crypto.randomBytes(6).toString('base64url'), cat: cat.id, lat: pos.lat, lng: pos.lng, note, notes: note ? [{ x: note, t: t0, d: dev }] : [],
-        t: t0, last: t0, exp: t0 + ttl, up: 0, down: 0, voters: [dev], downIps: [], ip: ipH };
+        t: t0, last: t0, exp: t0 + ttl, up: 0, down: 0, voters: [dev], author: dev, downIps: [], ip: ipH };
       // Fiabilité : téléphone fiable aujourd'hui, ou au contraire série suspecte près des zones calmes / téléphone neuf en mode renforcé
       const trusted = devRep(dev) >= TRUST;
       if (isDanger(cat.id)) {
@@ -142,13 +149,13 @@ async function reportsRoutes(req, res, url, pathname) {
   
   // Agenda : une orga publie directement, un·e participant·e propose (validé ensuite par l'admin)
   // Proposer un arrêté ou une restriction (validé par l'admin avant d'apparaître)
-  if (req.method === 'POST' && pathname === '/api/orders') return send(res, ...await createOrder(await readJson(req, 8192), { dev: deviceHash(req), ipH: clientHash(req) }));
+  if (req.method === 'POST' && pathname === '/api/orders') return send(res, ...await createOrder(await readJson(req, 8192), { dev: deviceHash(req), ipH: clientHash(req), net: netHash(req) }));
   
   if (req.method === 'POST' && pathname === '/api/events') {
     const b = await readJson(req, 16384);
     const orga = req.headers['x-orga-key'] ? orgaOf(req) : null;
     if (req.headers['x-orga-key'] && !orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
-    const out = createEvent(b, orga, deviceHash(req), clientHash(req));
+    const out = createEvent(b, orga, deviceHash(req), clientHash(req), netHash(req));
     if (orga && out[0] < 300) orgaLog(orga, out[1].status === 'pending' ? 'événement (en attente)' : 'événement', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id, detail: out[1].title });
     return send(res, ...out);
   }
@@ -183,12 +190,14 @@ async function reportsRoutes(req, res, url, pathname) {
       const now = Date.now();
       const r = getReport(own[1], now);
       if (!r) return [404, { error: 'Signalement expiré.' }];
-      if (r.voters[0] !== dev) return [403, { error: 'Seul le téléphone qui l’a envoyé peut le retirer ou le déplacer, et seulement le jour même.' }];
+      if (authorOf(r) !== dev) return [403, { error: 'Seul le téléphone qui l’a envoyé peut le retirer ou le déplacer, et seulement le jour même.' }];
       if (!quota('self:' + dev, 20, 10 * MIN, now)) return [429, { error: 'Trop d’essais, patiente un peu.' }];
       if (b.action === 'remove') {
         if (!r.up && !r.ver) { discardReport(r.id); return [200, { removed: true }]; }
         if (!r.up) return [409, { error: 'Vérifié par une orga : le point reste sur la carte.' }];
-        r.voters = r.voters.slice(1); r.up--;
+        // L'auteur retire sa voix : plus personne n'est auteur (personne d'autre ne peut retirer ou déplacer le point).
+        // Son envoi n'a jamais compté dans « up » : les confirmations des autres restent. Il reste dans voters (pas de second vote).
+        r.author = '';
         r.notes = (r.notes || []).filter(n => n.d !== dev);
         saveReport(r);
         return [200, { ...publicView(r), withdrawn: true }];
@@ -210,7 +219,8 @@ async function reportsRoutes(req, res, url, pathname) {
   const vote = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/vote$/);
   if (req.method === 'POST' && vote) {
     const b = await readJson(req);
-    const ipH = clientHash(req), dev = deviceHash(req);
+    // netH : réseau pour la contestation (tout Tor = un seul réseau : la règle « 2 réseaux » ne se contourne pas en changeant d'identifiant)
+    const ipH = clientHash(req), netH = netHash(req), dev = deviceHash(req);
     const result = tx(() => {
       const now = Date.now();
       const r = getReport(vote[1], now);
@@ -222,12 +232,13 @@ async function reportsRoutes(req, res, url, pathname) {
       if (b.v === 1) {
         r.up++; r.last = now; firstConfirm(r);
         const ttl = CAT[r.cat].ttl * MIN;
-        r.exp = Math.min(Math.max(r.exp, now + ttl), r.t + 4 * ttl); // prolonge, plafonné à 4× la durée de base
+        // Prolonge, plafonné à 4× la durée de base. Jamais une position d'orga en direct : seule l'orga la fait vivre.
+        if (!r.bk) r.exp = Math.min(Math.max(r.exp, now + ttl), r.t + 4 * ttl);
         if (r.ct && (r.dw || 0) < contestNeed(r)) r.ct = 0; // confirmé : plus contesté
       } else {
         // Un téléphone ou un réseau qui conteste beaucoup de points d'affilée n'est plus compté. On ne le lui dit pas.
         const k = strict ? 2 / 3 : 1;
-        const devOk = bump('dn:' + dev, 'vote', Math.ceil(CONTEST.devBurst * k), now), netOk = bump('dnn:' + ipH, 'vote', Math.ceil(CONTEST.netBurst * k), now);
+        const devOk = bump('dn:' + dev, 'vote', Math.ceil(CONTEST.devBurst * k), now), netOk = bump('dnn:' + netH, 'vote', Math.ceil(CONTEST.netBurst * k), now);
         if (!devOk || !netOk) { abuseOnce('« Plus là » en rafale', dev, RATE.windowMs, { lat: r.lat, lng: r.lng }); saveReport(r); return [200, { ...publicView(r), down: r.down + 1 }]; }
         const before = { ...r, voters: r.voters.slice(0, -1) };
         r.down++;
@@ -236,11 +247,11 @@ async function reportsRoutes(req, res, url, pathname) {
         let w = (b.here === true ? CONTEST.near : 1) * (aged ? CONTEST.aged : 1) + (trusted ? 2 : 0);
         if (strict && !aged && !trusted) w = 0;
         r.dw = (r.dw || 0) + w;
-        (r.downIps ||= []).push(ipH);
+        (r.downIps ||= []).push(netH);
         // Un signalement vérifié par une orga ne peut pas être contesté par les votes.
         const nets = new Set(r.downIps).size, need = contestNeed(r);
         if (!r.ver && r.dw >= need && nets >= 2) {
-          if (!r.ct) { r.ct = now; snapshotContested(before, now); orgaLog(VOTES, 'contesté', { r, detail: nets + ' réseaux' }); repAdd(r.voters[0], 'bad'); abuseLog('point contesté', { lat: r.lat, lng: r.lng, ref: r.id }); }
+          if (!r.ct) { r.ct = now; snapshotContested(before, now); orgaLog(VOTES, 'contesté', { r, detail: nets + ' réseaux' }); repAdd(authorOf(r), 'bad'); abuseLog('point contesté', { lat: r.lat, lng: r.lng, ref: r.id }); }
           r.exp = Math.min(r.exp, now + (r.dw >= need + CONTEST.more && nets >= 3 ? CONTEST.short : CONTEST.soft));
         }
       }

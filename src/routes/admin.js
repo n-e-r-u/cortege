@@ -34,7 +34,7 @@ const { archive, ARCHIVE_DIR } = require('../digest/archive');
 const { placeOf } = require('../geo/cities');
 const { placesRun, POI_KINDS, placesStatus, placesState, PLACES_IMPORT, POI, poiStr, poiRg } = require('../places/osm');
 const { placesSource, poiView, placesImport, placesPublish } = require('../places/geofabrik');
-const { publicView } = require('../reports/model');
+const { publicView, authorOf } = require('../reports/model');
 const { pushCount, pushQueue, pushRunningNow, PSTATS } = require('../push');
 const { readOrgas, INVITE_MS, writeOrgas } = require('../orgas/store');
 const { rebuildAll } = require('../live/publish');
@@ -175,7 +175,7 @@ async function adminRoutes(req, res, url, pathname) {
         const r = getReport(modR[1], Date.now());
         if (!r) return [404, { error: 'Signalement expiré.' }];
         r.down = 0; r.downIps = []; r.dw = 0; r.ct = 0; if (r.fl === -1) r.fl = 0;
-        if (modR[2] === 'verify') { if (!r.ver) repAdd(r.voters[0], 'good', 2); r.ver = adminLabel(); }
+        if (modR[2] === 'verify') { if (!r.ver) repAdd(authorOf(r), 'good', 2); r.ver = adminLabel(); }
         saveReport(r); orgaLog({ id: 'admin', label: adminLabel() }, modR[2] === 'verify' ? 'vérifié (modération)' : 'gardé (modération)', { r });
         return [200, publicView(r)];
       });
@@ -361,10 +361,10 @@ async function adminRoutes(req, res, url, pathname) {
       const n = tx(() => {
         const n = q('DELETE FROM reports').run().changes;
         for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'quota', 'hidden', 'push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
-        for (const e of listEvents()) if (e.dev) { delete e.dev; saveEvent(e); }
+        for (const e of listEvents()) if (e.dev || e.net) { delete e.dev; delete e.net; saveEvent(e); }
         q("UPDATE events SET dev=NULL").run();
         // Arrêtés proposés par des participant·es : l'empreinte du téléphone disparaît aussi (colonne et données)
-        for (const x of q('SELECT id, data FROM orders').all()) { const o = JSON.parse(x.data); if ('dev' in o) { delete o.dev; q('UPDATE orders SET data=? WHERE id=?').run(JSON.stringify(o), x.id); } }
+        for (const x of q('SELECT id, data FROM orders').all()) { const o = JSON.parse(x.data); if ('dev' in o || 'net' in o) { delete o.dev; delete o.net; q('UPDATE orders SET data=? WHERE id=?').run(JSON.stringify(o), x.id); } }
         q('UPDATE orders SET dev=NULL').run();
         // Bilans publics : seulement si l'admin le demande (ils ne contiennent que des totaux et des points arrondis)
         if (b.pub === true) q('DELETE FROM pub').run();
@@ -373,6 +373,8 @@ async function adminRoutes(req, res, url, pathname) {
       // Archive du digest : chaque fichier séparément (un fichier qui résiste n'empêche pas d'effacer les autres)
       const left = [];
       try { for (const f of fs.readdirSync(ARCHIVE_DIR)) try { fs.unlinkSync(path.join(ARCHIVE_DIR, f)); } catch { left.push(f); } } catch {}
+      // Anciens fichiers des versions d'avant SQLite (state.json, push.json et leurs copies « .repris-… »)
+      try { for (const f of fs.readdirSync(DATA_DIR)) if (/^(state|push)\.json(\.repris-\d+)?$/.test(f)) try { fs.unlinkSync(path.join(DATA_DIR, f)); } catch { left.push(f); } } catch {}
       const rotated = (() => { try { return rotateSecret(); } catch { return false; } })();
       try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.exec('VACUUM'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
       rebuildAll();

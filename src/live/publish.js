@@ -80,7 +80,8 @@ function flush() {
       if (doOrd) { const str = JSON.stringify({ o: ordersLive(now) }); writeIfChanged(path.join(LIVE_DIR, 'ord.json'), str); setMeta('ordh', h8(str)); }
       if (doLegal) { const str = JSON.stringify({ l: legalAll().filter(e => e.ok).map(legalView) }); writeIfChanged(path.join(LIVE_DIR, 'legal.json'), str); setMeta('legalh', h8(str)); }
       if (doEv) {
-        const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY start LIMIT 3000").all(now - EVENT_KEEP).map(x => evView(JSON.parse(x.data))) });
+        const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY (src IS NOT NULL), start LIMIT 3000").all(now - EVENT_KEEP)
+          .map(x => JSON.parse(x.data)).sort((a, b) => a.start - b.start).map(evView) }); // imports en dernier : jamais d'éviction des événements orga ou admin
         writeIfChanged(path.join(LIVE_DIR, 'events.json'), str); setMeta('evh', h8(str));
       }
       if (doAll) { pub.lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); writeNational(now); }

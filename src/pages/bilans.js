@@ -179,7 +179,8 @@ function pubCsv(d) {
   if (csvCache.has(key)) return csvCache.get(key);
   const OUT = ['', 'contesté', 'retiré par une orga', 'retiré par l’admin', 'évincé (zone saturée)', 'effacé (purge)', 'retiré', 'retiré'];
   const sc = d.ptsS || 1e3, iso = m => new Date(m * MIN).toLocaleString('sv-SE', { timeZone: 'Europe/Paris' });
-  const esc = v => /[",;\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+  // Texte commençant par = + - @ : neutralisé (un tableur l'exécuterait comme une formule) ; les nombres restent des nombres
+  const esc = v => { let s = String(v); if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",;\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const lines = ['type;categorie;famille;debut;fin;latitude;longitude;commune;confirmations;verifie_par_orga;devenir'];
   for (const [c, t, e, la, lo, up, v, o] of d.pts || []) {
     const lat = la / sc, lng = lo / sc;

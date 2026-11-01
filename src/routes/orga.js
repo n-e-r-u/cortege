@@ -1,7 +1,7 @@
 'use strict';
 // Routes des orgas : invitation (QR code), espace orga et legal team (vérifier, retirer, annonces, événements, position en direct).
 const crypto = require('crypto');
-const { BEACON_ROLES, toReport, BEACON_MAX, BEACON_ZONE_M, publicView, addTrail, BEACON_TTL, TRAIL_CATS, TRAIL_MAX, addNote } = require('../reports/model');
+const { authorOf, BEACON_ROLES, toReport, BEACON_MAX, BEACON_ZONE_M, publicView, addTrail, BEACON_TTL, TRAIL_CATS, TRAIL_MAX, addNote } = require('../reports/model');
 const { CAT, MERGE } = require('../categories');
 const { DEVICE_MAX, banUntil, newInvite, SPONSOR, orgaReady, DEVICE_MS } = require('../orgas/sponsor');
 const { NEXT } = require('./next');
@@ -21,6 +21,9 @@ const { readOrgas, writeOrgas } = require('../orgas/store');
 const { routeDistM, getEvent, EVENT_KEEP, dropEvent } = require('../events/store');
 const { send, readJson } = require('../http/respond');
 const { sha, withLock, keyEq, clean, validLatLng, distM, round } = require('../util');
+
+// Journal des partages de position : l'action et le rôle, jamais la position (protège les orgas même face à l'admin)
+const bLog = (orga, action, r) => orgaLog(orga, action, { ref: r.id, r: { id: r.id, cat: r.cat } });
 
 async function orgaRoutes(req, res, url, pathname) {
   // ---- Invitation d'orga : le jeton du QR code est échangé une seule fois contre une clé ----
@@ -95,6 +98,8 @@ async function orgaRoutes(req, res, url, pathname) {
       const target = readOrgas().find(o => o.id === fil[1] && o.by === orga.id);
       if (!target) return send(res, 404, { error: 'Orga introuvable parmi tes invitées.' });
       if (fil[2] === 'confirm') {
+        // Une marraine elle-même en essai ou suspendue (après le retrait d'une de ses filleules) ne confirme personne
+        if (orga.trial || banUntil(orga.id) > Date.now()) return send(res, 403, { error: 'Tu ne peux pas confirmer d’orga pour le moment.' });
         if (!target.trial) return send(res, 400, { error: 'Déjà confirmée.' });
         if (!orgaReady(target).ready) return send(res, 400, { error: 'Pas encore prête : il faut au moins 7 jours, 10 actions et aucun incident. Seul·e l’admin peut la confirmer avant.' });
         withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], trial: false }; writeOrgas(l); } });
@@ -103,15 +108,17 @@ async function orgaRoutes(req, res, url, pathname) {
       }
       // Nouvelle invitation (la filleule a perdu son accès) : l'ancien accès est coupé
       const { token, invite } = newInvite();
-      withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], hash: null, keys: [], invite }; writeOrgas(l); } });
+      withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], hash: null, keys: [], devInv: null, invite }; writeOrgas(l); } });
       orgaLog(orga, 'nouvelle invitation (parrainage)', { ref: target.id, detail: target.label });
       return send(res, 200, { id: target.id, label: target.label, invite: token, exp: invite.exp });
     }
     // --- Ajouter un appareil : lien à usage unique, 10 minutes, la clé actuelle reste valable ---
     // --- Position en direct (orgas confirmées) : tête ou queue de cortège, street medic, legal team, presse ---
     // Le téléphone de l'orga envoie sa position toutes les 30 s tant que l'appli est ouverte ; le point disparaît 3 min après
-    // le dernier envoi, et le partage s'arrête de lui-même au bout de 8 h. Seule la dernière position est gardée
-    // (plus la trace des 30 dernières minutes pour la tête et la queue, jamais pour une personne).
+    // le dernier envoi, et le partage s'arrête de lui-même au bout de 4 h. Seule la dernière position est gardée
+    // (plus la trace récente pour la tête et la queue, jamais pour une personne) ; le journal des orgas n'en garde aucune.
+    // Un partage ne (re)démarre que par le bouton (start: true) : après 3 min sans envoi, le point de départ est oublié,
+    // et un envoi automatique ne doit jamais ouvrir un nouveau partage ailleurs (métro, téléphone en veille sur le retour).
     if (pathname === '/api/orga/beacon' && (req.method === 'POST' || req.method === 'DELETE')) {
       const b = await readJson(req);
       const role = String(b.role || '');
@@ -123,14 +130,15 @@ async function orgaRoutes(req, res, url, pathname) {
       const out = tx(() => {
         const now = Date.now();
         const cur = toReport(q('SELECT * FROM reports WHERE owner=? AND cat=? AND bk>0 AND exp>?').get(orga.id, role, now));
-        if (req.method === 'DELETE') { if (cur) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); } return [200, { stopped: true }]; }
+        if (req.method === 'DELETE') { if (cur) { dropReport(cur.id, 'exp'); bLog(orga, 'fin du partage de position', cur); } return [200, { stopped: true }]; }
+        if (!cur && b.start !== true) return [410, { error: 'Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin.', lapsed: true }];
         const lat = Number(b.lat), lng = Number(b.lng);
         if (!validLatLng(lat, lng)) return [400, { error: 'Position invalide.' }];
-        if (cur && now - cur.bk > BEACON_MAX) { dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position', { r: cur }); return [410, { error: 'Partage arrêté au bout de 4 h. Relance-le si besoin.' }]; }
+        if (cur && now - cur.bk > BEACON_MAX) { dropReport(cur.id, 'exp'); bLog(orga, 'fin du partage de position', cur); return [410, { error: 'Partage arrêté au bout de 4 h. Relance-le si besoin.' }]; }
         // Garde-fou : à plus de 2 km du point de départ (et du parcours d'une manif en cours), le partage s'arrête tout seul
         // et cette position n'est jamais enregistrée (une orga qui oublie de l'arrêter ne révèle pas où elle rentre)
         if (cur && cur.bkla != null && distM({ lat: cur.bkla, lng: cur.bklo }, { lat, lng }) > BEACON_ZONE_M && routeDistM(lat, lng, now) > BEACON_ZONE_M) {
-          dropReport(cur.id, 'exp'); orgaLog(orga, 'fin du partage de position (hors zone)', { r: cur });
+          dropReport(cur.id, 'exp'); bLog(orga, 'fin du partage de position (hors zone)', cur);
           return [410, { error: 'Tu t’es éloigné·e de plus de 2 km de la manif : partage de position arrêté.', zone: true }];
         }
         if (cur && now - (cur.last || cur.t) < 10_000) return [200, publicView(cur)];
@@ -146,7 +154,7 @@ async function orgaRoutes(req, res, url, pathname) {
         if (TRAIL_CATS.has(role)) for (const x of nearby(role, pos.lat, pos.lng, MERGE[role].r, now).filter(x => !x.r.bk)) {
           const old = toReport(x.r); r.trail = [...(old.trail || []), [old.lat, old.lng, old.last || old.t]].slice(-TRAIL_MAX[role]); r.up += old.up || 0; dropReport(old.id, 'exp');
         }
-        saveReport(r); orgaLog(orga, 'partage de position', { r });
+        saveReport(r); bLog(orga, 'partage de position', r);
         return [201, publicView(r)];
       });
       return send(res, ...out);
@@ -254,9 +262,10 @@ async function orgaRoutes(req, res, url, pathname) {
           const ttl = CAT[r.cat].ttl * MIN; r.exp = Math.min(Math.max(r.exp, Date.now() + ttl), r.t + 4 * ttl);
           saveReport(r); orgaLog(orga, orga.sponsored ? 'confirmé (parrainée)' : 'confirmé (essai)', { r }); return [200, { ...publicView(r), sponsored: true }];
         }
-        if (act[2] === 'verify') { if (!r.ver) repAdd(r.voters[0], 'good', 2); r.ver = orga.label; if (r.fl === -1) r.fl = 0; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
+        if (act[2] === 'verify') { if (!r.ver) repAdd(authorOf(r), 'good', 2); r.ver = orga.label; if (r.fl === -1) r.fl = 0; saveReport(r); orgaLog(orga, 'vérifié', { r }); return [200, publicView(r)]; }
         // Période d'essai : « Retirer » compte comme deux « Plus là », sans retrait direct
-        if (orga.sponsored && !bump('orm:' + orga.id, 'report', SPONSOR.removeMax, Date.now())) {
+        // Toute orga en essai (parrainée ou invitée par l'admin) : au plus SPONSOR.removeMax retraits par 5 min
+        if ((orga.sponsored || orga.trial) && !orga.admin && !bump('orm:' + orga.id, 'report', SPONSOR.removeMax, Date.now())) {
           orgaLog(orga, 'retrait bloqué (rafale)', { r }); abuseLog('orga en rafale', { lat: r.lat, lng: r.lng, ref: orga.id });
           return [429, { error: 'Trop de retraits d’un coup : le retrait est suspendu quelques minutes.' }];
         }

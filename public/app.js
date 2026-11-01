@@ -1699,6 +1699,8 @@
   const kmTxt = m => m < 1000 ? t('ici') : t('à {d} km', { d: m < 10000 ? (m / 1000).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') : Math.round(m / 1000) });
   // Droits du pays (hors France, dont le contenu est dans la page) : sections du profil pays, et lien vers une association
   function renderRightsProfile() {
+    // Seul le gras passe : tout le reste du texte (profil pays, traduction déposée) est affiché tel quel, jamais interprété
+    const boldOnly = x => String(x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]).replace(/&lt;(\/?)b&gt;/g, '<$1b>');
     const box = $('#rightsProfile'); if (!box) return;
     box.textContent = '';
     if (profile.violence && profile.violence.url) box.append(el('a', { class: 'violence-btn', href: profile.violence.url, target: '_blank', rel: 'noopener noreferrer' },
@@ -1708,7 +1710,7 @@
     for (const sec of profile.rights) {
       const ul = el('ul');
       // Textes du profil (fichier du serveur, gras autorisé) traduits dans la langue de l'appli
-      for (const it of sec.items || []) { const li = document.createElement('li'); li.innerHTML = t(it); ul.append(li); }
+      for (const it of sec.items || []) { const li = document.createElement('li'); li.innerHTML = boldOnly(t(it)); ul.append(li); }
       box.append(el('details', { class: 'right' }, el('summary', {}, t(sec.title)), ul));
     }
   }
@@ -1818,7 +1820,10 @@
   (async () => {
     const params = new URLSearchParams(location.search);
     if (params.has('orga')) {
-      try { localStorage.setItem('cortege-orga', params.get('orga')); } catch {}
+      // Un lien reçu ne remplace pas en silence la clé déjà enregistrée (sinon un lien piégé ferait publier sous un autre compte)
+      const nk = params.get('orga'); let ok = true;
+      try { const cur = localStorage.getItem('cortege-orga'); if (cur && cur !== nk) ok = confirm(t('Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?')); } catch {}
+      if (ok) try { localStorage.setItem('cortege-orga', nk); } catch {}
       history.replaceState(null, '', location.pathname);
     }
     var justJoined = false;
@@ -2025,9 +2030,13 @@
     if (!beacon.askUntil) { if (bkIsolated()) { beacon.isoSince ||= now; if (now - beacon.isoSince >= ISO_MS) bkAsk(true); } else beacon.isoSince = 0; }
     bkBanner();
     if (!me) { $('#bkState').textContent = t('En attente de ta position…'); return; }
+    // Plus aucun envoi réussi depuis 3 min (pas de réseau, téléphone en veille) : le serveur a oublié le point de départ,
+    // le partage s'arrête ici plutôt que de reprendre ailleurs
+    if (beacon.okAt && now - beacon.okAt > 3 * MIN) { toast(t('Connexion perdue : partage de position arrêté')); return beaconStop(false, true); }
     try {
-      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1], note: beacon.note }) });
-      if (beacon && r && r.id) beacon.id = r.id;
+      // start : seulement tant que le partage n'a jamais été accepté (après le bouton), jamais pour un envoi suivant
+      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1], note: beacon.note, ...(beacon.okAt ? {} : { start: true }) }) });
+      if (beacon && r && r.id) { beacon.id = r.id; beacon.okAt = Date.now(); }
       $('#bkState').textContent = t('Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte.', { h: fmtHour(Date.now()), end: fmtHour(beacon.until) });
       sync();
     } catch (e) {
@@ -2535,7 +2544,7 @@
     const sub = pushSub; pushSub = null; pushZone = null;
     try { localStorage.removeItem('cortege-push-zone'); } catch {}
     try {
-      if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
+      if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
     } catch {}
   }
   async function pushToggle(which, on) {
@@ -2723,7 +2732,8 @@
     try { await Promise.race([pushDisable(), new Promise(r => setTimeout(r, 1500))]); } catch {}
     try { localStorage.clear(); } catch {}
     try { sessionStorage.clear(); } catch {}
-    try { indexedDB.deleteDatabase('cortege'); } catch {}
+    // Attend la fin de la suppression (bloquée tant qu'une connexion reste ouverte : 1,5 s au plus avant de quitter la page)
+    try { await Promise.race([new Promise(r => { const d = indexedDB.deleteDatabase('cortege'); d.onsuccess = d.onerror = d.onblocked = r; }), new Promise(r => setTimeout(r, 1500))]); } catch {}
     try { for (const k of await caches.keys()) await caches.delete(k); } catch {}
     try { for (const r of (await navigator.serviceWorker?.getRegistrations?.()) || []) await r.unregister(); } catch {}
     location.replace('about:blank');

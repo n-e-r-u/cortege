@@ -55,7 +55,7 @@
     const sub = pushSub; pushSub = null; pushZone = null;
     try { localStorage.removeItem('cortege-push-zone'); } catch {}
     try {
-      if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
+      if (sub) { await fetch('/api/push/unsubscribe', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: { endpoint: sub.endpoint } }) }); await sub.unsubscribe(); }
     } catch {}
   }
   async function pushToggle(which, on) {

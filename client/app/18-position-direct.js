@@ -37,9 +37,13 @@
     if (!beacon.askUntil) { if (bkIsolated()) { beacon.isoSince ||= now; if (now - beacon.isoSince >= ISO_MS) bkAsk(true); } else beacon.isoSince = 0; }
     bkBanner();
     if (!me) { $('#bkState').textContent = t('En attente de ta position…'); return; }
+    // Plus aucun envoi réussi depuis 3 min (pas de réseau, téléphone en veille) : le serveur a oublié le point de départ,
+    // le partage s'arrête ici plutôt que de reprendre ailleurs
+    if (beacon.okAt && now - beacon.okAt > 3 * MIN) { toast(t('Connexion perdue : partage de position arrêté')); return beaconStop(false, true); }
     try {
-      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1], note: beacon.note }) });
-      if (beacon && r && r.id) beacon.id = r.id;
+      // start : seulement tant que le partage n'a jamais été accepté (après le bouton), jamais pour un envoi suivant
+      const r = await orgaFetch('/api/orga/beacon', { method: 'POST', body: JSON.stringify({ role: beacon.role, lat: me[0], lng: me[1], note: beacon.note, ...(beacon.okAt ? {} : { start: true }) }) });
+      if (beacon && r && r.id) { beacon.id = r.id; beacon.okAt = Date.now(); }
       $('#bkState').textContent = t('Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte.', { h: fmtHour(Date.now()), end: fmtHour(beacon.until) });
       sync();
     } catch (e) {

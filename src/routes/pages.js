@@ -5,9 +5,10 @@ const { NEXT } = require('./next');
 const { langsJs, uploadedJson } = require('../i18n');
 const { PMTILES, serveVectorTile } = require('../geo/pmtiles');
 const { PUBLIC_URL_REAL, sitemapXml, GOOGLE_VERIFY, pubPage, pubCsv, cityDayPage } = require('../pages/bilans');
-const { bump } = require('../limits');
+const { bump, quota } = require('../limits');
 const { cityIndex } = require('../pages/cities');
-const { clientHash } = require('../privacy');
+const { clientHash, netHash } = require('../privacy');
+const { MIN } = require('../config');
 const { h8 } = require('../util');
 const { orgaRequest } = require('../orgas/requests');
 const { pubFull, getPub, pubWithPts } = require('../digest/pub');
@@ -65,7 +66,7 @@ async function pagesRoutes(req, res, url, pathname) {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=120', ETag: etag }); return res.end(body);
   }
   if (req.method === 'POST' && pathname === '/api/orga-requests') {
-    if (!tx(() => bump('oreq:' + clientHash(req), 'report', 3, Date.now()))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });
+    if (!tx(() => bump('oreq:' + netHash(req), 'report', 3, Date.now()) && quota('oreqd:' + netHash(req), 5, 24 * 60 * MIN))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });
     return send(res, ...orgaRequest(await readJson(req)));
   }
   const vt = PMTILES && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);

@@ -22,6 +22,10 @@ function sweep() {
     if (q('DELETE FROM events WHERE start<=?').run(now - EVENT_KEEP).changes) dirty.events = true;
     // Arrêtés terminés : gardés 8 jours (les bilans citent ceux qui étaient en vigueur ce jour-là), jamais publiés sur la carte
     if (q('DELETE FROM orders WHERE end<=?').run(now - 8 * 24 * 60 * MIN).changes) dirty.ord = true;
+    // Propositions jamais validées : retirées après 7 jours (la file de modération ne reste pas bouchée)
+    const stale = now - 7 * 24 * 60 * MIN;
+    if (q("DELETE FROM orders WHERE status='pending' AND json_extract(data,'$.t')<?").run(stale).changes) dirty.ord = true;
+    if (q("DELETE FROM events WHERE status='pending' AND json_extract(data,'$.t')<?").run(stale).changes) dirty.events = true;
     q('DELETE FROM rate WHERE t<?').run(now - RATE.windowMs);
     q('DELETE FROM hidden WHERE until<?').run(now);
     q('DELETE FROM trash WHERE t<?').run(now - TRASH_MS);

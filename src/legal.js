@@ -39,19 +39,47 @@ function seedLegal() {
   setMeta('legalseed', Date.now());
 }
 const LEGAL_WATCH_MS = 24 * 60 * MIN;
-// Adresse publique seulement : jamais le serveur lui-même, le réseau local, ni les adresses internes des hébergeurs (métadonnées)
-const BLOCKED_IP = /^(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|192\.0\.0\.|198\.1[89]\.|22[4-9]\.|2[3-5]\d\.|::$|::1$|f[cd][0-9a-f]{2}:|fe[89ab][0-9a-f]:|::ffff:(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.))/i;
+// Adresse publique seulement : jamais le serveur lui-même, le réseau local, ni les adresses internes des hébergeurs (métadonnées).
+// Les formes IPv6 qui enveloppent une IPv4 (::ffff:, 64:ff9b::, 2002::) sont ramenées à l'IPv4 avant le test.
+const net = require('net');
+const BLOCK = new net.BlockList();
+for (const [a, n] of [['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24],
+  ['192.0.2.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15], ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 3]]) BLOCK.addSubnet(a, n, 'ipv4');
+for (const [a, n] of [['::', 128], ['::1', 128], ['fc00::', 7], ['fe80::', 10], ['fec0::', 10], ['ff00::', 8], ['100::', 64], ['2001:db8::', 32]]) BLOCK.addSubnet(a, n, 'ipv6');
+function v4Inside(a) {
+  const m = a.match(/^::(?:ffff:)?(\d+\.\d+\.\d+\.\d+)$/i); if (m) return m[1];
+  const w = a.toLowerCase().split(':');
+  const hex = (h, l) => [parseInt(h || '0', 16) >> 8, parseInt(h || '0', 16) & 255, parseInt(l || '0', 16) >> 8, parseInt(l || '0', 16) & 255].join('.');
+  if (/^::ffff:[0-9a-f]{1,4}:[0-9a-f]{1,4}$/i.test(a)) return hex(w[3], w[4]);
+  if (/^64:ff9b::/i.test(a)) { const t = a.slice(9); if (net.isIPv4(t)) return t; const [h, l] = t.split(':'); return hex(h, l); }
+  if (/^2002:/i.test(a)) return hex(w[1], w[2]);
+  return null;
+}
+function blockedIp(addr) {
+  const a = String(addr || '').replace(/^\[|\]$/g, '').replace(/%.*$/, '');
+  const fam = net.isIP(a); if (!fam) return true; // illisible : refusé
+  if (fam === 4) return BLOCK.check(a, 'ipv4');
+  const v4 = v4Inside(a); if (v4 && net.isIPv4(v4)) return BLOCK.check(v4, 'ipv4');
+  return BLOCK.check(a, 'ipv6');
+}
 // Page web d'une source (veille des legal teams) : HTTP(S) sur les ports habituels, adresse vérifiée au moment même de la connexion
 // (une redirection ou un nom de domaine qui change d'adresse ne peut pas mener au réseau interne), 3 redirections au plus.
+// Une adresse IP écrite directement dans le lien ne passe pas par la résolution DNS : elle est vérifiée ici avant toute connexion.
 function fetchPublic(url, { max = 3_000_000, timeout = 15000, hops = 3 } = {}) {
   return new Promise((resolve, reject) => {
     let u; try { u = new URL(url); } catch { return reject(new Error('adresse invalide')); }
-    if (!/^https?:$/.test(u.protocol) || (u.port && !['80', '443'].includes(u.port) && process.env.FETCH_ALLOW_PRIVATE !== '1') || u.username || u.password) return reject(new Error('adresse refusée'));
+    const open = process.env.FETCH_ALLOW_PRIVATE === '1';
+    if (!/^https?:$/.test(u.protocol) || (u.port && !['80', '443'].includes(u.port) && !open) || u.username || u.password) return reject(new Error('adresse refusée'));
+    const bare = u.hostname.replace(/^\[|\]$/g, '');
+    if (net.isIP(bare) && blockedIp(bare) && !open) return reject(new Error('adresse interne refusée'));
     const lib = u.protocol === 'https:' ? require('https') : require('http');
-    const lookup = (host, opts, cb) => require('dns').lookup(host, { ...opts, all: false }, (err, addr, fam) => {
+    // Respecte opts.all (Node 20+ appelle lookup avec all:true pour essayer plusieurs adresses) : toutes les adresses sont vérifiées
+    const lookup = (host, opts, cb) => require('dns').lookup(host, { ...opts, all: true }, (err, list) => {
       if (err) return cb(err);
-      if (BLOCKED_IP.test(addr) && process.env.FETCH_ALLOW_PRIVATE !== '1') return cb(new Error('adresse interne refusée'));
-      cb(null, addr, fam);
+      if (!list.length) return cb(new Error('site injoignable'));
+      if (!open && list.some(x => blockedIp(x.address))) return cb(new Error('adresse interne refusée'));
+      if (opts && opts.all) return cb(null, list);
+      cb(null, list[0].address, list[0].family);
     });
     const req = lib.get(u, { lookup, timeout, headers: { 'user-agent': 'Cortege-veille/1 (verification annuaire legal teams)' } }, res => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
@@ -102,4 +130,4 @@ async function legalWatch(force = false) {
 }
 const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
 
-module.exports = { legalAll, getLegal, saveLegal, legalView, phoneDigits, cleanLegal, seedLegal, watchStatus, legalWatch, legalAlerts };
+module.exports = { fetchPublic, blockedIp, legalAll, getLegal, saveLegal, legalView, phoneDigits, cleanLegal, seedLegal, watchStatus, legalWatch, legalAlerts };

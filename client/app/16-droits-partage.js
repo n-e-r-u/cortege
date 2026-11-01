@@ -6,6 +6,8 @@
   const kmTxt = m => m < 1000 ? t('ici') : t('à {d} km', { d: m < 10000 ? (m / 1000).toFixed(1).replace('.', I18N.lang === 'en' ? '.' : ',') : Math.round(m / 1000) });
   // Droits du pays (hors France, dont le contenu est dans la page) : sections du profil pays, et lien vers une association
   function renderRightsProfile() {
+    // Seul le gras passe : tout le reste du texte (profil pays, traduction déposée) est affiché tel quel, jamais interprété
+    const boldOnly = x => String(x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]).replace(/&lt;(\/?)b&gt;/g, '<$1b>');
     const box = $('#rightsProfile'); if (!box) return;
     box.textContent = '';
     if (profile.violence && profile.violence.url) box.append(el('a', { class: 'violence-btn', href: profile.violence.url, target: '_blank', rel: 'noopener noreferrer' },
@@ -15,7 +17,7 @@
     for (const sec of profile.rights) {
       const ul = el('ul');
       // Textes du profil (fichier du serveur, gras autorisé) traduits dans la langue de l'appli
-      for (const it of sec.items || []) { const li = document.createElement('li'); li.innerHTML = t(it); ul.append(li); }
+      for (const it of sec.items || []) { const li = document.createElement('li'); li.innerHTML = boldOnly(t(it)); ul.append(li); }
       box.append(el('details', { class: 'right' }, el('summary', {}, t(sec.title)), ul));
     }
   }

@@ -65,9 +65,20 @@ const CLOUDFLARE = process.env.CLOUDFLARE === '1';
 // ONION_SECRET : valeur attendue dans X-Cortege-Onion (posée par le bloc .onion de Caddy). Sans elle, « 1 » comme avant.
 const ONION_SECRET = process.env.ONION_SECRET || '';
 const fromProxy = req => { const a = req.socket.remoteAddress || ''; return !a || /^(127\.|::1$|::ffff:127\.)/.test(a) || PROXY_IPS.has(a.replace(/^::ffff:/, '')); };
+// Une instance sans adresse .onion (ni ONION_HOST ni ONION_SECRET) ignore l'en-tête : personne ne peut s'y faire passer pour Tor
 function viaOnion(req) {
+  if (!ONION_SECRET && !ONION_HOST) return false;
   const h = String(req.headers['x-cortege-onion'] || '');
   return TRUST_PROXY && fromProxy(req) && (ONION_SECRET ? h.length === ONION_SECRET.length && keyEq(h, ONION_SECRET) : h === '1');
+}
+// Réseau « rare » : pour les ressources partagées (essais de clé, nouveaux abonnements, contestation), tout Tor compte
+// comme un seul réseau ; sinon un client Tor changerait d'identifiant à chaque requête pour repartir de zéro.
+// Les limites ordinaires (signalements, votes, tuiles) restent par téléphone, pour ne pas bloquer tous les usagers de Tor ensemble.
+const ONION_NET = 'onion';
+function netHash(req) {
+  if (!viaOnion(req)) return clientHash(req);
+  const bucket = ipBucket();
+  return crypto.createHmac('sha256', periodKey('ip', bucket)).update(bucket + '|' + ONION_NET).digest('base64url').slice(0, 16);
 }
 function clientIp(req) {
   if (viaOnion(req)) { const d = String(req.headers['x-device'] || ''); return 'onion:' + (/^[\w-]{16,64}$/.test(d) ? d : 'sans-id'); }
@@ -98,5 +109,5 @@ function deviceHash(req) {
   return 'd:' + crypto.createHmac('sha256', periodKey('dev', day)).update('dev|' + day + '|' + d).digest('base64url').slice(0, 16);
 }
 
-module.exports = { KEY_DIR, SECRET_MEMORY, periodKey, pruneKeys, rotateSecret, PRIVATE_IP, ONION_HOST, PROXY_IPS, CLOUDFLARE, ONION_SECRET,
+module.exports = { netHash, KEY_DIR, SECRET_MEMORY, periodKey, pruneKeys, rotateSecret, PRIVATE_IP, ONION_HOST, PROXY_IPS, CLOUDFLARE, ONION_SECRET,
   fromProxy, viaOnion, clientIp, clientHash, dayBucket, ipBucket, deviceHash };

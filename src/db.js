@@ -67,6 +67,8 @@ if (db.prepare('PRAGMA table_info(reports)').all().some(c => c.name === 'oid'))
 // Trace (tête et queue de cortège) : positions des 30 dernières minutes [[lat, lng, heure]] ;
 // bk : heure de début du partage de position en direct d'une orga (0 sinon)
 try { db.exec('ALTER TABLE reports ADD COLUMN trail TEXT'); } catch {}
+// Auteur d'un signalement (empreinte du téléphone, du jour) : fixé à la création, jamais transmis à un autre votant
+try { db.exec('ALTER TABLE reports ADD COLUMN author TEXT'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN bk INTEGER DEFAULT 0'); } catch {}
 // Point de départ du partage de position en direct (jamais publié) : le partage s'arrête si l'orga s'en éloigne de plus de 2 km
 try { db.exec('ALTER TABLE reports ADD COLUMN bkla REAL'); } catch {}

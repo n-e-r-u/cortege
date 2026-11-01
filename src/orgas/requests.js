@@ -5,7 +5,7 @@ const { clean } = require('../util');
 const { q } = require('../db');
 
 // ---- Demandes d'accès orga (formulaire dans l'appli, au lieu d'un e-mail) ----
-const OREQ_DAYS = 30;
+const OREQ_DAYS = 14; // une demande non traitée en 2 semaines disparaît (la file ne reste pas pleine)
 function orgaRequest(b) {
   const f = { collective: clean(b.collective, 80), city: clean(b.city, 60), role: clean(b.role, 40), link: String(b.link || '').trim().slice(0, 300),
     since: clean(b.since, 40), contact: clean(b.contact, 120), sponsor: clean(b.sponsor, 120), note: clean(b.note, 600) };

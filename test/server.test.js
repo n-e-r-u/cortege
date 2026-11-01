@@ -691,7 +691,7 @@ test('cortège : tête qui suit (avec sa trace), queue, et position en direct de
   const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Service Ordre 27' })).j.invite);
   const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Service Ordre 27').id;
   await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
-  const bk = await asOrga(C.key, '/api/orga/beacon', { role: 'cortege', lat: p.lat + 0.0021, lng: p.lng });
+  const bk = await asOrga(C.key, '/api/orga/beacon', { role: 'cortege', start: true, lat: p.lat + 0.0021, lng: p.lng });
   assert.equal(bk.s, 201); assert.equal(bk.j.live, 1); assert.equal(bk.j.ver, 'Service Ordre 27');
   assert.ok(!row(h1.id), 'la tête signalée à côté est reprise par la position de l’orga'); assert.ok(bk.j.tr.length >= 2, 'avec sa trace');
   const again = await asOrga(C.key, '/api/orga/beacon', { role: 'cortege', lat: p.lat + 0.01, lng: p.lng });
@@ -706,7 +706,7 @@ test('position en direct : arrêtée net à plus de 2 km du départ, sans garder
   const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Medics Zone 271' })).j.invite);
   const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Medics Zone 271').id;
   await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
-  const p = place(), bk = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', ...p });
+  const p = place(), bk = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', start: true, ...p });
   assert.equal(bk.s, 201); assert.ok(!('bkla' in bk.j), 'point de départ jamais publié');
   const far = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', lat: p.lat + 0.03, lng: p.lng }); // ~3,3 km
   assert.equal(far.s, 410); assert.equal(far.j.zone, true);
@@ -779,7 +779,7 @@ test('admin : nom affiché choisi, réservé, et point en direct avec son logo',
   assert.equal(a.j.by, 'Neru Test');
   assert.equal((await admin('/api/admin/orgas', { label: 'neru  test' })).s, 409, 'nom de l’admin réservé');
   assert.equal((await post('/api/reports', { cat: 'contact', ...place() })).s, 400, 'personne ne peut signaler ce point');
-  const bk = await asOrgaAdmin('/api/orga/beacon', { role: 'contact', ...place(), note: 'Devant la fontaine, viens me voir' });
+  const bk = await asOrgaAdmin('/api/orga/beacon', { role: 'contact', start: true, ...place(), note: 'Devant la fontaine, viens me voir' });
   assert.equal(bk.s, 201); assert.equal(bk.j.live, 1); assert.equal(bk.j.ver, 'Neru Test'); assert.equal(bk.j.note, 'Devant la fontaine, viens me voir');
   const O = await orgaFrom((await admin('/api/admin/orgas', { label: 'Orga Contact 28' })).j.invite);
   const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Orga Contact 28').id;
@@ -856,10 +856,11 @@ test('son propre signalement : retiré sans trace, déplacé de peu, sa voix seu
   await post('/api/reports', { cat: 'eau', ...p2 }, other);
   assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'move', lat: p2.lat + 0.0002, lng: p2.lng }, me)).s, 409);
   const w = await post(`/api/reports/${b.id}/self`, { action: 'remove' }, me);
-  assert.equal(w.s, 200); assert.equal(w.j.withdrawn, true); assert.equal(w.j.up, 0);
+  assert.equal(w.s, 200); assert.equal(w.j.withdrawn, true); assert.equal(w.j.up, 1, 'la confirmation de l’autre reste');
   assert.ok(row(b.id), 'le point reste');
-  // L'autre est maintenant l'auteur : il peut le retirer
-  assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'remove' }, other)).j.removed, true);
+  // Plus personne n'est auteur : ni l'autre ni l'ancien auteur ne peuvent le retirer ou le déplacer
+  assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'remove' }, other)).s, 403);
+  assert.equal((await post(`/api/reports/${b.id}/self`, { action: 'remove' }, me)).s, 403);
 });
 
 test('admin : réglages de l’instance sans redémarrer (vide = valeur du serveur)', async () => {
@@ -936,4 +937,66 @@ test('admin : état du serveur (sans aller sur internet)', async () => {
   assert.match(d.version, /^\d+\.\d+/); assert.match(d.update, /git -C .+ pull && sudo systemctl restart cortege/);
   assert.equal(d.maps.length, 1); assert.ok(d.db > 0); assert.ok(d.disk.data.free > 0);
   assert.equal((await fetch(B + '/api/admin/server?check=0')).status, 403, 'clé obligatoire');
+});
+
+test('sécurité 2.10.2 : l’auteur d’un point ne change jamais, même si la liste des votes est coupée', async () => {
+  const me = phone(), other = phone(), p = place();
+  const a = (await post('/api/reports', { cat: 'eau', ...p }, me)).j;
+  assert.ok(row(a.id).author, 'auteur enregistré à part');
+  // Liste des votes réécrite (comme après des centaines de votes) : l'autre téléphone en tête ne devient pas auteur
+  db.prepare('UPDATE reports SET voters=? WHERE id=?').run(JSON.stringify([other.dev, me.dev]), a.id);
+  assert.equal((await post(`/api/reports/${a.id}/self`, { action: 'remove' }, other)).s, 403);
+  assert.equal((await post(`/api/reports/${a.id}/self`, { action: 'remove' }, me)).j.removed, true);
+});
+
+test('sécurité 2.10.2 : renvoyer son propre point ne le prolonge pas et n’efface pas les contestations', async () => {
+  const me = phone(), p = place();
+  const a = (await post('/api/reports', { cat: 'eau', ...p }, me)).j;
+  db.prepare('UPDATE reports SET down=1, down_ips=? WHERE id=?').run(JSON.stringify(['x']), a.id);
+  const exp = row(a.id).exp;
+  const again = await post('/api/reports', { cat: 'eau', ...p }, me);
+  assert.equal(again.j.self, true);
+  assert.equal(row(a.id).exp, exp, 'pas prolongé'); assert.equal(row(a.id).down, 1, 'contestation gardée');
+});
+
+test('sécurité 2.10.2 : balise arrêtée = pas de reprise sans start, et un vote ne touche pas à sa durée', async () => {
+  const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Medics Balise 28' })).j.invite);
+  const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Medics Balise 28').id;
+  await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+  const p = place();
+  const lapsed = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', ...p });
+  assert.equal(lapsed.s, 410); assert.equal(lapsed.j.lapsed, true);
+  const bk = await asOrga(C.key, '/api/orga/beacon', { role: 'medic', start: true, ...p });
+  assert.equal(bk.s, 201);
+  const exp = row(bk.j.id).exp;
+  await post(`/api/reports/${bk.j.id}/vote`, { v: 1 });
+  await post('/api/reports', { cat: 'medic', ...p });
+  assert.equal(row(bk.j.id).exp, exp, 'durée inchangée');
+  const logs = db.prepare('SELECT lat, lng FROM orga_log WHERE ref=?').all(bk.j.id);
+  assert.ok(logs.length && logs.every(x => x.lat == null && x.lng == null), 'aucune position dans le journal');
+  await fetch(B + '/api/orga/beacon', { method: 'DELETE', headers: { 'x-orga-key': C.key, 'content-type': 'application/json' }, body: JSON.stringify({ role: 'medic' }) });
+});
+
+test('sécurité 2.10.2 : orga en essai invitée par l’admin, retraits limités', async () => {
+  const T = await orgaFrom((await admin('/api/admin/orgas', { label: 'Essai Retraits 29' })).j.invite);
+  const ids = [];
+  for (let i = 0; i < 7; i++) ids.push((await post('/api/reports', { cat: 'eau', ...place() })).j.id);
+  const codes = [];
+  for (const id of ids) codes.push((await asOrga(T.key, `/api/reports/${id}/remove`, {})).s);
+  assert.ok(codes.includes(429), 'rafale bloquée : ' + codes.join(','));
+});
+
+test('sécurité 2.10.2 : propositions en attente plafonnées par réseau', async () => {
+  const net = '82.9.9.9', codes = [];
+  for (let i = 0; i < 7; i++) {
+    const s0 = Date.now() + 86400000 + i * 3600000;
+    codes.push((await post('/api/events', { type: 'manif', title: 'Essai plafond ' + i, place: 'Place du test', start: s0, ...place() }, phone(net))).s);
+  }
+  assert.ok(codes.filter(c => c === 201).length <= 5, codes.join(',')); assert.ok(codes.includes(429));
+});
+
+test('sécurité 2.10.2 : anciens fichiers repris supprimés par l’effacement d’urgence', async () => {
+  for (const f of ['state.json.repris-1', 'push.json.repris-2']) fs.writeFileSync(DIR + '/d/' + f, '{}');
+  assert.equal((await admin('/api/admin/wipe', { confirm: 'EFFACER' })).s, 200);
+  assert.ok(!fs.readdirSync(DIR + '/d').some(f => /\.repris-/.test(f)));
 });

@@ -71,16 +71,19 @@ function cleanOrder(b) {
   if (!u || !/^https?:$/.test(u.protocol)) return [null, 'Donne le lien de la source (site de la préfecture, compte officiel ou article de presse).'];
   return [{ dep: d.c, commune, insee: /^\d[\dAB]\d{3}$/.test(insee) ? insee : '', start, end, items, src: u.href }, null];
 }
+const PENDING_PER_NET = 5;
 // Proposition (téléphone) : en attente de validation ; admin : publiée tout de suite (après calcul de la zone)
-async function createOrder(b, { admin = false, dev = null, ipH = null } = {}) {
+async function createOrder(b, { admin = false, dev = null, ipH = null, net = ipH } = {}) {
   const [o, err] = cleanOrder(b);
   if (err) return [400, { error: err }];
   const now = Date.now();
   if (!admin) {
     if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
     if (q("SELECT COUNT(*) n FROM orders WHERE status='pending' AND dev=?").get(dev).n >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
+    // Plafond par réseau : un seul réseau (ou tout Tor) ne remplit pas la file de modération en changeant d'identifiant
+    if (net && q("SELECT COUNT(*) n FROM orders WHERE status='pending' AND json_extract(data,'$.net')=?").get(net).n >= PENDING_PER_NET) return [429, { error: 'Trop de propositions en attente depuis ce réseau. Réessaie plus tard.' }];
     if (q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n >= 200) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
-    const p = { id: crypto.randomBytes(6).toString('base64url'), ...o, status: 'pending', by: 'Proposition de participant·e', dev, t: now };
+    const p = { id: crypto.randomBytes(6).toString('base64url'), ...o, status: 'pending', by: 'Proposition de participant·e', dev, net, t: now };
     saveOrder(p);
     return [201, orderView(p)];
   }

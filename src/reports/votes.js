@@ -2,6 +2,7 @@
 
 const { MIN } = require('../config');
 const { q } = require('../db');
+const { authorOf } = require('./model');
 
 // ---- « Plus là » : un point n'est jamais effacé par des votes, il devient « contesté » ----
 // Contesté = grisé, et il ne lui reste que quelques minutes ; une confirmation le remet en état normal.
@@ -27,6 +28,6 @@ function repAdd(dev, field, n = 1) {
   q(`UPDATE devices SET ${field}=COALESCE(${field},0)+? WHERE h=?`).run(n, dev);
 }
 // Première confirmation par quelqu'un d'autre : l'auteur gagne en fiabilité, le point n'est plus « non fiable »
-function firstConfirm(r) { if (r.up === 1) { repAdd(r.voters[0], 'good'); if (r.fl === -1) r.fl = 0; } }
+function firstConfirm(r) { if (r.up === 1) { repAdd(authorOf(r), 'good'); if (r.fl === -1) r.fl = 0; } }
 
 module.exports = { CONTEST, VOTES, deviceAge, contestNeed, TRUST, devRep, repAdd, firstConfirm };

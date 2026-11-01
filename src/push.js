@@ -33,7 +33,7 @@ try { // reprise de l'ancien fichier push.json, une seule fois
   if (fs.existsSync(PUSH_FILE)) {
     const old = JSON.parse(fs.readFileSync(PUSH_FILE, 'utf8'));
     tx(() => { for (const [id, x] of Object.entries(old)) q('INSERT OR IGNORE INTO push(id,e,k,a,lat,lng,t) VALUES(?,?,?,?,?,?,?)').run(id, x.e, x.k, x.a, x.lat ?? null, x.lng ?? null, x.t || Date.now()); });
-    fs.renameSync(PUSH_FILE, PUSH_FILE + '.repris-' + Date.now());
+    fs.unlinkSync(PUSH_FILE); // supprimé après reprise : une copie oubliée survivrait à l'effacement d'urgence
   }
 } catch (e) { if (!/ENOENT/.test(e.message)) console.error('reprise push.json', e.message); }
 const pushCount = () => q('SELECT COUNT(*) n FROM push').get().n;

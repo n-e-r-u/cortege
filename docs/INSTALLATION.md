@@ -26,7 +26,10 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel. Les en-têtes du proxy ne sont crus que pour les connexions venant de la machine elle-même (ou de `PROXY_IPS`) |
 | `PROXY_IPS` | vide | Adresses du proxy s'il n'est pas sur la même machine (ex. passerelle Docker `172.17.0.1`), séparées par des virgules |
 | `CLOUDFLARE` | `0` | `1` seulement si l'instance est vraiment derrière Cloudflare : l'en-tête `CF-Connecting-IP` est alors cru. Sinon il est ignoré (n'importe qui peut l'envoyer) |
-| `ONION_SECRET` | vide | Valeur secrète que le bloc .onion de Caddy met dans `X-Cortege-Onion` (au lieu de `1`) : personne ne peut se faire passer pour Tor, même si le site public ne supprime pas l'en-tête |
+| `ONION_SECRET` | vide | Valeur secrète que le bloc .onion de Caddy met dans `X-Cortege-Onion` (au lieu de `1`). Sans `ONION_SECRET` ni `ONION_HOST`, l'en-tête est ignoré : personne ne peut se faire passer pour Tor, même si le site public ne supprime pas l'en-tête |
+| `ONION_KEY_TRIES` | `30` | Essais de clé orga ratés acceptés en 5 min pour tout le trafic Tor réuni (Tor ne donne pas d'adresse IP : sans ce compteur commun, un robot changerait d'identifiant à chaque essai) |
+| `PUSH_ONION_MAX` | `2000` | Abonnements aux notifications créés par Tor (toutes connexions Tor réunies) |
+| `IMPORT_17OCT_MAX` | `400` | Nombre maximal d'événements repris de la carte du 17 octobre (les plus proches dans le temps sont gardés) |
 | `BRAND_HANDLE` | `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») (admin) |
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » (admin) |
 | `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) (admin) |
@@ -142,6 +145,8 @@ Avec osmium, le serveur télécharge une fois par mois la copie d'OpenStreetMap 
 ### Sauvegarde chiffrée
 
 `tools/cortege-backup.sh` fait chaque nuit une copie cohérente de la base (pendant que l'appli tourne), des accès orga, des clés de notification, de l'archive, de la clé .onion et de la configuration, chiffrée avec [age](https://age-encryption.org) pour une clé publique : la clé secrète reste hors du serveur. 14 copies gardées dans `/var/backups/cortege`.
+
+La copie contient `/etc/cortege.env`, donc `ADMIN_KEY` et `SECRET` s'il est défini : garde la clé secrète age aussi précieusement que ces valeurs. Avec `SECRET_STORE=memory`, les clés de hachage, elles, ne sont jamais sur le disque ni dans la sauvegarde.
 
 ```bash
 apt install -y age

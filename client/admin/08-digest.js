@@ -169,7 +169,8 @@ $('#csv').addEventListener('click', () => {
   if (!dg) return;
   const cat = Object.fromEntries(dg.categories.map(c => [c.id, c]));
   const head = ['categorie', 'famille', 'debut', 'fin', 'latitude', 'longitude', 'ville', 'confirmations', 'plus_la', 'precisions', 'verifie', 'fiabilite', 'devenir'];
-  const esc = v => /[",;\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+  // Texte commençant par = + - @ : neutralisé (un tableur l'exécuterait comme une formule) ; les nombres restent des nombres
+  const esc = v => { let s = String(v); if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",;\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const iso = t => t ? new Date(t).toLocaleString('sv-SE', { timeZone: 'Europe/Paris' }) : '';
   const lines = [head.join(';'), ...dg.rows.filter(r => cat[r.c]).map(r => [cat[r.c].label, cat[r.c].group, iso(r.t), iso(r.e), r.lat, r.lng, dg.zones[r.z]?.name || '', r.up, r.dn ?? '', r.n ?? '', r.v ? 'oui' : 'non',
     r.f === 1 ? 'fiable' : r.f === -1 ? 'non fiable' : '', OUTCOME[r.o] || r.o].map(esc).join(';'))];

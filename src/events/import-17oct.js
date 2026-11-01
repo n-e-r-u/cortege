@@ -15,6 +15,7 @@ const IMPORT_17 = process.env.IMPORT_17OCT !== '0';
 const IMPORT_BASE = (process.env.IMPORT_17OCT_URL || 'https://www.17octobregiletjaune.net').replace(/\/$/, '');
 const IMPORT_UNTIL = Date.parse(process.env.IMPORT_17OCT_UNTIL || '2026-11-01');
 const IMPORT_EVERY = 15 * MIN;
+const IMPORT_MAX = Math.max(1, Number(process.env.IMPORT_17OCT_MAX) || 400);
 const IMPORT_STAMP = path.join(DATA_DIR, 'import-17oct.stamp');
 let stationCache = { t: 0, map: new Map() };
 async function import17() {
@@ -47,6 +48,8 @@ async function import17() {
       note: 'Annoncé sur la carte participative du 17 octobre.', start, lat: round(p.lat), lng: round(p.lng), route: null, end: false,
       by: '17octobregiletjaune.net', oid: 'import', link: IMPORT_BASE + '/carte/', status: 'ok', t: now });
   }
+  // Plafond : une source extérieure ne peut pas noyer l'agenda (les plus proches dans le temps sont gardés)
+  if (out.size > IMPORT_MAX) for (const [id] of [...out].sort((a, b) => b[1].start - a[1].start).slice(0, out.size - IMPORT_MAX)) out.delete(id);
   const n = tx(() => {
     const hidden = new Set(q('SELECT id FROM hidden').all().map(x => x.id));
     for (const x of q("SELECT id FROM events WHERE src='17oct'").all()) if (!out.has(x.id)) dropEvent(x.id);

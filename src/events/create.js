@@ -7,8 +7,9 @@ const { clean, validLatLng, distKm, round } = require('../util');
 const { saveEvent, evView } = require('./store');
 const { tx, q } = require('../db');
 
+const PENDING_PER_NET = 5; // propositions en attente par réseau (tout Tor compte pour un seul réseau)
 // ---- Agenda : création d'événement (orga = publié tout de suite ; participant·e = proposition à valider) ----
-function createEvent(b, orga, dev, ipH) {
+function createEvent(b, orga, dev, ipH, net = ipH) {
   const type = Object.hasOwn(EVT, String(b.type)) ? b.type : 'manif';
   const title = clean(b.title, 80), place = clean(b.place, 100), note = clean(b.note, 220);
   const start = Number(b.start), lat = Number(b.lat), lng = Number(b.lng);
@@ -26,11 +27,12 @@ function createEvent(b, orga, dev, ipH) {
     if (!orga) {
       if (!allow(dev, ipH, 'report', now)) return [429, { error: 'Trop d’envois d’un coup. Réessaie dans quelques minutes.' }];
       if (q("SELECT COUNT(*) n FROM events WHERE status='pending' AND dev=?").get(dev).n >= 3) return [429, { error: 'Tu as déjà 3 propositions en attente de validation.' }];
+      if (net && q("SELECT COUNT(*) n FROM events WHERE status='pending' AND json_extract(data,'$.net')=?").get(net).n >= PENDING_PER_NET) return [429, { error: 'Trop de propositions en attente depuis ce réseau. Réessaie plus tard.' }];
       if (q("SELECT COUNT(*) n FROM events WHERE status='pending'").get().n >= 300) return [503, { error: 'Trop de propositions en attente, réessaie plus tard.' }];
     } else if (!orga.admin && !quota('evt:' + orga.id, ORGA_LIMITS.eventsPerDay, 24 * 60 * MIN, now)) return [429, { error: `${ORGA_LIMITS.eventsPerDay} événements par jour au maximum.` }];
     const e = { id: crypto.randomBytes(6).toString('base64url'), type, title, place, note, start, lat: round(lat), lng: round(lng),
       route, end: !!(route && b.end), by: orga ? orga.label : 'Proposition de participant·e', oid: orga ? orga.id : null, status: orga && !orga.trial ? 'ok' : 'pending', t: now };
-    if (!orga) e.dev = dev;
+    if (!orga) { e.dev = dev; e.net = net; }
     saveEvent(e);
     return [201, evView(e)];
   });

@@ -30,7 +30,10 @@
   (async () => {
     const params = new URLSearchParams(location.search);
     if (params.has('orga')) {
-      try { localStorage.setItem('cortege-orga', params.get('orga')); } catch {}
+      // Un lien reçu ne remplace pas en silence la clé déjà enregistrée (sinon un lien piégé ferait publier sous un autre compte)
+      const nk = params.get('orga'); let ok = true;
+      try { const cur = localStorage.getItem('cortege-orga'); if (cur && cur !== nk) ok = confirm(t('Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?')); } catch {}
+      if (ok) try { localStorage.setItem('cortege-orga', nk); } catch {}
       history.replaceState(null, '', location.pathname);
     }
     var justJoined = false;
