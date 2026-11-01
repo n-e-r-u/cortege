@@ -1,46 +1,121 @@
 {
-  "version": "2.9",
+  "version": "2.10",
   "items": [
     [
-      "🌍 Dans ta langue",
-      "Les noms des rues et des villes s’affichent dans la langue de l’appli, et les derniers textes encore en français sont traduits."
+      "✋ Ton signalement, ta main",
+      "Posé par erreur ou mal placé ? Touche ton point : tu peux le retirer, ou le déplacer dans les 10 premières minutes."
     ],
     [
-      "🧩 Code réorganisé",
-      "Le code de Cortège est rangé par fonction pour que d’autres puissent y contribuer plus facilement. Rien ne change pour toi."
+      "🌍 La carte hors de France",
+      "La carte s’affiche aussi ailleurs dans le monde, et l’appli s’adapte au pays : noms des forces de l’ordre, numéros d’urgence, droits."
+    ],
+    [
+      "🗣️ Traduis Cortège",
+      "Une langue = un fichier. Tu veux Cortège dans ta langue ? Propose ta traduction, sans toucher au code."
     ]
   ],
   "items_en": [
     [
-      "🌍 In your language",
-      "Street and city names now show in the app’s language, and the last texts still in French are translated."
+      "✋ Your report, your call",
+      "Placed by mistake or in the wrong spot? Tap your point: you can remove it, or move it within the first 10 minutes."
     ],
     [
-      "🧩 Reorganised code",
-      "Cortège’s code is now organised by feature so others can contribute more easily. Nothing changes for you."
+      "🌍 The map beyond France",
+      "The map now shows elsewhere in the world, and the app adapts to the country: police unit names, emergency numbers, rights."
+    ],
+    [
+      "🗣️ Translate Cortège",
+      "One language = one file. Want Cortège in your language? Send your translation, no code needed."
     ]
   ],
   "items_es": [
     [
-      "🌍 En tu idioma",
-      "Los nombres de calles y ciudades se muestran en el idioma de la app, y los últimos textos que seguían en francés están traducidos."
+      "✋ Tu aviso, tu decisión",
+      "¿Puesto por error o en el sitio equivocado? Toca tu punto: puedes retirarlo, o moverlo en los primeros 10 minutos."
     ],
     [
-      "🧩 Código reorganizado",
-      "El código de Cortège está ordenado por función para que otras personas puedan contribuir más fácilmente. Para ti no cambia nada."
+      "🌍 El mapa fuera de Francia",
+      "El mapa también se muestra en otras partes del mundo, y la app se adapta al país: nombres de la policía, números de emergencia, derechos."
+    ],
+    [
+      "🗣️ Traduce Cortège",
+      "Un idioma = un archivo. ¿Quieres Cortège en tu idioma? Propón tu traducción, sin tocar el código."
     ]
   ],
   "items_ar": [
     [
-      "🌍 بلغتك",
-      "تظهر أسماء الشوارع والمدن بلغة التطبيق، وتُرجمت آخر النصوص التي كانت لا تزال بالفرنسية."
+      "✋ بلاغك، قرارك",
+      "وضعته بالخطأ أو في المكان الخطأ؟ المس نقطتك: يمكنك إزالتها، أو نقلها خلال الدقائق العشر الأولى."
     ],
     [
-      "🧩 شيفرة مُعاد تنظيمها",
-      "أصبحت شيفرة Cortège مرتبة حسب الوظيفة ليسهل على الآخرين المساهمة فيها. لا شيء يتغيّر بالنسبة لك."
+      "🌍 الخريطة خارج فرنسا",
+      "تظهر الخريطة الآن في أماكن أخرى من العالم، ويتكيّف التطبيق مع البلد: أسماء وحدات الشرطة، أرقام الطوارئ، الحقوق."
+    ],
+    [
+      "🗣️ ترجم Cortège",
+      "لغة واحدة = ملف واحد. تريد Cortège بلغتك؟ اقترح ترجمتك دون لمس الشيفرة."
     ]
   ],
   "history": [
+    {
+      "version": "2.10",
+      "items": [
+        [
+          "✋ Ton signalement, ta main",
+          "Posé par erreur ou mal placé ? Touche ton point : tu peux le retirer, ou le déplacer dans les 10 premières minutes."
+        ],
+        [
+          "🌍 La carte hors de France",
+          "La carte s’affiche aussi ailleurs dans le monde, et l’appli s’adapte au pays : noms des forces de l’ordre, numéros d’urgence, droits."
+        ],
+        [
+          "🗣️ Traduis Cortège",
+          "Une langue = un fichier. Tu veux Cortège dans ta langue ? Propose ta traduction, sans toucher au code."
+        ]
+      ],
+      "items_en": [
+        [
+          "✋ Your report, your call",
+          "Placed by mistake or in the wrong spot? Tap your point: you can remove it, or move it within the first 10 minutes."
+        ],
+        [
+          "🌍 The map beyond France",
+          "The map now shows elsewhere in the world, and the app adapts to the country: police unit names, emergency numbers, rights."
+        ],
+        [
+          "🗣️ Translate Cortège",
+          "One language = one file. Want Cortège in your language? Send your translation, no code needed."
+        ]
+      ],
+      "items_es": [
+        [
+          "✋ Tu aviso, tu decisión",
+          "¿Puesto por error o en el sitio equivocado? Toca tu punto: puedes retirarlo, o moverlo en los primeros 10 minutos."
+        ],
+        [
+          "🌍 El mapa fuera de Francia",
+          "El mapa también se muestra en otras partes del mundo, y la app se adapta al país: nombres de la policía, números de emergencia, derechos."
+        ],
+        [
+          "🗣️ Traduce Cortège",
+          "Un idioma = un archivo. ¿Quieres Cortège en tu idioma? Propón tu traducción, sin tocar el código."
+        ]
+      ],
+      "items_ar": [
+        [
+          "✋ بلاغك، قرارك",
+          "وضعته بالخطأ أو في المكان الخطأ؟ المس نقطتك: يمكنك إزالتها، أو نقلها خلال الدقائق العشر الأولى."
+        ],
+        [
+          "🌍 الخريطة خارج فرنسا",
+          "تظهر الخريطة الآن في أماكن أخرى من العالم، ويتكيّف التطبيق مع البلد: أسماء وحدات الشرطة، أرقام الطوارئ، الحقوق."
+        ],
+        [
+          "🗣️ ترجم Cortège",
+          "لغة واحدة = ملف واحد. تريد Cortège بلغتك؟ اقترح ترجمتك دون لمس الشيفرة."
+        ]
+      ]
+    },
     {
       "version": "2.9",
       "items": [

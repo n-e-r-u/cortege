@@ -2,6 +2,15 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.10.0
+
+- Retirer ou déplacer son propre signalement : le téléphone qui a envoyé un point peut le retirer s’il est posé par erreur (supprimé sans trace dans les bilans) tant que personne d’autre ne l’a confirmé, sinon il retire seulement sa voix ; il peut aussi le déplacer de 150 m au plus dans les 10 premières minutes.
+- Carte hors de France : le repli OpenStreetMap n’est plus caché par le fond de la carte vectorielle. `TILE_PMTILES` accepte plusieurs fichiers (un par pays, plus une carte du monde légère pour les zooms éloignés).
+- Profils pays (`profiles/*.json`, `PROFILES=fr,de,us`) : noms des types de signalement, types masqués ou propres au pays (ICE aux États-Unis), numéros d’urgence, droits, unités (pieds et miles). Une instance peut couvrir plusieurs pays ; l’appli suit le pays affiché. Profils fournis : France, États-Unis, Allemagne (à faire relire sur place).
+- Traductions en fichiers PO, un par langue (`i18n/`), avec variantes régionales, `fr.po` pour corriger le français sans toucher au code et le modèle `cortege.pot`. Une langue ajoutée apparaît toute seule. Vrais pluriels (six formes en arabe), format des dates selon le téléphone.
+- Bilans et modération : « hors zone » au lieu de « hors de France ».
+- Mention « Propulsé par Cortège, un projet de Neru » obligatoire sur toute instance (conditions additionnelles à l’AGPL) ; guide d’une nouvelle instance (`docs/INSTANCE.md`).
+
 ## 2.9.0
 
 - Code réorganisé, sans changement de comportement : `server.js` ne fait plus que démarrer le serveur, tout le reste est rangé par domaine dans `src/` (signalements, orgas, annonces, agenda, arrêtés, notifications, carte, lieux, bilans, pages, publication, routes). Le code du téléphone et de l’admin est écrit en morceaux dans `client/` et assemblé dans `public/` par `npm run build`. Voir `ARCHITECTURE.md`.
