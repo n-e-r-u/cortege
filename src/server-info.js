@@ -9,7 +9,7 @@ const https = require('https');
 const { ROOT, DATA_DIR } = require('./config');
 const { DB_FILE, getMeta } = require('./db');
 const { APP_VERSION } = require('./http/version');
-const { PMTILES, pmFilesInfo } = require('./geo/pmtiles');
+const { pmPrimary, pmFilesInfo } = require('./geo/pmtiles');
 const { instance } = require('./instance');
 
 // Compare deux versions « 2.10.1 » : >0 si a est plus récente
@@ -45,7 +45,7 @@ async function serverInfo({ checkLatest = true } = {}) {
   try { const m = fs.readFileSync('/proc/meminfo', 'utf8'), g = k => +(m.match(new RegExp('^' + k + ':\\s+(\\d+)', 'm')) || [])[1] * 1024;
     mem = { free: g('MemAvailable'), total: g('MemTotal') }; } catch { mem = { free: os.freemem(), total: os.totalmem() }; }
   let backup = null; try { const b = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'backup-last.json'), 'utf8')); if (b.t) backup = { t: b.t * 1000, bytes: b.bytes || null }; } catch {}
-  const tiles = PMTILES ? path.dirname(PMTILES) : null;
+  const tiles = pmPrimary() ? path.dirname(pmPrimary()) : null;
   let crash = null; try { crash = JSON.parse(getMeta('crash') || 'null'); } catch {}
   const user = (() => { try { return os.userInfo().username; } catch { return 'cortege'; } })();
   return {

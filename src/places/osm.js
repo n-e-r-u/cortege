@@ -18,6 +18,8 @@ const POI_KINDS = [
   { id: 'gend', label: 'Gendarmerie', glyph: '👮', grp: 'pouvoir' },
   { id: 'tribunal', label: 'Tribunal', glyph: '🔨', grp: 'pouvoir' },
   { id: 'cra', label: 'Centre de rétention (CRA)', glyph: '🔒', grp: 'pouvoir' },
+  { id: 'fac', label: 'Université', glyph: '🎓', grp: 'etude' },
+  { id: 'lycee', label: 'Lycée', glyph: '🏫', grp: 'etude' },
   { id: 'hopital', label: 'Hôpital', glyph: '🏥', grp: 'aide' },
   { id: 'pharma', label: 'Pharmacie', glyph: '💊', grp: 'aide', street: true },
   { id: 'eau', label: 'Eau potable', glyph: '🚰', grp: 'aide', street: true },
@@ -29,6 +31,13 @@ const PLACES_IMPORT = process.env.PLACES_IMPORT !== '0';
 const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass.private.coffee/api/interpreter,https://overpass-api.de/api/interpreter';
 const PLACES_EVERY = 30 * 24 * 60 * MIN;
 const poiRg = (lat, lng) => `${Math.floor(lat)}_${Math.floor(lng)}`;
+// Lycée (ou équivalent : Gymnasium, high school) : type d'école indiqué, niveau d'études secondaire supérieur, ou nom
+const LYCEE_NAME = /\blyc[ée]es?\b|\bgymnasium\b|\bhigh school\b/i;
+function isLycee(t) {
+  if (/lyc[ée]e/i.test(t['school:FR'] || '')) return true;
+  if (/(^|;)\s*3\s*($|;)/.test(t['isced:level'] || '')) return true;
+  return LYCEE_NAME.test(t.name || '') && !/^(coll[èe]ge|[ée]cole)\b/i.test(t.name || '');
+}
 function poiKind(t) {
   const name = t.name || '';
   // Caméras qui filment la rue (publiques, ou privées tournées vers l'extérieur) ; pas les caméras intérieures ni les vigiles
@@ -39,6 +48,8 @@ function poiKind(t) {
   if (t.amenity === 'police') return /gendarmerie/i.test(name + ' ' + (t.operator || '') + ' ' + (t['police:FR'] || '')) ? 'gend' : 'police';
   if (t.amenity === 'courthouse') return 'tribunal';
   if (t.amenity === 'hospital') return 'hopital';
+  if (t.amenity === 'university') return isLycee(t) ? 'lycee' : /^(r[ée]sidence|restaurant|cit[ée] u|crous)/i.test(name) ? null : 'fac';
+  if (t.amenity === 'school') return isLycee(t) ? 'lycee' : null;
   if (t.amenity === 'pharmacy') return 'pharma';
   if (t.amenity === 'drinking_water') return /^(private|no)$/.test(t.access || '') || t.drinking_water === 'no' ? null : 'eau';
   return null;
@@ -70,7 +81,10 @@ function overpassQuery(s, w, n, e) {
   const b = `(${s},${w},${n},${e})`;
   // Valeurs exactes plutôt qu'une expression régulière : Overpass utilise alors son index, bien plus vite
   return `[out:json][timeout:170];
-(${['townhall', 'police', 'courthouse', 'hospital', 'pharmacy', 'drinking_water'].map(v => `nwr["amenity"="${v}"]${b};`).join('\n ')}
+(${['townhall', 'police', 'courthouse', 'hospital', 'pharmacy', 'drinking_water', 'university'].map(v => `nwr["amenity"="${v}"]${b};`).join('\n ')}
+ nwr["amenity"="school"]["school:FR"~"lyc"]${b};
+ nwr["amenity"="school"]["isced:level"~"3"]${b};
+ nwr["amenity"="school"]["name"~"lyc[ée]e|gymnasium|high school",i]${b};
  nwr["office"="government"]["government"="prefecture"]${b};
  nwr["amenity"="prison"]["name"~"tention",i]${b};
  nwr["office"="government"]["name"~"tention",i]${b};);

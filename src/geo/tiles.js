@@ -7,7 +7,7 @@ const https = require('https');
 const { ROOT, MIN, TILE_URL, TILE_UA, PUBLIC_URL } = require('../config');
 const { clientHash } = require('../privacy');
 const { send } = require('../http/respond');
-const { PMTILES } = require('./pmtiles');
+const { pmPrimary } = require('./pmtiles');
 
 // ---- Proxy de tuiles : les IP des manifestant·es ne partent pas chez le fournisseur de carte ----
 const tileCache = new Map(); const TILE_CACHE_MAX = 2000, TILE_CACHE_BYTES = (Number(process.env.TILE_CACHE_MB) || 64) * 1e6;
@@ -58,9 +58,9 @@ let tileUpstream = 0;
 const tile2lat = (y, z) => { const n = Math.PI - 2 * Math.PI * y / 2 ** z; return 180 / Math.PI * Math.atan(Math.sinh(n)); };
 // Carte hébergée (PMTiles) : hors de sa zone, les téléphones se replient sur OpenStreetMap partout dans le monde
 // (même budget par réseau et même plafond de téléchargements qu'avant).
-const TILE_WORLD = process.env.TILE_WORLD ? process.env.TILE_WORLD === '1' : !!PMTILES;
+const TILE_WORLD = () => process.env.TILE_WORLD ? process.env.TILE_WORLD === '1' : !!pmPrimary();
 function tileInZone(z, x, y) {
-  if (z < 8 || TILE_WORLD) return true;
+  if (z < 8 || TILE_WORLD()) return true;
   const w = x / 2 ** z * 360 - 180, e = (x + 1) / 2 ** z * 360 - 180, n = tile2lat(y, z), so = tile2lat(y + 1, z);
   return TILE_ZONES.some(([la1, la2, lo1, lo2]) => so <= la2 && n >= la1 && w <= lo2 && e >= lo1);
 }

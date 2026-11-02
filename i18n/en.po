@@ -1271,8 +1271,8 @@ msgstr "Choose types of places"
 msgid "🏛 Lieux utiles"
 msgstr "🏛 Useful places"
 
-msgid "Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
-msgstr "Prefectures, police stations, courts, hospitals, pharmacies, drinking water. They appear as you zoom in."
+msgid "Préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
+msgstr "Prefectures, police stations, courts, high schools and universities, hospitals, pharmacies, drinking water. They appear as you zoom in."
 
 msgid "Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque."
 msgstr "Visible when fully zoomed in. Mapped by OpenStreetMap volunteers, some are missing."
@@ -2881,3 +2881,15 @@ msgstr "You can't confirm an orga right now."
 #: src/routes/orga.js
 msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
 msgstr "Location sharing stopped (nothing sent for 3 min). Start it again if needed."
+
+#: src/places/osm.js
+msgid "Université"
+msgstr "University"
+
+#: src/places/osm.js
+msgid "Lycée"
+msgstr "High school"
+
+#: src/places/osm.js
+msgid "🎓 Lycées et facs"
+msgstr "🎓 High schools and universities"

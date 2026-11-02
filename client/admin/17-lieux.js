@@ -28,7 +28,7 @@ async function loadPlaces(search = false) {
     const n = d.counts[k.id] || 0, row = document.createElement('div'); row.className = 'bar';
     row.innerHTML = '<span class="lbl"></span><span class="track"><span class="fill"></span></span><span class="n"></span>';
     row.querySelector('.lbl').textContent = k.glyph + ' ' + k.label; row.querySelector('.n').textContent = fmtN(n);
-    row.querySelector('.fill').style.cssText = `width:${n / max * 100}%;--c:${k.grp === 'aide' ? '#3fcf86' : k.grp === 'surv' ? '#e0383e' : '#9b87e8'}`;
+    row.querySelector('.fill').style.cssText = `width:${n / max * 100}%;--c:${k.grp === 'aide' ? '#3fcf86' : k.grp === 'surv' ? '#e0383e' : k.grp === 'etude' ? '#f2b33d' : '#9b87e8'}`;
     bars.append(row);
   }
   if (search) renderPlaces(d.list);

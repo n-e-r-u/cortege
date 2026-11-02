@@ -34,7 +34,10 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » (admin) |
 | `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) (admin) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
-| `TILE_PMTILES` | vide | Fichier(s) PMTiles (tuiles vectorielles), séparés par des virgules : un par pays (zone lue dans le `.geojson` du même nom), puis éventuellement une carte du monde légère pour les zooms éloignés. La carte vient du serveur lui-même, et « Prêt pour la manif » peut la garder hors ligne |
+| `TILE_PMTILES` | vide | Fichier(s) PMTiles installés à la main (tuiles vectorielles), séparés par des virgules : un par pays (zone lue dans le `.geojson` du même nom), puis éventuellement une carte du monde légère pour les zooms éloignés. Facultatif depuis la 2.10.5 : les cartes se téléchargent dans l'admin (onglet Pays). Une carte téléchargée remplace le fichier de même nom |
+| `MAP_DIR` | `DATA_DIR/cartes` | Dossier des cartes téléchargées depuis l'admin (non sauvegardé : elles se re-téléchargent) |
+| `PMTILES_BIN` | `pmtiles` | Chemin de l'outil pmtiles, utilisé pour découper les cartes |
+| `MAP_MAXZOOM` / `MAP_WORLD_MAXZOOM` | `15` / `6` | Zoom le plus proche d'une carte de pays, et de la carte du monde |
 | `PROFILES` | `fr` | Profils pays de l'instance (`profiles/*.json`), séparés par des virgules : `fr`, `us`, `de`… Le premier sert aussi hors de toutes les zones. Voir [INSTANCE.md](INSTANCE.md) (admin › Pays) |
 | `DEFAULT_LANG` | langue du premier profil | Langue des téléphones dont la langue n'est pas traduite (admin) |
 | `TILE_URL` | tuiles OSM | Fournisseur de tuiles |
@@ -161,16 +164,27 @@ Une copie hors du serveur est indispensable : `tools/sauvegarde-pc.ps1` la rapat
 
 ### Carte hébergée sur le serveur (Protomaps)
 
-Sans fournisseur de carte : aucune requête de tes utilisateurices ne part ailleurs, et la carte d'une ville peut être gardée sur le téléphone. Un fichier unique pour la France, la Corse et l'outre-mer (quelques Go), découpé dans les builds quotidiens de [Protomaps](https://docs.protomaps.com/basemaps/downloads) (données OpenStreetMap, ODbL).
+Sans fournisseur de carte : aucune requête de tes utilisateurices ne part ailleurs, et la carte d'une ville peut être gardée sur le téléphone. Les cartes sont découpées dans les builds quotidiens de [Protomaps](https://docs.protomaps.com/basemaps/downloads) (données OpenStreetMap, ODbL) : quelques Go pour la France (outre-mer compris), autant pour l'Allemagne, quelques centaines de Mo pour une carte du monde légère qui sert en dézoomant.
+
+Une seule installation, l'outil `pmtiles` (binaire unique, [go-pmtiles](https://github.com/protomaps/go-pmtiles/releases)) :
 
 ```bash
-# Outil pmtiles (binaire unique) : https://github.com/protomaps/go-pmtiles/releases
+curl -fsSL https://github.com/protomaps/go-pmtiles/releases/download/v1.31.2/go-pmtiles_1.31.2_Linux_x86_64.tar.gz | sudo tar xz -C /usr/local/bin pmtiles
+```
+
+(`Linux_arm64` à la place de `Linux_x86_64` sur un serveur ARM.) Ensuite tout se fait dans l'admin, onglet **Pays › Cartes hébergées** : un bouton par pays coché, plus la carte du monde. Le serveur cherche la dernière version, calcule la taille et vérifie la place libre avant de télécharger, puis met la carte en service sans redémarrer. « Mettre à jour » refait la même chose tous les quelques mois ; la carte en place reste servie pendant le téléchargement. Refusé un jour de mobilisation (bande passante). Les lieux permanents sont relus dans la nouvelle carte si elle en est la source.
+
+Les cartes vont dans `DATA_DIR/cartes` (déjà accessible au service, pas de changement dans systemd). Une carte installée à la main avant la 2.10.5 (`TILE_PMTILES`) continue de marcher ; si tu télécharges la même depuis l'admin (même nom de fichier, par exemple `france.pmtiles`), la nouvelle prend sa place et tu peux supprimer l'ancien fichier puis retirer `TILE_PMTILES`.
+
+À la main, sans l'admin :
+
+```bash
 install -d -o cortege -g cortege /var/lib/cortege-map
 pmtiles extract https://build.protomaps.com/AAAAMMJJ.pmtiles /var/lib/cortege-map/france.pmtiles \
   --region=/opt/cortege/app/tools/france.geojson --maxzoom=15
 ```
 
-Puis `TILE_PMTILES=/var/lib/cortege-map/france.pmtiles` dans les variables et redémarrage. Hors des zones de `tools/france.geojson`, la carte se replie sur OpenStreetMap (via le proxy du serveur) ; `TILE_PMTILES_REGION` si tu as extrait une autre région. Pour mettre la carte à jour (tous les quelques mois), refaire l'extraction dans un nouveau fichier, puis le renommer à la place de l'ancien et redémarrer.
+Puis `TILE_PMTILES=/var/lib/cortege-map/france.pmtiles` dans les variables et redémarrage. Hors des zones de la carte, l'appli se replie sur OpenStreetMap (via le proxy du serveur) ; `TILE_PMTILES_REGION` si tu as extrait une autre région.
 
 ### Adresse .onion (Tor)
 

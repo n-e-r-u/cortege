@@ -1271,7 +1271,7 @@ msgstr ""
 msgid "🏛 Lieux utiles"
 msgstr ""
 
-msgid "Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
+msgid "Préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
 msgstr ""
 
 msgid "Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque."
@@ -2893,4 +2893,16 @@ msgstr ""
 
 #: src/routes/orga.js
 msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
+msgstr ""
+
+#: src/places/osm.js
+msgid "Université"
+msgstr ""
+
+#: src/places/osm.js
+msgid "Lycée"
+msgstr ""
+
+#: src/places/osm.js
+msgid "🎓 Lycées et facs"
 msgstr ""

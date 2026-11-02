@@ -3,7 +3,7 @@
 const { CATEGORIES } = require('../categories');
 const { NEXT } = require('./next');
 const { langsJs, uploadedJson } = require('../i18n');
-const { PMTILES, serveVectorTile } = require('../geo/pmtiles');
+const { pmPrimary, serveVectorTile } = require('../geo/pmtiles');
 const { PUBLIC_URL_REAL, sitemapXml, GOOGLE_VERIFY, pubPage, pubCsv, cityDayPage } = require('../pages/bilans');
 const { bump, quota } = require('../limits');
 const { cityIndex } = require('../pages/cities');
@@ -69,7 +69,7 @@ async function pagesRoutes(req, res, url, pathname) {
     if (!tx(() => bump('oreq:' + netHash(req), 'report', 3, Date.now()) && quota('oreqd:' + netHash(req), 5, 24 * 60 * MIN))) return send(res, 429, { error: 'Trop de demandes d’un coup. Réessaie plus tard.' });
     return send(res, ...orgaRequest(await readJson(req)));
   }
-  const vt = PMTILES && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);
+  const vt = pmPrimary() && req.method === 'GET' && pathname.match(/^\/vt\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.mvt$/);
   if (vt) return serveVectorTile(req, res, +vt[1], +vt[2], +vt[3]);
   return NEXT;
 }

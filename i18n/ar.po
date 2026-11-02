@@ -1275,8 +1275,8 @@ msgstr "اختر أنواع الأماكن"
 msgid "🏛 Lieux utiles"
 msgstr "🏛 أماكن مفيدة"
 
-msgid "Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
-msgstr "المحافظات، مراكز الشرطة، المحاكم، المستشفيات، الصيدليات، مياه الشرب. تظهر عند التكبير."
+msgid "Préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
+msgstr "المحافظات، مراكز الشرطة، المحاكم، الثانويات والجامعات، المستشفيات، الصيدليات، مياه الشرب. تظهر عند التكبير."
 
 msgid "Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque."
 msgstr "تظهر عند التكبير الأقصى. إحصاء تطوعي من OpenStreetMap وبعضها ناقص."
@@ -2917,3 +2917,15 @@ msgstr "لا يمكنك تأكيد منظِّم في الوقت الحالي."
 #: src/routes/orga.js
 msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
 msgstr "توقّفت مشاركة الموقع (لم يُرسَل شيء منذ 3 دقائق). أعد تشغيلها إذا لزم الأمر."
+
+#: src/places/osm.js
+msgid "Université"
+msgstr "جامعة"
+
+#: src/places/osm.js
+msgid "Lycée"
+msgstr "ثانوية"
+
+#: src/places/osm.js
+msgid "🎓 Lycées et facs"
+msgstr "🎓 الثانويات والجامعات"

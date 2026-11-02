@@ -1134,15 +1134,15 @@
   }
 
   // ---- Filtres ----
-  // ---- Lieux permanents (OpenStreetMap) : préfectures, mairies, commissariats, tribunaux, CRA, hôpitaux ; pharmacies et eau au zoom rue ----
+  // ---- Lieux permanents (OpenStreetMap) : préfectures, mairies, commissariats, tribunaux, CRA, lycées et facs, hôpitaux ; pharmacies et eau au zoom rue ----
   const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
   const POI_Z = 14, POI_STREET_Z = 16, POI_MAX = 350;
   // Zoom à partir duquel chaque type apparaît : les grands lieux d'abord, les mairies et commissariats au zoom quartier, le reste au zoom rue
-  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, mairie: 15, police: 15, gend: 15, pharma: 16, eau: 16, cam: 17 };
+  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, cam: 17 };
   const POI_CAM_Z = 17;
   // Filtres proposés (préfectures et sous-préfectures ensemble, commissariats et gendarmeries ensemble)
   const POI_FILTERS = [['pref', '🏢 Préfectures et sous-préfectures', ['pref', 'spref']], ['mairie', '🏛 Mairies', ['mairie']], ['police', '👮 Commissariats et gendarmeries', ['police', 'gend']],
-    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['cam', '📷 Caméras de surveillance', ['cam']]];
+    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['cam', '📷 Caméras de surveillance', ['cam']]];
   let poiHidden = false; try { poiHidden = localStorage.getItem('cortege-poi-hidden') === '1'; } catch {}
   let poiOff = new Set(); try { poiOff = new Set(JSON.parse(localStorage.getItem('cortege-poi-off') || '[]')); } catch {}
   const poiShown = kind => { const f = POI_FILTERS.find(x => x[2].includes(kind)); return !f || !poiOff.has(f[0]); };
@@ -1281,7 +1281,7 @@
     if (cfg.poiKinds) {
       const more = el('button', { type: 'button', class: 'link-btn' }, 'Choisir les types de lieux');
       more.onclick = e => { e.preventDefault(); openPoiSheet(); };
-      box.append(layerSwitch('🏛 Lieux utiles', 'Préfectures, commissariats, tribunaux, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant.', !poiHidden, on => {
+      box.append(layerSwitch('🏛 Lieux utiles', 'Préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant.', !poiHidden, on => {
         poiHidden = !on;
         try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
         renderPois(); renderToggles();

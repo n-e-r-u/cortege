@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const { ROOT } = require('../config');
+const { getMeta } = require('../db');
 const { send } = require('../http/respond');
 
 // ---- Carte hébergée sur le serveur : fichiers PMTiles (tuiles vectorielles) ----
@@ -13,11 +14,21 @@ const { send } = require('../http/respond');
 // - Un fichier par pays ou région, au zoom de la rue (« fichiers régionaux ») ;
 // - éventuellement une carte du monde légère (zooms éloignés seulement) : reconnue à son étendue (le monde entier),
 //   elle sert tous les zooms qu'elle contient, pour ne jamais montrer d'écran vide en dézoomant.
-const FILES = String(process.env.TILE_PMTILES || '').split(',').map(s => s.trim()).filter(Boolean);
-const pmFiles = FILES.map(file => ({ file, fd: null, h: null, dirs: new Map(), opening: null, zones: [] }));
+// Fichiers donnés par TILE_PMTILES, plus les cartes téléchargées depuis l'admin (méta « maps », dossier MAP_DIR) :
+// une carte téléchargée remplace le fichier de même nom de TILE_PMTILES. La carte du monde passe toujours en dernier.
+const ENV_FILES = String(process.env.TILE_PMTILES || '').split(',').map(s => s.trim()).filter(Boolean);
+const downloadedMaps = () => { try { return JSON.parse(getMeta('maps') || '[]').filter(m => m && m.file && fs.existsSync(m.file)); } catch { return []; } };
+function effectiveFiles() {
+  const dl = downloadedMaps(), used = new Set();
+  const out = ENV_FILES.map(f => { const d = dl.find(x => path.basename(x.file) === path.basename(f)); if (d) used.add(d.file); return d ? d.file : f; });
+  for (const d of dl) if (!used.has(d.file) && !d.world) out.push(d.file);
+  for (const d of dl) if (!used.has(d.file) && d.world) out.push(d.file);
+  return [...new Set(out)];
+}
+let FILES = [], pmFiles = [];
 // Fichier régional principal (le premier) : lieux permanents, tracé du cortège par les rues
-const PMTILES = FILES[0] || '';
-
+const pmPrimary = () => FILES[0] || '';
+const pmFileList = () => FILES.slice();
 // Zones couvertes par un fichier (rectangles [sud, nord, ouest, est]) : lues dans la région utilisée pour l'extraire,
 // à côté du fichier (même nom en .geojson), sinon TILE_PMTILES_REGION ou tools/france.geojson pour le premier fichier
 function regionZones(f, i) {
@@ -75,8 +86,12 @@ function openFile(f, i) {
 // Ouvre tous les fichiers ; renvoie l'en-tête du fichier régional principal (ou du premier fichier)
 async function pmOpen() {
   if (!pmFiles.length) return null;
-  await Promise.all(pmFiles.map((f, i) => openFile(f, i)));
-  return (pmFiles.find(f => !f.world) || pmFiles[0]).h;
+  // Un fichier illisible (absent, abîmé) est mis de côté : les autres cartes restent servies
+  const list = pmFiles;
+  await Promise.all(list.map((f, i) => openFile(f, i).catch(e => { if (!f.err) console.error('PMTiles', e.message); f.err = e.message; })));
+  const ok = list.filter(f => f.h);
+  if (!ok.length) throw new Error('aucune carte lisible');
+  return (ok.find(f => !f.world) || ok[0]).h;
 }
 async function pmGetDir(f, off, len) {
   const k = off + ':' + len;
@@ -108,14 +123,14 @@ const tile2lat = (y, z) => { const n = Math.PI - 2 * Math.PI * y / 2 ** z; retur
 async function pmTileC(z, x, y) {
   if (x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) return null;
   await pmOpen();
-  const world = pmFiles.find(f => f.world);
+  const world = pmFiles.find(f => f.h && f.world);
   if (world && z >= world.h.minz && z <= world.h.maxz) {
     const data = await fileTile(world, z, x, y);
     return data ? { data, c: world.h.tileC } : null;
   }
   const w = x / 2 ** z * 360 - 180, e = (x + 1) / 2 ** z * 360 - 180, n = tile2lat(y, z), s = tile2lat(y + 1, z);
   for (const f of pmFiles) {
-    if (f.world) continue;
+    if (!f.h || f.world) continue;
     const [bw, bs, be, bn] = f.h.bounds;
     if (e < bw || w > be || n < bs || s > bn) continue;
     const data = await fileTile(f, z, x, y);
@@ -137,13 +152,20 @@ function pmInfo() {
 }
 // Pour l'admin : chaque fichier de carte, sa taille et ce qu'il couvre
 const pmFilesInfo = () => pmFiles.map(f => { let bytes = null; try { bytes = fs.statSync(f.file).size; } catch {}
-  return { name: path.basename(f.file), bytes, world: !!f.world, open: !!f.h, minz: f.h ? f.h.minz : null, maxz: f.h ? f.h.maxz : null, zones: f.zones }; });
-// Rétrocompatibilité : zones du fichier principal
-const PM_ZONES = [];
-if (pmFiles.length) pmOpen().then(() => {
-  PM_ZONES.push(...pmFiles.filter(f => !f.world).flatMap(f => f.zones));
-  for (const f of pmFiles) console.log(`Carte PMTiles ${path.basename(f.file)} : zoom ${f.h.minz}-${f.h.maxz}${f.world ? ' (monde)' : ''}`);
-}).catch(e => console.error('PMTiles', e.message));
+  return { name: path.basename(f.file), file: f.file, err: f.err || null, bytes, world: !!f.world, open: !!f.h, minz: f.h ? f.h.minz : null, maxz: f.h ? f.h.maxz : null, zones: f.zones }; });
+// Recharge la liste des cartes (après un téléchargement depuis l'admin) sans redémarrer. Les anciens descripteurs
+// restent ouverts une minute : une tuile en cours de lecture se termine normalement.
+function pmReload() {
+  const old = pmFiles;
+  FILES = effectiveFiles();
+  pmFiles = FILES.map(file => ({ file, fd: null, h: null, dirs: new Map(), opening: null, zones: [] }));
+  setTimeout(() => { for (const f of old) if (f.fd != null) try { fs.closeSync(f.fd); } catch {} }, 60_000).unref();
+  if (!pmFiles.length) return Promise.resolve();
+  return pmOpen().then(() => {
+    for (const f of pmFiles) console.log(`Carte PMTiles ${path.basename(f.file)} : zoom ${f.h.minz}-${f.h.maxz}${f.world ? ' (monde)' : ''}`);
+  }).catch(e => console.error('PMTiles', e.message));
+}
+pmReload();
 async function serveVectorTile(req, res, z, x, y) {
   let t;
   try { t = await pmTileC(z, x, y); } catch (e) { return send(res, 500, { error: 'Carte indisponible.' }); }
@@ -157,4 +179,4 @@ async function serveVectorTile(req, res, z, x, y) {
   res.writeHead(200, headers); res.end(data);
 }
 
-module.exports = { PMTILES, PM_FILES: FILES, PM_ZONES, pmFilesInfo, pmDecomp, pmOpen, pmTile, pmTileC, pmInfo, serveVectorTile };
+module.exports = { pmPrimary, pmFileList, pmReload, ENV_FILES, pmFilesInfo, pmDecomp, pmOpen, pmTile, pmTileC, pmInfo, serveVectorTile };

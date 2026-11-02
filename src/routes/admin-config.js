@@ -8,10 +8,11 @@ const { instance, cleanInstance, saveInstance, INSTANCE_DEFAULTS } = require('..
 const { adminProfiles, setActive, saveEdit, exportProfile } = require('../profiles');
 const { adminLangs, uploadPo, removeUpload, setLangPrefs, poFor, potText } = require('../i18n');
 const { pmFilesInfo } = require('../geo/pmtiles');
+const { mapsStatus, startDownload, cancelDownload, removeMap } = require('../geo/maps');
 const { serverInfo } = require('../server-info');
 const { dirty, scheduleFlush } = require('../live/files');
 const { orgaLog } = require('../orgas/log');
-const { adminLabel } = require('../settings');
+const { adminLabel, mobToday } = require('../settings');
 const { getMeta } = require('../db');
 
 const changed = what => { dirty.global = true; scheduleFlush(); orgaLog({ id: 'admin', label: adminLabel() }, what); };
@@ -43,6 +44,17 @@ async function adminConfigRoutes(req, res, url, pathname) {
     saveInstance(o); changed('réglages de l’instance modifiés');
     return send(res, 200, { values: instance(), set: o });
   });
+
+  // ---- Cartes hébergées : téléchargement depuis l'admin (outil pmtiles sur le serveur) ----
+  if (m === 'GET' && pathname === '/api/admin/maps') return send(res, 200, mapsStatus());
+  if (m === 'POST' && pathname === '/api/admin/maps/download') return guard(res, async () => {
+    if (mobToday()) throw Object.assign(new Error('Pas de téléchargement de carte un jour de mobilisation : la bande passante sert à la manif. Relance-le demain.'), { status: 409 });
+    const code = String((await readJson(req, 1024)).code || '');
+    return send(res, 202, await startDownload(code));
+  });
+  if (m === 'POST' && pathname === '/api/admin/maps/cancel') return send(res, 200, { stopped: cancelDownload() });
+  const mapDel = pathname.match(/^\/api\/admin\/maps\/([\w.-]{1,80}\.pmtiles)$/);
+  if (m === 'DELETE' && mapDel) return guard(res, async () => { await removeMap(mapDel[1]); return send(res, 200, mapsStatus()); });
 
   // ---- Pays ----
   if (m === 'GET' && pathname === '/api/admin/countries')

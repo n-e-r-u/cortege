@@ -4,13 +4,15 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const { LIVE_DIR, writeIfChanged, dirty, scheduleFlush } = require('../live/files');
-const { PMTILES } = require('../geo/pmtiles');
+const { pmPrimary, pmFileList, pmFilesInfo } = require('../geo/pmtiles');
 const { TILE_UA, DATA_DIR, ROOT, MIN } = require('../config');
 const { commReset } = require('../geo/communes');
 const { geoPoly } = require('../geo/departments');
 const { mobToday } = require('../settings');
 const { poiStr, poiKind, poiRg, poiData, placesState, placeChunks, placesRun, OVERPASS_URLS, overpass, overpassQuery, POI_KINDS, PLACES_IMPORT, placesStatus, PLACES_EVERY } = require('./osm');
 const { setMeta, q, tx } = require('../db');
+// Liste des types de lieux importés : quand elle change (nouveau type), l'import est refait sans attendre le mois suivant
+const POI_SET = POI_KINDS.map(k => k.id).join(',');
 const { validLatLng, sha, wait, h8 } = require('../util');
 
 // ---- Source principale : copie complète d'OpenStreetMap chez Geofabrik (simple fichier, ni API ni quota) ----
@@ -18,7 +20,7 @@ const { validLatLng, sha, wait, h8 } = require('../util');
 // puis suppression du gros fichier. Donne aussi les horaires, téléphones et services d'urgences.
 const GEOFABRIK = (process.env.GEOFABRIK_URLS || 'https://download.geofabrik.de/europe/france-latest.osm.pbf').split(',').map(x => x.trim()).filter(Boolean);
 const hasOsmium = (() => { try { return require('child_process').spawnSync('osmium', ['--version'], { timeout: 5000 }).status === 0; } catch { return false; } })();
-const placesSource = () => process.env.PLACES_SOURCE || (hasOsmium ? 'osm' : PMTILES && fs.existsSync(PMTILES) ? 'carte' : 'overpass');
+const placesSource = () => process.env.PLACES_SOURCE || (hasOsmium ? 'osm' : pmPrimary() && fs.existsSync(pmPrimary()) ? 'carte' : 'overpass');
 function download(url, file, onProgress, hops = 0) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
@@ -74,7 +76,7 @@ async function placesImportOsm() {
       await download(url, src, (d, tot) => { run.done = d; run.total = tot; save(); });
       run.step = 'extraction'; save(true); console.log('lieux : extraction avec osmium…');
       // Les limites des communes (niveau administratif 8) sortent dans le même passage : elles servent aux bilans par commune
-      await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison', 'nwr/office=government',
+      await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison,school,university', 'nwr/office=government',
         'r/admin_level=8', '-o', flt, '--overwrite']);
       fs.unlinkSync(src); // le gros fichier ne sert plus
       await osmium(['export', flt, '-f', 'geojsonseq', '-o', out, '--overwrite', '-a', 'type,id', '-x', 'print_record_separator=false']);
@@ -111,13 +113,13 @@ async function placesImportOsm() {
     if (run.communes) { q('DELETE FROM communes WHERE seen<?').run(t0); commReset(); console.log(`communes : ${run.communes} contours importés`); }
     // Lieux disparus (et ceux des anciennes sources) : retirés, sauf ceux corrigés ou ajoutés dans l'admin
     q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
-    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, communes: run.communes || 0, errs: 0, err: null, ms: Date.now() - t0, src: 'osm' }));
+    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, communes: run.communes || 0, errs: 0, err: null, ms: Date.now() - t0, src: 'osm', kinds: POI_SET }));
     q("DELETE FROM meta WHERE k='poisrun'").run();
     await placesPublish();
     console.log(`lieux : ${run.n} lieux et caméras importés en ${Math.round((Date.now() - t0) / 1000)} s`);
   } catch (e) {
     run.err = e.message; run.errs = 1; save(true);
-    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 1, err: e.message, ms: Date.now() - t0, src: 'osm' }));
+    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 1, err: e.message, ms: Date.now() - t0, src: 'osm', kinds: POI_SET }));
     q("DELETE FROM meta WHERE k='poisrun'").run();
     console.error('lieux :', e.message);
   } finally { clean(); }
@@ -125,21 +127,18 @@ async function placesImportOsm() {
 
 // Source des lieux : la carte du serveur (fichier PMTiles, aucune requête extérieure) si elle existe, sinon Overpass.
 // PLACES_SOURCE=overpass force Overpass (horaires et téléphones en plus, mais services publics parfois saturés).
-const placesFromMap = () => placesSource() === 'carte' && !!PMTILES && fs.existsSync(PMTILES);
-function placesImportMap() {
+const placesFromMap = () => placesSource() === 'carte' && !!pmPrimary() && fs.existsSync(pmPrimary());
+// Toutes les cartes régionales du serveur (pas la carte du monde, sans lieux utiles)
+const regionalMaps = () => { const info = pmFilesInfo(); return pmFileList().filter(f => fs.existsSync(f) && !(info.find(x => x.file === f) || {}).world); };
+function readMapPois(file, run, up, t0) {
   return new Promise((resolve, reject) => {
     const { Worker } = require('worker_threads');
-    const t0 = Date.now(), run = { t: t0, total: 0, done: 0, n: 0, errs: 0, err: null, src: 'carte' };
+    const w = new Worker(path.join(ROOT, 'tools', 'pois-worker.js'), { workerData: { file, zones: [] } });
+    let last = 0, base = run.done;
     const save = () => setMeta('poisrun', JSON.stringify(run));
-    save(); console.log('lieux : lecture de la carte du serveur…');
-    const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
-      kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
-      rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
-    const w = new Worker(path.join(ROOT, 'tools', 'pois-worker.js'), { workerData: { file: PMTILES, zones: [] } });
-    let last = 0;
     w.on('message', m => {
-      if (m.type === 'start') { run.total = m.total; save(); }
-      else if (m.type === 'progress') { run.done = m.done; if (Date.now() - last > 3000) { last = Date.now(); save(); } if (m.done % 50000 === 0) console.log(`lieux : ${m.done}/${m.total} tuiles lues, ${run.n} lieux`); }
+      if (m.type === 'start') { run.total += m.total; save(); }
+      else if (m.type === 'progress') { run.done = base + m.done; if (Date.now() - last > 3000) { last = Date.now(); save(); } if (m.done % 50000 === 0) console.log(`lieux : ${path.basename(file)} ${m.done}/${m.total} tuiles lues, ${run.n} lieux`); }
       else if (m.type === 'batch') tx(() => {
         for (const r of m.rows) {
           const lat = Math.round(r.lat * 1e5) / 1e5, lng = Math.round(r.lng * 1e5) / 1e5;
@@ -147,19 +146,28 @@ function placesImportMap() {
           up.run(id, r.kind, lat, lng, poiRg(lat, lng), JSON.stringify(r.name ? { n: r.name } : {}), t0); run.n++;
         }
       });
-      else if (m.type === 'done') {
-        // Lieux disparus de la carte (anciens imports compris) : retirés, sauf ceux corrigés ou ajoutés dans l'admin
-        q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
-        setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 0, err: null, ms: Date.now() - t0, src: 'carte' }));
-        q("DELETE FROM meta WHERE k='poisrun'").run();
-        placesPublish();
-        console.log(`lieux : ${run.n} lieux lus dans la carte en ${Math.round((Date.now() - t0) / 1000)} s`);
-        resolve();
-      }
+      else if (m.type === 'done') resolve();
     });
-    w.on('error', e => { run.err = e.message; run.errs = 1; save(); reject(e); });
+    w.on('error', reject);
     w.on('exit', code => { if (code) reject(new Error('lecture de la carte interrompue (' + code + ')')); });
   });
+}
+async function placesImportMap() {
+  const t0 = Date.now(), run = { t: t0, total: 0, done: 0, n: 0, errs: 0, err: null, src: 'carte' };
+  const save = () => setMeta('poisrun', JSON.stringify(run));
+  save(); console.log('lieux : lecture de la carte du serveur…');
+  const up = q(`INSERT INTO pois(id,kind,lat,lng,rg,data,src,seen) VALUES(?,?,?,?,?,?,'osm',?) ON CONFLICT(id) DO UPDATE SET seen=excluded.seen,
+    kind=CASE WHEN ed=1 THEN kind ELSE excluded.kind END, lat=CASE WHEN ed=1 THEN lat ELSE excluded.lat END, lng=CASE WHEN ed=1 THEN lng ELSE excluded.lng END,
+    rg=CASE WHEN ed=1 THEN rg ELSE excluded.rg END, data=CASE WHEN ed=1 THEN data ELSE excluded.data END`);
+  try {
+    for (const file of regionalMaps()) await readMapPois(file, run, up, t0);
+  } catch (e) { run.err = e.message; run.errs = 1; save(); q("DELETE FROM meta WHERE k='poisrun'").run(); throw e; }
+  // Lieux disparus de la carte (anciens imports compris) : retirés, sauf ceux corrigés ou ajoutés dans l'admin
+  q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
+  setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: 0, err: null, ms: Date.now() - t0, src: 'carte', kinds: POI_SET }));
+  q("DELETE FROM meta WHERE k='poisrun'").run();
+  placesPublish();
+  console.log(`lieux : ${run.n} lieux lus dans la carte en ${Math.round((Date.now() - t0) / 1000)} s`);
 }
 // Import en plusieurs étapes, repris là où il s'était arrêté si le serveur redémarre (mise à jour, panne)
 async function placesImport(resume = false) {
@@ -227,7 +235,7 @@ async function placesImport(resume = false) {
     }
     // Lieux disparus d'OpenStreetMap : retirés seulement si tout l'import a réussi (sinon on garderait une carte trouée)
     if (!run.errs) q("DELETE FROM pois WHERE src='osm' AND ed=0 AND seen<?").run(t0);
-    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: run.errs, err: run.errs ? run.err : null, ms: Date.now() - t0 }));
+    setMeta('poisimp', JSON.stringify({ t: Date.now(), n: run.n, errs: run.errs, err: run.errs ? run.err : null, ms: Date.now() - t0, kinds: POI_SET }));
     q("DELETE FROM meta WHERE k='poisrun'").run();
     placesPublish();
     console.log(`lieux : ${run.n} lieux importés en ${Math.round((Date.now() - t0) / 1000)} s, ${run.errs} carré(s) en échec`);
@@ -265,9 +273,11 @@ function placesMaybe() {
   if (!PLACES_IMPORT || placesState.running || mobToday()) return;
   if (placesRun()) return placesImport(true); // import interrompu (redémarrage) : on reprend (depuis le début pour Geofabrik)
   const last = placesStatus();
-  // Depuis la carte du serveur : relu seulement quand le fichier de carte a changé (nouvelle extraction)
-  if (placesFromMap()) { if (!last || last.src !== 'carte' || fs.statSync(PMTILES).mtimeMs > last.t) placesImport(); return; }
-  if (!last || (last.src || 'overpass') !== placesSource() || Date.now() - last.t > PLACES_EVERY) placesImport();
+  // Types de lieux ajoutés depuis le dernier import (lycées et facs en 2.10.5) : on refait l'import tout de suite
+  const newKinds = last && last.kinds !== POI_SET;
+  // Depuis la carte du serveur : relu seulement quand un fichier de carte a changé (nouvelle extraction, nouveau pays)
+  if (placesFromMap()) { if (!last || last.src !== 'carte' || newKinds || Math.max(...regionalMaps().map(f => fs.statSync(f).mtimeMs)) > last.t) placesImport(); return; }
+  if (!last || newKinds || (last.src || 'overpass') !== placesSource() || Date.now() - last.t > PLACES_EVERY) placesImport();
 }
 if (PLACES_IMPORT) { setTimeout(placesMaybe, 2 * MIN).unref(); setInterval(placesMaybe, 60 * MIN).unref(); }
 const poiView = x => { const d = JSON.parse(x.data || '{}'); return { id: x.id, kind: x.kind, lat: x.lat, lng: x.lng, n: d.n || '', h: d.h || '', p: d.p || '', e: !!d.e, src: x.src, hid: !!x.hid, ed: !!x.ed }; };

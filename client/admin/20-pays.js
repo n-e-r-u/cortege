@@ -38,7 +38,7 @@ $('#coSave').onclick = async () => {
   if (!on.length) return alertMsg('Garde au moins un pays.');
   if (!main || !on.includes(main)) return alertMsg('Le pays principal doit être coché.');
   try { await api('/api/admin/countries/active', { method: 'POST', body: JSON.stringify({ codes: [main, ...on.filter(c => c !== main)] }) });
-    $('#coMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '. Les téléphones l’appliquent à leur prochaine ouverture de l’appli.'; loadCountries(); }
+    $('#coMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '. Les téléphones l’appliquent à leur prochaine ouverture de l’appli.'; loadCountries(); loadMaps(); }
   catch (e) { alertMsg(e.message); }
 };
 // Droits : « # Titre » puis une ligne par conseil
@@ -92,4 +92,4 @@ $('#coEditSave').onclick = async () => {
     $('#coEditMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; await loadCountries(); editCountry(coEditing); $('#coEditMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; }
   catch (e) { alertMsg(e.message); }
 };
-$('#tabCountries').onclick = () => { showTab('Countries'); loadCountries(); };
+$('#tabCountries').onclick = () => { showTab('Countries'); loadCountries(); loadMaps(); };

@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.10.5
+
+- **Cartes hébergées depuis l'admin** (onglet Pays) : un bouton par pays coché pour télécharger sa carte détaillée, et un pour la carte du monde légère qui sert en dézoomant. Le serveur prend la dernière version de la carte OpenStreetMap de Protomaps, calcule la taille et vérifie la place libre avant de télécharger, montre la progression, et met la carte en service sans redémarrer (les téléphones rechargent leur configuration). « Mettre à jour » pour rafraîchir une carte, « Supprimer » pour en retirer une. La carte en place reste servie pendant le téléchargement, et rien ne se télécharge un jour de mobilisation. Il faut installer une fois l'outil `pmtiles` sur le serveur : la commande est affichée dans l'onglet et dans le guide d'installation. Les cartes vont dans `DATA_DIR/cartes`, sans rien changer à systemd ; `TILE_PMTILES` reste possible pour une carte installée à la main.
+- **Lycées et facs** sur la carte, dans les lieux utiles : universités dès le zoom ville, lycées (y compris professionnels et cités scolaires) dès le zoom quartier, comme les mairies. Un nouveau filtre « Lycées et facs » dans le choix des lieux. Les lieux sont réimportés tout seuls après la mise à jour pour les ajouter.
+- Lieux lus dans la carte du serveur : toutes les cartes de pays sont lues (plus seulement la première), et une nouvelle carte relance la lecture.
+
 ## 2.10.2
 
 Correctifs de sécurité, issus d'un audit complet du code :

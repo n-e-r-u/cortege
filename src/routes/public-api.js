@@ -9,7 +9,7 @@ const { NEXT } = require('./next');
 const { clientProfiles, activeCategories } = require('../profiles');
 const { instance, showCredit } = require('../instance');
 const { ORDER_KINDS } = require('../orders');
-const { PMTILES, pmOpen, pmTileC, pmDecomp, pmInfo } = require('../geo/pmtiles');
+const { pmPrimary, pmOpen, pmTileC, pmDecomp, pmInfo } = require('../geo/pmtiles');
 const { POI_KINDS } = require('../places/osm');
 const { STREAM_ON, sseClients } = require('../live/stream');
 const { TILE_PREFETCH } = require('../geo/tiles');
@@ -35,7 +35,7 @@ async function publicApiRoutes(req, res, url, pathname) {
     const pt = v => { const m = String(v || '').match(/^(-?\d{1,2}\.\d{1,6}),(-?\d{1,3}\.\d{1,6})$/); return m && validLatLng(+m[1], +m[2]) ? [+m[1], +m[2]] : null; };
     const a = pt(url.searchParams.get('a')), b = pt(url.searchParams.get('b'));
     if (!a || !b) return send(res, 400, { error: 'Points invalides.' });
-    if (!PMTILES) return send(res, 404, { error: 'Pas de carte hébergée.' });
+    if (!pmPrimary()) return send(res, 404, { error: 'Pas de carte hébergée.' });
     if (distM({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] }) > 5000) return send(res, 404, { error: 'Trop loin.' });
     const k = a.map(x => x.toFixed(4)).join(',') + '|' + b.map(x => x.toFixed(4)).join(',');
     if (!routeCache.has(k)) {

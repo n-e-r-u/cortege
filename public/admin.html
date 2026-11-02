@@ -342,7 +342,16 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       <p class="fine">Coche les pays de ton instance. Le pays principal sert aussi partout ailleurs. Chaque pays a ses noms de forces de l’ordre, ses numéros d’urgence et ses droits, appliqués là où se trouve la personne.</p>
       <ul class="org-list" id="coList"></ul>
       <div class="controls"><button type="button" id="coSave">Enregistrer les pays</button><span class="fine" id="coMsg"></span></div>
-      <p class="fine">Une carte détaillée se télécharge sur le serveur (voir le guide d’une nouvelle instance). Sans elle, la carte du pays s’affiche avec le fond OpenStreetMap.</p>
+      <p class="fine">Sans carte hébergée, un pays s’affiche avec le fond OpenStreetMap. Télécharge sa carte juste en dessous.</p>
+    </section>
+    <section class="card" id="mapsCard">
+      <h2>Cartes hébergées</h2>
+      <p class="fine">Carte détaillée d’un pays coché, ou carte du monde légère pour les zooms éloignés : découpée dans la dernière version de la carte OpenStreetMap de Protomaps, puis servie par ton serveur. La carte en place reste en service pendant le téléchargement. Plusieurs Go pour un pays : à lancer hors d’un jour de manif.</p>
+      <div class="newlink" id="mapsTool" hidden><span>L’outil <b>pmtiles</b> doit être installé une fois sur le serveur :</span><div class="row"><code id="mapsCmd"></code><button type="button" class="ghost" id="mapsCopy">Copier</button></div></div>
+      <div id="mapsJob" hidden><p id="mapsJobTxt"></p><div id="mapsBar" style="height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden;margin:6px 0 10px"><div id="mapsFill" style="height:100%;width:0;background:var(--accent);transition:width .4s"></div></div>
+        <div class="controls"><button type="button" class="ghost" id="mapsStop">Arrêter</button></div></div>
+      <ul class="org-list" id="mapsList"></ul>
+      <p class="fine" id="mapsFree"></p>
     </section>
     <section class="card" id="coEdit" hidden>
       <h2 id="coEditTitle">Modifier</h2>
