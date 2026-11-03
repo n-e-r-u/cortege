@@ -18,7 +18,8 @@ function bump(key, kind, max, now) {
 }
 // Plafonds des tables qui grandissent avec le trafic (même en cas d'attaque, la base garde une taille raisonnable) :
 // au-delà, les lignes les plus anciennes partent d'abord
-const TABLE_CAPS = [['devices', 'seen', 500_000], ['abuse', 't', 200_000], ['rate', 't', 500_000], ['quota', 't', 200_000], ['orga_log', 't', 200_000]];
+const TABLE_CAPS = [['devices', 'seen', 500_000], ['abuse', 't', 200_000], ['rate', 't', 500_000], ['quota', 't', 200_000]];
+// Le journal des orgas n'a pas de plafond : il est gardé en entier pour le contrôle (voir sweep.js)
 function capTables() {
   for (const [t, col, max] of TABLE_CAPS) {
     const n = q(`SELECT COUNT(*) n FROM ${t}`).get().n;

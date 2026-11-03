@@ -58,8 +58,12 @@ function renderOrgas({ orgas }) {
     }
     const stats = document.createElement('div'); stats.className = 'meta';
     const d = o.day || {};
-    stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '');
-    info.append(name, meta, ...(extra ? [extra] : []), stats);
+    const tot = o.total || {};
+    stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '')
+      + ` · depuis le début : ${tot.actions || 0} action(s), ${tot.verified || 0} vérifié(s), ${tot.removed || 0} retiré(s), ${tot.announcements || 0} annonce(s)` + (tot.blocked ? `, ${tot.blocked} rafale(s)` : '');
+    const hist = document.createElement('button'); hist.type = 'button'; hist.className = 'link-btn'; hist.textContent = 'Voir tout l’historique';
+    hist.onclick = () => openOrgaHistory(o.id || 'label:' + o.label, o.label);
+    info.append(name, meta, ...(extra ? [extra] : []), stats, hist);
     li.append(info);
     if (o.id) {
       const tr = document.createElement('button'); tr.className = o.trial ? '' : 'ghost'; tr.textContent = o.trial ? 'Confirmer' : 'Repasser en essai';

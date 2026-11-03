@@ -1020,3 +1020,21 @@ test('admin : invitations en série, valables plus longtemps, en essai, sans dou
   assert.equal((await post('/api/admin/orgas/bulk', { labels: ['Sans clé'] })).s, 403);
   assert.equal((await admin('/api/admin/orgas/bulk', { labels: Array.from({ length: 101 }, (_, i) => 'Trop ' + i) })).s, 400);
 });
+
+test('admin : historique complet de chaque orga (sans limite de durée), filtré, par pages, en CSV', async () => {
+  const r = await admin('/api/admin/orgas', { label: 'Historique 32' });
+  const id = r.j.id;
+  // Une action vieille d'un an n'est plus effacée
+  db.prepare('INSERT INTO orga_log(t,oid,orga,action) VALUES(?,?,?,?)').run(Date.now() - 365 * 24 * 3600e3, id, 'Historique 32', 'vérifié');
+  const H = { headers: { 'x-admin-key': ADMIN } };
+  const j = await fetch(B + '/api/admin/journal?o=' + id, H).then(x => x.json());
+  assert.ok(j.log.some(x => x.action === 'vérifié'), 'action d’il y a un an présente');
+  assert.ok(j.log.every(x => x.oid === id), 'filtré sur l’orga');
+  const all = await fetch(B + '/api/admin/journal', H).then(x => x.json());
+  assert.ok(all.orgas.some(o => o.o === id && o.n >= 1));
+  const csv = await fetch(B + '/api/admin/journal.csv?o=' + id, H).then(x => x.text());
+  assert.match(csv, /Historique 32;vérifié/);
+  const o = (await fetch(B + '/api/admin/orgas', H).then(x => x.json())).orgas.find(x => x.id === id);
+  assert.equal(o.total.verified, 1); assert.equal(o.day.verified, 0);
+  assert.equal((await fetch(B + '/api/admin/journal')).status, 403);
+});

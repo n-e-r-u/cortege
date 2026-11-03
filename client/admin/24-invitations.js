@@ -1,6 +1,6 @@
 // ---- Invitations en série : un lien par orga, avec un message type prêt à envoyer ----
 let bulkRows = [];
-const BULK_TPL = 'Bonjour {nom},\n\nJe développe Cortège (https://cortege.neru.tv), une carte libre et gratuite des manifs en direct : forces de l’ordre, lacrymo, nasses, street medics, legal teams. Sans compte, sans pistage, code ouvert.\n\nJe vous propose un accès orga : vérifier les signalements, retirer les faux, partager votre position en manif (tête de cortège, poste medic) et, une fois certifiés, publier des annonces autour du cortège.\n\nVotre invitation (à ouvrir sur le téléphone qui servira en manif, valable une seule fois) :\n{lien}\n\nNeru';
+const BULK_TPL = 'Bonjour {nom},\n\nJe développe Cortège (https://cortege.neru.tv), une carte libre et gratuite des manifs en direct : forces de l’ordre, lacrymo, nasses, street medics, legal teams. Sans compte, sans pistage, code ouvert.\n\nJe vous propose un accès orga : vérifier les signalements, retirer les faux et, une fois certifiés, publier des annonces autour du cortège.\n\nVotre invitation (à ouvrir sur le téléphone qui servira en manif, valable une seule fois) :\n{lien}\n\nNeru';
 try { $('#bulkTpl').value = localStorage.getItem('cortege-bulk-tpl') || BULK_TPL; } catch { $('#bulkTpl').value = BULK_TPL; }
 $('#bulkTpl').addEventListener('input', () => { try { localStorage.setItem('cortege-bulk-tpl', $('#bulkTpl').value); } catch {} });
 const bulkMsgFor = r => $('#bulkTpl').value.replaceAll('{nom}', r.label).replaceAll('{lien}', r.url);

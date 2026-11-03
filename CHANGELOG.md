@@ -7,6 +7,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 - **Allemand** : toute l'appli est traduite (936 textes), choisie automatiquement pour les téléphones réglés en allemand, et changeable dans Plus › Réglages.
 - **Annonces réservées aux orgas certifiées**, dans un rayon de 3 km au plus autour du point choisi. Une orga en période d'essai ne publie plus d'annonce : elle vérifie les signalements et peut proposer le numéro de sa legal team. Seul·e l'admin peut publier plus loin (jusqu'à 50 km) ou partout.
 - **Invitations en série** dans l'onglet Orgas, pour démarcher plusieurs collectifs, syndicats ou legal teams d'un coup : un nom par ligne, un lien par orga valable 7 à 60 jours, un message type modifiable (le nom et le lien sont remplis pour chacune), « Copier le message » par orga et un tableau CSV. Les orgas arrivent en essai et se certifient dans la liste.
+- **Historique complet des orgas** : le journal de chaque orga est gardé sans limite de durée (avant : 30 jours ; `ORGA_LOG_DAYS` pour fixer une durée). Dans l'onglet Orgas, chaque orga affiche ses compteurs des dernières 24 h et depuis le début, et « Voir tout l'historique » ouvre son journal, lu par pages (« Voir plus ancien ») et exportable en CSV. Les contestations automatiques par les votes suivent toujours la durée de l'archive.
 
 ## 2.10.5
 

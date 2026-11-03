@@ -4,7 +4,7 @@ const { MIN } = require('../config');
 const { q } = require('../db');
 const { dropReport } = require('../reports/store');
 
-// ---- Journal des actions d'orgas (30 jours) et corbeille des retraits (1 h) ----
+// ---- Journal des actions d'orgas (gardé sans limite) et corbeille des retraits (1 h) ----
 const TRASH_MS = 60 * 60_000;
 const ORGA_REMOVE_MAX = Number(process.env.ORGA_REMOVE_MAX) || 15; // retraits par orga et par 5 min
 function orgaLog(orga, action, { r, lat, lng, ref, detail } = {}) {
@@ -20,12 +20,14 @@ function trashReport(r, orga) {
   q('INSERT OR REPLACE INTO trash(id,t,oid,orga,data) VALUES(?,?,?,?,?)').run(r.id, now, orga.id || null, orga.label, JSON.stringify({ ...r, left: r.exp - now }));
   dropReport(r.id, orga.id === 'admin' ? 'admin' : 'orga');
 }
+// Compteurs d'une orga : dernières 24 h et depuis le début (journal complet), plus la date de sa première action
 function orgaStats(oid) {
   const since = Date.now() - 24 * 60 * MIN;
-  const rows = q('SELECT action, COUNT(*) n, MAX(t) last FROM orga_log WHERE oid=? AND t>? GROUP BY action').all(oid, since);
-  const by = Object.fromEntries(rows.map(x => [x.action, x.n]));
-  return { day: { verified: by['vérifié'] || 0, removed: (by['retiré'] || 0) + (by['retrait (essai)'] || 0), blocked: by['retrait bloqué (rafale)'] || 0,
-    announcements: (by['annonce'] || 0) + (by['legal team (en attente)'] || 0) }, lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null };
+  const rows = q('SELECT action, COUNT(*) n, SUM(t>?) d, MAX(t) last, MIN(t) first FROM orga_log WHERE oid=? GROUP BY action').all(since, oid);
+  const sum = (key, ...acts) => acts.reduce((s, a) => s + ((rows.find(x => x.action === a) || {})[key] || 0), 0);
+  const pick = key => ({ verified: sum(key, 'vérifié', 'confirmé (essai)', 'confirmé (parrainée)'), removed: sum(key, 'retiré', 'retrait (essai)'), blocked: sum(key, 'retrait bloqué (rafale)'),
+    announcements: sum(key, 'annonce', 'annonce (en attente)', 'legal team (en attente)'), actions: rows.reduce((s, x) => s + (x[key] || 0), 0) });
+  return { day: pick('d'), total: pick('n'), lastAction: rows.reduce((m, x) => Math.max(m, x.last), 0) || null, firstAction: rows.reduce((m, x) => Math.min(m, x.first), Infinity) === Infinity ? null : rows.reduce((m, x) => Math.min(m, x.first), Infinity) };
 }
 
 module.exports = { TRASH_MS, ORGA_REMOVE_MAX, orgaLog, trashReport, orgaStats };

@@ -455,11 +455,23 @@ async function adminRoutes(req, res, url, pathname) {
       return send(res, 200, { id: o.id, trial: o.trial });
     }
     // --- Journal des orgas et corbeille ---
-    if (req.method === 'GET' && pathname === '/api/admin/journal') {
-      const rows = q('SELECT * FROM orga_log ORDER BY t DESC LIMIT 300').all();
+    // Journal complet : filtre par orga (o = identifiant, ou « label:Nom » pour un accès défini dans les variables),
+    // pages de 300 lignes en remontant le temps (before = date de la dernière ligne reçue), ou tout en CSV
+    if (req.method === 'GET' && (pathname === '/api/admin/journal' || pathname === '/api/admin/journal.csv')) {
+      const o = url.searchParams.get('o') || '', before = Number(url.searchParams.get('before')) || 8.64e15;
+      const where = o.startsWith('label:') ? 'orga=?' : o ? 'oid=?' : '1=1', args = o ? [o.startsWith('label:') ? o.slice(6) : o] : [];
+      if (pathname.endsWith('.csv')) {
+        const esc = v => { let x = v == null ? '' : String(v); if (/^[=+\-@\t\r]/.test(x)) x = "'" + x; return /[",;\n\r]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; };
+        const all = q(`SELECT * FROM orga_log WHERE ${where} ORDER BY t`).all(...args);
+        const lines = ['date;orga;action;type;latitude;longitude;reference;detail', ...all.map(x => [new Date(x.t).toLocaleString('sv-SE', { timeZone: 'Europe/Paris' }), x.orga, x.action, x.cat, x.lat, x.lng, x.ref, x.detail].map(esc).join(';'))];
+        return send(res, 200, '\ufeff' + lines.join('\n') + '\n', { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="journal-orgas${o ? '-' + (o.replace(/^label:/, '').replace(/[^\w-]/g, '_').slice(0, 40)) : ''}.csv"` });
+      }
+      const rows = q(`SELECT * FROM orga_log WHERE ${where} AND t<? ORDER BY t DESC LIMIT 300`).all(...args, before);
+      const orgaList = q("SELECT oid, orga, COUNT(*) n, MAX(t) last FROM orga_log WHERE oid IS NOT 'votes' GROUP BY COALESCE(oid, orga) ORDER BY orga").all();
+      if (before < 8.64e15) return send(res, 200, { log: rows, more: rows.length === 300 });
       const trash = q('SELECT id, t, orga, data FROM trash WHERE t>? ORDER BY t DESC').all(Date.now() - TRASH_MS)
         .map(x => { const r = JSON.parse(x.data); return { id: x.id, t: x.t, orga: x.orga, cat: r.cat, lat: r.lat, lng: r.lng, up: r.up, note: r.note }; });
-      return send(res, 200, { log: rows, trash });
+      return send(res, 200, { log: rows, trash, more: rows.length === 300, orgas: orgaList.map(x => ({ o: x.oid || 'label:' + x.orga, label: x.orga, n: x.n, last: x.last })) });
     }
     const rest = pathname.match(/^\/api\/admin\/trash\/([\w-]{1,16})\/restore$/);
     if (req.method === 'POST' && rest) {

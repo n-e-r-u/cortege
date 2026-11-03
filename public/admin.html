@@ -126,6 +126,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .cat-table input[type=number] { width: 84px; height: 36px; }
 #coCats input:not([type]) { width: min(320px, 45vw); height: 36px; }
 .cat-table .base { color: var(--muted); font-size: 12px; }
+.link-btn { background: none; border: 0; padding: 4px 0 0; color: var(--accent); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
 .kv dt { color: var(--muted); } .kv dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .prompt { border-color: var(--accent); }
@@ -675,9 +676,10 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     </section>
     <section class="card">
       <h2>Journal des actions</h2>
-      <div class="controls"><label for="journalOrga">Orga <select id="journalOrga"><option value="">Toutes</option></select></label></div>
+      <div class="controls"><label for="journalOrga">Orga <select id="journalOrga"><option value="">Toutes</option></select></label><button type="button" class="ghost" id="journalCsv">Exporter tout l’historique (CSV)</button></div>
       <ul class="org-list" id="journalList"></ul>
-      <p class="fine">Gardé 30 jours : heure, orga, action, type de signalement et position arrondie à environ 100 m. Aucune adresse IP.</p>
+      <div class="controls"><button type="button" class="ghost" id="journalMore" hidden>Voir plus ancien</button></div>
+      <p class="fine">Historique complet de chaque orga, gardé sans limite de durée (seule l’effacement d’urgence le vide) : date, orga, action, type de signalement et position arrondie à environ 100 m. Aucune adresse IP. Les contestations automatiques par les votes suivent la durée de l’archive.</p>
     </section>
   </section>
 

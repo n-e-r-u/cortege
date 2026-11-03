@@ -60,11 +60,12 @@ async function loadJournal() {
     b.onclick = async () => { try { await api('/api/admin/trash/' + x.id + '/restore', { method: 'POST', body: '{}' }); alertMsg('Point restauré.'); loadJournal(); } catch (e) { alertMsg(e.message); } };
     tl.append(li(c.glyph + ' ' + c.label + (x.note ? ' · ' + x.note : ''), `${x.orga.startsWith('Votes') ? 'contesté par les votes' : 'retiré par ' + x.orga} à ${hhmm(x.t)} · ${x.lat.toFixed(4)}, ${x.lng.toFixed(4)}${x.up ? ' · confirmé ' + x.up + '×' : ''}`, b));
   }
-  // Filtre par orga
+  // Filtre par orga : toutes celles qui ont un historique (le journal est gardé en entier, lu par pages côté serveur)
   const sel = $('#journalOrga'), cur = sel.value;
-  const orgas = [...new Set(journal.log.map(x => x.orga))].sort();
-  sel.textContent = ''; sel.append(new Option('Toutes', ''), ...orgas.map(o => new Option(o, o))); sel.value = orgas.includes(cur) ? cur : '';
-  renderJournal();
+  sel.textContent = ''; sel.append(new Option('Toutes', ''), ...(journal.orgas || []).map(o => new Option(`${o.label} (${o.n})`, o.o)));
+  sel.value = (journal.orgas || []).some(o => o.o === cur) ? cur : '';
+  jView = { log: journal.log, more: journal.more };
+  if (sel.value) await loadJournalOrga(); else renderJournal();
   // À vérifier : rafales bloquées et validations en attente (24 h)
   const since = Date.now() - 24 * 3600e3;
   const alerts = journal.log.filter(x => x.t > since && ALERT_ACTIONS.has(x.action));
@@ -76,18 +77,33 @@ async function loadJournal() {
   for (const x of alerts.slice(0, 30)) al.append(li(x.orga + ' : ' + x.action, hhmm(x.t) + (x.detail ? ' · ' + x.detail : '')));
   $('#journalBadge').textContent = alerts.length ? '(' + alerts.length + ')' : '';
 }
+let jView = { log: [], more: false };
+async function loadJournalOrga() {
+  const o = $('#journalOrga').value;
+  try { const d = await api('/api/admin/journal' + (o ? '?o=' + encodeURIComponent(o) : '')); jView = { log: d.log, more: d.more }; } catch (e) { alertMsg(e.message); }
+  renderJournal();
+}
 function renderJournal() {
   const ul = $('#journalList'); ul.textContent = '';
-  const f = $('#journalOrga').value, rows = journal.log.filter(x => !f || x.orga === f);
+  const rows = jView.log;
+  $('#journalMore').hidden = !jView.more;
   if (!rows.length) return empty(ul, 'Aucune action enregistrée.');
-  for (const x of rows.slice(0, 200)) {
+  for (const x of rows) {
     const c = x.cat ? (JCATS[x.cat] || { glyph: '•', label: x.cat }) : null;
     const where = x.lat != null ? ` · ${x.lat.toFixed(3)}, ${x.lng.toFixed(3)}` : '';
     const day = new Date(x.t).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: 'numeric', month: 'short' });
     ul.append(li(`${x.orga} : ${x.action}${c ? ' ' + c.glyph + ' ' + c.label : ''}`, `${day} ${hhmm(x.t)}${where}${x.detail ? ' · ' + x.detail : ''}`));
   }
 }
-$('#journalOrga').onchange = renderJournal;
+$('#journalOrga').onchange = loadJournalOrga;
+$('#journalMore').onclick = async () => {
+  const o = $('#journalOrga').value, last = jView.log[jView.log.length - 1];
+  if (!last) return;
+  try { const d = await api('/api/admin/journal?before=' + last.t + (o ? '&o=' + encodeURIComponent(o) : '')); jView = { log: jView.log.concat(d.log), more: d.more }; renderJournal(); } catch (e) { alertMsg(e.message); }
+};
+$('#journalCsv').onclick = () => { const o = $('#journalOrga').value; adminDownload('/api/admin/journal.csv' + (o ? '?o=' + encodeURIComponent(o) : ''), 'journal-orgas.csv').catch(e => alertMsg(e.message)); };
+// Depuis la liste des orgas : ouvrir son historique complet
+function openOrgaHistory(o, label) { showTab('Journal'); loadJournal().then(() => { const sel = $('#journalOrga'); if (![...sel.options].some(x => x.value === o)) sel.append(new Option(label + ' (0)', o)); sel.value = o; loadJournalOrga(); }); }
 
 // ---- Annonces (nationales + toutes les annonces actives) ----
 const li = (title, meta, ...buttons) => {
@@ -306,8 +322,12 @@ function renderOrgas({ orgas }) {
     }
     const stats = document.createElement('div'); stats.className = 'meta';
     const d = o.day || {};
-    stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '');
-    info.append(name, meta, ...(extra ? [extra] : []), stats);
+    const tot = o.total || {};
+    stats.textContent = `24 h : ${d.verified || 0} vérifié(s), ${d.removed || 0} retiré(s), ${d.announcements || 0} annonce(s)` + (d.blocked ? ` · ⚠ ${d.blocked} rafale(s) bloquée(s)` : '')
+      + ` · depuis le début : ${tot.actions || 0} action(s), ${tot.verified || 0} vérifié(s), ${tot.removed || 0} retiré(s), ${tot.announcements || 0} annonce(s)` + (tot.blocked ? `, ${tot.blocked} rafale(s)` : '');
+    const hist = document.createElement('button'); hist.type = 'button'; hist.className = 'link-btn'; hist.textContent = 'Voir tout l’historique';
+    hist.onclick = () => openOrgaHistory(o.id || 'label:' + o.label, o.label);
+    info.append(name, meta, ...(extra ? [extra] : []), stats, hist);
     li.append(info);
     if (o.id) {
       const tr = document.createElement('button'); tr.className = o.trial ? '' : 'ghost'; tr.textContent = o.trial ? 'Confirmer' : 'Repasser en essai';
@@ -1274,7 +1294,7 @@ $('#mapsStop').onclick = async () => { try { await api('/api/admin/maps/cancel',
 $('#mapsCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#mapsCmd').textContent); $('#mapsCopy').textContent = 'Copié'; setTimeout(() => ($('#mapsCopy').textContent = 'Copier'), 2000); } catch { alertMsg($('#mapsCmd').textContent); } };
 // ---- Invitations en série : un lien par orga, avec un message type prêt à envoyer ----
 let bulkRows = [];
-const BULK_TPL = 'Bonjour {nom},\n\nJe développe Cortège (https://cortege.neru.tv), une carte libre et gratuite des manifs en direct : forces de l’ordre, lacrymo, nasses, street medics, legal teams. Sans compte, sans pistage, code ouvert.\n\nJe vous propose un accès orga : vérifier les signalements, retirer les faux, partager votre position en manif (tête de cortège, poste medic) et, une fois certifiés, publier des annonces autour du cortège.\n\nVotre invitation (à ouvrir sur le téléphone qui servira en manif, valable une seule fois) :\n{lien}\n\nNeru';
+const BULK_TPL = 'Bonjour {nom},\n\nJe développe Cortège (https://cortege.neru.tv), une carte libre et gratuite des manifs en direct : forces de l’ordre, lacrymo, nasses, street medics, legal teams. Sans compte, sans pistage, code ouvert.\n\nJe vous propose un accès orga : vérifier les signalements, retirer les faux et, une fois certifiés, publier des annonces autour du cortège.\n\nVotre invitation (à ouvrir sur le téléphone qui servira en manif, valable une seule fois) :\n{lien}\n\nNeru';
 try { $('#bulkTpl').value = localStorage.getItem('cortege-bulk-tpl') || BULK_TPL; } catch { $('#bulkTpl').value = BULK_TPL; }
 $('#bulkTpl').addEventListener('input', () => { try { localStorage.setItem('cortege-bulk-tpl', $('#bulkTpl').value); } catch {} });
 const bulkMsgFor = r => $('#bulkTpl').value.replaceAll('{nom}', r.label).replaceAll('{lien}', r.url);

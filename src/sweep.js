@@ -3,6 +3,7 @@ const { ABUSE_KEEP } = require('./moderation');
 const { CONTEST } = require('./reports/votes');
 const { EVENT_KEEP } = require('./events/store');
 const { MIN, RATE, ARCHIVE_DAYS } = require('./config');
+const ORGA_LOG_DAYS = Number(process.env.ORGA_LOG_DAYS) || 0; // 0 : journal des orgas gardé sans limite
 const { TRASH_MS } = require('./orgas/log');
 const { archive } = require('./digest/archive');
 const { capTables } = require('./limits');
@@ -32,7 +33,10 @@ function sweep() {
     q('DELETE FROM devices WHERE seen<?').run(now - CONTEST.devKeep);
     q('DELETE FROM abuse WHERE t<?').run(now - ABUSE_KEEP);
     q('UPDATE abuse SET dev=NULL, net=NULL WHERE t<? AND (dev IS NOT NULL OR net IS NOT NULL)').run(now - 60 * MIN);
-    q('DELETE FROM orga_log WHERE t<?').run(now - ARCHIVE_DAYS * 24 * 60 * MIN);
+    // Journal des orgas : gardé sans limite de durée (contrôle de l'admin), sauf ORGA_LOG_DAYS ; les contestations
+    // automatiques par les votes (« Votes « Plus là » ») suivent la durée de l'archive
+    q("DELETE FROM orga_log WHERE oid='votes' AND t<?").run(now - ARCHIVE_DAYS * 24 * 60 * MIN);
+    if (ORGA_LOG_DAYS > 0) q('DELETE FROM orga_log WHERE t<?').run(now - ORGA_LOG_DAYS * 24 * 60 * MIN);
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
     if (expired.length || dirty.ann || dirty.events || dirty.ord || dirty.global) scheduleFlush(0);

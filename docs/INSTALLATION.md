@@ -22,7 +22,8 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `SOURCE_URL` | dépôt d'origine | Lien du dépôt du code (affiché dans le menu et les mentions légales) (admin) |
 | `LEGAL_WATCH` | `1` | `0` coupe la veille quotidienne des sources de l'annuaire des legal teams |
 | `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » (admin) |
-| `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme et du journal des orgas (jours) |
+| `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme (jours) |
+| `ORGA_LOG_DAYS` | `0` | Durée de conservation du journal des orgas, en jours. `0` : historique complet, gardé sans limite |
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel. Les en-têtes du proxy ne sont crus que pour les connexions venant de la machine elle-même (ou de `PROXY_IPS`) |
 | `PROXY_IPS` | vide | Adresses du proxy s'il n'est pas sur la même machine (ex. passerelle Docker `172.17.0.1`), séparées par des virgules |
 | `CLOUDFLARE` | `0` | `1` seulement si l'instance est vraiment derrière Cloudflare : l'en-tête `CF-Connecting-IP` est alors cru. Sinon il est ignoré (n'importe qui peut l'envoyer) |
