@@ -77,6 +77,31 @@ async function adminRoutes(req, res, url, pathname) {
       orgaLog({ id: 'admin', label: adminLabel() }, 'invitation', { ref: out.id, detail: out.label });
       return send(res, 201, { id: out.id, label: out.label, created: out.created, invite: token, exp: out.invite.exp });
     }
+    // Invitations en série (démarchage des collectifs, syndicats, legal teams) : une invitation par nom, valable plus longtemps
+    // (le temps que le message arrive à la bonne personne). Chaque orga reste en essai jusqu'à ce que l'admin la certifie.
+    if (req.method === 'POST' && pathname === '/api/admin/orgas/bulk') {
+      const b = await readJson(req, 65536);
+      const days = Math.min(Math.max(Math.round(Number(b.days) || 30), 1), 60);
+      const names = (Array.isArray(b.labels) ? b.labels : []).map(x => String(x || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 60)).filter(x => x.length >= 2);
+      if (!names.length) return send(res, 400, { error: 'Mets un nom d’orga par ligne.' });
+      if (names.length > 100) return send(res, 400, { error: '100 invitations au plus d’un coup.' });
+      const out = [], skipped = [];
+      withLock(() => {
+        const list = readOrgas().slice(), seen = new Set();
+        for (const label of names) {
+          const key = label.toLowerCase();
+          const clash = seen.has(key) ? 'en double dans la liste' : labelClash(label);
+          if (clash) { skipped.push({ label, error: clash === true ? 'Une orga porte déjà ce nom.' : clash }); continue; }
+          seen.add(key);
+          const token = crypto.randomBytes(18).toString('base64url');
+          const o = { id: crypto.randomBytes(5).toString('base64url'), label, hash: null, created: Date.now(), trial: true, invite: { h: sha(token), exp: Date.now() + days * 24 * 60 * MIN } };
+          list.push(o); out.push({ id: o.id, label, invite: token, exp: o.invite.exp });
+        }
+        writeOrgas(list);
+      });
+      if (out.length) orgaLog({ id: 'admin', label: adminLabel() }, `invitations en série (${out.length})`, { detail: out.map(o => o.label).join(', ').slice(0, 400) });
+      return send(res, 201, { created: out, skipped, days });
+    }
     // Révocation pour abus : l'orga et toutes celles qu'elle a fait entrer ; sa marraine perd le droit d'inviter 30 jours
     const revoke = pathname.match(/^\/api\/admin\/orgas\/([\w-]{1,16})\/revoke$/);
     if (req.method === 'POST' && revoke) {

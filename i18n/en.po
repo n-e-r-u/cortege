@@ -2428,8 +2428,8 @@ msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, 
 msgstr "Injured: call <b>15</b> or <b>112</b>. To file a complaint, go to a police station or write to the public prosecutor (procureur de la République); the legal team can help."
 
 # --- 07-v265 ---
-msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée."
-msgstr "Trial period: “Verify” counts as a strong confirmation and “Remove” as two “Gone”. Your announcements, legal team numbers and events appear after admin approval. Urgent announcements and the “verified” tick come once the organisation is confirmed."
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée."
+msgstr "Trial period: “Verify” counts as a strong confirmation and “Remove” as two “Gone”. Your legal team numbers and events appear after admin approval. Announcements (within 3 km) and the “verified” tick come once the organisation is confirmed."
 
 msgid "En attente de validation par l’admin : pas encore visible"
 msgstr "Waiting for admin approval: not visible yet"
@@ -2893,3 +2893,8 @@ msgstr "High school"
 #: src/places/osm.js
 msgid "🎓 Lycées et facs"
 msgstr "🎓 High schools and universities"
+
+# --- textes à traduire ---
+#: src/routes/orga.js
+msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
+msgstr "Announcements are for certified organisations only. During the trial period you can verify reports and submit your legal team’s number."

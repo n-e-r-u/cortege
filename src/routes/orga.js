@@ -173,9 +173,10 @@ async function orgaRoutes(req, res, url, pathname) {
   
     if (req.method === 'POST' && pathname === '/api/announcements') {
       const b = await readJson(req);
-      // Période d'essai : pas d'annonce urgente (notification à toute la zone), numéro de legal team validé par l'admin
-      if (orga.trial && b.kind !== 'legal' && b.level === 'urgent')
-        return send(res, 400, { error: 'Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info ».' });
+      // Annonces : seulement les orgas certifiées (confirmées), et dans un rayon de 3 km au plus (voir createAnnouncement).
+      // Une orga en essai ou parrainée peut seulement proposer le numéro de sa legal team, validé par l'admin.
+      if (orga.trial && !orga.admin && b.kind !== 'legal')
+        return send(res, 403, { error: 'Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team.' });
       if (orga.sponsored && b.kind !== 'legal' && q("SELECT COUNT(*) n FROM orga_log WHERE oid=? AND action IN ('annonce', 'annonce (en attente)') AND t>?").get(orga.id, Date.now() - 24 * 60 * 60_000).n >= SPONSOR.annPerDay)
         return send(res, 400, { error: `Orga parrainée : ${SPONSOR.annPerDay} annonces par jour au maximum jusqu’à ta confirmation.` });
       if (!orga.admin && !quota('ann:' + orga.id, ORGA_LIMITS.annPerDay, 24 * 60 * MIN))

@@ -1,0 +1,2897 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Cortège\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Language-Name: Deutsch\n"
+"X-Locale: de-DE\n"
+
+msgid "Carte de la manifestation"
+msgstr "Karte der Demo"
+
+msgid "Soutenir Cortège sur Ko-fi"
+msgstr "Cortège auf Ko-fi unterstützen"
+
+msgid "Installer l’appli"
+msgstr "App installieren"
+
+msgid "Chercher une ville"
+msgstr "Stadt suchen"
+
+msgid "Me localiser"
+msgstr "Meinen Standort zeigen"
+
+msgid "Ce que montre la carte"
+msgstr "Was die Karte zeigt"
+
+msgid "Espace orga"
+msgstr "Orga-Bereich"
+
+msgid "Interpellation : prévenir un proche"
+msgstr "Festnahme: jemanden benachrichtigen"
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "SOS : prévenir un proche"
+msgstr "SOS: jemanden benachrichtigen"
+
+msgid "Fermer"
+msgstr "Schließen"
+
+msgid "Signalements affichés"
+msgstr "Angezeigte Meldungen"
+
+msgid "ex. : Montpellier, Lyon 7e, place de la République"
+msgstr "z. B. Montpellier, Lyon 7e, place de la République"
+
+msgid "QR code vers l’appli Cortège"
+msgstr "QR-Code zur Cortège-App"
+
+msgid "ex. : Legal Team Montpellier"
+msgstr "z. B. Legal Team Montpellier"
+
+msgid "ex. : Montpellier"
+msgstr "z. B. Montpellier"
+
+msgid "adresse ou compte publié par le collectif, pas un contact perso"
+msgstr "Adresse oder Account, den die Gruppe veröffentlicht hat, kein privater Kontakt"
+
+msgid "ex. : 2019"
+msgstr "z. B. 2019"
+
+msgid "ex. : syndicat local"
+msgstr "z. B. lokale Gewerkschaft"
+
+msgid "ex. : permanence jusqu’à 22 h"
+msgstr "z. B. erreichbar bis 22 Uhr"
+
+msgid "Nom affiché, ex. : Legal Team Nîmes"
+msgstr "Angezeigter Name, z. B. Legal Team Nîmes"
+
+msgid "Nom de l’orga invitée"
+msgstr "Name der eingeladenen Orga"
+
+msgid "Zone"
+msgstr "Gebiet"
+
+msgid "ex. : Blocus lycée Jean-Monnet"
+msgstr "z. B. Blockade am Gymnasium Jean-Monnet"
+
+msgid "ex. : place de la Comédie"
+msgstr "z. B. place de la Comédie"
+
+msgid "ex. : Sam"
+msgstr "z. B. Sam"
+
+msgid "Qui est interpellé·e ?"
+msgstr "Wer wurde festgenommen?"
+
+msgid "Ajouter une précision (facultatif)"
+msgstr "Detail hinzufügen (optional)"
+
+msgid "Cortège <span class=\"by\">par <b class=\"handle\">@neru</b></span>"
+msgstr "Cortège <span class=\"by\">von <b class=\"handle\">@neru</b></span>"
+
+msgid "<span class=\"dot\"></span><span class=\"txt\">Connexion…</span>"
+msgstr "<span class=\"dot\"></span><span class=\"txt\">Verbinde…</span>"
+
+msgid "Soutenir"
+msgstr "Unterstützen"
+
+msgid "Mode manif"
+msgstr "Demo-Modus"
+
+msgid "Quitter"
+msgstr "Beenden"
+
+msgid "Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable."
+msgstr "Meldungen für ein paar Minuten pausiert: Eine Welle falscher Meldungen wird gerade bereinigt. Die Karte bleibt sichtbar."
+
+msgid "Touche la carte : le premier point est le rendez-vous, les suivants tracent le parcours (facultatif)."
+msgstr "Tippe auf die Karte: Der erste Punkt ist der Treffpunkt, die nächsten zeichnen die Route (optional)."
+
+msgid "Aucun point"
+msgstr "Kein Punkt"
+
+msgid "↶ Retirer"
+msgstr "↶ Rückgängig"
+
+msgid "Effacer"
+msgstr "Löschen"
+
+msgid "Terminé"
+msgstr "Fertig"
+
+msgid "Carte"
+msgstr "Karte"
+
+msgid "Infos"
+msgstr "Infos"
+
+msgid "Signaler"
+msgstr "Melden"
+
+msgid "Droits"
+msgstr "Rechte"
+
+msgid "Plus"
+msgstr "Mehr"
+
+msgid "Signalements"
+msgstr "Meldungen"
+
+msgid "Sur la carte"
+msgstr "Auf der Karte"
+
+msgid "Arrêtés et restrictions"
+msgstr "Verbote und Einschränkungen"
+
+msgid "Tous les arrêtés en France"
+msgstr "Alle Verbote in Frankreich"
+
+msgid "Annonces des orgas"
+msgstr "Ankündigungen der Orgas"
+
+msgid "Agenda"
+msgstr "Termine"
+
+msgid "Rien d’annoncé à moins de 50 km."
+msgstr "Nichts angekündigt im Umkreis von 50 km."
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">☰</span><span><b>Meldungen im Gebiet</b><small>Die Liste, die nächsten zuerst</small></span>"
+
+msgid "<b>Cortège est gratuit et sans pub.</b> Tes dons servent à l’améliorer."
+msgstr "<b>Cortège ist kostenlos und werbefrei.</b> Deine Spenden helfen, es zu verbessern."
+
+msgid "Qu’est-ce qui se passe ici ?"
+msgstr "Was passiert hier?"
+
+msgid "Place le viseur au bon endroit sur la carte, puis choisis."
+msgstr "Setz das Fadenkreuz an die richtige Stelle auf der Karte und wähle dann."
+
+msgid "Pas de nom, pas de description physique, pas de matricule. On signale des situations, pas des personnes. <a class=\"inline-link\" href=\"/legal.html#regles\">Règles</a>"
+msgstr "Keine Namen, keine Personenbeschreibungen, keine Dienstnummern. Gemeldet werden Situationen, nicht Personen. <a class=\"inline-link\" href=\"/legal.html#regles\">Regeln</a>"
+
+msgid "En attente de réseau"
+msgstr "Warte auf Netz"
+
+msgid "Ces signalements partent dès que ton téléphone capte. S’ils ont dépassé leur durée de vie entre-temps, ils ne sont pas publiés."
+msgstr "Diese Meldungen werden gesendet, sobald dein Handy Netz hat. Sind sie inzwischen abgelaufen, werden sie nicht veröffentlicht."
+
+msgid "Tout est parti."
+msgstr "Alles gesendet."
+
+msgid "Réessayer maintenant"
+msgstr "Jetzt erneut versuchen"
+
+msgid "Aller à une ville"
+msgstr "Zu einer Stadt"
+
+msgid "Ville, quartier ou adresse"
+msgstr "Stadt, Viertel oder Adresse"
+
+msgid "Signalements dans la zone affichée"
+msgstr "Meldungen im angezeigten Gebiet"
+
+msgid "Rien de signalé pour l’instant. Appuie sur « Signaler » pour ajouter le premier point."
+msgstr "Noch nichts gemeldet. Tippe auf „Melden“, um den ersten Punkt zu setzen."
+
+msgid "Soutenir Cortège"
+msgstr "Cortège unterstützen"
+
+msgid "Gratuit, sans pub, sans pistage. Tes dons servent à améliorer le projet."
+msgstr "Kostenlos, ohne Werbung, ohne Tracking. Deine Spenden helfen, das Projekt zu verbessern."
+
+msgid "Faire un don sur Ko-fi"
+msgstr "Auf Ko-fi spenden"
+
+msgid "<b>Suivre <span class=\"handle\">@neru</span> sur Instagram</b><small>Pas un accident. Un système. Une chronique chaque jour.</small>"
+msgstr "<b>Folge <span class=\"handle\">@neru</span> auf Instagram</b><small>Kein Unfall. Ein System. Jeden Tag ein neues Video (auf Französisch).</small>"
+
+msgid "Suivre"
+msgstr "Folgen"
+
+msgid "<b>Passer en mode manif</b><small>Carte, Signaler, SOS et legal team. Rien d’autre.</small>"
+msgstr "<b>In den Demo-Modus wechseln</b><small>Karte, Melden, SOS und Legal Team. Sonst nichts.</small>"
+
+msgid "Avant de partir"
+msgstr "Bevor du losgehst"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🎒</span><span><b>Se préparer</b><small>La checklist</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">🎒</span><span><b>Vorbereiten</b><small>Die Checkliste</small></span>"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📶</span><span><b>Prêt pour la manif</b><small>Carte et numéros sans réseau</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">📶</span><span><b>Bereit für die Demo</b><small>Karte und Nummern ohne Netz</small></span>"
+
+msgid "Installer l’appli sur mon téléphone"
+msgstr "App auf meinem Handy installieren"
+
+msgid "Alertes"
+msgstr "Warnungen"
+
+msgid "Notifications, vibrations et voix"
+msgstr "Benachrichtigungen, Vibration und Sprachausgabe"
+
+msgid "Faire grandir Cortège"
+msgstr "Cortège bekannter machen"
+
+msgid "<b>Partager</b><small>QR code à scanner</small>"
+msgstr "<b>Teilen</b><small>QR-Code zum Scannen</small>"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🖨</span><span><b>Affiche</b><small>À imprimer pour ta ville</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">🖨</span><span><b>Plakat</b><small>Zum Ausdrucken für deine Stadt</small></span>"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">🧩</span><span><b>Sur ton site</b><small>Intégrer la carte</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">🧩</span><span><b>Auf deiner Website</b><small>Karte einbinden</small></span>"
+
+msgid "<b>Code ouvert</b><small>Sur GitHub</small>"
+msgstr "<b>Offener Code</b><small>Auf GitHub</small>"
+
+msgid "Legal team, street medics, collectif ?"
+msgstr "Legal Team, Demosanis, Kollektiv?"
+
+msgid "Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone."
+msgstr "Werde zertifizierte Orga: Du kannst dann Meldungen prüfen, falsche entfernen und Ankündigungen für dein Gebiet veröffentlichen."
+
+msgid "Demander un accès orga"
+msgstr "Orga-Zugang anfragen"
+
+msgid "Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule."
+msgstr "Jede Anfrage wird beim Kollektiv über seine öffentlichen Kanäle überprüft. Der Zugang geht an das Kollektiv, nie an eine einzelne Person."
+
+msgid "Comment ça marche"
+msgstr "So funktioniert’s"
+
+msgid "<b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres."
+msgstr "<b>Dein Standort bleibt auf deinem Handy.</b> Er dient dazu, die Karte zu zentrieren und dich zu warnen. Um Meldungen zu laden, fragt die App nur die aus deinem Gebiet ab, auf ein paar Kilometer genau. Die Punkte, die du meldest, werden auf etwa zehn Meter gerundet."
+
+msgid "<b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor."
+msgstr "<b>Kein Account.</b> Meldungen löschen sich von selbst, wenn sie ablaufen. Wie bei jeder Website kann der Hoster Verbindungsprotokolle speichern: In heiklen Situationen nutze ein VPN oder Tor."
+
+msgid "<b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer."
+msgstr "<b>Demonstrierende überprüfen Meldungen untereinander.</b> „Noch da“ verlängert einen Punkt, „Nicht mehr da“ stellt ihn infrage und lässt ihn verschwinden, wenn genug Leute vor Ort das sagen. Zertifizierte Orgas können ihn prüfen oder entfernen."
+
+msgid "<b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone."
+msgstr "<b>Netz überlastet?</b> Öffne die App vor dem Losgehen und tippe auf „Bereit für die Demo“: Die Karte deines Gebiets, die Nummern der Legal Teams und die Termine bleiben auf deinem Handy."
+
+msgid "<b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone."
+msgstr "<b>Netz überlastet?</b> Fahr vor dem Losgehen auf der Karte die Route der Demo ab: Die angezeigten Kartenausschnitte bleiben auf deinem Handy gespeichert."
+
+msgid "<b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque."
+msgstr "<b>Schreib dir die Nummer deines Legal Teams</b> mit Kuli auf den Arm. Ein Handy geht verloren oder wird beschlagnahmt."
+
+msgid "Avec Tor."
+msgstr "Mit Tor."
+
+msgid "Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) :"
+msgstr "Cortège hat auch eine .onion-Adresse: Dein Mobilfunkanbieter sieht nicht einmal, dass du die App nutzt. Öffne sie im Tor Browser (Computer oder Android):"
+
+msgid "copier"
+msgstr "kopieren"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">📊</span><span><b>Bilanzen</b><small>Vergangene Demos</small></span>"
+
+msgid "Nouveautés"
+msgstr "Neuigkeiten"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Réglages"
+msgstr "Einstellungen"
+
+msgid "🔔 Alertes et notifications"
+msgstr "🔔 Warnungen und Benachrichtigungen"
+
+msgid "🎒 Bien se préparer"
+msgstr "🎒 Gut vorbereitet sein"
+
+msgid "<b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span>"
+msgstr "<b>Akku sparen</b><span>Karte alle 20 s statt alle 5 s aktualisiert, ungenaueres GPS, Kompass aus. Damit du eine lange Demo durchhältst.</span>"
+
+msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
+msgstr "<b>Größerer Text</b><span>Größere Buttons und Texte in der ganzen App.</span>"
+
+msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
+msgstr "<b>Stärkerer Kontrast</b><span>Hellere Texte, deutlichere Ränder, für pralle Sonne.</span>"
+
+msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
+msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Alles von diesem Handy löschen</b><small>Finger 2 Sekunden gedrückt halten</small></span>"
+
+msgid "Efface le contact SOS, la checklist, le point de ralliement, les réglages, la carte gardée hors ligne et l’accès orga, puis ferme Cortège. L’historique du navigateur n’est pas effacé : vide-le aussi depuis ses réglages."
+msgstr "Löscht den SOS-Kontakt, die Checkliste, den Treffpunkt, die Einstellungen, die offline gespeicherte Karte und den Orga-Zugang und schließt dann Cortège. Der Browserverlauf wird nicht gelöscht: Leere ihn auch in den Einstellungen des Browsers."
+
+msgid "<a class=\"inline-link\" href=\"/legal.html\">Mentions légales, confidentialité et règles d’utilisation</a>"
+msgstr "<a class=\"inline-link\" href=\"/legal.html\">Impressum, Datenschutz und Nutzungsregeln (auf Französisch)</a>"
+
+msgid "Cortège est un projet de <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a>"
+msgstr "Cortège ist ein Projekt von <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a>"
+
+msgid "Fais scanner ce code"
+msgstr "Lass diesen Code scannen"
+
+msgid "Partager le lien"
+msgstr "Link teilen"
+
+msgid "Copier le lien"
+msgstr "Link kopieren"
+
+msgid "Monte la luminosité de ton écran. Le code s’affiche même sans réseau ; la personne en face aura besoin de data pour ouvrir l’appli la première fois."
+msgstr "Dreh die Bildschirmhelligkeit hoch. Der Code wird auch ohne Netz angezeigt; die andere Person braucht beim ersten Öffnen der App mobile Daten."
+
+msgid "Cortège est un projet de"
+msgstr "Cortège ist ein Projekt von"
+
+msgid "Lieux sur la carte"
+msgstr "Orte auf der Karte"
+
+msgid "<b>Afficher les lieux</b><span>Lieux de pouvoir et lieux utiles, d’après OpenStreetMap. Ils apparaissent en zoomant, les plus importants en premier.</span>"
+msgstr "<b>Orte anzeigen</b><span>Orte der Macht und nützliche Orte, nach OpenStreetMap. Sie erscheinen beim Hineinzoomen, die wichtigsten zuerst.</span>"
+
+msgid "Pharmacie de garde : appelle le 3237."
+msgstr "Notdienst-Apotheke (Frankreich): Ruf die 3237 an."
+
+msgid "Un lieu manque ou est faux ? Signale-le à l’adresse de contact (menu, « Mentions légales »), il sera corrigé."
+msgstr "Fehlt ein Ort oder ist er falsch? Melde es an die Kontaktadresse (Menü, „Impressum“), dann wird es korrigiert."
+
+msgid "Le détail de chaque version est sur GitHub (fichier CHANGELOG)."
+msgstr "Die Details jeder Version stehen auf GitHub (Datei CHANGELOG)."
+
+msgid "La carte sur ton site"
+msgstr "Die Karte auf deiner Website"
+
+msgid "Pour un média, un collectif ou un syndicat : la carte en direct de la zone affichée, en lecture seule, à coller dans une page web. Elle ne demande pas la position des visiteur·ices."
+msgstr "Für ein Medium, ein Kollektiv oder eine Gewerkschaft: die Live-Karte des angezeigten Gebiets, nur zum Ansehen, zum Einfügen in eine Webseite. Sie fragt Besuchende nicht nach ihrem Standort."
+
+msgid "Copier le code"
+msgstr "Code kopieren"
+
+msgid "Aperçu"
+msgstr "Vorschau"
+
+msgid "Devenir orga certifiée"
+msgstr "Zertifizierte Orga werden"
+
+msgid "Pour les collectifs : legal teams, street medics, orgas de manif, syndicats. Chaque demande est vérifiée par les canaux publics du collectif, et l’accès est remis au collectif, jamais à une personne seule."
+msgstr "Für Kollektive: Legal Teams, Demosanis, Demo-Orgas, Gewerkschaften. Jede Anfrage wird über die öffentlichen Kanäle des Kollektivs überprüft, und der Zugang geht an das Kollektiv, nie an eine einzelne Person."
+
+msgid "Nom du collectif"
+msgstr "Name des Kollektivs"
+
+msgid "Ville ou secteur"
+msgstr "Stadt oder Gebiet"
+
+msgid "Rôle"
+msgstr "Rolle"
+
+msgid "Legal team"
+msgstr "Legal Team (EA)"
+
+msgid "Street medics"
+msgstr "Demosanis"
+
+msgid "Orga de manif"
+msgstr "Demo-Orga"
+
+msgid "Syndicat"
+msgstr "Gewerkschaft"
+
+msgid "Média indépendant"
+msgstr "Unabhängiges Medium"
+
+msgid "Autre"
+msgstr "Sonstiges"
+
+msgid "Site ou compte public du collectif"
+msgstr "Website oder öffentlicher Account des Kollektivs"
+
+msgid "Canal officiel où te confirmer la demande"
+msgstr "Offizieller Kanal, über den wir die Anfrage bestätigen können"
+
+msgid "Existe depuis"
+msgstr "Aktiv seit"
+
+msgid "Orga qui peut se porter garante (facultatif)"
+msgstr "Orga, die für euch bürgen kann (optional)"
+
+msgid "Un mot (facultatif)"
+msgstr "Eine Nachricht (optional)"
+
+msgid "Envoyer la demande"
+msgstr "Anfrage senden"
+
+msgid "Ces infos servent seulement à vérifier le collectif. Elles sont effacées dès que la demande est traitée, et au plus tard au bout de 30 jours."
+msgstr "Diese Angaben dienen nur zur Überprüfung des Kollektivs. Sie werden gelöscht, sobald die Anfrage bearbeitet ist, spätestens nach 30 Tagen."
+
+msgid "Aucun numéro de legal team connu pour l’instant. Demande-le aux orgas de ton cortège."
+msgstr "Noch keine Legal-Team-Nummer bekannt. Frag die Orgas deines Demozugs danach."
+
+msgid "Écris le numéro au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré."
+msgstr "Schreib die Nummer mit Kuli auf deinen Arm: Im Gewahrsam wird dir dein Handy abgenommen."
+
+msgid "Autres villes"
+msgstr "Andere Städte"
+
+msgid "<b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span>"
+msgstr "<b>Ich werde festgenommen</b><span>Jemanden mit zwei Tipps per SMS benachrichtigen</span>"
+
+msgid "<b>Signaler une violence policière</b> <span>Témoigne auprès de la Ligue des droits de l’Homme, qui recense les violences pendant les mobilisations.</span>"
+msgstr "<b>Polizeigewalt melden</b> <span>Berichte der Ligue des droits de l’Homme (französische Menschenrechtsliga), die Gewalt bei Protesten dokumentiert.</span>"
+
+msgid "En cas de"
+msgstr "Wenn es passiert"
+
+msgid "Sommations et dispersion"
+msgstr "Durchsagen der Polizei und Auflösung"
+
+msgid "Un attroupement peut être dispersé par la force après <b>deux sommations</b> restées sans effet. Elles sont annoncées par haut-parleur ou par un signal (fusée rouge, signal sonore)."
+msgstr "Eine Ansammlung kann nach <b>zwei Durchsagen der Polizei</b> („sommations“), die ohne Wirkung bleiben, mit Gewalt aufgelöst werden. Sie werden per Lautsprecher oder durch ein Signal (rote Leuchtrakete, Tonsignal) angekündigt."
+
+msgid "Rester volontairement dans un attroupement <b>après les sommations</b> est un délit."
+msgstr "Wer <b>nach den Durchsagen</b> absichtlich in der Ansammlung bleibt, begeht eine Straftat."
+
+msgid "<b>Si tu les entends :</b> éloigne-toi par une rue dégagée, sans courir vers les forces de l’ordre."
+msgstr "<b>Wenn du sie hörst:</b> Entfern dich über eine freie Straße, ohne auf die Polizei zuzurennen."
+
+msgid "Contrôle d’identité"
+msgstr "Identitätskontrolle"
+
+msgid "Tu dois justifier ton identité <b>par tout moyen</b> : carte d’identité, passeport, permis, voire un témoin. Avoir une pièce sur toi n’est pas obligatoire, mais ça évite d’être retenu·e."
+msgstr "Du musst deine Identität <b>auf jede Art</b> nachweisen: Personalausweis, Reisepass, Führerschein, notfalls sogar durch Zeugenaussage. Einen Ausweis dabeizuhaben ist keine Pflicht, verhindert aber, dass du festgehalten wirst."
+
+msgid "Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche."
+msgstr "Ohne Nachweis kannst du zur Überprüfung <b>höchstens 4 Stunden</b> festgehalten werden, mit dem Recht, eine nahestehende Person benachrichtigen zu lassen."
+
+msgid "Garde à vue"
+msgstr "Gewahrsam"
+
+msgid "<b>Droit de te taire.</b> Tu donnes ton identité, et tu peux ne rien dire d’autre."
+msgstr "<b>Recht zu schweigen.</b> Du gibst deine Personalien an und musst sonst nichts sagen."
+
+msgid "<b>Demande un·e avocat·e tout de suite</b>, dès le début. Si tu n’en connais pas, un·e avocat·e commis·e d’office est gratuit·e."
+msgstr "<b>Verlange sofort anwaltlichen Beistand</b>, gleich zu Beginn. Wenn du niemanden kennst, ist eine Pflichtverteidigung kostenlos."
+
+msgid "Droit de faire prévenir un proche et ton employeur, de voir un médecin, d’avoir un·e interprète."
+msgstr "Recht, eine nahestehende Person und deinen Arbeitgeber benachrichtigen zu lassen, eine Ärztin oder einen Arzt zu sehen und eine Dolmetschung zu bekommen."
+
+msgid "Durée : 24 heures, prolongeable une fois de 24 heures pour la plupart des délits."
+msgstr "Dauer: 24 Stunden, bei den meisten Straftaten einmal um 24 Stunden verlängerbar."
+
+msgid "<b>Ne signe rien</b> que tu n’as pas lu et compris. Tu peux refuser de signer un procès-verbal."
+msgstr "<b>Unterschreib nichts</b>, was du nicht gelesen und verstanden hast. Du kannst die Unterschrift unter ein Protokoll verweigern."
+
+msgid "Ton téléphone"
+msgstr "Dein Handy"
+
+msgid "Refuser de donner le code de déverrouillage peut, dans certains cas, être poursuivi (Cour de cassation, 2022)."
+msgstr "Die Weigerung, den Entsperrcode herauszugeben, kann in bestimmten Fällen strafbar sein (französischer Kassationshof, 2022)."
+
+msgid "<b>Avant de partir :</b> verrouille ton téléphone avec un code plutôt qu’avec l’empreinte ou le visage, et masque le contenu des notifications sur l’écran verrouillé."
+msgstr "<b>Bevor du losgehst:</b> Sperr dein Handy mit einem Code statt mit Fingerabdruck oder Gesicht und blende Benachrichtigungsinhalte auf dem Sperrbildschirm aus."
+
+msgid "Pense aussi à sauvegarder tes photos ailleurs que sur le téléphone : il peut être saisi ou cassé."
+msgstr "Denk auch daran, deine Fotos woanders als auf dem Handy zu sichern: Es kann beschlagnahmt werden oder kaputtgehen."
+
+msgid "Filmer"
+msgstr "Filmen"
+
+msgid "Filmer les forces de l’ordre en intervention est <b>légal</b>."
+msgstr "Die Polizei bei einem Einsatz zu filmen ist <b>legal</b>."
+
+msgid "Diffuser des éléments permettant d’identifier un agent dans le but qu’on lui porte atteinte est un délit."
+msgstr "Material zu verbreiten, das Beamt*innen identifizierbar macht, damit ihnen geschadet wird, ist eine Straftat."
+
+msgid "Floute les visages avant de publier, ceux des manifestant·es aussi."
+msgstr "Verpixle Gesichter vor dem Posten, auch die von Demonstrierenden."
+
+msgid "Visage couvert"
+msgstr "Vermummung"
+
+msgid "Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit. La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer."
+msgstr "Bei einer Demo, auf der es zu Unruhen kommt oder kommen könnte, absichtlich das Gesicht zu verbergen, ist eine Straftat. Das Gesetz sieht eine Ausnahme für einen <b>berechtigten Grund</b> vor (zum Beispiel gesundheitliche Gründe), den du erklären können musst."
+
+msgid "Après une interpellation"
+msgstr "Nach einer Festnahme"
+
+msgid "En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Demande-le."
+msgstr "Im <b>Schnellverfahren</b> („comparution immédiate“) kannst du eine Frist zur Vorbereitung deiner Verteidigung verlangen. Tu das."
+
+msgid "Blessé·e : fais établir un <b>certificat médical</b> au plus vite, garde photos et témoignages, contacte ta legal team."
+msgstr "Verletzt: Lass so schnell wie möglich ein <b>ärztliches Attest</b> ausstellen, bewahre Fotos und Zeugenaussagen auf, kontaktiere dein Legal Team."
+
+msgid "Victime ou témoin de violences : <a class=\"inline-link violence-inline\" href=\"https://www.ldh-france.org/stop-violences-policieres/\" target=\"_blank\" rel=\"noopener noreferrer\">signale-les à la LDH</a>."
+msgstr "Opfer oder Zeug*in von Gewalt: <a class=\"inline-link violence-inline\" href=\"https://www.ldh-france.org/stop-violences-policieres/\" target=\"_blank\" rel=\"noopener noreferrer\">melde es der LDH</a>."
+
+msgid "Informations générales sur le droit français, pas un conseil juridique. En cas d’interpellation, la seule personne à qui parler de l’affaire est ton avocat·e."
+msgstr "Allgemeine Informationen zum französischen Recht, keine Rechtsberatung. Nach einer Festnahme sprichst du über den Fall nur mit deinem anwaltlichen Beistand."
+
+msgid "Efface tout ce que Cortège garde sur ce téléphone, puis ferme l’appli."
+msgstr "Löscht alles, was Cortège auf diesem Handy speichert, und schließt dann die App."
+
+msgid "<span>Décryptage des luttes chaque jour : <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a></span> <a href=\"https://neru.tv\" target=\"_blank\" rel=\"noopener noreferrer\">neru.tv</a>"
+msgstr "<span>Jeden Tag Analysen zu den Kämpfen (auf Französisch): <a class=\"handle-link\" href=\"https://www.instagram.com/neru/\" target=\"_blank\" rel=\"noopener noreferrer\"><b class=\"handle\">@neru</b></a></span> <a href=\"https://neru.tv\" target=\"_blank\" rel=\"noopener noreferrer\">neru.tv</a>"
+
+msgid "Tu publies en tant que"
+msgstr "Du postest als"
+
+msgid "L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier."
+msgstr "Die Ankündigung wird auf <b>die Mitte der Karte</b> gesetzt: Verschieb die Karte vor dem Posten."
+
+msgid "⚠ Ton accès orga n’existe que sur cet appareil."
+msgstr "⚠ Dein Orga-Zugang existiert nur auf diesem Gerät."
+
+msgid "Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, « effacer l’historique »), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir."
+msgstr "Er ist in diesem Browser gespeichert, nirgendwo sonst: Es gibt weder Account noch Passwort, um ihn wiederherzustellen. Wenn du die Websitedaten löschst (Cache, „Verlauf löschen“), den Browser wechselst oder dieses Handy verlierst, ist der Zugang endgültig weg. Der Einladungslink oder QR-Code funktioniert nur einmal: Damit kommst du nicht wieder rein."
+
+msgid "Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien."
+msgstr "Für einen neuen Zugang brauchst du eine neue Einladung vom Admin, die den alten deaktiviert."
+
+msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton plus bas)."
+msgstr "<b>Am sichersten: Füg jetzt gleich ein zweites Gerät hinzu</b> (Button weiter unten)."
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Annonce"
+msgstr "Ankündigung"
+
+msgid "Numéro legal team"
+msgstr "Legal-Team-Nummer"
+
+msgid "Message"
+msgstr "Nachricht"
+
+msgid "Importance"
+msgstr "Wichtigkeit"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Urgent (vibre + notification)"
+msgstr "Dringend (Vibration + Benachrichtigung)"
+
+msgid "Annonce nationale (toute la France)"
+msgstr "Bundesweite Ankündigung (ganz Frankreich)"
+
+msgid "Ville"
+msgstr "Stadt"
+
+msgid "Numéro de téléphone"
+msgstr "Telefonnummer"
+
+msgid "Précision (facultatif)"
+msgstr "Hinweis (optional)"
+
+msgid "Durée"
+msgstr "Dauer"
+
+msgid "Le numéro apparaît dans « Mes droits » sous le nom de la ville, pour tout le monde (en premier pour les personnes les plus proches), jusqu’à ce que tu le retires."
+msgstr "Die Nummer erscheint für alle unter „Meine Rechte“ beim Namen der Stadt (zuerst für Leute in der Nähe), bis du sie entfernst."
+
+msgid "Publier"
+msgstr "Veröffentlichen"
+
+msgid "Publier une manif ou un blocus (avec parcours)"
+msgstr "Demo oder Blockade veröffentlichen (mit Route)"
+
+msgid "Annonces actives dans la zone"
+msgstr "Aktive Ankündigungen in der Gegend"
+
+msgid "Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux."
+msgstr "Öffne auf der Karte eine Meldung, um sie als „Geprüft“ zu markieren oder zu entfernen, falls sie falsch ist."
+
+msgid "Inviter une orga"
+msgstr "Eine Orga einladen"
+
+msgid "Tu peux faire entrer une orga que tu connais (3 par semaine). Elle restera « parrainée » et plus surveillée jusqu’à ce que toi ou l’admin la confirmiez. Si elle est révoquée pour abus, tu ne pourras plus inviter pendant 30 jours : n’invite que des personnes de confiance."
+msgstr "Du kannst eine Orga, die du kennst, reinholen (3 pro Woche). Sie bleibt „empfohlen“ und wird genauer beobachtet, bis du oder der Admin sie bestätigt. Wird sie wegen Missbrauch gesperrt, kannst du 30 Tage lang niemanden einladen: Lade nur Leute ein, denen du vertraust."
+
+msgid "Créer l’invitation"
+msgstr "Einladung erstellen"
+
+msgid "Mes orgas invitées"
+msgstr "Von mir eingeladene Orgas"
+
+msgid "Envoyer…"
+msgstr "Senden…"
+
+msgid "Mes appareils"
+msgstr "Meine Geräte"
+
+msgid "Ajouter un appareil"
+msgstr "Gerät hinzufügen"
+
+msgid "Quitter le mode orga sur ce téléphone"
+msgstr "Orga-Modus auf diesem Handy beenden"
+
+msgid "Alertes sur ton téléphone"
+msgstr "Alarme auf deinem Handy"
+
+msgid "Une notification même quand l’appli est fermée. Le serveur ne connaît que ta zone, arrondie à environ 10 km, jamais ta position."
+msgstr "Eine Benachrichtigung, auch wenn die App geschlossen ist. Der Server kennt nur deine Gegend, auf etwa 10 km gerundet, nie deinen Standort."
+
+msgid "<b>Annonces urgentes</b><span>Quand une orga de ta zone publie une alerte urgente (nasse annoncée, dispersion, legal team…).</span>"
+msgstr "<b>Dringende Ankündigungen</b><span>Wenn eine Orga in deiner Gegend einen dringenden Alarm veröffentlicht (angekündigter Kessel, Auflösung, Legal Team…).</span>"
+
+msgid "<b>Dangers signalés près de toi</b><span>Charge, tirs, milices fascistes, nasse, lacrymo, canon à eau, sommations, BAC, unités d’intervention, blindés… signalés dans ta zone. Au plus une alerte toutes les 3 minutes.</span>"
+msgstr "<b>Gefahren in deiner Nähe</b><span>Angriffe, Schüsse, faschistische Milizen, Kessel, Tränengas, Wasserwerfer, Durchsagen der Polizei, Zivilpolizei, Einsatzeinheiten, Panzerfahrzeuge… in deiner Gegend gemeldet. Höchstens ein Alarm alle 3 Minuten.</span>"
+
+msgid "Recevoir une notification de test"
+msgstr "Test-Benachrichtigung erhalten"
+
+msgid "Le serveur t’envoie une vraie notification, comme pendant une manif. Mets le son ou le vibreur : en silencieux complet, le téléphone ne vibre pas."
+msgstr "Der Server schickt dir eine echte Benachrichtigung, wie auf einer Demo. Mach Ton oder Vibration an: Im kompletten Lautlos-Modus vibriert das Handy nicht."
+
+msgid "Alerte vocale"
+msgstr "Sprachalarm"
+
+msgid "<b>Annoncer les dangers à voix haute</b><span>Quand l’appli est ouverte, un danger signalé près de toi est lu à voix haute : pratique avec des écouteurs, sans regarder l’écran. La voix est celle du téléphone, rien ne part sur Internet.</span>"
+msgstr "<b>Gefahren laut ansagen</b><span>Wenn die App offen ist, wird eine Gefahr in deiner Nähe laut vorgelesen: praktisch mit Kopfhörern, ohne aufs Display zu schauen. Es ist die Stimme deines Handys, nichts geht ins Internet.</span>"
+
+msgid "Écouter un exemple"
+msgstr "Beispiel anhören"
+
+msgid "Reconnaître le danger aux vibrations"
+msgstr "Gefahr an der Vibration erkennen"
+
+msgid "Chaque danger a sa vibration, dans l’appli comme dans les notifications : pas besoin de sortir le téléphone."
+msgstr "Jede Gefahr hat ihre eigene Vibration, in der App und in den Benachrichtigungen: Du musst das Handy nicht rausholen."
+
+msgid "Les iPhone ne vibrent pas selon le type de danger (limite d’Apple). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications."
+msgstr "iPhones vibrieren nicht je nach Art der Gefahr (Einschränkung von Apple). Auf dem iPhone installiere die App zuerst auf dem Home-Bildschirm, um Benachrichtigungen zu bekommen."
+
+msgid "Bien se préparer"
+msgstr "Gut vorbereitet sein"
+
+msgid "Checklist gardée sur ton téléphone."
+msgstr "Checkliste, gespeichert auf deinem Handy."
+
+msgid "1. Le sac"
+msgstr "1. Der Rucksack"
+
+msgid "Chaussures fermées"
+msgstr "Geschlossene Schuhe"
+
+msgid "Vêtements couvrants"
+msgstr "Kleidung, die deinen Körper bedeckt"
+
+msgid "Lunettes de protection"
+msgstr "Schutzbrille"
+
+msgid "Masques FFP2 ou FFP3"
+msgstr "FFP2- oder FFP3-Masken"
+
+msgid "Sérum physiologique en dosettes"
+msgstr "Kochsalzlösung in Einzeldosen"
+
+msgid "Eau et de quoi manger"
+msgstr "Wasser und was zu essen"
+
+msgid "Numéros notés sur papier : proche, avocat·e, legal team"
+msgstr "Nummern auf Papier notiert: Vertrauensperson, Anwält*in, Legal Team"
+
+msgid "Batterie externe"
+msgstr "Powerbank"
+
+msgid "<b>Point légal :</b> masque, sérum et lunettes dans le sac ne sont pas une infraction. Ils peuvent quand même être confisqués."
+msgstr "<b>Rechtlicher Hinweis:</b> Maske, Kochsalzlösung und Schutzbrille im Rucksack sind keine Straftat. Sie können trotzdem beschlagnahmt werden."
+
+msgid "Lunettes plutôt que lentilles, pas de crème grasse : le gaz s’y accroche."
+msgstr "Brille statt Kontaktlinsen, keine fettige Creme: Das Gas bleibt daran hängen."
+
+msgid "2. Le téléphone"
+msgstr "2. Das Handy"
+
+msgid "Signal installé"
+msgstr "Signal installiert"
+
+msgid "<b>Bitchat</b> installé : messagerie en Bluetooth, sans réseau"
+msgstr "<b>Bitchat</b> installiert: Messenger über Bluetooth, ohne Netz"
+
+msgid "Sauvegarde faite"
+msgstr "Backup gemacht"
+
+msgid "Déverrouillage par code, pas par empreinte ni visage"
+msgstr "Entsperren per Code, nicht per Fingerabdruck oder Gesicht"
+
+msgid "Appli prête sans réseau (carte, numéros, agenda) ·"
+msgstr "App bereit ohne Netz (Karte, Nummern, Termine) ·"
+
+msgid "le faire"
+msgstr "erledigen"
+
+msgid "Un proche prévenu ·"
+msgstr "Eine Vertrauensperson informiert ·"
+
+msgid "contact SOS"
+msgstr "SOS-Kontakt"
+
+msgid "3. Le groupe"
+msgstr "3. Die Gruppe"
+
+msgid "En binôme au minimum"
+msgstr "Mindestens zu zweit"
+
+msgid "Point de ralliement fixé"
+msgstr "Treffpunkt ausgemacht"
+
+msgid "Eau, sérum et soins répartis"
+msgstr "Wasser, Kochsalzlösung und Erste Hilfe aufgeteilt"
+
+msgid "Aucun point de ralliement."
+msgstr "Kein Treffpunkt."
+
+msgid "Placer sur la carte"
+msgstr "Auf der Karte setzen"
+
+msgid "Partager au groupe"
+msgstr "Mit der Gruppe teilen"
+
+msgid "Le point reste sur ton téléphone, sauf si tu le partages."
+msgstr "Der Punkt bleibt auf deinem Handy, außer du teilst ihn."
+
+msgid "4. Sur place"
+msgstr "4. Vor Ort"
+
+msgid "Ne ramasse jamais une grenade ni un projectile."
+msgstr "Heb niemals eine Granate oder ein Geschoss auf."
+
+msgid "Filmer la police est légal. Floute les manifestant·es avant de publier."
+msgstr "Die Polizei zu filmen ist legal. Mach Demonstrierende unkenntlich, bevor du etwas postest."
+
+msgid "Blessé·e : street medic ou 112."
+msgstr "Verletzt: Demosanis oder 112."
+
+msgid "5. Gaz lacrymogène"
+msgstr "5. Tränengas"
+
+msgid "Rince les yeux à l’eau ou au sérum, sans frotter."
+msgstr "Spül die Augen mit Wasser oder Kochsalzlösung aus, ohne zu reiben."
+
+msgid "Retire les vêtements touchés, lave la peau à l’eau et au savon."
+msgstr "Zieh betroffene Kleidung aus, wasch die Haut mit Wasser und Seife."
+
+msgid "Gêne qui dure : street medic ou 112."
+msgstr "Beschwerden, die anhalten: Demosanis oder 112."
+
+msgid "6. Interpellation : AMIS"
+msgstr "6. Festnahme: AMIS"
+
+msgid "<b>A</b>vocat·e dès le début."
+msgstr "<b>A</b>nwält*in von Anfang an."
+
+msgid "<b>M</b>édecin : examen sur demande."
+msgstr "<b>M</b>edizinische Untersuchung auf Verlangen."
+
+msgid "<b>I</b>nformer un proche."
+msgstr "<b>I</b>nformiere eine Vertrauensperson."
+
+msgid "<b>S</b>ilence, après avoir donné ton identité."
+msgstr "<b>S</b>chweigen, nachdem du deine Personalien angegeben hast."
+
+msgid "Aucune signature d’un procès-verbal inexact."
+msgstr "Unterschreib kein fehlerhaftes Protokoll."
+
+msgid "Refuser photo, empreintes ou ADN est un délit en soi."
+msgstr "Foto, Fingerabdrücke oder DNA zu verweigern ist schon für sich eine Straftat."
+
+msgid "Tous mes droits"
+msgstr "Alle meine Rechte"
+
+msgid "Tout décocher pour la prochaine manif"
+msgstr "Alle Häkchen entfernen für die nächste Demo"
+
+msgid "Déplace la carte pour mettre le viseur sur le point de ralliement."
+msgstr "Verschieb die Karte, damit das Fadenkreuz auf dem Treffpunkt liegt."
+
+msgid "Annuler"
+msgstr "Abbrechen"
+
+msgid "Valider ce point"
+msgstr "Diesen Punkt bestätigen"
+
+msgid "Prochaines mobilisations"
+msgstr "Kommende Mobilisierungen"
+
+msgid "Près de toi (50 km)"
+msgstr "In deiner Nähe (50 km)"
+
+msgid "Toute la France"
+msgstr "Ganz Frankreich"
+
+msgid "Proposer un blocus ou une manif"
+msgstr "Blockade oder Demo vorschlagen"
+
+msgid "Les propositions sont vérifiées avant d’apparaître. Les orgas publient directement depuis leur espace."
+msgstr "Vorschläge werden geprüft, bevor sie erscheinen. Orgas veröffentlichen direkt aus ihrem Bereich."
+
+msgid "Publier un événement"
+msgstr "Event veröffentlichen"
+
+msgid "Titre"
+msgstr "Titel"
+
+msgid "Date et heure"
+msgstr "Datum und Uhrzeit"
+
+msgid "Lieu de rendez-vous"
+msgstr "Treffpunkt"
+
+msgid "Placer le rendez-vous sur la carte"
+msgstr "Treffpunkt auf der Karte setzen"
+
+msgid "Touche la carte pour placer le rendez-vous, puis, si tu veux, les points du parcours."
+msgstr "Tippe auf die Karte, um den Treffpunkt zu setzen, und danach, wenn du willst, die Punkte der Route."
+
+msgid "Le dernier point du parcours est la dispersion"
+msgstr "Der letzte Punkt der Route ist die Auflösung"
+
+msgid "Aucun arrêté ni restriction connus en ce moment."
+msgstr "Gerade keine bekannten Verbote oder Einschränkungen."
+
+msgid "Signaler un arrêté ou un couvre-feu"
+msgstr "Verbot oder Ausgangssperre melden"
+
+msgid "Annonces des préfectures et des mairies, vérifiées avant d’apparaître. Elles ne remplacent pas le texte officiel : ouvre la source en cas de doute."
+msgstr "Ankündigungen der Präfekturen und Rathäuser, geprüft, bevor sie erscheinen. Sie ersetzen nicht den offiziellen Text: Öffne im Zweifel die Quelle."
+
+msgid "Signaler un arrêté"
+msgstr "Verbot melden"
+
+msgid "Département"
+msgstr "Département"
+
+msgid "Commune (vide : tout le département)"
+msgstr "Gemeinde (leer: ganzes Département)"
+
+msgid "À partir de"
+msgstr "Ab"
+
+msgid "Jusqu’à"
+msgstr "Bis"
+
+msgid "Ajouter une mesure"
+msgstr "Maßnahme hinzufügen"
+
+msgid "Source (obligatoire)"
+msgstr "Quelle (Pflicht)"
+
+msgid "Lien vers le site de la préfecture ou de la mairie, leur compte officiel, ou un article de presse. Sans source fiable, la proposition est refusée."
+msgstr "Link zur Website der Präfektur oder des Rathauses, zu ihrem offiziellen Account oder zu einem Presseartikel. Ohne verlässliche Quelle wird der Vorschlag abgelehnt."
+
+msgid "Envoyer pour vérification"
+msgstr "Zur Prüfung senden"
+
+msgid "Choisis la personne à prévenir <b>avant la manif</b>. Son numéro reste sur ton téléphone : Cortège ne le voit jamais."
+msgstr "Wähle <b>vor der Demo</b> die Person, die benachrichtigt werden soll. Ihre Nummer bleibt auf deinem Handy: Cortège sieht sie nie."
+
+msgid "Prénom ou surnom"
+msgstr "Vorname oder Spitzname"
+
+msgid "Son numéro"
+msgstr "Ihre Nummer"
+
+msgid "Enregistrer"
+msgstr "Speichern"
+
+msgid "C’est moi"
+msgstr "Ich bin’s"
+
+msgid "Quelqu’un de mon groupe"
+msgstr "Jemand aus meiner Gruppe"
+
+msgid "Message (tu peux le modifier)"
+msgstr "Nachricht (du kannst sie ändern)"
+
+msgid "Envoyer par SMS à"
+msgstr "Per SMS senden an"
+
+msgid "Envoyer par une autre appli (Signal…)"
+msgstr "Mit einer anderen App senden (Signal…)"
+
+msgid "Le message part de ton téléphone, avec ton forfait : rien ne passe par Cortège. Après une interpellation, ton téléphone peut t’être retiré : envoie-le dès que tu peux, ou demande à quelqu’un de ton groupe de le faire."
+msgstr "Die Nachricht geht von deinem Handy raus, über deinen Tarif: Nichts läuft über Cortège. Nach einer Festnahme kann dir dein Handy abgenommen werden: Schick sie, sobald du kannst, oder bitte jemanden aus deiner Gruppe darum."
+
+msgid "Changer de contact"
+msgstr "Kontakt ändern"
+
+msgid "Signalé"
+msgstr "Gemeldet"
+
+msgid "Ajouter une précision"
+msgstr "Hinweis hinzufügen"
+
+msgid "Ajouter"
+msgstr "Hinzufügen"
+
+msgid "Pas de nom, pas de description physique, pas de matricule."
+msgstr "Keine Namen, keine Personenbeschreibungen, keine Dienstnummern."
+
+msgid "Cortège"
+msgstr "Cortège"
+
+msgid "La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Sans compte, sans pistage, partout en France. Par @neru."
+msgstr "Die Live-Karte für Demos: Bereitschaftspolizei, Tränengas, Kessel, Demosanis, Legal Team. Ohne Account, ohne Tracking, überall in Frankreich. Von @neru."
+
+msgid "Adresse .onion copiée"
+msgstr ".onion-Adresse kopiert"
+
+msgid "à l’instant"
+msgstr "gerade eben"
+
+msgid "il y a {m} min"
+msgstr "vor {m} Min."
+
+msgid "{m} min"
+msgstr "{m} Min."
+
+msgid "Zone calme · {d}"
+msgstr "Ruhige Zone · {d}"
+
+msgid "(flèche : nord en haut)"
+msgstr "(Pfeil: Norden ist oben)"
+
+msgid "Zone calme la plus proche à {d}. Afficher sur la carte."
+msgstr "Nächste ruhige Zone in {d}. Auf der Karte zeigen."
+
+msgid "Merci : le danger voisin est signalé comme parti"
+msgstr "Danke: Die Gefahr in der Nähe ist als weg markiert"
+
+msgid "revu {ago}"
+msgstr "erneut gesehen {ago}"
+
+msgid "expire dans {d}"
+msgstr "läuft ab in {d}"
+
+msgid "Signalé par {n} personnes"
+msgstr "Von {n} Personen gemeldet"
+
+msgid "Vérifié par {who}"
+msgstr "Geprüft von {who}"
+
+msgid "une orga"
+msgstr "einer Orga"
+
+msgid "Signalé par un téléphone fiable aujourd’hui (ses signalements sont souvent confirmés)"
+msgstr "Heute von einem verlässlichen Handy gemeldet (seine Meldungen werden oft bestätigt)"
+
+msgid "{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant."
+msgstr "{what} in {d} (noch nicht bestätigt): Gegend gerade nicht sicher."
+
+msgid "{what} à {d} : zone pas sûre pour l’instant."
+msgstr "{what} in {d}: Gegend gerade nicht sicher."
+
+msgid "C’est calme ici"
+msgstr "Hier ist es ruhig"
+
+msgid "Contesté : {n} personne dit que c’est parti. Confirme si c’est toujours là."
+msgid_plural "Contesté : {n} personnes disent que c’est parti. Confirme si c’est toujours là."
+msgstr[0] "Umstritten: {n} Person sagt, es ist weg. Bestätige, wenn es noch da ist."
+msgstr[1] "Umstritten: {n} Personen sagen, es ist weg. Bestätige, wenn es noch da ist."
+
+msgid "Précision"
+msgstr "Hinweis"
+
+msgid "Toujours là"
+msgstr "Noch da"
+
+msgid "Seulement sur place"
+msgstr "Nur vor Ort"
+
+msgid "Pas sur place"
+msgstr "Nicht vor Ort"
+
+msgid "Plus là"
+msgstr "Nicht mehr da"
+
+msgid "Tu es à {d} : seules les personnes sur place peuvent dire que c’est parti."
+msgstr "Du bist {d} entfernt: Nur Leute vor Ort können sagen, dass es weg ist."
+
+msgid "Tu es sur place et tu ne vois plus rien ? Appuie sur « Plus là »."
+msgstr "Du bist vor Ort und siehst nichts mehr? Tippe auf „Nicht mehr da“."
+
+msgid "Vérifié"
+msgstr "Geprüft"
+
+msgid "Vérifier (orga)"
+msgstr "Prüfen (Orga)"
+
+msgid "Retirer (faux)"
+msgstr "Entfernen (falsch)"
+
+msgid "Confirmer le retrait"
+msgstr "Entfernen bestätigen"
+
+msgid "Prolonger"
+msgstr "Verlängern"
+
+msgid "Modifier"
+msgstr "Bearbeiten"
+
+msgid "Précision (vide = aucune)"
+msgstr "Hinweis (leer = keiner)"
+
+msgid "Réseau faible : mode léger activé (seuls les signalements passent)"
+msgstr "Schwaches Netz: Sparmodus an (nur Meldungen kommen durch)"
+
+msgid "Nouvelle version de Cortège"
+msgstr "Neue Version von Cortège"
+
+msgid "Mettre à jour"
+msgstr "Aktualisieren"
+
+msgid "Mise à jour de Cortège…"
+msgstr "Cortège wird aktualisiert…"
+
+msgid "En pause"
+msgstr "Pausiert"
+
+msgid "En direct · mode léger"
+msgstr "Live · Sparmodus"
+
+msgid "En direct"
+msgstr "Live"
+
+msgid "Reconnexion…"
+msgstr "Verbinde neu…"
+
+msgid "Hors ligne, nouvel essai…"
+msgstr "Offline, neuer Versuch…"
+
+msgid "Connexion instable…"
+msgstr "Instabile Verbindung…"
+
+msgid "il y a {h} h {m}"
+msgstr "vor {h} Std. {m}"
+
+msgid "Pas de réseau"
+msgstr "Kein Netz"
+
+msgid "Réseau très faible"
+msgstr "Sehr schwaches Netz"
+
+msgid "dernière situation connue {ago}"
+msgstr "letzte bekannte Lage {ago}"
+
+msgid "Réseau faible : mode léger · mis à jour {ago}"
+msgstr "Schwaches Netz: Sparmodus · aktualisiert {ago}"
+
+msgid "Sommations à {d} : rester devient un délit. Éloigne-toi par une rue dégagée."
+msgstr "Durchsagen der Polizei in {d}: Bleiben wird zur Straftat. Geh über eine freie Straße weg."
+
+msgid "{what} à {d} de toi"
+msgstr "{what} in {d} von dir"
+
+msgid "Sommations à {d}. Éloigne-toi par une rue dégagée."
+msgstr "Durchsagen der Polizei in {d}. Geh über eine freie Straße weg."
+
+msgid "{what}, à {d}"
+msgstr "{what}, in {d}"
+
+msgid "La carte te suit"
+msgstr "Die Karte folgt dir"
+
+msgid "Me recentrer"
+msgstr "Auf mich zentrieren"
+
+msgid "Géolocalisation indisponible sur cet appareil."
+msgstr "Standortbestimmung auf diesem Gerät nicht verfügbar."
+
+msgid "Localisation refusée. Tu peux quand même signaler avec le viseur."
+msgstr "Standort abgelehnt. Du kannst trotzdem mit dem Fadenkreuz melden."
+
+msgid "Recherche de ta position…"
+msgstr "Suche deinen Standort…"
+
+msgid "Recherche…"
+msgstr "Suche…"
+
+msgid "Recherche indisponible."
+msgstr "Suche nicht verfügbar."
+
+msgid "Aucun lieu trouvé en France."
+msgstr "Kein Ort in Frankreich gefunden."
+
+msgid "Pas de réseau."
+msgstr "Kein Netz."
+
+msgid "🏢 Préfectures et sous-préfectures"
+msgstr "🏢 Präfekturen und Unterpräfekturen"
+
+msgid "🏛 Mairies"
+msgstr "🏛 Rathäuser"
+
+msgid "👮 Commissariats et gendarmeries"
+msgstr "👮 Polizeiwachen und Gendarmerien"
+
+msgid "🔨 Tribunaux"
+msgstr "🔨 Gerichte"
+
+msgid "🔒 Centres de rétention"
+msgstr "🔒 Abschiebegefängnisse"
+
+msgid "🏥 Hôpitaux"
+msgstr "🏥 Krankenhäuser"
+
+msgid "💊 Pharmacies"
+msgstr "💊 Apotheken"
+
+msgid "🚰 Eau potable"
+msgstr "🚰 Trinkwasser"
+
+msgid "📷 Caméras de surveillance"
+msgstr "📷 Überwachungskameras"
+
+msgid "lun"
+msgstr "Mo"
+
+msgid "mar"
+msgstr "Di"
+
+msgid "mer"
+msgstr "Mi"
+
+msgid "jeu"
+msgstr "Do"
+
+msgid "ven"
+msgstr "Fr"
+
+msgid "sam"
+msgstr "Sa"
+
+msgid "dim"
+msgstr "So"
+
+msgid "fériés"
+msgstr "Feiertage"
+
+msgid "Ouvert 24 h/24, 7 j/7"
+msgstr "Rund um die Uhr geöffnet, 7 Tage die Woche"
+
+msgid "fermé"
+msgstr "geschlossen"
+
+msgid "Caméra dôme (peut tourner dans tous les sens)"
+msgstr "Kuppelkamera (kann sich in alle Richtungen drehen)"
+
+msgid "Caméra fixe"
+msgstr "Feste Kamera"
+
+msgid "Caméra orientable"
+msgstr "Schwenkbare Kamera"
+
+msgid "Caméra publique"
+msgstr "Öffentliche Kamera"
+
+msgid "Caméra privée"
+msgstr "Private Kamera"
+
+msgid "Vidéosurveillance de la voie publique"
+msgstr "Videoüberwachung des öffentlichen Raums"
+
+msgid "Caméra privée qui filme la rue"
+msgstr "Private Kamera, die die Straße filmt"
+
+msgid "Exploitée par :"
+msgstr "Betrieben von:"
+
+msgid ", orientée vers {dir}"
+msgstr ", ausgerichtet nach {dir}"
+
+msgid "Orientée vers {dir}."
+msgstr "Ausgerichtet nach {dir}."
+
+msgid "Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra."
+msgstr "Erfasst von Freiwilligen bei OpenStreetMap, also unvollständig. Eine Straße ohne Kamera auf der Karte ist nicht unbedingt eine Straße ohne Kamera."
+
+msgid "© contributeurs OpenStreetMap"
+msgstr "© OpenStreetMap-Mitwirkende"
+
+msgid "le nord"
+msgstr "Norden"
+
+msgid "le nord-est"
+msgstr "Nordosten"
+
+msgid "l’est"
+msgstr "Osten"
+
+msgid "le sud-est"
+msgstr "Südosten"
+
+msgid "le sud"
+msgstr "Süden"
+
+msgid "le sud-ouest"
+msgstr "Südwesten"
+
+msgid "l’ouest"
+msgstr "Westen"
+
+msgid "le nord-ouest"
+msgstr "Nordwesten"
+
+msgid "Lieu"
+msgstr "Ort"
+
+msgid "Pharmacie de garde (nuit, dimanche, jour férié) : appelle le"
+msgstr "Notdienst-Apotheke (nachts, sonntags, feiertags): ruf an unter"
+
+msgid "🚑 Service d’urgences"
+msgstr "🚑 Notaufnahme"
+
+msgid "Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112."
+msgstr "Notaufnahme: keine Angabe. Im Notfall ruf die 112 an (in Frankreich auch die 15)."
+
+msgid "Fontaine saisonnière : peut être coupée en hiver."
+msgstr "Saisonaler Brunnen: kann im Winter abgestellt sein."
+
+msgid "Lieu permanent · © contributeurs OpenStreetMap"
+msgstr "Fester Ort · © OpenStreetMap-Mitwirkende"
+
+msgid "📅 Agenda"
+msgstr "📅 Termine"
+
+msgid "Manifs, blocus et rassemblements du moment, avec leur parcours"
+msgstr "Aktuelle Demos, Blockaden und Kundgebungen, mit ihrer Route"
+
+msgid "Choisir les types de lieux"
+msgstr "Ortstypen auswählen"
+
+msgid "🏛 Lieux utiles"
+msgstr "🏛 Nützliche Orte"
+
+msgid "Préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant."
+msgstr "Präfekturen, Polizeiwachen, Gerichte, Schulen und Unis, Krankenhäuser, Apotheken, Trinkwasser. Sie erscheinen beim Reinzoomen."
+
+msgid "Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque."
+msgstr "Sichtbar bei maximalem Zoom. Freiwillig erfasst bei OpenStreetMap, es fehlen welche."
+
+msgid "Caméras affichées : zoome au plus près pour les voir"
+msgstr "Kameras eingeblendet: zoom ganz rein, um sie zu sehen"
+
+msgid "Visible en zoomant au plus près. Rouge : publique. Orange : privée, filme la rue. Le cône montre la direction filmée quand elle est connue. Recensement bénévole et incomplet."
+msgstr "Sichtbar bei maximalem Zoom. Rot: öffentlich. Orange: privat, filmt die Straße. Der Kegel zeigt die Blickrichtung, wenn sie bekannt ist. Freiwillig erfasst und unvollständig."
+
+msgid "Visible au zoom rue"
+msgstr "Sichtbar auf Straßenebene"
+
+msgid "Visible au zoom quartier"
+msgstr "Sichtbar auf Viertelebene"
+
+msgid "Visible au zoom ville"
+msgstr "Sichtbar auf Stadtebene"
+
+msgid "Zoome sur l’endroit exact (ou active ta position) avant de signaler."
+msgstr "Zoom auf die genaue Stelle (oder aktiviere deinen Standort), bevor du etwas meldest."
+
+msgid "Le viseur est sur ta position. Déplace la carte si c’est ailleurs."
+msgstr "Das Fadenkreuz liegt auf deinem Standort. Verschieb die Karte, wenn es woanders ist."
+
+msgid "déjà là · {ago} · confirmer"
+msgstr "schon da · {ago} · bestätigen"
+
+msgid ", déjà signalé, appuyer pour confirmer"
+msgstr ", schon gemeldet, tippen zum Bestätigen"
+
+msgid "{what} : signalé et vérifié (orga)"
+msgstr "{what}: gemeldet und geprüft (Orga)"
+
+msgid "{what} : signalé"
+msgstr "{what}: gemeldet"
+
+msgid "Tu l’avais déjà signalé : point mis à jour"
+msgstr "Du hattest das schon gemeldet: Punkt aktualisiert"
+
+msgid "Déjà signalé : ta confirmation est ajoutée ({n} personnes)"
+msgstr "Schon gemeldet: deine Bestätigung wurde hinzugefügt ({n} Leute)"
+
+msgid "Envoi impossible. Réessaie."
+msgstr "Senden fehlgeschlagen. Versuch es nochmal."
+
+msgid "{n} signalement en attente de réseau"
+msgid_plural "{n} signalements en attente de réseau"
+msgstr[0] "{n} Meldung wartet auf Netz"
+msgstr[1] "{n} Meldungen warten auf Netz"
+
+msgid "Annuler ce signalement"
+msgstr "Diese Meldung abbrechen"
+
+msgid "Trop ancien, ne sera pas publié"
+msgstr "Zu alt, wird nicht veröffentlicht"
+
+msgid "fait {ago}"
+msgstr "erstellt {ago}"
+
+msgid "Toujours pas de réseau."
+msgstr "Immer noch kein Netz."
+
+msgid "Signalement en attente envoyé"
+msgid_plural "{n} signalements en attente envoyés"
+msgstr[0] "Wartende Meldung gesendet"
+msgstr[1] "{n} wartende Meldungen gesendet"
+
+msgid "1 trop ancien, pas publié"
+msgid_plural "{n} trop anciens, pas publiés"
+msgstr[0] "1 zu alt, nicht veröffentlicht"
+msgstr[1] "{n} zu alt, nicht veröffentlicht"
+
+msgid "Pas de réseau : signalement gardé, il partira dès que ça capte."
+msgstr "Kein Netz: Meldung gespeichert, sie wird gesendet, sobald du wieder Empfang hast."
+
+msgid "ex. : une vingtaine, remontent vers la gare"
+msgstr "z. B. etwa zwanzig, ziehen Richtung Bahnhof"
+
+msgid "ex. : le nuage s’étend vers la place"
+msgstr "z. B. die Wolke zieht Richtung Platz"
+
+msgid "ex. : sous l’abribus, côté nord"
+msgstr "z. B. unter dem Bushäuschen, Nordseite"
+
+msgid "ex. : barrières, passage par la rue d’à côté"
+msgstr "z. B. Absperrgitter, Durchgang über die Nebenstraße"
+
+msgid "Écris une précision."
+msgstr "Schreib eine Ergänzung."
+
+msgid "Envoi impossible."
+msgstr "Senden fehlgeschlagen."
+
+msgid "Précision ajoutée"
+msgstr "Ergänzung hinzugefügt"
+
+msgid "Vote impossible."
+msgstr "Abstimmen fehlgeschlagen."
+
+msgid "Merci, signalement prolongé"
+msgstr "Danke, Meldung verlängert"
+
+msgid "Merci, c’est noté"
+msgstr "Danke, ist notiert"
+
+msgid "{n} personnes"
+msgstr "{n} Leute"
+
+msgid "Appli installée sur ton écran d’accueil"
+msgstr "App auf deinem Startbildschirm installiert"
+
+msgid "Tu es dans le navigateur d’une appli (Instagram, TikTok…), qui ne peut pas installer Cortège. Touche le menu <b>⋯</b> en haut à droite puis <b>Ouvrir dans le navigateur</b>, et recommence depuis là."
+msgstr "Du bist im eingebauten Browser einer App (Instagram, TikTok…), der Cortège nicht installieren kann. Tippe oben rechts auf das Menü <b>⋯</b>, dann auf <b>Im Browser öffnen</b>, und fang dort nochmal an."
+
+msgid "Sur iPhone, dans <b>Safari</b> : touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>."
+msgstr "Auf dem iPhone in <b>Safari</b>: tippe auf <b>Teilen</b> (das Quadrat mit dem Pfeil nach oben), dann auf <b>Zum Home-Bildschirm</b>, dann auf <b>Hinzufügen</b>."
+
+msgid "Ouvre le menu de ton navigateur (<b>⋮</b>) puis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>."
+msgstr "Öffne das Menü deines Browsers (<b>⋮</b>), dann <b>App installieren</b> oder <b>Zum Startbildschirm hinzufügen</b>."
+
+msgid "Masquer cette annonce"
+msgstr "Diese Ankündigung ausblenden"
+
+msgid "toute la France"
+msgstr "ganz Frankreich"
+
+msgid "En savoir plus →"
+msgstr "Mehr erfahren →"
+
+msgid "+ {n} autre annonce"
+msgid_plural "+ {n} autres annonces"
+msgstr[0] "+ {n} weitere Ankündigung"
+msgstr[1] "+ {n} weitere Ankündigungen"
+
+msgid "ici"
+msgstr "hier"
+
+msgid "à {d} km"
+msgstr "{d} km entfernt"
+
+msgid "Autour de ce point"
+msgstr "Rund um diesen Punkt"
+
+msgid "Appeler"
+msgstr "Anrufen"
+
+msgid "Copier"
+msgstr "Kopieren"
+
+msgid "Numéro copié"
+msgstr "Nummer kopiert"
+
+msgid "Annuaire"
+msgstr "Verzeichnis"
+
+msgid "vérifié le {date}"
+msgstr "geprüft am {date}"
+
+msgid "source"
+msgstr "Quelle"
+
+msgid "Pour la mobilisation · publié {ago}"
+msgstr "Für die Mobilisierung · veröffentlicht {ago}"
+
+msgid "Joignable sur Signal"
+msgstr "Erreichbar über Signal"
+
+msgid "Aucune legal team connue près de toi · la plus proche : {city} ({d})"
+msgstr "Kein bekanntes Legal Team (EA) in deiner Nähe · das nächste: {city} ({d})"
+
+msgid "Autres villes ({n})"
+msgstr "Andere Städte ({n})"
+
+msgid "La carte en direct des manifs, par @{h}"
+msgstr "Die Live-Karte für Demos, von @{h}"
+
+msgid "Lien copié"
+msgstr "Link kopiert"
+
+msgid "Action impossible."
+msgstr "Aktion nicht möglich."
+
+msgid "ORGA · essai"
+msgstr "ORGA · Probephase"
+
+msgid "Publier une manif ou un blocus"
+msgstr "Demo oder Blockade veröffentlichen"
+
+msgid "Invitation impossible."
+msgstr "Einladung nicht möglich."
+
+msgid "Appareil ajouté à l’espace orga {who}"
+msgstr "Gerät zum Orga-Bereich {who} hinzugefügt"
+
+msgid "Bienvenue {who} : ton accès orga est activé sur ce téléphone"
+msgstr "Willkommen {who}: dein Orga-Zugang ist auf diesem Handy aktiviert"
+
+msgid "Pas de réseau : rouvre l’invitation quand ça capte."
+msgstr "Kein Netz: öffne die Einladung nochmal, sobald du Empfang hast."
+
+msgid "Mode orga : {who}"
+msgstr "Orga-Modus: {who}"
+
+msgid "Prolongé : expire dans {d}"
+msgstr "Verlängert: läuft ab in {d}"
+
+msgid "Signalement corrigé"
+msgstr "Meldung korrigiert"
+
+msgid "Signalement marqué vérifié"
+msgstr "Meldung als geprüft markiert"
+
+msgid "Signalement retiré"
+msgstr "Meldung entfernt"
+
+msgid "Pris en compte : vaut deux « Plus là » (période d’essai)"
+msgstr "Registriert: zählt wie zweimal „Nicht mehr da“ (Probephase)"
+
+msgid "Toutes les annonces actives"
+msgstr "Alle aktiven Ankündigungen"
+
+msgid "Tes annonces actives"
+msgstr "Deine aktiven Ankündigungen"
+
+msgid "Annonces actives ici"
+msgstr "Aktive Ankündigungen hier"
+
+msgid "Aucune annonce publiée."
+msgstr "Keine Ankündigung veröffentlicht."
+
+msgid "Aucune annonce active ici."
+msgstr "Hier keine aktive Ankündigung."
+
+msgid "Retirer"
+msgstr "Entfernen"
+
+msgid "Annonce retirée"
+msgstr "Ankündigung entfernt"
+
+msgid "visible partout, rangé par ville"
+msgstr "überall sichtbar, nach Stadt sortiert"
+
+msgid "permanent"
+msgstr "dauerhaft"
+
+msgid "(valable jusqu’au {date}, une seule fois)"
+msgstr "(gültig bis {date}, nur einmal nutzbar)"
+
+msgid "Lien à usage unique, à ouvrir sur le bon appareil :"
+msgstr "Einmal-Link, auf dem richtigen Gerät öffnen:"
+
+msgid "Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien."
+msgstr "Um wieder Zugang zu bekommen, brauchst du eine neue Einladung von {who} oder vom Admin. Der alte Zugang wird dabei gesperrt."
+
+msgid "{n} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès."
+msgstr "{n} Gerät(e) haben Zugang zu diesem Orga-Bereich (höchstens 5). Ein Gerät hinzuzufügen erzeugt einen Link, der 10 Minuten gültig ist und auf dem anderen Gerät geöffnet wird (Computer, zweites Handy…). Dieses Gerät behält seinen Zugang."
+
+msgid "Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil."
+msgstr "Dein Zugang ist direkt in den Servereinstellungen festgelegt: frag den Admin nach einem weiteren Gerät."
+
+msgid "Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus."
+msgstr "Einladungen gesperrt bis {date}: eine Orga, die du eingeladen hast, wurde wegen Missbrauchs entfernt."
+
+msgid "Aucune orga invitée pour l’instant."
+msgstr "Noch keine Orga eingeladen."
+
+msgid "confirmée"
+msgstr "bestätigt"
+
+msgid "invitation en attente"
+msgstr "Einladung ausstehend"
+
+msgid "invitation expirée"
+msgstr "Einladung abgelaufen"
+
+msgid "prête à être confirmée"
+msgstr "bereit zur Bestätigung"
+
+msgid "parrainée · {d} j · {n} action(s)"
+msgstr "eingeladen · {d} T · {n} Aktion(en)"
+
+msgid "Dernières actions"
+msgstr "Letzte Aktionen"
+
+msgid "Confirmer cette orga"
+msgstr "Diese Orga bestätigen"
+
+msgid "{who} est confirmée"
+msgstr "{who} ist bestätigt"
+
+msgid "Nouvelle invitation (accès perdu)"
+msgstr "Neue Einladung (Zugang verloren)"
+
+msgid "Nouvelle invitation"
+msgstr "Neue Einladung"
+
+msgid "Confirmer : son accès actuel sera coupé"
+msgstr "Bestätigen: der aktuelle Zugang wird gesperrt"
+
+msgid "Invitation pour {who}"
+msgstr "Einladung für {who}"
+
+msgid "Envoie-la par une messagerie chiffrée (Signal). L’ancien accès de cette orga est coupé."
+msgstr "Schick sie über einen verschlüsselten Messenger (Signal). Der alte Zugang dieser Orga ist gesperrt."
+
+msgid "L’orga scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr "Die Orga scannt diesen QR-Code oder öffnet den Link auf ihrem Handy. Schick den Link über einen verschlüsselten Messenger (Signal), niemals öffentlich."
+
+msgid "Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga."
+msgstr "Scanne diesen QR-Code mit dem anderen Gerät (oder öffne dort den Link). Schick ihn niemand anderem: er gibt Zugang zu deinem Orga-Bereich."
+
+msgid "Envoi impossible, réessaie."
+msgstr "Senden fehlgeschlagen, versuch es nochmal."
+
+msgid "Demande envoyée : on te recontacte par le canal du collectif"
+msgstr "Anfrage gesendet: wir melden uns über den Kanal eurer Gruppe"
+
+msgid "Pas de réseau : réessaie plus tard"
+msgstr "Kein Netz: versuch es später nochmal"
+
+msgid "Numéro envoyé : il s’affichera après validation par l’admin"
+msgstr "Nummer gesendet: sie wird angezeigt, sobald der Admin sie freigibt"
+
+msgid "Annonce publiée"
+msgstr "Ankündigung veröffentlicht"
+
+msgid "Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)"
+msgstr "Bestätigen: der Zugang auf diesem Gerät geht verloren (du brauchst dann eine neue Einladung)"
+
+msgid "Mode orga désactivé sur ce téléphone"
+msgstr "Orga-Modus auf diesem Handy deaktiviert"
+
+msgid "Publié par {who}"
+msgstr "Veröffentlicht von {who}"
+
+msgid "Voir la carte d’origine →"
+msgstr "Originalkarte ansehen →"
+
+msgid "Retirer cet événement"
+msgstr "Dieses Event entfernen"
+
+msgid "Événement retiré"
+msgstr "Event entfernt"
+
+msgid "Dispersion prévue"
+msgstr "Geplantes Ende"
+
+msgid "Dispersion prévue : {title}"
+msgstr "Geplantes Ende: {title}"
+
+msgid "Aucune mobilisation annoncée pour l’instant."
+msgstr "Noch keine Mobilisierung angekündigt."
+
+msgid "Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France »."
+msgstr "Nichts angekündigt im Umkreis von 50 km um dich. Schau unter „Ganz Frankreich“."
+
+msgid "Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France »."
+msgstr "Nichts angekündigt im Umkreis von 50 km um die Kartenmitte. Aktiviere deinen Standort oder schau unter „Ganz Frankreich“."
+
+msgid "{n} événements : les 200 premiers"
+msgstr "{n} Events: die ersten 200"
+
+msgid "En cours"
+msgstr "Läuft gerade"
+
+msgid "Information"
+msgstr "Info"
+
+msgid "{day} à {hour}"
+msgstr "{day} um {hour}"
+
+msgid "jusqu’au {date}"
+msgstr "bis {date}"
+
+msgid "{day} de {from} à {to}"
+msgstr "{day} von {from} bis {to}"
+
+msgid "du {from} au {to}"
+msgstr "vom {from} bis {to}"
+
+msgid "{name} (tout le département)"
+msgstr "{name} (ganzes Département)"
+
+msgid "Masquer ce bandeau"
+msgstr "Dieses Banner ausblenden"
+
+msgid "Arrêté en vigueur"
+msgstr "Verbot in Kraft"
+
+msgid "Arrêté à venir"
+msgstr "Kommendes Verbot"
+
+msgid "+{n} autre"
+msgid_plural "+{n} autres"
+msgstr[0] "+{n} weiteres"
+msgstr[1] "+{n} weitere"
+
+msgid "touche pour les détails"
+msgstr "tippen für Details"
+
+msgid "Voir la zone sur la carte"
+msgstr "Zone auf der Karte ansehen"
+
+msgid "Source :"
+msgstr "Quelle:"
+
+msgid "ouvrir"
+msgstr "öffnen"
+
+msgid "Ici"
+msgstr "Hier"
+
+msgid "Ailleurs en France"
+msgstr "Anderswo in Frankreich"
+
+msgid "En France"
+msgstr "In Frankreich"
+
+msgid "Choisir…"
+msgstr "Auswählen…"
+
+msgid "Type de mesure"
+msgstr "Art der Maßnahme"
+
+msgid "ex. : la manifestation de samedi est interdite"
+msgstr "z. B. die Demo am Samstag ist verboten"
+
+msgid "Mesure"
+msgstr "Maßnahme"
+
+msgid "Décris au moins une mesure."
+msgstr "Beschreib mindestens eine Maßnahme."
+
+msgid "Indique le début et la fin."
+msgstr "Gib Beginn und Ende an."
+
+msgid "Merci ! L’arrêté apparaîtra une fois la source vérifiée."
+msgstr "Danke! Das Verbot erscheint, sobald die Quelle geprüft ist."
+
+msgid "Pas de réseau : réessaie plus tard."
+msgstr "Kein Netz: versuch es später nochmal."
+
+msgid "Rendez-vous placé"
+msgstr "Treffpunkt gesetzt"
+
+msgid "Rendez-vous + {n} point de parcours"
+msgid_plural "Rendez-vous + {n} points de parcours"
+msgstr[0] "Treffpunkt + {n} Routenpunkt"
+msgstr[1] "Treffpunkt + {n} Routenpunkte"
+
+msgid "Rendez-vous placé, sans parcours."
+msgstr "Treffpunkt gesetzt, ohne Route."
+
+msgid "Rendez-vous placé, parcours de {d}."
+msgstr "Treffpunkt gesetzt, Route von {d}."
+
+msgid "Modifier sur la carte"
+msgstr "Auf der Karte bearbeiten"
+
+msgid "Proposer une mobilisation"
+msgstr "Mobilisierung vorschlagen"
+
+msgid "Envoyer la proposition"
+msgstr "Vorschlag senden"
+
+msgid "Place d’abord le rendez-vous sur la carte."
+msgstr "Setz zuerst den Treffpunkt auf der Karte."
+
+msgid "Choisis la date et l’heure."
+msgstr "Wähl Datum und Uhrzeit."
+
+msgid "Événement publié"
+msgstr "Termin veröffentlicht"
+
+msgid "Proposition envoyée : elle apparaîtra après vérification"
+msgstr "Vorschlag gesendet: er erscheint nach der Prüfung"
+
+msgid "Pas de réseau. Rien n’est parti."
+msgstr "Kein Netz. Nichts wurde gesendet."
+
+msgid "Je viens d’être interpellé·e ({hour})"
+msgstr "Ich wurde gerade festgenommen ({hour})"
+
+msgid "Quelqu’un de mon groupe vient d’être interpellé·e ({hour})"
+msgstr "Jemand aus meiner Gruppe wurde gerade festgenommen ({hour})"
+
+msgid "ici : {url}"
+msgstr "hier: {url}"
+
+msgid "Préviens la legal team : {phone} ({name})."
+msgstr "Sag dem Legal Team (EA) Bescheid: {phone} ({name})."
+
+msgid "Préviens la legal team de la manif."
+msgstr "Sag dem Legal Team (EA) der Demo Bescheid."
+
+msgid "Message envoyé avec Cortège."
+msgstr "Nachricht gesendet mit Cortège."
+
+msgid "Numéro invalide."
+msgstr "Ungültige Nummer."
+
+msgid "Impossible d’enregistrer sur ce téléphone."
+msgstr "Speichern auf diesem Handy nicht möglich."
+
+msgid "Contact enregistré sur ce téléphone"
+msgstr "Kontakt auf diesem Handy gespeichert"
+
+msgid "Message copié : colle-le dans ta messagerie"
+msgstr "Nachricht kopiert: füg sie in deinen Messenger ein"
+
+msgid "Économie de batterie"
+msgstr "Akkusparmodus"
+
+msgid "Économie de batterie activée"
+msgstr "Akkusparmodus an"
+
+msgid "Économie de batterie désactivée"
+msgstr "Akkusparmodus aus"
+
+msgid "Version {v}"
+msgstr "Version {v}"
+
+msgid "Carte en direct des manifs (Cortège)"
+msgstr "Live-Karte der Demos (Cortège)"
+
+msgid "Code copié"
+msgstr "Code kopiert"
+
+msgid "Batterie faible : active l’économie de batterie dans « Plus »"
+msgstr "Akku schwach: aktivier den Akkusparmodus unter „Mehr“"
+
+msgid "Activées sur ce téléphone"
+msgstr "Auf diesem Handy aktiviert"
+
+msgid "Pas encore activées"
+msgstr "Noch nicht aktiviert"
+
+msgid "Abonnement impossible."
+msgstr "Abonnieren nicht möglich."
+
+msgid "Sur iPhone, installe d’abord l’appli sur l’écran d’accueil, puis active les alertes depuis l’appli installée."
+msgstr "Auf dem iPhone: installier die App zuerst auf dem Home-Bildschirm und aktivier dann die Alarme in der installierten App."
+
+msgid "Envoi…"
+msgstr "Wird gesendet…"
+
+msgid "Envoyée par le serveur. Elle arrive en quelques secondes (verrouille le téléphone pour la voir comme pendant une manif). Rien ? Vérifie que les notifications de ton navigateur sont autorisées dans les réglages du téléphone."
+msgstr "Vom Server gesendet. Sie kommt in wenigen Sekunden an (sperr das Handy, um sie wie auf einer Demo zu sehen). Nichts? Prüf, ob die Benachrichtigungen deines Browsers in den Handy-Einstellungen erlaubt sind."
+
+msgid "Pas de réseau : réessaie quand ça capte."
+msgstr "Kein Netz: versuch es nochmal, wenn du Empfang hast."
+
+msgid "Sur iPhone : installe d’abord l’appli sur l’écran d’accueil."
+msgstr "Auf dem iPhone: installier die App zuerst auf dem Home-Bildschirm."
+
+msgid "Notifications non prises en charge par ce navigateur."
+msgstr "Dieser Browser unterstützt keine Benachrichtigungen."
+
+msgid "Notifications refusées : autorise-les dans les réglages du téléphone."
+msgstr "Benachrichtigungen abgelehnt: erlaube sie in den Handy-Einstellungen."
+
+msgid "Notifications désactivées"
+msgstr "Benachrichtigungen aus"
+
+msgid "Alertes « danger près de toi » activées"
+msgstr "Alarme „Gefahr in deiner Nähe“ an"
+
+msgid "Annonces urgentes activées"
+msgstr "Dringende Ankündigungen an"
+
+msgid "Activé"
+msgstr "An"
+
+msgid "Désactivé"
+msgstr "Aus"
+
+msgid "Activation impossible."
+msgstr "Aktivieren nicht möglich."
+
+msgid "rafale de petites vibrations"
+msgstr "Serie kurzer Vibrationen"
+
+msgid "deux longues"
+msgstr "zwei lange"
+
+msgid "trois longues"
+msgstr "drei lange"
+
+msgid "deux moyennes"
+msgstr "zwei mittlere"
+
+msgid "trois moyennes"
+msgstr "drei mittlere"
+
+msgid "deux courtes puis une longue"
+msgstr "zwei kurze, dann eine lange"
+
+msgid "deux courtes"
+msgstr "zwei kurze"
+
+msgid "trois courtes"
+msgstr "drei kurze"
+
+msgid "Essayer"
+msgstr "Testen"
+
+msgid "Ce téléphone ne permet pas de vibrations personnalisées (c’est le cas des iPhone). Sur iPhone, installe d’abord l’appli sur l’écran d’accueil pour recevoir les notifications."
+msgstr "Dieses Handy erlaubt keine eigenen Vibrationsmuster (so ist es bei iPhones). Auf dem iPhone: installier die App zuerst auf dem Home-Bildschirm, um Benachrichtigungen zu bekommen."
+
+msgid "{n} / {total} prêt"
+msgid_plural "{n} / {total} prêts"
+msgstr[0] "{n} / {total} bereit"
+msgstr[1] "{n} / {total} bereit"
+
+msgid "Checklist remise à zéro"
+msgstr "Checkliste zurückgesetzt"
+
+msgid "Point de ralliement si on se perd en manif : {url}"
+msgstr "Sammelpunkt, falls wir uns auf der Demo verlieren: {url}"
+
+msgid "Lien copié : colle-le dans ton groupe"
+msgstr "Link kopiert: füg ihn in deine Gruppe ein"
+
+msgid "Point de ralliement"
+msgstr "Sammelpunkt"
+
+msgid "🚩 Point de ralliement"
+msgstr "🚩 Sammelpunkt"
+
+msgid "Visible seulement sur ton téléphone"
+msgstr "Nur auf deinem Handy sichtbar"
+
+msgid "Partager"
+msgstr "Teilen"
+
+msgid "Point de ralliement placé, à {d} de toi."
+msgstr "Sammelpunkt gesetzt, {d} von dir entfernt."
+
+msgid "Point de ralliement placé."
+msgstr "Sammelpunkt gesetzt."
+
+msgid "Point de ralliement enregistré"
+msgstr "Sammelpunkt gespeichert"
+
+msgid "Autour de ta position."
+msgstr "Rund um deinen Standort."
+
+msgid "Autour du centre de la carte. Active ta position pour voir ce qui te concerne."
+msgstr "Rund um die Kartenmitte. Aktivier deinen Standort, um zu sehen, was dich betrifft."
+
+msgid "Aucun arrêté connu ici. D’autres sont en vigueur ailleurs en France."
+msgstr "Hier ist kein Verbot bekannt. Anderswo in Frankreich gelten andere."
+
+msgid "Aucune annonce d’orga dans cette zone pour l’instant."
+msgstr "Noch keine Ankündigungen von Orgas in diesem Gebiet."
+
+msgid "Mode manif. « Quitter » en haut pour revenir à l’appli complète."
+msgstr "Demo-Modus. „Verlassen“ oben bringt dich zurück zur vollständigen App."
+
+msgid "{n} mètres"
+msgstr "{n} Meter"
+
+msgid "{n} kilomètres"
+msgstr "{n} Kilometer"
+
+msgid "Ce navigateur ne sait pas lire à voix haute."
+msgstr "Dieser Browser kann nicht vorlesen."
+
+msgid "Alerte vocale activée"
+msgstr "Sprachalarm an"
+
+msgid "Charge"
+msgstr "Polizeiangriff"
+
+msgid "Effacement…"
+msgstr "Wird gelöscht…"
+
+msgid "Garde le doigt appuyé 2 secondes pour tout effacer"
+msgstr "Halt den Finger 2 Sekunden gedrückt, um alles zu löschen"
+
+msgid "Appuie encore une fois pour tout effacer"
+msgstr "Drück noch einmal, um alles zu löschen"
+
+msgid "Dernière préparation : {date}"
+msgstr "Zuletzt vorbereitet: {date}"
+
+msgid "Zone trop grande : zoome sur ta ville ou sur le parcours, puis réessaie."
+msgstr "Gebiet zu groß: zoom auf deine Stadt oder die Route und versuch es nochmal."
+
+msgid "Carte : {n} / {total} morceaux…"
+msgstr "Karte: {n} / {total} Teile…"
+
+msgid "Numéros, annonces, agenda et lieux…"
+msgstr "Nummern, Ankündigungen, Termine und Orte…"
+
+msgid "Ko"
+msgstr "KB"
+
+msgid "Mo"
+msgstr "MB"
+
+msgid "Prêt : carte de la zone gardée ({size})"
+msgstr "Bereit: Karte des Gebiets gespeichert ({size})"
+
+msgid "Prêt"
+msgstr "Bereit"
+
+msgid "{n} numéro de legal team"
+msgid_plural "{n} numéros de legal team"
+msgstr[0] "{n} Nummer vom Legal Team (EA)"
+msgstr[1] "{n} Nummern von Legal Teams (EA)"
+
+msgid "(le plus proche : {phone})"
+msgstr "(am nächsten: {phone})"
+
+msgid "annonces et agenda."
+msgstr "Ankündigungen und Termine."
+
+msgid "{n} morceaux de carte n’ont pas pu être gardés, réessaie avec un meilleur réseau."
+msgstr "{n} Kartenteile konnten nicht gespeichert werden, versuch es mit besserem Netz nochmal."
+
+msgid "Si le réseau tombe, l’appli s’ouvrira quand même avec ces infos."
+msgstr "Wenn das Netz ausfällt, öffnet sich die App trotzdem mit diesen Infos."
+
+msgid "Pas encore confirmé. Confirme si tu le vois."
+msgstr "Noch nicht bestätigt. Bestätige, wenn du es siehst."
+
+msgid "rafale très rapide"
+msgstr "sehr schnelle Serie"
+
+msgid "trois courtes puis une longue"
+msgstr "drei kurze, dann eine lange"
+
+msgid "une longue puis une courte"
+msgstr "eine lange, dann eine kurze"
+
+msgid "contributeurs OpenStreetMap"
+msgstr "OpenStreetMap-Mitwirkende"
+
+#. Type de signalement : unités de police et de gendarmerie spécialisées dans le maintien de l'ordre. Traduire par l'équivalent local (riot police…).
+msgid "CRS / Gendarmes mobiles"
+msgstr "Bereitschaftspolizei"
+
+#. Type de signalement : police en uniforme.
+msgid "Police"
+msgstr "Polizei"
+
+#. Type de signalement : policiers en civil (BAC) ou à moto (BRAV-M), souvent les plus violents. Équivalent local : plainclothes / bike units…
+msgid "BAC / BRAV-M"
+msgstr "Zivil- und Motorradeinheiten"
+
+#. Type de signalement : les forces de l'ordre encerclent la foule et l'empêchent de sortir (kettling).
+msgid "Nasse / encerclement"
+msgstr "Kessel / Einkesselung"
+
+msgid "Interpellations"
+msgstr "Festnahmen"
+
+msgid "Lacrymo"
+msgstr "Tränengas"
+
+msgid "Canon à eau"
+msgstr "Wasserwerfer"
+
+msgid "Point chaud"
+msgstr "Brennpunkt"
+
+#. Type de signalement : l'ordre officiel de dispersion avant une charge (dispersal order).
+msgid "Sommations"
+msgstr "Durchsagen der Polizei"
+
+#. Type de signalement : secouristes bénévoles des manifestations.
+msgid "Street medic"
+msgstr "Demosanis"
+
+#. Type de signalement : équipe juridique bénévole et observateurs (legal observers).
+msgid "Legal team / observateurs"
+msgstr "Legal Team (EA) / Beobachter*innen"
+
+msgid "Presse"
+msgstr "Presse"
+
+msgid "Zone calme / repli"
+msgstr "Ruhige Zone / Rückzugsort"
+
+#. Type de signalement : point d'eau ou de sérum physiologique (contre les gaz).
+msgid "Eau / sérum phy"
+msgstr "Wasser / Kochsalzlösung"
+
+msgid "Tête de cortège"
+msgstr "Spitze des Demozugs"
+
+msgid "Rue bloquée"
+msgstr "Straße blockiert"
+
+msgid "Blocus (lycée / fac)"
+msgstr "Blockade (Schule / Uni)"
+
+msgid "Manifestation"
+msgstr "Demo"
+
+msgid "Rassemblement"
+msgstr "Kundgebung"
+
+msgid "Assemblée générale"
+msgstr "Vollversammlung"
+
+msgid "Forces de l’ordre"
+msgstr "Polizei"
+
+msgid "Danger"
+msgstr "Gefahr"
+
+msgid "Soutien"
+msgstr "Unterstützung"
+
+msgid "Infos cortège"
+msgstr "Infos zum Demozug"
+
+msgid "Mairie"
+msgstr "Rathaus"
+
+msgid "Préfecture"
+msgstr "Präfektur"
+
+msgid "Sous-préfecture"
+msgstr "Unterpräfektur"
+
+msgid "Commissariat"
+msgstr "Polizeiwache"
+
+msgid "Gendarmerie"
+msgstr "Gendarmerie"
+
+msgid "Tribunal"
+msgstr "Gericht"
+
+msgid "Centre de rétention (CRA)"
+msgstr "Abschiebehaft (CRA)"
+
+msgid "Hôpital"
+msgstr "Krankenhaus"
+
+msgid "Pharmacie"
+msgstr "Apotheke"
+
+msgid "Eau potable"
+msgstr "Trinkwasser"
+
+msgid "Caméra de surveillance"
+msgstr "Überwachungskamera"
+
+msgid "Manifestation interdite"
+msgstr "Demo verboten"
+
+msgid "Périmètre interdit"
+msgstr "Sperrzone"
+
+msgid "Couvre-feu"
+msgstr "Ausgangssperre"
+
+msgid "Transports"
+msgstr "Verkehr"
+
+msgid "Consigne"
+msgstr "Anweisung"
+
+msgid "Écris le message de l’annonce."
+msgstr "Schreib den Text der Ankündigung."
+
+msgid "Numéro de téléphone invalide."
+msgstr "Ungültige Telefonnummer."
+
+msgid "Indique la ville de la legal team."
+msgstr "Gib die Stadt des Legal Teams an."
+
+msgid "Position invalide."
+msgstr "Ungültiger Standort."
+
+msgid "Indique le nom du collectif."
+msgstr "Gib den Namen des Kollektivs an."
+
+msgid "Indique la ville ou le secteur."
+msgstr "Gib die Stadt oder das Gebiet an."
+
+msgid "Donne le lien public du collectif (site, Instagram…), en https://"
+msgstr "Gib den öffentlichen Link des Kollektivs an (Website, Instagram…), mit https://"
+
+msgid "Indique le canal officiel du collectif où te confirmer la demande."
+msgstr "Gib den offiziellen Kanal des Kollektivs an, über den wir die Anfrage bestätigen können."
+
+msgid "Trop de demandes en attente, réessaie dans quelques jours."
+msgstr "Zu viele offene Anfragen, versuch es in ein paar Tagen nochmal."
+
+msgid "Date invalide."
+msgstr "Ungültiges Datum."
+
+msgid "Donne un titre (ex. : Blocus lycée Jean-Monnet)."
+msgstr "Gib einen Titel an (z. B. Schulblockade Jean-Monnet)."
+
+msgid "Indique le lieu de rendez-vous."
+msgstr "Gib den Treffpunkt an."
+
+msgid "Date invalide (dans les 3 prochains mois)."
+msgstr "Ungültiges Datum (innerhalb der nächsten 3 Monate)."
+
+msgid "Parcours invalide."
+msgstr "Ungültige Route."
+
+msgid "Trop d’envois d’un coup. Réessaie dans quelques minutes."
+msgstr "Zu viel auf einmal gesendet. Versuch es in ein paar Minuten nochmal."
+
+msgid "Tu as déjà 3 propositions en attente de validation."
+msgstr "Du hast schon 3 Vorschläge, die auf Freigabe warten."
+
+msgid "Trop de propositions en attente, réessaie plus tard."
+msgstr "Zu viele offene Vorschläge, versuch es später nochmal."
+
+msgid "Introuvable."
+msgstr "Nicht gefunden."
+
+msgid "Carte indisponible."
+msgstr "Karte nicht verfügbar."
+
+msgid "Requête refusée."
+msgstr "Anfrage abgelehnt."
+
+msgid "Trop de demandes : réessaie dans quelques minutes."
+msgstr "Zu viele Anfragen: versuch es in ein paar Minuten nochmal."
+
+msgid "Trop de demandes d’un coup. Réessaie plus tard."
+msgstr "Zu viele Anfragen auf einmal. Versuch es später nochmal."
+
+msgid "Service de notification non pris en charge."
+msgstr "Benachrichtigungsdienst wird nicht unterstützt."
+
+msgid "Abonnement invalide."
+msgstr "Ungültiges Abo."
+
+msgid "Trop de demandes, réessaie plus tard."
+msgstr "Zu viele Anfragen, versuch es später nochmal."
+
+msgid "Trop d’abonnements, réessaie plus tard."
+msgstr "Zu viele Abos, versuch es später nochmal."
+
+msgid "Ce téléphone n’est pas abonné sur le serveur. Désactive puis réactive les notifications."
+msgstr "Dieses Handy ist auf dem Server nicht abonniert. Schalte die Benachrichtigungen aus und wieder ein."
+
+msgid "Trois essais au plus toutes les 5 minutes."
+msgstr "Höchstens drei Versuche alle 5 Minuten."
+
+msgid "Tape au moins 2 lettres."
+msgstr "Tippe mindestens 2 Buchstaben."
+
+msgid "Trop de recherches, patiente un peu."
+msgstr "Zu viele Suchanfragen, warte kurz."
+
+msgid "Recherche indisponible pour l’instant."
+msgstr "Suche gerade nicht verfügbar."
+
+msgid "Signalement expiré."
+msgstr "Meldung abgelaufen."
+
+msgid "Annonce déjà retirée."
+msgstr "Ankündigung schon entfernt."
+
+msgid "Événement introuvable."
+msgstr "Termin nicht gefunden."
+
+msgid "Déjà expiré."
+msgstr "Schon abgelaufen."
+
+msgid "Annonce introuvable."
+msgstr "Ankündigung nicht gefunden."
+
+msgid "Catégorie inconnue."
+msgstr "Unbekannte Kategorie."
+
+msgid "Ce type de signalement est désactivé pour l’instant."
+msgstr "Diese Art von Meldung ist gerade deaktiviert."
+
+msgid "Signalement trop ancien, il n’a pas été publié."
+msgstr "Meldung zu alt, sie wurde nicht veröffentlicht."
+
+msgid "Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt."
+msgstr "Meldungen sind für ein paar Minuten pausiert (Welle von Fake-Meldungen). Versuch es bald nochmal."
+
+msgid "Trop de signalements d’un coup. Réessaie dans quelques minutes."
+msgstr "Zu viele Meldungen auf einmal. Versuch es in ein paar Minuten nochmal."
+
+msgid "Un danger est signalé à moins de 100 m : la zone ne peut pas être marquée calme."
+msgstr "Weniger als 100 m entfernt wird eine Gefahr gemeldet: das Gebiet kann nicht als ruhig markiert werden."
+
+msgid "Trop de signalements depuis ton réseau dans cette zone. Confirme plutôt ceux qui existent."
+msgstr "Zu viele Meldungen aus deinem Netz in diesem Gebiet. Bestätige lieber die vorhandenen."
+
+msgid "Zone saturée, réessaie dans quelques minutes."
+msgstr "Gebiet überlastet, versuch es in ein paar Minuten nochmal."
+
+msgid "Carte saturée, réessaie plus tard."
+msgstr "Karte überlastet, versuch es später nochmal."
+
+msgid "Lien orga invalide ou expiré."
+msgstr "Orga-Link ungültig oder abgelaufen."
+
+msgid "Trop d’envois, patiente un peu."
+msgstr "Zu viel gesendet, warte kurz."
+
+msgid "Déjà pris en compte."
+msgstr "Schon gezählt."
+
+msgid "Trop de votes, patiente un peu."
+msgstr "Zu viele Stimmen, warte kurz."
+
+msgid "Trop d’essais, réessaie dans quelques minutes."
+msgstr "Zu viele Versuche, probier es in ein paar Minuten nochmal."
+
+msgid "Invitation invalide."
+msgstr "Ungültige Einladung."
+
+msgid "Lien expiré ou déjà utilisé. Demande-en un nouveau."
+msgstr "Link abgelaufen oder schon benutzt. Fordere einen neuen an."
+
+msgid "Seules les orgas confirmées peuvent inviter."
+msgstr "Nur bestätigte Orgas können einladen."
+
+msgid "Donne un nom à l’orga invitée."
+msgstr "Gib der eingeladenen Orga einen Namen."
+
+msgid "Orga introuvable parmi tes invitées."
+msgstr "Diese Orga ist nicht unter deinen Eingeladenen."
+
+msgid "Déjà confirmée."
+msgstr "Schon bestätigt."
+
+msgid "Pas encore prête : il faut au moins 7 jours, 10 actions et aucun incident. Seul·e l’admin peut la confirmer avant."
+msgstr "Noch nicht so weit: Es braucht mindestens 7 Tage, 10 Aktionen und keine Vorfälle. Vorher bestätigen kann sie nur der Admin."
+
+msgid "Pas possible pour un accès défini par l’admin dans les réglages du serveur."
+msgstr "Nicht möglich bei einem Zugang, den der Admin in den Servereinstellungen festgelegt hat."
+
+msgid "Pendant la période d’essai, les annonces urgentes ne sont pas possibles. Publie-la en « info »."
+msgstr "In der Probezeit sind dringende Ankündigungen nicht möglich. Veröffentliche sie als „Info“."
+
+msgid "Événement déjà retiré."
+msgstr "Termin schon entfernt."
+
+msgid "Seule l’orga qui l’a publié peut le retirer."
+msgstr "Nur die Orga, die ihn veröffentlicht hat, kann ihn entfernen."
+
+msgid "Seul·e l’auteur·ice peut retirer cette annonce."
+msgstr "Nur wer diese Ankündigung verfasst hat, kann sie entfernen."
+
+msgid "Seule l’orga qui l’a signalé peut le modifier."
+msgstr "Nur die Orga, die das gemeldet hat, kann es bearbeiten."
+
+msgid "Déjà prolongé au maximum."
+msgstr "Schon maximal verlängert."
+
+msgid "Déjà confirmé."
+msgstr "Schon bestätigt."
+
+msgid "Trop de retraits d’un coup : le retrait est suspendu quelques minutes."
+msgstr "Zu viele Entfernungen auf einmal: Das Entfernen ist für ein paar Minuten gesperrt."
+
+msgid "Trop de retraits d’un coup : le retrait est suspendu quelques minutes. L’admin est prévenu·e."
+msgstr "Zu viele Entfernungen auf einmal: Das Entfernen ist für ein paar Minuten gesperrt. Der Admin ist informiert."
+
+msgid "Une orga porte déjà ce nom."
+msgstr "Es gibt schon eine Orga mit diesem Namen."
+
+msgid "Orga introuvable."
+msgstr "Orga nicht gefunden."
+
+msgid "Carte des mobilisations"
+msgstr "Protestkarte"
+
+#. Type de signalement : unités d'élite (équivalent local : SWAT…).
+msgid "Unités d’intervention (BRI, RAID, GIGN)"
+msgstr "Spezialeinheiten (BRI, RAID, GIGN)"
+
+#. Type de signalement : véhicule blindé de la gendarmerie.
+msgid "Blindé (Centaure, VBRG)"
+msgstr "Panzerfahrzeug (Centaure, VBRG)"
+
+#. Type de signalement : tirs de balles en caoutchouc (LBD) ou de grenades.
+msgid "Tirs LBD / grenades"
+msgstr "Gummigeschosse / Granaten"
+
+#. Type de signalement : militaires qui gardent des bâtiments (opération Sentinelle), sans maintien de l'ordre.
+msgid "Militaires (Sentinelle)"
+msgstr "Militär (Sentinelle)"
+
+msgid "Cortège · Carte des manifs en direct, sans compte"
+msgstr "Cortège · Live-Karte der Demos, ohne Account"
+
+msgid "Tout l’agenda"
+msgstr "Alle Termine"
+
+msgid "＋ Annoncer une manif"
+msgstr "＋ Demo ankündigen"
+
+msgid "<span class=\"ico\" aria-hidden=\"true\">📣</span><span><b>Organiser une manif</b><small>L’annoncer dans l’agenda de Cortège</small></span>"
+msgstr "<span class=\"ico\" aria-hidden=\"true\">📣</span><span><b>Demo organisieren</b><small>Im Kalender von Cortège ankündigen</small></span>"
+
+msgid "<b>Nouveaux arrêtés dans ta zone</b><span>Manif interdite, périmètre interdit, couvre-feu… dès qu’un arrêté de ta zone est ajouté à Cortège.</span>"
+msgstr "<b>Neue Verbote in deiner Gegend</b><span>Demoverbot, Sperrzone, Ausgangssperre… sobald eine Allgemeinverfügung für deine Gegend in Cortège eingetragen wird.</span>"
+
+msgid "Alertes « nouvel arrêté » activées"
+msgstr "Benachrichtigungen zu neuen Verboten aktiviert"
+
+msgid "{x} près de ta zone"
+msgstr "{x} in der Nähe deiner Gegend"
+
+msgid "Signalé à l’instant. Ouvre Cortège pour voir où exactement."
+msgstr "Gerade gemeldet. Öffne Cortège, um zu sehen, wo genau."
+
+msgid "National"
+msgstr "Landesweit"
+
+msgid "Demain : {t}"
+msgstr "Morgen: {t}"
+
+msgid "Journée de mobilisation {d}. Ouvre Cortège pour voir l’agenda et les numéros utiles."
+msgstr "Aktionstag am {d}. Öffne Cortège für die Termine und wichtige Nummern."
+
+msgid "Test Cortège"
+msgstr "Cortège-Test"
+
+msgid "Les notifications marchent : tu seras prévenu·e ici."
+msgstr "Benachrichtigungen funktionieren: Du wirst hier informiert."
+
+msgid "Nouvel arrêté à partir du {d}. Ouvre Cortège pour voir la zone et la source."
+msgstr "Neues Verbot ab {d}. Öffne Cortège, um Gebiet und Quelle zu sehen."
+
+msgid "{n} nouveaux arrêtés dans ta zone"
+msgstr "{n} neue Verbote in deiner Gegend"
+
+#. Type de signalement : groupe d'extrême droite qui attaque les manifestant·es.
+msgid "Milice / groupe fasciste"
+msgstr "Miliz / faschistische Gruppe"
+
+msgid "une longue, deux courtes, une longue"
+msgstr "einmal lang, zweimal kurz, einmal lang"
+
+msgid "Combien, direction, armes visibles. Pas de nom ni de photo."
+msgstr "Wie viele, welche Richtung, sichtbare Waffen. Keine Namen, keine Fotos."
+
+msgid "Attaque d’un groupe fasciste"
+msgstr "Angriff einer faschistischen Gruppe"
+
+msgid "<b>Reste groupé·e</b> et ne pars pas seul·e : les attaques visent d’abord les personnes isolées, y compris après la manif."
+msgstr "<b>Bleib in der Gruppe</b> und geh nicht allein: Angriffe richten sich zuerst gegen Leute, die allein unterwegs sind, auch nach der Demo."
+
+msgid "Va vers le service d’ordre, les street medics ou un endroit fréquenté."
+msgstr "Geh zu den Ordner*innen, den Demosanis oder an einen belebten Ort."
+
+msgid "<b>Signale-les sur la carte</b> (☠️) pour prévenir les autres : combien, direction, armes visibles. Pas de nom ni de photo de personnes."
+msgstr "<b>Melde sie auf der Karte</b> (☠️), um andere zu warnen: wie viele, welche Richtung, sichtbare Waffen. Keine Namen, keine Fotos von Personen."
+
+msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, va au commissariat ou écris au procureur de la République ; la legal team peut t’aider."
+msgstr "Verletzt: Ruf die <b>15</b> oder die <b>112</b> an. Für eine Anzeige geh zur Polizeiwache oder schreib an die Staatsanwaltschaft (procureur de la République). Das Legal Team (EA) kann dir helfen."
+
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée."
+msgstr "Probezeit: „Prüfen“ zählt als starke Bestätigung und „Entfernen“ wie zweimal „Nicht mehr da“. Deine Legal-Team-Nummern und Termine erscheinen erst nach Freigabe durch den Admin. Ankündigungen (im Umkreis von 3 km) und das Häkchen „geprüft“ gibt es, sobald die Orga bestätigt ist."
+
+msgid "En attente de validation par l’admin : pas encore visible"
+msgstr "Wartet auf Freigabe durch den Admin: noch nicht sichtbar"
+
+msgid "Annonce envoyée : elle s’affichera après validation par l’admin"
+msgstr "Ankündigung gesendet: Sie erscheint nach Freigabe durch den Admin"
+
+msgid "Trop de vérifications d’un coup : c’est suspendu quelques minutes. L’admin est prévenu·e."
+msgstr "Zu viele Prüfungen auf einmal: für ein paar Minuten pausiert. Der Admin ist informiert."
+
+msgid "Queue de cortège"
+msgstr "Ende des Demozugs"
+
+msgid "En direct : position partagée par {who}"
+msgstr "Live: Standort geteilt von {who}"
+
+msgid "Avance {dir}, environ {v} km/h"
+msgstr "Bewegt sich {dir}, etwa {v} km/h"
+
+msgid "vers le nord"
+msgstr "nach Norden"
+
+msgid "vers le nord-est"
+msgstr "nach Nordosten"
+
+msgid "vers l’est"
+msgstr "nach Osten"
+
+msgid "vers le sud-est"
+msgstr "nach Südosten"
+
+msgid "vers le sud"
+msgstr "nach Süden"
+
+msgid "vers le sud-ouest"
+msgstr "nach Südwesten"
+
+msgid "vers l’ouest"
+msgstr "nach Westen"
+
+msgid "vers le nord-ouest"
+msgstr "nach Nordwesten"
+
+msgid "{n} min"
+msgstr "{n} Min."
+
+msgid "{h} h {m}"
+msgstr "{h} Std. {m}"
+
+msgid "Parcours « {title} » : {p} % fait"
+msgstr "Route „{title}“: {p} % geschafft"
+
+msgid "fin dans environ {d}"
+msgstr "endet in etwa {d}"
+
+msgid "Arrive près de toi dans environ {d}"
+msgstr "Erreicht dich in etwa {d}"
+
+msgid "Cortège : environ {d}"
+msgstr "Demozug: etwa {d} lang"
+
+msgid "Ma position en direct"
+msgstr "Mein Live-Standort"
+
+msgid "Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt."
+msgstr "Damit man dich leicht findet: Dein Punkt aktualisiert sich alle 30 Sekunden von selbst, solange die App auf diesem Handy offen bleibt. Er verschwindet 3 Minuten nach dem Stoppen."
+
+msgid "Je suis"
+msgstr "Ich bin"
+
+msgid "Pendant"
+msgstr "Für"
+
+msgid "📣 la tête de cortège"
+msgstr "📣 die Spitze des Demozugs"
+
+msgid "🔚 la queue de cortège"
+msgstr "🔚 das Ende des Demozugs"
+
+msgid "⛑️ street medic"
+msgstr "⛑️ Demosani"
+
+msgid "⚖️ legal team"
+msgstr "⚖️ Legal Team (EA)"
+
+msgid "🎥 presse"
+msgstr "🎥 Presse"
+
+msgid "1 h"
+msgstr "1 Std."
+
+msgid "2 h"
+msgstr "2 Std."
+
+msgid "4 h"
+msgstr "4 Std."
+
+msgid "Partager ma position"
+msgstr "Meinen Standort teilen"
+
+msgid "Arrêter le partage"
+msgstr "Teilen beenden"
+
+msgid "En attente de ta position…"
+msgstr "Warte auf deinen Standort…"
+
+msgid "Position partagée à {h}, jusqu’à {end}. Garde l’appli ouverte."
+msgstr "Standort geteilt um {h}, bis {end}. Lass die App offen."
+
+msgid "Partage arrêté : ton point disparaît de la carte."
+msgstr "Teilen beendet: Dein Punkt verschwindet von der Karte."
+
+msgid "Partage de position terminé"
+msgstr "Standortfreigabe beendet"
+
+msgid "Active d’abord ta position (bouton ◎)"
+msgstr "Aktiviere zuerst deinen Standort (Knopf ◎)"
+
+msgid "Le partage de position est réservé aux orgas confirmées."
+msgstr "Standort teilen können nur bestätigte Orgas."
+
+msgid "Rôle inconnu."
+msgstr "Unbekannte Rolle."
+
+msgid "Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus."
+msgstr "Damit nie verraten wird, wohin du nach der Demo gehst: Das Teilen stoppt von selbst, wenn du dich mehr als 2 km entfernst, wenn du nicht alle 30 Minuten bestätigst, dass du noch da bist, und spätestens nach 4 Std."
+
+msgid "30 min"
+msgstr "30 Min."
+
+msgid "Position partagée en direct"
+msgstr "Standort wird live geteilt"
+
+msgid "Oui, je continue"
+msgstr "Ja, weiter"
+
+msgid "Arrêter"
+msgstr "Stoppen"
+
+msgid "Plus rien autour de toi : tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}."
+msgstr "Um dich herum ist nichts mehr los: Bist du noch auf der Demo? Ohne Antwort stoppt das Teilen in {d}."
+
+msgid "Tu es toujours en manif ? Sans réponse, le partage s’arrête dans {d}."
+msgstr "Bist du noch auf der Demo? Ohne Antwort stoppt das Teilen in {d}."
+
+msgid "Position partagée en direct ({role})"
+msgstr "Standort wird live geteilt ({role})"
+
+msgid "Pas de réponse : partage de position arrêté"
+msgstr "Keine Antwort: Standortfreigabe beendet"
+
+msgid "Partage prolongé, merci"
+msgstr "Teilen verlängert, danke"
+
+msgid "Tu t’es éloigné·e de plus de 2 km de la manif : partage de position arrêté."
+msgstr "Du bist mehr als 2 km von der Demo weg: Standortfreigabe beendet."
+
+msgid "Partage arrêté au bout de 4 h. Relance-le si besoin."
+msgstr "Teilen nach 4 Std. beendet. Starte es neu, wenn nötig."
+
+msgid "Cortège : environ {d} à vol d’oiseau"
+msgstr "Demozug: etwa {d} Luftlinie"
+
+msgid "l’admin : viens me voir pour un accès orga"
+msgstr "der Admin: sprich mich an für einen Orga-Zugang"
+
+msgid "Message affiché sur ton point (facultatif)"
+msgstr "Nachricht an deinem Punkt (optional)"
+
+msgid "ex. : devant la fontaine, viens me voir"
+msgstr "z. B.: vor dem Brunnen, sprich mich an"
+
+msgid "Point de rencontre orga"
+msgstr "Orga-Treffpunkt"
+
+msgid "Type inconnu."
+msgstr "Unbekannter Typ."
+
+msgid "Déplacer"
+msgstr "Verschieben"
+
+msgid "Retirer ma voix"
+msgstr "Meine Meldung zurückziehen"
+
+msgid "Retirer (erreur)"
+msgstr "Entfernen (Fehler)"
+
+msgid "Tu as envoyé ce signalement."
+msgstr "Du hast diese Meldung gesendet."
+
+msgid "Ta voix est retirée, le point reste pour les autres"
+msgstr "Deine Meldung ist zurückgezogen, der Punkt bleibt für die anderen"
+
+msgid "Point déplacé"
+msgstr "Punkt verschoben"
+
+msgid "Fais glisser le point à sa place (150 m au plus)"
+msgstr "Zieh den Punkt an die richtige Stelle (höchstens 150 m)"
+
+msgid "Seul le téléphone qui l’a envoyé peut le retirer ou le déplacer, et seulement le jour même."
+msgstr "Nur das Handy, das sie gesendet hat, kann sie entfernen oder verschieben, und nur am selben Tag."
+
+msgid "Trop d’essais, patiente un peu."
+msgstr "Zu viele Versuche, warte kurz."
+
+msgid "Vérifié par une orga : le point reste sur la carte."
+msgstr "Von einer Orga geprüft: Der Punkt bleibt auf der Karte."
+
+msgid "D’autres l’ont déjà confirmé : il ne peut plus être déplacé."
+msgstr "Andere haben ihn schon bestätigt: Er kann nicht mehr verschoben werden."
+
+msgid "Trop tard : un point ne se déplace que dans les 10 minutes."
+msgstr "Zu spät: Ein Punkt lässt sich nur innerhalb von 10 Minuten verschieben."
+
+msgid "Trop loin : 150 m au plus. Retire-le et signale-le au bon endroit."
+msgstr "Zu weit: höchstens 150 m. Entferne ihn und melde es an der richtigen Stelle."
+
+msgid "Action inconnue."
+msgstr "Unbekannte Aktion."
+
+msgid "Temps réel indisponible, interrogation régulière."
+msgstr "Echtzeit nicht verfügbar, es wird regelmäßig abgefragt."
+
+msgid "Donne un titre à la journée (affiché en bandeau)."
+msgstr "Gib dem Tag einen Titel (wird als Banner angezeigt)."
+
+msgid "Zone :"
+msgstr "Gebiet:"
+
+msgid "Invitations suspendues jusqu’au"
+msgstr "Einladungen gesperrt bis"
+
+msgid "Réservé à l’admin."
+msgstr "Nur für den Admin."
+
+msgid "Inconnu."
+msgstr "Unbekannt."
+
+msgid "Bilan non publié."
+msgstr "Bilanz nicht veröffentlicht."
+
+msgid "Les points de cette journée ne sont plus disponibles."
+msgstr "Die Punkte dieses Tages sind nicht mehr verfügbar."
+
+msgid "Points invalides."
+msgstr "Ungültige Punkte."
+
+msgid "Pas de carte hébergée."
+msgstr "Keine gehostete Karte."
+
+msgid "Trop loin."
+msgstr "Zu weit."
+
+msgid "Trop de demandes."
+msgstr "Zu viele Anfragen."
+
+msgid "Pas de chemin trouvé."
+msgstr "Kein Weg gefunden."
+
+msgid "Digest désactivé : ajoute ADMIN_KEY dans les variables du serveur."
+msgstr "Digest deaktiviert: Füge ADMIN_KEY zu den Servervariablen hinzu."
+
+msgid "Clé incorrecte."
+msgstr "Falscher Schlüssel."
+
+#: client/app/12-lieux-calques.js
+msgid "Urgences : pas indiqué. En cas d’urgence, appelle le {n}."
+msgstr "Notaufnahme: keine Angabe. Im Notfall ruf die {n} an."
+
+#: src/routes/reports.js
+msgid "Ce type de signalement n’existe pas ici."
+msgstr "Diese Art von Meldung gibt es hier nicht."
+
+#: profiles/de.json
+msgid "Police anti-émeute (Bereitschaftspolizei)"
+msgstr "Bereitschaftspolizei"
+
+#: profiles/de.json
+msgid "Unité d’interpellation (BFE)"
+msgstr "Festnahmeeinheit (BFE)"
+
+#: profiles/de.json
+msgid "Unités d’intervention (SEK, GSG 9)"
+msgstr "Spezialeinheiten (SEK, GSG 9)"
+
+#: profiles/de.json
+msgid "Véhicule spécial (Sonderwagen)"
+msgstr "Sonderwagen (Panzerfahrzeug)"
+
+#: profiles/de.json
+msgid "Nasse (Kessel)"
+msgstr "Kessel"
+
+#: profiles/de.json
+msgid "Lacrymo / spray au poivre"
+msgstr "Tränengas / Pfefferspray"
+
+#: profiles/de.json
+msgid "Annonces de la police (Durchsagen)"
+msgstr "Durchsagen der Polizei"
+
+#: profiles/de.json
+msgid "Street medics (Demosanis)"
+msgstr "Demosanis"
+
+#: profiles/de.json
+msgid "Legal team (EA)"
+msgstr "Legal Team (EA)"
+
+#: profiles/de.json
+msgid "Si la police t’interpelle"
+msgstr "Wenn die Polizei dich kontrolliert"
+
+#: profiles/de.json
+msgid "Donne seulement ton identité (nom, adresse, date de naissance). Pour le reste, tu as le droit de te taire : « Ich mache keine Angaben »."
+msgstr "Gib nur deine Personalien an (Name, Adresse, Geburtsdatum). Zu allem anderen darfst du schweigen: „Ich mache keine Angaben“."
+
+#: profiles/de.json
+msgid "Ne signe rien et appelle l’EA (Ermittlungsausschuss), la legal team des manifs."
+msgstr "Unterschreib nichts und ruf den EA (Ermittlungsausschuss) an, das Legal Team für Demos."
+
+#: profiles/de.json
+msgid "Écris au stylo sur ton bras le numéro de l’EA de ta ville."
+msgstr "Schreib dir die Nummer vom EA deiner Stadt mit Kuli auf den Arm."
+
+#: profiles/de.json
+msgid "Se masquer le visage pendant une manifestation est interdit en Allemagne (Vermummungsverbot)."
+msgstr "Vermummung ist auf Demos in Deutschland verboten (Vermummungsverbot)."
+
+#: profiles/us.json
+msgid "Police anti-émeute"
+msgstr "Bereitschaftspolizei"
+
+#: profiles/us.json
+msgid "Policiers en civil / à vélo"
+msgstr "Zivilpolizei / Fahrradpolizei"
+
+#: profiles/us.json
+msgid "Garde nationale"
+msgstr "Nationalgarde"
+
+#: profiles/us.json
+msgid "Unités d’intervention (SWAT)"
+msgstr "Spezialeinheiten (SWAT)"
+
+#: profiles/us.json
+msgid "Véhicule blindé (MRAP, BearCat)"
+msgstr "Panzerfahrzeug (MRAP, BearCat)"
+
+#: profiles/us.json
+msgid "Tirs (balles en caoutchouc, pepper balls)"
+msgstr "Beschuss (Gummigeschosse, Pepperballs)"
+
+#: profiles/us.json
+msgid "Ordre de dispersion"
+msgstr "Aufforderung zur Auflösung"
+
+#: profiles/us.json
+msgid "Legal observers"
+msgstr "Legal Observers"
+
+#: profiles/us.json
+msgid "Occupation (lycée / fac)"
+msgstr "Besetzung (Schule / Uni)"
+
+#: profiles/us.json
+msgid "ICE / agents fédéraux"
+msgstr "ICE / Bundesagent*innen"
+
+#: profiles/us.json
+msgid "Si la police t’arrête"
+msgstr "Wenn die Polizei dich festnimmt"
+
+#: profiles/us.json
+msgid "<b>Tu as le droit de garder le silence.</b> Dis-le à voix haute : « I am going to remain silent. I want a lawyer. »"
+msgstr "<b>Du hast das Recht zu schweigen.</b> Sag es laut: „I am going to remain silent. I want a lawyer.“"
+
+#: profiles/us.json
+msgid "Demande « Am I free to go? » (suis-je libre de partir ?). Si oui, pars calmement."
+msgstr "Frag „Am I free to go?“ (Darf ich gehen?). Wenn ja, geh ruhig weg."
+
+#: profiles/us.json
+msgid "Ne consens à aucune fouille : « I do not consent to a search ». Ne résiste pas physiquement."
+msgstr "Stimm keiner Durchsuchung zu: „I do not consent to a search“. Leiste keinen körperlichen Widerstand."
+
+#: profiles/us.json
+msgid "Ne signe rien et ne réponds à aucune question sans avocat·e."
+msgstr "Unterschreib nichts und beantworte keine Fragen ohne Anwält*in."
+
+#: profiles/us.json
+msgid "Écris au stylo sur ton bras le numéro de la hotline juridique de ta ville (souvent tenue par la National Lawyers Guild)."
+msgstr "Schreib dir die Nummer der Rechtshilfe-Hotline deiner Stadt mit Kuli auf den Arm (oft von der National Lawyers Guild betrieben)."
+
+#: profiles/us.json
+msgid "Filmer la police dans l’espace public est en général légal, à distance et sans gêner son action."
+msgstr "Die Polizei im öffentlichen Raum zu filmen ist meist legal, mit Abstand und ohne ihren Einsatz zu behindern."
+
+#: profiles/us.json
+msgid "Si des agents de l’ICE se présentent"
+msgstr "Wenn ICE-Agent*innen auftauchen"
+
+#: profiles/us.json
+msgid "Tu n’as pas à ouvrir ta porte sans mandat signé par un·e juge : demande à le voir, glissé sous la porte ou contre la vitre."
+msgstr "Ohne richterlich unterschriebenen Beschluss musst du deine Tür nicht öffnen: Verlang, ihn zu sehen, unter der Tür durchgeschoben oder ans Fenster gehalten."
+
+#: profiles/us.json
+msgid "Garde le silence et ne signe aucun document."
+msgstr "Schweig und unterschreib keine Dokumente."
+
+#: profiles/us.json
+msgid "Ne mens pas et ne présente pas de faux papiers."
+msgstr "Lüg nicht und zeig keine falschen Papiere vor."
+
+#: profiles/us.json
+msgid "Connaître tes droits (ACLU)"
+msgstr "Kenne deine Rechte (ACLU)"
+
+#: profiles/us.json
+msgid "Les droits des manifestant·es, expliqués par l’ACLU."
+msgstr "Die Rechte von Demonstrierenden, erklärt von der ACLU."
+
+msgid "Propulsé par <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, un projet de Neru"
+msgstr "Läuft mit <a class=\"inline-link\" href=\"https://github.com/n-e-r-u/cortege\" target=\"_blank\" rel=\"noopener noreferrer\">Cortège</a>, einem Projekt von Neru"
+
+#: client/app/17-orga.js
+msgid "Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?"
+msgstr "Dieser Link ersetzt den auf diesem Handy gespeicherten Orga-Schlüssel durch einen anderen. Weiter?"
+
+#: client/app/18-position-direct.js
+msgid "Connexion perdue : partage de position arrêté"
+msgstr "Verbindung verloren: Standortfreigabe beendet"
+
+#: src/events/create.js
+msgid "Trop de propositions en attente depuis ce réseau. Réessaie plus tard."
+msgstr "Zu viele offene Vorschläge aus diesem Netzwerk. Versuch es später nochmal."
+
+#: src/routes/orga.js
+msgid "Tu ne peux pas confirmer d’orga pour le moment."
+msgstr "Du kannst gerade keine Orga bestätigen."
+
+#: src/routes/orga.js
+msgid "Partage de position arrêté (plus d’envoi depuis 3 min). Relance-le si besoin."
+msgstr "Standortfreigabe beendet (seit 3 Min. nichts gesendet). Starte sie neu, wenn nötig."
+
+#: src/places/osm.js
+msgid "Université"
+msgstr "Universität"
+
+#: src/places/osm.js
+msgid "Lycée"
+msgstr "Schule"
+
+#: src/places/osm.js
+msgid "🎓 Lycées et facs"
+msgstr "🎓 Schulen und Unis"
+
+#: src/routes/orga.js
+msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
+msgstr "Ankündigungen sind zertifizierten Orgas vorbehalten. In der Probezeit kannst du Meldungen prüfen und die Nummer deines Legal Teams vorschlagen."

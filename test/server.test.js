@@ -651,6 +651,8 @@ test('sécurité : une orga ne peut pas prendre le nom d’une autre, ni retirer
   assert.equal(adm.s, 201);
   const del = (key, id) => fetch(B + '/api/announcements/' + id, { method: 'DELETE', headers: { 'x-orga-key': key, 'content-type': 'application/json' } }).then(r => r.status);
   assert.equal(await del(A.key, adm.j.id), 403, 'une orga ne retire pas une annonce de l’admin');
+  const idA = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Collectif Audit A').id;
+  await admin(`/api/admin/orgas/${idA}/trial`, { trial: false }); // annonces : orgas certifiées seulement
   const mine = await asOrga(A.key, '/api/announcements', { kind: 'info', text: 'Annonce de A', ...p, radiusKm: 3, minutes: 30 });
   assert.equal(mine.s, 201); assert.ok(mine.j.ob, 'empreinte de l’auteur');
   assert.equal(await del(Bo.key, mine.j.id), 403, 'B ne retire pas l’annonce de A');
@@ -666,8 +668,11 @@ test('orgas : en essai, ni coche « vérifié » ni annonce visible avant valida
   const r = (await post('/api/reports', { cat: 'police', ...place() })).j;
   const v = await asOrga(T.key, `/api/reports/${r.id}/verify`, {});
   assert.equal(v.s, 200); assert.ok(!v.j.ver, 'pas de coche pendant l’essai'); assert.equal(v.j.up, 1, 'confirmation forte');
+  // 2.11 : annonces réservées aux orgas certifiées ; en essai, seulement le numéro de legal team (validé par l'admin)
   const a = await asOrga(T.key, '/api/announcements', { kind: 'info', text: 'Info d’essai', ...place(), radiusKm: 3, minutes: 30 });
-  assert.equal(a.s, 201); assert.equal(a.j.pending, true, 'en attente de validation');
+  assert.equal(a.s, 403, 'pas d’annonce pendant l’essai');
+  const lg = await asOrga(T.key, '/api/announcements', { kind: 'legal', phone: '0611223399', city: 'Essaiville', ...place() });
+  assert.equal(lg.s, 201); assert.equal(lg.j.pending, true, 'numéro en attente de validation');
   // Orga confirmée : 3 annonces urgentes par heure au plus
   const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Confirme 265' })).j.invite);
   const orgas = await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
@@ -676,6 +681,10 @@ test('orgas : en essai, ni coche « vérifié » ni annonce visible avant valida
   const urg = [];
   for (let i = 0; i < 4; i++) urg.push((await asOrga(C.key, '/api/announcements', { kind: 'info', level: 'urgent', text: 'Urgence ' + i, ...place(), radiusKm: 3, minutes: 30 })).s);
   assert.deepEqual(urg, [201, 201, 201, 429]);
+  // Rayon : 3 km au plus pour une orga, l'admin peut aller plus loin
+  const big = await asOrga(C.key, '/api/announcements', { kind: 'info', text: 'Zone large', ...place(), radiusKm: 30, minutes: 30 });
+  assert.equal(big.s, 201); assert.equal(big.j.r, 3);
+  assert.equal((await admin('/api/admin/announcements', { kind: 'info', text: 'Zone large admin', ...place(), radiusKm: 30, minutes: 30 })).j.r, 30);
 });
 
 test('cortège : tête qui suit (avec sa trace), queue, et position en direct des orgas confirmées', async () => {
@@ -999,4 +1008,15 @@ test('sécurité 2.10.2 : anciens fichiers repris supprimés par l’effacement 
   for (const f of ['state.json.repris-1', 'push.json.repris-2']) fs.writeFileSync(DIR + '/d/' + f, '{}');
   assert.equal((await admin('/api/admin/wipe', { confirm: 'EFFACER' })).s, 200);
   assert.ok(!fs.readdirSync(DIR + '/d').some(f => /\.repris-/.test(f)));
+});
+
+test('admin : invitations en série, valables plus longtemps, en essai, sans doublon', async () => {
+  const r = await admin('/api/admin/orgas/bulk', { labels: ['Serie Legal Team 31', 'Serie Medics 31', 'serie medics 31', 'x'], days: 30 });
+  assert.equal(r.s, 201); assert.equal(r.j.created.length, 2); assert.equal(r.j.skipped.length, 1, 'doublon signalé');
+  assert.ok(r.j.created[0].exp > Date.now() + 29 * 24 * 3600e3, 'valable 30 jours');
+  const o = await orgaFrom(r.j.created[0].invite);
+  assert.ok(o.key, 'le lien donne un accès');
+  assert.equal((await asOrga(o.key, '/api/announcements', { kind: 'info', text: 'Pas encore certifiée', ...place(), minutes: 30 })).s, 403, 'en essai');
+  assert.equal((await post('/api/admin/orgas/bulk', { labels: ['Sans clé'] })).s, 403);
+  assert.equal((await admin('/api/admin/orgas/bulk', { labels: Array.from({ length: 101 }, (_, i) => 'Trop ' + i) })).s, 400);
 });

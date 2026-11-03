@@ -24,6 +24,13 @@
       if (!(o && o.admin) && has) has.remove(); }
     if (!o && beacon) beaconStop(false);
     $('#annNationalWrap').hidden = !(o && o.admin);
+    // Annonces : réservées aux orgas certifiées (pas en essai), dans un rayon de 3 km au plus ; l'admin n'a pas de limite
+    { const certified = !!(o && !o.trial), admin = !!(o && o.admin);
+      const info = document.querySelector('input[name="kind"][value="info"]'), legal = document.querySelector('input[name="kind"][value="legal"]');
+      info.closest('label').hidden = !certified;
+      if (!certified && info.checked) { legal.checked = true; legal.dispatchEvent(new Event('change')); }
+      for (const op of $('#annRadius').options) op.hidden = op.disabled = !admin && +op.value > 3;
+      if (!admin && +$('#annRadius').value > 3) $('#annRadius').value = '3'; }
     $('#btnPropose').textContent = t(o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif');
     $('#agFine').hidden = !!o;
   }

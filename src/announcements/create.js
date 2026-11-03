@@ -4,6 +4,7 @@ const { ANN_MAX, CENTER, MIN } = require('../config');
 const { clean, validLatLng, round } = require('../util');
 const { pushBroadcast } = require('../push');
 const { saveAnn, annView } = require('./store');
+const ANN_ORGA_KM = 3;
 
 // Création d'annonce, partagée par l'espace orga et la page admin.
 //  - numéro de legal team : permanent, jusqu'à ce que l'orga (ou l'admin) le retire ;
@@ -18,7 +19,8 @@ function createAnnouncement(b, by, admin, pending = false, oid = admin ? 'admin'
   const phone = kind === 'legal' ? String(b.phone || '').replace(/[^\d+ .]/g, '').trim().slice(0, 20) : '';
   const city = kind === 'legal' ? clean(b.city, 40) : '';
   const lat = Number(b.lat), lng = Number(b.lng);
-  const r = national ? 0 : Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), 50);
+  // Rayon : 3 km au plus pour une orga (annonce locale, autour du cortège) ; l'admin peut aller jusqu'à 50 km ou toute la France
+  const r = national ? 0 : Math.min(Math.max(Number(b.radiusKm) || 3, 0.5), admin ? 50 : ANN_ORGA_KM);
   const minutes = Math.min(Math.max(Number(b.minutes) || 60, 10), 24 * 60);
   if (kind === 'info' && text.length < 3) return [400, { error: 'Écris le message de l’annonce.' }];
   if (kind === 'legal' && phone.replace(/\D/g, '').length < 6) return [400, { error: 'Numéro de téléphone invalide.' }];

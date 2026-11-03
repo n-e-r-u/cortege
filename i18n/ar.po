@@ -2464,8 +2464,8 @@ msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, 
 msgstr "إذا أُصبت: اتصل بالرقم <b>15</b> أو <b>112</b>. لتقديم شكوى، توجّه إلى مركز الشرطة أو راسل المدعي العام (procureur de la République)؛ يمكن للفريق القانوني مساعدتك."
 
 # --- 07-v265 ---
-msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée."
-msgstr "فترة تجريبية: «تحقّق» يُحتسب تأكيدًا قويًا و«إزالة» يُحتسب بلاغَي «لم يعد هنا». تظهر إعلاناتك وأرقام الفريق القانوني والفعاليات بعد موافقة الإدارة. تأتي الإعلانات العاجلة وعلامة «تم التحقق» بعد تأكيد المنظمة."
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée."
+msgstr "فترة التجربة: «تحقّق» يُحسب تأكيدًا قويًا و«إزالة» يُحسب مرتين «لم يعد هنا». أرقام الفريق القانوني والفعاليات تظهر بعد موافقة المشرف. الإعلانات (ضمن دائرة 3 كم) وعلامة «تم التحقق» تأتي بعد تأكيد المنظمة."
 
 msgid "En attente de validation par l’admin : pas encore visible"
 msgstr "بانتظار موافقة الإدارة: غير ظاهر بعد"
@@ -2929,3 +2929,8 @@ msgstr "ثانوية"
 #: src/places/osm.js
 msgid "🎓 Lycées et facs"
 msgstr "🎓 الثانويات والجامعات"
+
+# --- textes à traduire ---
+#: src/routes/orga.js
+msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
+msgstr "الإعلانات مخصّصة للمنظمات المعتمدة. خلال فترة التجربة يمكنك التحقق من البلاغات واقتراح رقم فريقك القانوني."

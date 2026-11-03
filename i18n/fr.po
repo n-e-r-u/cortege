@@ -2441,7 +2441,7 @@ msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, 
 msgstr ""
 
 # --- 07-v265 ---
-msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée."
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée."
 msgstr ""
 
 msgid "En attente de validation par l’admin : pas encore visible"
@@ -2905,4 +2905,9 @@ msgstr ""
 
 #: src/places/osm.js
 msgid "🎓 Lycées et facs"
+msgstr ""
+
+# --- textes à traduire ---
+#: src/routes/orga.js
+msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
 msgstr ""

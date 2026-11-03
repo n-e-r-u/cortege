@@ -457,6 +457,23 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       </div>
     </section>
     <section class="card">
+      <h2>Invitations en série</h2>
+      <p class="fine">Pour démarcher plusieurs collectifs, syndicats ou legal teams d’un coup : un nom par ligne (le nom affiché sur leurs annonces). Chaque lien n’ouvre l’accès qu’une fois, à la première personne qui l’ouvre : envoie-le seulement par le canal officiel de l’orga. Les orgas arrivent en période d’essai ; tu les certifies dans la liste ci-dessous après avoir vérifié qui les utilise.</p>
+      <form class="stack" id="bulkForm">
+        <label for="bulkNames">Noms des orgas (100 au plus)<textarea id="bulkNames" rows="6" placeholder="Legal Team Montpellier&#10;Street Medics Toulouse&#10;Solidaires Étudiant·es Lyon"></textarea></label>
+        <div class="controls">
+          <label for="bulkDays">Valables<select id="bulkDays"><option value="7">7 jours</option><option value="14">14 jours</option><option value="30" selected>30 jours</option><option value="60">60 jours</option></select></label>
+          <button type="submit">Créer les invitations</button>
+        </div>
+      </form>
+      <div class="stack" id="bulkOut" hidden>
+        <p id="bulkMsg"></p>
+        <label for="bulkTpl">Message type (modifiable : {nom} et {lien} sont remplacés pour chaque orga)<textarea id="bulkTpl" rows="7"></textarea></label>
+        <div class="controls"><button type="button" class="ghost" id="bulkCsv">Télécharger le tableau (CSV)</button><button type="button" class="ghost" id="bulkCopyAll">Copier tous les liens</button></div>
+        <ul class="org-list" id="bulkList"></ul>
+      </div>
+    </section>
+    <section class="card">
       <h2>Orgas actives</h2>
       <ul class="org-list" id="orgaList"></ul>
       <p class="fine">Supprimer une orga coupe son accès immédiatement. Ses annonces déjà publiées restent jusqu’à expiration ; tu peux les retirer depuis l’appli avec ton lien admin. Les orgas notées « variable » viennent de ORGA_KEYS et se gèrent dans cPanel.</p>

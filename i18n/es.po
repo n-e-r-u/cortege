@@ -2428,8 +2428,8 @@ msgid "Blessé·e : appelle le <b>15</b> ou le <b>112</b>. Pour porter plainte, 
 msgstr "Si estás herida o herido: llama al <b>15</b> o al <b>112</b>. Para denunciar, ve a una comisaría o escribe al fiscal (procureur de la République); la legal team puede ayudarte."
 
 # --- 07-v265 ---
-msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes annonces, numéros de legal team et événements s’affichent après validation par l’admin. Les annonces urgentes et la coche « vérifié » viendront une fois l’orga confirmée."
-msgstr "Periodo de prueba: «Verificar» cuenta como una confirmación fuerte y «Retirar» como dos «Ya no está». Tus anuncios, números de legal team y eventos aparecen tras la validación de la administración. Los anuncios urgentes y la marca «verificado» llegarán cuando la organización esté confirmada."
+msgid "Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée."
+msgstr "Período de prueba: «Verificar» cuenta como una confirmación fuerte y «Quitar» como dos «Ya no está». Tus números de legal team y eventos aparecen tras la validación del admin. Los avisos (en un radio de 3 km) y la marca «verificado» llegarán cuando la organización esté confirmada."
 
 msgid "En attente de validation par l’admin : pas encore visible"
 msgstr "Pendiente de validación por la administración: aún no visible"
@@ -2893,3 +2893,8 @@ msgstr "Instituto"
 #: src/places/osm.js
 msgid "🎓 Lycées et facs"
 msgstr "🎓 Institutos y universidades"
+
+# --- textes à traduire ---
+#: src/routes/orga.js
+msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
+msgstr "Los avisos están reservados a las organizaciones certificadas. Durante el período de prueba puedes verificar los reportes y proponer el número de tu legal team."

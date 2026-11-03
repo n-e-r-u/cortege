@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.11.0
+
+- **Allemand** : toute l'appli est traduite (936 textes), choisie automatiquement pour les téléphones réglés en allemand, et changeable dans Plus › Réglages.
+- **Annonces réservées aux orgas certifiées**, dans un rayon de 3 km au plus autour du point choisi. Une orga en période d'essai ne publie plus d'annonce : elle vérifie les signalements et peut proposer le numéro de sa legal team. Seul·e l'admin peut publier plus loin (jusqu'à 50 km) ou partout.
+- **Invitations en série** dans l'onglet Orgas, pour démarcher plusieurs collectifs, syndicats ou legal teams d'un coup : un nom par ligne, un lien par orga valable 7 à 60 jours, un message type modifiable (le nom et le lien sont remplis pour chacune), « Copier le message » par orga et un tableau CSV. Les orgas arrivent en essai et se certifient dans la liste.
+
 ## 2.10.5
 
 - **Cartes hébergées depuis l'admin** (onglet Pays) : un bouton par pays coché pour télécharger sa carte détaillée, et un pour la carte du monde légère qui sert en dézoomant. Le serveur prend la dernière version de la carte OpenStreetMap de Protomaps, calcule la taille et vérifie la place libre avant de télécharger, montre la progression, et met la carte en service sans redémarrer (les téléphones rechargent leur configuration). « Mettre à jour » pour rafraîchir une carte, « Supprimer » pour en retirer une. La carte en place reste servie pendant le téléchargement, et rien ne se télécharge un jour de mobilisation. Il faut installer une fois l'outil `pmtiles` sur le serveur : la commande est affichée dans l'onglet et dans le guide d'installation. Les cartes vont dans `DATA_DIR/cartes`, sans rien changer à systemd ; `TILE_PMTILES` reste possible pour une carte installée à la main.
