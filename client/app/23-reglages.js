@@ -25,6 +25,10 @@
     $(id).addEventListener('change', e => { document.body.classList.toggle(cls, e.target.checked); try { localStorage.setItem(key, e.target.checked ? '1' : '0'); } catch {} });
   };
   a11y('#optBig', 'big', 'cortege-big'); a11y('#optContrast', 'contrast', 'cortege-contrast');
+  // ---- Apparence : thème du système, clair ou sombre (gardé sur ce téléphone, appliqué par theme.js dès l'ouverture) ----
+  const themeSeg = () => document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePref === (window.cortegeTheme?.pref || 'system'))));
+  document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => { b.onclick = () => { window.cortegeTheme?.set(b.dataset.themePref); themeSeg(); }; });
+  themeSeg();
   $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); reports.get(r.id)?.marker?.openPopup?.(); };
   // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
   let news = null;

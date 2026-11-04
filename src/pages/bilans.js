@@ -21,8 +21,8 @@ const routeCache = new Map();
 function mapSvg(cities) {
   try { storyMap ||= JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'story-map.json'), 'utf8')); } catch { return ''; }
   const m = storyMap, b = BubbleMap.svg(cities, m, { fontSize: 26, labels: 14, esc: htmlEsc });
-  return `<svg viewBox="0 0 ${m.w} ${m.h}" role="img" aria-label="Carte des signalements par ville"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient></defs>`
-    + m.near.map(p => `<path d="${p}" fill="#1c1c20" stroke="#34343c" stroke-width="1.5"/>`).join('') + `<path d="${m.fr}" fill="#26262c" stroke="#5a5866" stroke-width="2"/>${b.dots}${b.labels}</svg>`
+  return `<svg class="bmap" viewBox="0 0 ${m.w} ${m.h}" role="img" aria-label="Carte des signalements par ville"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient></defs>`
+    + m.near.map(p => `<path d="${p}" style="fill:var(--surface);stroke:var(--line)" stroke-width="1.5"/>`).join('') + `<path d="${m.fr}" style="fill:var(--surface-2);stroke:var(--muted)" stroke-width="2"/>${b.dots}${b.labels}</svg>`
     + (b.merged ? '<p class="fine">Sur la carte, les communes très proches sont regroupées sous le nom de la plus active ; le détail est dans la liste.</p>' : '');
 }
 const htmlEsc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -30,25 +30,25 @@ const GROUP_COL = { fdo: '#e5484d', danger: '#f5a524', soutien: '#30a46c', info:
 const GROUP_FR = { fdo: 'Forces de l’ordre', danger: 'Danger', info: 'Info', soutien: 'Soutien' };
 const frDay = d => new Date(d + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const frHour = t => new Date(t).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
-const PUB_CSS = `*{box-sizing:border-box}body{margin:0;background:#121214;color:#f2f1f4;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-main{max-width:760px;margin:0 auto;padding:24px 16px 48px}a{color:#ec9fa4}.top{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.top img{width:44px;height:44px;border-radius:10px}
-.top b{display:block;font-size:18px}.top span{color:#a3a1ad;font-size:13px}h1{font-size:clamp(28px,6vw,42px);line-height:1.1;margin:28px 0 6px}.lead{color:#c9c7d1;margin:0 0 20px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}.kpi{background:#1c1c20;border:1px solid #34343c;border-radius:14px;padding:12px 14px}.kpi b{display:block;font-size:30px;font-variant-numeric:tabular-nums}.kpi span{color:#a3a1ad;font-size:13px}
-section{background:#1c1c20;border:1px solid #34343c;border-radius:16px;padding:16px;margin:14px 0}h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#ec9fa4;margin:0 0 12px}
-svg{width:100%;height:auto;display:block}.row{display:grid;grid-template-columns:minmax(120px,40%) 1fr 48px;gap:10px;align-items:center;margin:6px 0;font-size:14px}.bar{height:14px;border-radius:4px}.n{text-align:right;font-variant-numeric:tabular-nums}
-.hours{display:flex;gap:3px;align-items:flex-end;height:160px;border-bottom:1px solid #5a5866}.hours div{flex:1;background:#5b66c4;border-radius:3px 3px 0 0;min-height:1px}.hours .pk{background:#ec9fa4}.ticks{display:flex;gap:3px;color:#a3a1ad;font-size:11px}.ticks span{flex:1;text-align:center}
-.fine{color:#a3a1ad;font-size:13px}.cta{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:18px}.cta a{display:block;text-align:center;padding:14px;border-radius:14px;background:#26262c;border:1px solid #34343c;color:#f2f1f4;text-decoration:none;font-weight:700}
-.cta a.main{background:linear-gradient(135deg,#ec9fa4,#a191d8 60%,#7d86dc);color:#17121f;border:0}
-nav.links{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}nav.links a{padding:6px 10px;border-radius:99px;background:#1c1c20;border:1px solid #34343c;color:#f2f1f4;text-decoration:none;font-size:13px}nav.links a[aria-current]{border-color:#ec9fa4;color:#ec9fa4}
-ul.tl{list-style:none;padding:0;margin:0}ul.tl li{padding:6px 0;border-bottom:1px solid #2a2a30}ul.tl time{display:inline-block;min-width:64px;color:#ec9fa4;font-variant-numeric:tabular-nums;font-weight:700}
-ul.orders{padding-left:18px}ul.orders>li{margin:10px 0}ul.orders ul{margin:4px 0;padding-left:18px}.rights details{border-bottom:1px solid #2a2a30;padding:8px 0}.rights summary{font-weight:700;cursor:pointer}ul.days{list-style:none;padding:0}ul.days li{margin:8px 0}ul.days a{display:flex;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#1c1c20;border:1px solid #34343c;color:#f2f1f4;text-decoration:none}`;
+const PUB_CSS = `*{box-sizing:border-box}body{margin:0;background:var(--page-bg);background-attachment:fixed;color:var(--fg);font:16px/1.5 var(--font)}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}a{color:var(--accent)}.top{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.top img{width:44px;height:44px;border-radius:10px}
+.top b{display:block;font:400 20px/1.1 var(--font-display);text-transform:uppercase}.top span{color:var(--muted);font-size:13px}h1{font:400 clamp(32px,7vw,48px)/1.05 var(--font-display);text-transform:uppercase;letter-spacing:.01em;margin:28px 0 6px}.lead{color:var(--fg);margin:0 0 20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}.kpi b{display:block;font-size:30px;font-variant-numeric:tabular-nums}.kpi span{color:var(--muted);font-size:13px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+svg{width:100%;height:auto;display:block}.bmap text{fill:var(--fg);stroke:var(--bg)}.bmap tspan{fill:var(--accent)}.bmap circle{stroke:var(--bg)}.row{display:grid;grid-template-columns:minmax(120px,40%) 1fr 48px;gap:10px;align-items:center;margin:6px 0;font-size:14px}.bar{height:14px;border-radius:4px}.n{text-align:right;font-variant-numeric:tabular-nums}
+.hours{display:flex;gap:3px;align-items:flex-end;height:160px;border-bottom:1px solid var(--line)}.hours div{flex:1;background:var(--info);border-radius:3px 3px 0 0;min-height:1px}.hours .pk{background:var(--accent)}.ticks{display:flex;gap:3px;color:var(--muted);font-size:11px}.ticks span{flex:1;text-align:center}
+.fine{color:var(--muted);font-size:13px}.cta{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:18px}.cta a{display:block;text-align:center;padding:14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-weight:700}
+.cta a.main{background:var(--brand-grad);color:var(--grad-fg);border:0}
+nav.links{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}nav.links a{padding:6px 10px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-size:13px}nav.links a[aria-current]{border-color:var(--accent);color:var(--accent)}
+ul.tl{list-style:none;padding:0;margin:0}ul.tl li{padding:6px 0;border-bottom:1px solid var(--line)}ul.tl time{display:inline-block;min-width:64px;color:var(--accent);font-variant-numeric:tabular-nums;font-weight:700}
+ul.orders{padding-left:18px}ul.orders>li{margin:10px 0}ul.orders ul{margin:4px 0;padding-left:18px}.rights details{border-bottom:1px solid var(--line);padding:8px 0}.rights summary{font-weight:700;cursor:pointer}ul.days{list-style:none;padding:0}ul.days li{margin:8px 0}ul.days a{display:flex;justify-content:space-between;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--fg);text-decoration:none}`;
 function pubShell(req, { title, desc, body, ld }) {
   const BRAND = instance().brand;
   const base = PUBLIC_URL_REAL(req), here = base + String(req.url || '/').split('?')[0].replace(/\/$/, '');
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${htmlEsc(title)}</title><meta name="description" content="${htmlEsc(desc)}"><link rel="canonical" href="${htmlEsc(here || base + '/')}">${ld ? jsonLd(ld) : ''}
 <meta property="og:title" content="${htmlEsc(title)}"><meta property="og:description" content="${htmlEsc(desc)}"><meta property="og:type" content="article">
-<meta property="og:image" content="${base}/icon-512.png"><meta name="twitter:card" content="summary"><link rel="icon" href="/favicon.png"><style>${PUB_CSS}</style></head>
+<meta property="og:image" content="${base}/icon-512.png"><meta name="twitter:card" content="summary"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><style>${PUB_CSS}</style></head>
 <body><main><a class="top" href="/"><img src="/brand/logo.png" alt=""><span><b>Cortège</b><span>La carte en direct des manifs${BRAND.handle ? ' · par @' + htmlEsc(BRAND.handle) : ''}</span></span></a>
 <nav class="links" aria-label="Pages">${[['/', 'Carte'], ['/agenda', 'Agenda'], ['/arretes', 'Arrêtés'], ['/manif', 'Bilans'], ['/villes', 'Villes'], ['/droits', 'Tes droits'], ['/legal-teams', 'Legal teams']]
   .map(([u, l]) => `<a href="${u}"${here.endsWith(u) && u !== '/' ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</nav>${body}
@@ -142,12 +142,12 @@ function citySvg(c, pts, scale) {
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const sc = Math.min((W - 2 * pad) / Math.max(x1 - x0, 1e-4), (H - 2 * pad) / Math.max(y1 - y0, 1e-4));
   const P = (lat, lng) => [pad + (lng * k - x0) * sc, H - pad - (lat - y0) * sc];
-  const line = path.length > 1 ? `<polyline points="${path.map(p => P(p[0], p[1]).map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#ec9fa4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>` : '';
+  const line = path.length > 1 ? `<polyline points="${path.map(p => P(p[0], p[1]).map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" style="stroke:var(--accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>` : '';
   const dots = near.slice(0, 3000).map(p => { const [x, y] = P(p.lat, p.lng); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${GROUP_COL[CAT[p.c].group]}" fill-opacity=".75"/>`; }).join('');
   // Échelle : 500 m, 1 km ou 2 km selon la taille du schéma
   const mPerPx = 1 / sc * 111320, bar = [200, 500, 1000, 2000].find(v => v / mPerPx >= 80) || 2000, bw = bar / mPerPx;
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Schéma des signalements à ${htmlEsc(c.name)}"><rect width="${W}" height="${H}" rx="12" fill="#16161a"/>${line}${dots}
-<g fill="#a3a1ad" font-size="13"><rect x="${W - pad - bw}" y="${H - 14}" width="${bw}" height="3"/><text x="${W - pad}" y="${H - 20}" text-anchor="end">${fmtLen(bar)}</text></g></svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Schéma des signalements à ${htmlEsc(c.name)}"><rect width="${W}" height="${H}" rx="12" style="fill:var(--surface-2)"/>${line}${dots}
+<g style="fill:var(--muted)" font-size="13"><rect x="${W - pad - bw}" y="${H - 14}" width="${bw}" height="3"/><text x="${W - pad}" y="${H - 20}" text-anchor="end">${fmtLen(bar)}</text></g></svg>`;
 }
 function cityDayPage(req, d, c) {
   const day = frDay(d.date), title = `${c.name}, ${day} : ${c.n} signalements sur Cortège`;

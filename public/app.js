@@ -164,10 +164,14 @@
         }
         const opts = { url: cfg.vector.url, lang: I18N.lang || 'fr', maxDataZoom: cfg.vector.maxzoom, transparent: zones.length > 0,
           attribution: OSM_ATTR + ' · Protomaps' };
-        const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
+        const make = () => (window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts)
+          : window.protomapsL.leafletLayer({ ...opts, flavor: window.cortegeTheme?.current === 'light' ? 'light' : 'dark' }));
+        let vl = make();
         vl.addTo(map);
         window.cortegeMapFonts?.().then(() => vl.redraw?.());
         document.body.classList.add('vector');
+        // Changement de thème (réglage ou système) : la carte est redessinée avec les couleurs du nouveau thème
+        window.addEventListener('cortege-theme', () => { const old = vl; vl = make(); vl.addTo(map); map.removeLayer(old); });
       } catch { rasterMap(); }
     };
     sc.onerror = rasterMap;
@@ -2448,6 +2452,10 @@
     $(id).addEventListener('change', e => { document.body.classList.toggle(cls, e.target.checked); try { localStorage.setItem(key, e.target.checked ? '1' : '0'); } catch {} });
   };
   a11y('#optBig', 'big', 'cortege-big'); a11y('#optContrast', 'contrast', 'cortege-contrast');
+  // ---- Apparence : thème du système, clair ou sombre (gardé sur ce téléphone, appliqué par theme.js dès l'ouverture) ----
+  const themeSeg = () => document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePref === (window.cortegeTheme?.pref || 'system'))));
+  document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => { b.onclick = () => { window.cortegeTheme?.set(b.dataset.themePref); themeSeg(); }; });
+  themeSeg();
   $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); reports.get(r.id)?.marker?.openPopup?.(); };
   // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
   let news = null;

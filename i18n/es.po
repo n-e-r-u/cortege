@@ -2898,3 +2898,19 @@ msgstr "🎓 Institutos y universidades"
 #: src/routes/orga.js
 msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
 msgstr "Los avisos están reservados a las organizaciones certificadas. Durante el período de prueba puedes verificar los reportes y proponer el número de tu legal team."
+
+#: public/index.html
+msgid "Apparence"
+msgstr "Apariencia"
+
+#: public/index.html
+msgid "Système"
+msgstr "Sistema"
+
+#: public/index.html
+msgid "Clair"
+msgstr "Claro"
+
+#: public/index.html
+msgid "Sombre"
+msgstr "Oscuro"

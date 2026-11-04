@@ -46,10 +46,14 @@
         }
         const opts = { url: cfg.vector.url, lang: I18N.lang || 'fr', maxDataZoom: cfg.vector.maxzoom, transparent: zones.length > 0,
           attribution: OSM_ATTR + ' · Protomaps' };
-        const vl = window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts) : window.protomapsL.leafletLayer({ ...opts, flavor: 'dark' });
+        const make = () => (window.cortegeVectorLayer ? window.cortegeVectorLayer(window.protomapsL, opts)
+          : window.protomapsL.leafletLayer({ ...opts, flavor: window.cortegeTheme?.current === 'light' ? 'light' : 'dark' }));
+        let vl = make();
         vl.addTo(map);
         window.cortegeMapFonts?.().then(() => vl.redraw?.());
         document.body.classList.add('vector');
+        // Changement de thème (réglage ou système) : la carte est redessinée avec les couleurs du nouveau thème
+        window.addEventListener('cortege-theme', () => { const old = vl; vl = make(); vl.addTo(map); map.removeLayer(old); });
       } catch { rasterMap(); }
     };
     sc.onerror = rasterMap;

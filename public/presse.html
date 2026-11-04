@@ -10,8 +10,9 @@
 <meta property="og:description" content="La carte en direct des manifs, sans compte et sans pistage. Outils pour les rédactions et contact.">
 <meta property="og:image" content="/og.png">
 <link rel="icon" href="/favicon.png" type="image/png">
+<script src="/theme.js"></script>
 <style>
-/* Identité NERU : fond pastel, lettrage Anton, cartes « sticker » (contour blanc, ombre dure décalée) */
+/* Identité NERU, en clair ou en sombre selon le choix fait dans l'appli (theme.js) : fond pastel, lettrage Anton, cartes « sticker » (contour blanc, ombre dure décalée) */
 @font-face { font-family: Anton; font-weight: 400; font-display: swap; src: url(/vendor/fonts/anton-400.woff2) format('woff2'); }
 @font-face { font-family: Inter; font-weight: 400; font-display: swap; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }
 @font-face { font-family: Inter; font-weight: 700; font-display: swap; src: url(/vendor/fonts/inter-700.woff2) format('woff2'); }
@@ -23,6 +24,11 @@
   --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   --sticker: 6px -8px 0 0 var(--shadow);
   color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --neru-blue: #9eaaff; --pastel-peach: #0f1230; --pastel-mauve: #141838; --pastel-blue: #191d45;
+  --white: #191d45; --shadow: rgba(0, 0, 0, .45); --ink: #f3f2fa; --ink-muted: #b0b3d8;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }

@@ -2934,3 +2934,19 @@ msgstr "🎓 الثانويات والجامعات"
 #: src/routes/orga.js
 msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
 msgstr "الإعلانات مخصّصة للمنظمات المعتمدة. خلال فترة التجربة يمكنك التحقق من البلاغات واقتراح رقم فريقك القانوني."
+
+#: public/index.html
+msgid "Apparence"
+msgstr "المظهر"
+
+#: public/index.html
+msgid "Système"
+msgstr "النظام"
+
+#: public/index.html
+msgid "Clair"
+msgstr "فاتح"
+
+#: public/index.html
+msgid "Sombre"
+msgstr "داكن"

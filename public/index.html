@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#121214">
+<meta name="theme-color" content="#0f1230">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Cortège · Carte des manifs en direct, sans compte</title>
@@ -24,6 +24,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="/theme.js"></script>
 <link rel="stylesheet" href="/vendor/leaflet.css">
 <link rel="stylesheet" href="/vendor/MarkerCluster.css">
 <link rel="stylesheet" href="/style.css">
@@ -306,6 +307,12 @@
     <input type="checkbox" id="optEco">
     <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
   </label>
+  <p class="menu-group" id="themeLabel">Apparence</p>
+  <div class="theme-seg" id="themeSeg" role="group" aria-labelledby="themeLabel">
+    <button type="button" data-theme-pref="system">Système</button>
+    <button type="button" data-theme-pref="light">Clair</button>
+    <button type="button" data-theme-pref="dark">Sombre</button>
+  </div>
   <label class="switch">
     <input type="checkbox" id="optBig">
     <span class="switch-txt"><b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span></span>

@@ -2895,3 +2895,19 @@ msgstr "🎓 Schulen und Unis"
 #: src/routes/orga.js
 msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
 msgstr "Ankündigungen sind zertifizierten Orgas vorbehalten. In der Probezeit kannst du Meldungen prüfen und die Nummer deines Legal Teams vorschlagen."
+
+#: public/index.html
+msgid "Apparence"
+msgstr "Darstellung"
+
+#: public/index.html
+msgid "Système"
+msgstr "System"
+
+#: public/index.html
+msgid "Clair"
+msgstr "Hell"
+
+#: public/index.html
+msgid "Sombre"
+msgstr "Dunkel"

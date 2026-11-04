@@ -2892,3 +2892,19 @@ msgstr ""
 #: src/routes/orga.js
 msgid "Les annonces sont réservées aux orgas certifiées. Pendant la période d’essai, tu peux vérifier les signalements et proposer le numéro de ta legal team."
 msgstr ""
+
+#: public/index.html
+msgid "Apparence"
+msgstr ""
+
+#: public/index.html
+msgid "Système"
+msgstr ""
+
+#: public/index.html
+msgid "Clair"
+msgstr ""
+
+#: public/index.html
+msgid "Sombre"
+msgstr ""

@@ -7,20 +7,17 @@
 <title>Cortège · mentions légales et confidentialité</title>
 <meta name="description" content="Mentions légales de Cortège et ce que le serveur garde ou non : pas de compte, pas de pistage.">
 <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
 <style>
 /* Page de lecture : une colonne, sommaire en tête, sections numérotées par la structure du texte. */
-:root {
-  --bg: #121214; --surface: #1c1c20; --line: #34343c; --fg: #f2f1f4; --muted: #a3a1ad; --accent: #ec9fa4;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color-scheme: dark;
-}
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font); }
+body { margin: 0; background: var(--page-bg); background-attachment: fixed; color: var(--fg); font: 16px/1.6 var(--font); }
 main { max-width: 720px; margin: 0 auto; padding: 28px 16px 64px; }
 header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 header img { width: 44px; height: 44px; object-fit: contain; }
-h1 { font-size: 24px; line-height: 1.2; margin: 0; text-wrap: balance; }
+h1 { font: 400 30px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .01em; margin: 0; text-wrap: balance; }
 h2 { font-size: 19px; margin: 36px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
 h3 { font-size: 16px; margin: 20px 0 4px; }
 p, li { color: color-mix(in srgb, var(--fg) 88%, var(--bg)); max-width: 65ch; }
@@ -35,7 +32,7 @@ table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { color: var(--muted); font-weight: 600; font-size: 13px; }
 .updated { color: var(--muted); font-size: 13px; }
-.todo { background: #5a3a00; color: #ffd08a; padding: 0 4px; border-radius: 4px; }
+.todo { background: var(--warn-bg); color: var(--warn-text); padding: 0 4px; border-radius: 4px; }
 </style>
 </head>
 <body>

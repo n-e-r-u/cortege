@@ -1,62 +1,149 @@
 {
-  "version": "2.10",
+  "version": "2.12",
   "items": [
     [
-      "✋ Ton signalement, ta main",
-      "Posé par erreur ou mal placé ? Touche ton point : tu peux le retirer, ou le déplacer dans les 10 premières minutes."
+      "🎨 Nouveau look",
+      "Cortège passe aux couleurs de @neru : nouveau lettrage, cartes en relief, fond de carte redessiné. Les couleurs des signalements ne changent pas."
     ],
     [
-      "🌍 La carte hors de France",
-      "La carte s’affiche aussi ailleurs dans le monde, et l’appli s’adapte au pays : noms des forces de l’ordre, numéros d’urgence, droits."
+      "🌗 Clair ou sombre",
+      "Choisis l’apparence dans Plus › Réglages : clair, sombre, ou comme ton téléphone (réglage par défaut)."
     ],
     [
-      "🗣️ Traduis Cortège",
-      "Une langue = un fichier. Tu veux Cortège dans ta langue ? Propose ta traduction, sans toucher au code."
+      "🇩🇪 Cortège auf Deutsch",
+      "L’appli existe maintenant en allemand. Fais tourner le lien à tes camarades d’Allemagne, de Suisse et d’Autriche."
     ]
   ],
   "items_en": [
     [
-      "✋ Your report, your call",
-      "Placed by mistake or in the wrong spot? Tap your point: you can remove it, or move it within the first 10 minutes."
+      "🎨 New look",
+      "Cortège now wears @neru’s colours: new lettering, raised cards, a redrawn base map. Report colours stay the same."
     ],
     [
-      "🌍 The map beyond France",
-      "The map now shows elsewhere in the world, and the app adapts to the country: police unit names, emergency numbers, rights."
+      "🌗 Light or dark",
+      "Pick the appearance in More › Settings: light, dark, or same as your phone (the default)."
     ],
     [
-      "🗣️ Translate Cortège",
-      "One language = one file. Want Cortège in your language? Send your translation, no code needed."
+      "🇩🇪 Cortège auf Deutsch",
+      "The app is now available in German. Pass the link on to comrades in Germany, Switzerland and Austria."
     ]
   ],
   "items_es": [
     [
-      "✋ Tu aviso, tu decisión",
-      "¿Puesto por error o en el sitio equivocado? Toca tu punto: puedes retirarlo, o moverlo en los primeros 10 minutos."
+      "🎨 Nuevo aspecto",
+      "Cortège adopta los colores de @neru: nueva tipografía, tarjetas en relieve, mapa redibujado. Los colores de los avisos no cambian."
     ],
     [
-      "🌍 El mapa fuera de Francia",
-      "El mapa también se muestra en otras partes del mundo, y la app se adapta al país: nombres de la policía, números de emergencia, derechos."
+      "🌗 Claro u oscuro",
+      "Elige la apariencia en Más › Ajustes: claro, oscuro o como tu teléfono (por defecto)."
     ],
     [
-      "🗣️ Traduce Cortège",
-      "Un idioma = un archivo. ¿Quieres Cortège en tu idioma? Propón tu traducción, sin tocar el código."
+      "🇩🇪 Cortège auf Deutsch",
+      "La app ya está en alemán. Pasa el enlace a tus compañeras y compañeros de Alemania, Suiza y Austria."
     ]
   ],
   "items_ar": [
     [
-      "✋ بلاغك، قرارك",
-      "وضعته بالخطأ أو في المكان الخطأ؟ المس نقطتك: يمكنك إزالتها، أو نقلها خلال الدقائق العشر الأولى."
+      "🎨 مظهر جديد",
+      "يعتمد Cortège ألوان @neru: خط جديد، بطاقات بارزة، وخريطة أساس معاد رسمها. ألوان البلاغات لا تتغير."
     ],
     [
-      "🌍 الخريطة خارج فرنسا",
-      "تظهر الخريطة الآن في أماكن أخرى من العالم، ويتكيّف التطبيق مع البلد: أسماء وحدات الشرطة، أرقام الطوارئ، الحقوق."
+      "🌗 فاتح أو داكن",
+      "اختر المظهر من المزيد › الإعدادات: فاتح، داكن، أو مثل هاتفك (الافتراضي)."
     ],
     [
-      "🗣️ ترجم Cortège",
-      "لغة واحدة = ملف واحد. تريد Cortège بلغتك؟ اقترح ترجمتك دون لمس الشيفرة."
+      "🇩🇪 Cortège auf Deutsch",
+      "التطبيق متوفر الآن بالألمانية. شارك الرابط مع رفاقك في ألمانيا وسويسرا والنمسا."
+    ]
+  ],
+  "items_de": [
+    [
+      "🎨 Neuer Look",
+      "Cortège trägt jetzt die Farben von @neru: neue Schrift, Karten mit Relief, neu gezeichnete Grundkarte. Die Farben der Meldungen bleiben gleich."
+    ],
+    [
+      "🌗 Hell oder dunkel",
+      "Wähle die Darstellung unter Mehr › Einstellungen: hell, dunkel oder wie dein Handy (Standard)."
+    ],
+    [
+      "🇩🇪 Cortège auf Deutsch",
+      "Die App gibt es jetzt auf Deutsch. Teile den Link mit Genoss:innen in Deutschland, der Schweiz und Österreich."
     ]
   ],
   "history": [
+    {
+      "version": "2.12",
+      "items": [
+        [
+          "🎨 Nouveau look",
+          "Cortège passe aux couleurs de @neru : nouveau lettrage, cartes en relief, fond de carte redessiné. Les couleurs des signalements ne changent pas."
+        ],
+        [
+          "🌗 Clair ou sombre",
+          "Choisis l’apparence dans Plus › Réglages : clair, sombre, ou comme ton téléphone (réglage par défaut)."
+        ],
+        [
+          "🇩🇪 Cortège auf Deutsch",
+          "L’appli existe maintenant en allemand. Fais tourner le lien à tes camarades d’Allemagne, de Suisse et d’Autriche."
+        ]
+      ],
+      "items_en": [
+        [
+          "🎨 New look",
+          "Cortège now wears @neru’s colours: new lettering, raised cards, a redrawn base map. Report colours stay the same."
+        ],
+        [
+          "🌗 Light or dark",
+          "Pick the appearance in More › Settings: light, dark, or same as your phone (the default)."
+        ],
+        [
+          "🇩🇪 Cortège auf Deutsch",
+          "The app is now available in German. Pass the link on to comrades in Germany, Switzerland and Austria."
+        ]
+      ],
+      "items_es": [
+        [
+          "🎨 Nuevo aspecto",
+          "Cortège adopta los colores de @neru: nueva tipografía, tarjetas en relieve, mapa redibujado. Los colores de los avisos no cambian."
+        ],
+        [
+          "🌗 Claro u oscuro",
+          "Elige la apariencia en Más › Ajustes: claro, oscuro o como tu teléfono (por defecto)."
+        ],
+        [
+          "🇩🇪 Cortège auf Deutsch",
+          "La app ya está en alemán. Pasa el enlace a tus compañeras y compañeros de Alemania, Suiza y Austria."
+        ]
+      ],
+      "items_ar": [
+        [
+          "🎨 مظهر جديد",
+          "يعتمد Cortège ألوان @neru: خط جديد، بطاقات بارزة، وخريطة أساس معاد رسمها. ألوان البلاغات لا تتغير."
+        ],
+        [
+          "🌗 فاتح أو داكن",
+          "اختر المظهر من المزيد › الإعدادات: فاتح، داكن، أو مثل هاتفك (الافتراضي)."
+        ],
+        [
+          "🇩🇪 Cortège auf Deutsch",
+          "التطبيق متوفر الآن بالألمانية. شارك الرابط مع رفاقك في ألمانيا وسويسرا والنمسا."
+        ]
+      ],
+      "items_de": [
+        [
+          "🎨 Neuer Look",
+          "Cortège trägt jetzt die Farben von @neru: neue Schrift, Karten mit Relief, neu gezeichnete Grundkarte. Die Farben der Meldungen bleiben gleich."
+        ],
+        [
+          "🌗 Hell oder dunkel",
+          "Wähle die Darstellung unter Mehr › Einstellungen: hell, dunkel oder wie dein Handy (Standard)."
+        ],
+        [
+          "🇩🇪 Cortège auf Deutsch",
+          "Die App gibt es jetzt auf Deutsch. Teile den Link mit Genoss:innen in Deutschland, der Schweiz und Österreich."
+        ]
+      ]
+    },
     {
       "version": "2.10",
       "items": [
