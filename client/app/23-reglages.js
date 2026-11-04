@@ -59,13 +59,18 @@
     setTimeout(() => { if (!document.querySelector('.sheet:not([hidden])')) openNews(); }, 2500);
   });
   // ---- La carte sur un autre site (iframe en lecture seule) ----
-  $('#btnEmbed').onclick = () => {
-    closeReport(); closeSheets();
-    const c = map.getCenter(), src = `${location.origin}/embed.html?lat=${c.lat.toFixed(3)}&lng=${c.lng.toFixed(3)}&z=${Math.min(15, Math.max(10, map.getZoom()))}`;
+  function embedCode() {
+    const c = map.getCenter(), th = $('#embedTheme').value;
+    const src = `${location.origin}/embed.html?lat=${c.lat.toFixed(3)}&lng=${c.lng.toFixed(3)}&z=${Math.min(15, Math.max(10, map.getZoom()))}${th ? '&theme=' + th : ''}`;
     $('#embedCode').value = `<iframe src="${src}" width="100%" height="480" style="border:0;border-radius:12px" loading="lazy" title="${t('Carte en direct des manifs (Cortège)')}"></iframe>`;
     $('#embedOpen').href = src;
+  }
+  $('#btnEmbed').onclick = () => {
+    closeReport(); closeSheets();
+    embedCode();
     $('#sheetEmbed').hidden = false;
   };
+  $('#embedTheme').onchange = embedCode;
   $('#emClose').onclick = () => closeSheets();
   $('#embedCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#embedCode').value); toast('Code copié'); } catch { $('#embedCode').select(); } };
   try {

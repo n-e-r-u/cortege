@@ -76,7 +76,7 @@
         fix[r.id] = best;
         if (r.cat === 'cortege') {
           const { e, o } = best, pct = Math.round(o.at / o.total * 100);
-          L.polyline(routeSlice(e.route, 0, o.at), { color: '#ec9fa4', weight: 7, opacity: .9, interactive: false }).addTo(flowLayer);
+          L.polyline(routeSlice(e.route, 0, o.at), { color: themeCol('--route', '#f6a29c'), weight: 7, opacity: .9, interactive: false }).addTo(flowLayer);
           const left = o.total - o.at, sp = mo && mo.kmh > 0.3 ? mo.kmh * 1000 / 60 : null; // mètres par minute
           info(r.id).lines.push(t('Parcours « {title} » : {p} % fait', { title: e.title, p: pct }) + (sp ? ' · ' + t('fin dans environ {d}', { d: mins(left / sp) }) : ''));
           if (me && sp) { const mine = onRoute(e.route, me); if (mine.d <= 200 && mine.at > o.at) info(r.id).lines.push(t('Arrive près de toi dans environ {d}', { d: mins((mine.at - o.at) / sp) })); }

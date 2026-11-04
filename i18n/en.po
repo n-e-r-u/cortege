@@ -2914,3 +2914,15 @@ msgstr "Light"
 #: public/index.html
 msgid "Sombre"
 msgstr "Dark"
+
+#: public/index.html
+msgid "Apparence de la carte"
+msgstr "Map appearance"
+
+#: public/index.html
+msgid "Selon l’appareil de qui regarde"
+msgstr "Follows the viewer’s device"
+
+#: public/index.html
+msgid "Claire"
+msgstr "Light"

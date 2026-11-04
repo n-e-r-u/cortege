@@ -37,40 +37,40 @@
   async function loadAssets() {
     if (assets) return assets;
     const f = n => fetchData('/vendor/fonts/' + n + '.woff2');
-    const [i4, i7, i8, i9, mono, logo, map] = await Promise.all([f('inter-400'), f('inter-700'), f('inter-800'), f('inter-900'), f('jetbrains-mono-700'),
+    const [i4, i7, i8, i9, mono, anton, logo, map] = await Promise.all([f('inter-400'), f('inter-700'), f('inter-800'), f('inter-900'), f('jetbrains-mono-700'), f('anton-400'),
       fetchData('/brand/logo.png').catch(() => ''), fetch('/story-map.json').then(r => r.json())]);
     assets = { logo, map, css: `
 @font-face { font-family: Inter; font-weight: 400; src: url(${i4}); } @font-face { font-family: Inter; font-weight: 700; src: url(${i7}); }
 @font-face { font-family: Inter; font-weight: 800; src: url(${i8}); } @font-face { font-family: Inter; font-weight: 900; src: url(${i9}); }
-@font-face { font-family: Mono; font-weight: 700; src: url(${mono}); }` };
+@font-face { font-family: Mono; font-weight: 700; src: url(${mono}); } @font-face { font-family: Anton; font-weight: 400; src: url(${anton}); }` };
     return assets;
   }
 
   const CSS = `
 * { box-sizing: border-box; margin: 0; }
-.root { width: ${W}px; height: ${H}px; overflow: hidden; position: relative; background: #121214; color: #f2f1f4; font-family: Inter, sans-serif; }
+.root { width: ${W}px; height: ${H}px; overflow: hidden; position: relative; background: #0f1230; color: #f3f2fa; font-family: Inter, sans-serif; }
 .bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
-.shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18,18,20,.55) 0%, rgba(18,18,20,0) 22%, rgba(18,18,20,0) 45%, rgba(18,18,20,.88) 66%, #121214 100%); }
+.shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,18,48,.55) 0%, rgba(15,18,48,0) 22%, rgba(15,18,48,0) 45%, rgba(15,18,48,.88) 66%, #0f1230 100%); }
 .page { position: absolute; inset: 0; padding: 230px 80px 260px; display: flex; flex-direction: column; }
-.kicker { font-size: 30px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #ec9fa4; }
-h2 { font-size: 64px; line-height: 1.05; font-weight: 900; letter-spacing: -.02em; margin-top: 14px; }
-.sub { font-size: 34px; line-height: 1.3; color: #c9c7d1; margin-top: 18px; }
-.big { font-weight: 900; font-size: 210px; line-height: .9; letter-spacing: -.04em; color: #ec9fa4; }
-.foot { position: absolute; left: 80px; right: 80px; bottom: 150px; display: flex; align-items: center; justify-content: space-between; font-size: 28px; color: #a3a1ad; }
-.brand { display: flex; align-items: center; gap: 16px; color: #f2f1f4; font-weight: 800; font-size: 30px; }
+.kicker { font-size: 30px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #f6a29c; }
+h2 { font: 400 76px/1.02 Anton, sans-serif; text-transform: uppercase; letter-spacing: .005em; margin-top: 14px; }
+.sub { font-size: 34px; line-height: 1.3; color: #d6d7ee; margin-top: 18px; }
+.big { font: 400 250px/.9 Anton, sans-serif; color: #f6a29c; }
+.foot { position: absolute; left: 80px; right: 80px; bottom: 150px; display: flex; align-items: center; justify-content: space-between; font-size: 28px; color: #b0b3d8; }
+.brand { display: flex; align-items: center; gap: 16px; color: #f3f2fa; font: 400 36px/1 Anton, sans-serif; text-transform: uppercase; letter-spacing: .02em; }
 .brand img { width: 58px; height: 58px; border-radius: 12px; }
 .num { font-family: Mono, monospace; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px 30px; margin-top: 22px; font-size: 27px; }
 .legend span { display: inline-flex; align-items: center; gap: 12px; }
 .legend i { width: 22px; height: 22px; border-radius: 50%; display: inline-block; }
 .legend b { font-family: Mono, monospace; }
-.note { font-size: 25px; color: #a3a1ad; line-height: 1.35; margin-top: 22px; }
+.note { font-size: 25px; color: #b0b3d8; line-height: 1.35; margin-top: 22px; }
 .row { display: grid; align-items: center; gap: 18px; }
 .bar { border-radius: 6px; display: block; }
-.stat { padding: 34px 0; border-top: 2px solid #34343c; }
+.stat { padding: 34px 0; border-top: 2px solid #363c73; }
 .stat .num { font-size: 110px; line-height: 1; }
 .stat div + div { font-size: 34px; line-height: 1.3; margin-top: 12px; }
-.link { margin-top: 40px; height: 120px; border: 3px dashed rgba(242,241,244,.35); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #a3a1ad; }`;
+.link { margin-top: 40px; height: 120px; border: 3px dashed rgba(243,242,250,.35); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #b0b3d8; }`;
 
   // Projection conique conforme (identique à celle qui a servi à dessiner le fond de carte)
   function projector(m) {
@@ -110,8 +110,8 @@ h2 { font-size: 64px; line-height: 1.05; font-weight: 900; letter-spacing: -.02e
     out.push(`<div class="page"><div class="kicker">Où ?</div><h2>Signalements par ville</h2>
 <p class="sub">Plus le cercle est grand, plus il y a de signalements. ${s.city.length} ville${s.city.length > 1 ? 's' : ''} en tout${bm.merged ? ', les communes voisines regroupées' : ''}.</p>
 <svg xmlns="http://www.w3.org/2000/svg" width="${m.w}" height="${m.h}" viewBox="0 0 ${m.w} ${m.h}" style="margin-top:34px">
-<defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient><clipPath id="c"><rect width="${m.w}" height="${m.h}"/></clipPath></defs>
-<g clip-path="url(#c)">${m.near.map(p => `<path d="${p}" fill="#1c1c20" stroke="#34343c" stroke-width="1.5"/>`).join('')}<path d="${m.fr}" fill="#26262c" stroke="#5a5866" stroke-width="2"/>${dots}${labels.join('')}</g></svg></div>${foot(2)}`);
+<defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6a29c"/><stop offset="1" stop-color="#8e9bf0"/></linearGradient><clipPath id="c"><rect width="${m.w}" height="${m.h}"/></clipPath></defs>
+<g clip-path="url(#c)">${m.near.map(p => `<path d="${p}" fill="#191d45" stroke="#363c73" stroke-width="1.5"/>`).join('')}<path d="${m.fr}" fill="#242a59" stroke="#4a5194" stroke-width="2"/>${dots}${labels.join('')}</g></svg></div>${foot(2)}`);
     // 3. Par type
     const maxC = s.cats[0]?.n || 1, rh = s.cats.length > 16 ? 58 : 66;
     out.push(`<div class="page"><div class="kicker">Quoi ?</div><h2>Les ${nf(s.total)} signalements, par type</h2>
@@ -122,14 +122,14 @@ h2 { font-size: 64px; line-height: 1.05; font-weight: 900; letter-spacing: -.02e
     const maxH = Math.max(...s.hours), peak = s.hours.indexOf(maxH), BH = 980;
     out.push(`<div class="page"><div class="kicker">Quand ?</div><h2>Signalements par heure</h2>
 <p class="sub">Premier à ${hh(s.first)}, dernier à ${hh(s.last)}. Le plus d’envois : entre ${peak} h et ${(peak + 1) % 24} h (${maxH}).</p>
-<div style="display:flex;gap:7px;margin-top:70px;border-bottom:2px solid #5a5866">${s.hours.map((n, i) => `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:${BH}px">
-${i === peak ? `<span class="num" style="font-size:28px;margin-bottom:10px;color:#ec9fa4">${n}</span>` : ''}<div style="width:100%;height:${n / maxH * (BH - 60)}px;min-height:${n ? 3 : 0}px;border-radius:5px 5px 0 0;background:${i === peak ? '#ec9fa4' : '#5b66c4'}"></div></div>`).join('')}</div>
-<div class="num" style="display:flex;gap:7px;margin-top:14px;font-size:24px;color:#a3a1ad">${s.hours.map((_, i) => `<span style="flex:1;text-align:center">${i % 3 === 0 ? i + 'h' : ''}</span>`).join('')}</div></div>${foot(4)}`);
+<div style="display:flex;gap:7px;margin-top:70px;border-bottom:2px solid #4a5194">${s.hours.map((n, i) => `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:${BH}px">
+${i === peak ? `<span class="num" style="font-size:28px;margin-bottom:10px;color:#f6a29c">${n}</span>` : ''}<div style="width:100%;height:${n / maxH * (BH - 60)}px;min-height:${n ? 3 : 0}px;border-radius:5px 5px 0 0;background:${i === peak ? '#f6a29c' : '#6d7be0'}"></div></div>`).join('')}</div>
+<div class="num" style="display:flex;gap:7px;margin-top:14px;font-size:24px;color:#b0b3d8">${s.hours.map((_, i) => `<span style="flex:1;text-align:center">${i % 3 === 0 ? i + 'h' : ''}</span>`).join('')}</div></div>${foot(4)}`);
     // 5. Villes
     const top = s.city.slice(0, 12), maxV = top[0]?.n || 1, rest = s.city.slice(12), restN = rest.reduce((t, c) => t + c.n, 0);
     out.push(`<div class="page"><div class="kicker">Dans quelles villes ?</div><h2>Les ${top.length} villes les plus actives</h2>
 <div style="margin-top:40px">${top.map(c => `<div class="row" style="grid-template-columns:420px 1fr 92px;height:74px"><span style="font-size:30px;font-weight:700;line-height:1.1">${esc(c.name)}</span>
-<span class="bar" style="height:32px;background:linear-gradient(90deg,#ec9fa4,#a191d8);width:${Math.max(1.5, c.n / maxV * 100)}%"></span><span class="num" style="font-size:32px;text-align:right">${nf(c.n)}</span></div>`).join('')}</div>
+<span class="bar" style="height:32px;background:linear-gradient(90deg,#f6a29c,#9576a8);width:${Math.max(1.5, c.n / maxV * 100)}%"></span><span class="num" style="font-size:32px;text-align:right">${nf(c.n)}</span></div>`).join('')}</div>
 ${rest.length ? `<p class="sub" style="font-size:30px;margin-top:20px">+ ${rest.length} autre${rest.length > 1 ? 's' : ''} ville${rest.length > 1 ? 's' : ''} : ${nf(restN)} signalement${restN > 1 ? 's' : ''}.</p>` : ''}
 <p class="note">Chaque ville compte aussi les communes voisines de son agglomération.</p></div>${foot(5)}`);
     // 6. Vérification
@@ -141,7 +141,7 @@ ${stat(s.removed, 'signalements retirés de la carte avant leur expiration', '#f
 <p class="note">Les ${nf(s.total)} signalements de cette série incluent les ${nf(s.removed)} retirés.</p></div>${foot(6)}`);
     // 7. Source
     out.push(`${photos.end ? `<div class="bg" style="background-image:url(${photos.end})"></div><div class="shade"></div>` : ''}
-<div class="page" style="justify-content:flex-end"><div class="kicker">Source</div><h2 style="font-size:58px">Cortège, la carte en direct des manifs</h2>
+<div class="page" style="justify-content:flex-end"><div class="kicker">Source</div><h2 style="font-size:70px">Cortège, la carte en direct des manifs</h2>
 <p class="sub">Signalements anonymes envoyés par les manifestant·es. Un signalement n’est pas un fait vérifié : il est confirmé ou contesté par les autres sur place.</p>
 <div class="link">${esc(location.host)}</div></div>${foot(7)}`);
     return out;

@@ -2911,3 +2911,15 @@ msgstr "Hell"
 #: public/index.html
 msgid "Sombre"
 msgstr "Dunkel"
+
+#: public/index.html
+msgid "Apparence de la carte"
+msgstr "Darstellung der Karte"
+
+#: public/index.html
+msgid "Selon l’appareil de qui regarde"
+msgstr "Je nach Gerät der Person"
+
+#: public/index.html
+msgid "Claire"
+msgstr "Hell"

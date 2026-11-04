@@ -3,6 +3,8 @@
   const I18N = window.I18N || { lang: 'fr', locale: 'fr-FR', t: (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : s, tn: (n, a, b, v) => (n > 1 ? b : a).replace(/\{(\w+)\}/g, (m, k) => ({ n, ...v })[k] ?? m), set() {}, translate() {} };
   const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
+  // Couleur lue dans le thème en cours (clair ou sombre), pour les tracés dessinés sur la carte
+  const themeCol = (name, dflt) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || dflt;
   const MIN = 60_000;
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga

@@ -14,7 +14,7 @@
   function redrawDraft() {
     drawLayer.clearLayers();
     const r = draft.route, n = r.length;
-    if (n > 1) L.polyline(r, { color: '#ec9fa4', weight: 5, interactive: false }).addTo(drawLayer);
+    if (n > 1) L.polyline(r, { color: themeCol('--route', '#f6a29c'), weight: 5, interactive: false }).addTo(drawLayer);
     r.forEach((p, i) => L.marker(p, { interactive: false, keyboard: false,
       icon: i === 0 ? L.divIcon({ className: '', iconSize: [38, 38], html: '<div class="ev-pin">📍</div>' }) : L.divIcon({ className: '', iconSize: [14, 14], html: '<div class="draw-pt"></div>' }) }).addTo(drawLayer));
     $('#drawCount').textContent = !n ? t('Aucun point') : n === 1 ? t('Rendez-vous placé') : tn(n - 1, 'Rendez-vous + {n} point de parcours', 'Rendez-vous + {n} points de parcours');

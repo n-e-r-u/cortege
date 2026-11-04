@@ -21,7 +21,7 @@ const routeCache = new Map();
 function mapSvg(cities) {
   try { storyMap ||= JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'story-map.json'), 'utf8')); } catch { return ''; }
   const m = storyMap, b = BubbleMap.svg(cities, m, { fontSize: 26, labels: 14, esc: htmlEsc });
-  return `<svg class="bmap" viewBox="0 0 ${m.w} ${m.h}" role="img" aria-label="Carte des signalements par ville"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec9fa4"/><stop offset="1" stop-color="#7d86dc"/></linearGradient></defs>`
+  return `<svg class="bmap" viewBox="0 0 ${m.w} ${m.h}" role="img" aria-label="Carte des signalements par ville"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6a29c"/><stop offset="1" stop-color="#8e9bf0"/></linearGradient></defs>`
     + m.near.map(p => `<path d="${p}" style="fill:var(--surface);stroke:var(--line)" stroke-width="1.5"/>`).join('') + `<path d="${m.fr}" style="fill:var(--surface-2);stroke:var(--muted)" stroke-width="2"/>${b.dots}${b.labels}</svg>`
     + (b.merged ? '<p class="fine">Sur la carte, les communes très proches sont regroupées sous le nom de la plus active ; le détail est dans la liste.</p>' : '');
 }

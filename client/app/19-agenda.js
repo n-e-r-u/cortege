@@ -34,7 +34,7 @@
     for (const e of evCache.e.filter(evOnMap)) {
       const ty = EVT[e.type] || { glyph: '📍' };
       if (e.route) {
-        L.polyline(e.route, { color: '#ec9fa4', weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
+        L.polyline(e.route, { color: themeCol('--route', '#f6a29c'), weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
         if (e.end) L.marker(e.route[e.route.length - 1], { icon: L.divIcon({ className: '', iconSize: [30, 30], html: '<div class="ev-end">🏁</div>' }), title: t('Dispersion prévue'), keyboard: false })
           .bindPopup(() => el('div', {}, t('Dispersion prévue : {title}', { title: e.title }))).addTo(evLayer);
       }
@@ -46,6 +46,8 @@
     try { drawFlow(); } catch {}
     renderFilters();
   }
+  // Thème changé (réglage, système ou mode manif) : les parcours prennent la couleur du nouveau thème
+  window.addEventListener('cortege-theme', () => { try { renderEvents(); drawFlow(); } catch {} });
   function renderAgenda() {
     const scope = document.querySelector('input[name="agScope"]:checked').value;
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();

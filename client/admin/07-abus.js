@@ -53,7 +53,7 @@ function renderOrgas({ orgas }) {
       const rd = document.createElement('div'); rd.className = 'meta';
       const r = o.readiness;
       rd.textContent = r.ready ? '✓ Prête à être confirmée (' + r.days + ' j, ' + r.actions + ' actions, aucun incident)' : `Surveillance renforcée : ${r.days} j, ${r.actions} action(s)` + (r.bursts ? `, ${r.bursts} rafale(s) bloquée(s)` : '') + (r.restored ? `, ${r.restored} retrait(s) annulé(s)` : '');
-      if (r.ready) rd.style.color = '#7ee2b0';
+      if (r.ready) rd.style.color = 'var(--ok-text)';
       extra = rd;
     }
     const stats = document.createElement('div'); stats.className = 'meta';

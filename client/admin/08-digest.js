@@ -4,7 +4,8 @@ const OUTCOME = { exp: 'expirés normalement', active: 'encore actifs', cont: 'c
 const REMOVED = new Set(['cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old']);
 const KEY_CATS = ['charge', 'nasse', 'lacrymo', 'canon', 'sommations', 'interpellation', 'bac', 'crs'];
 let dg = null, dgMap = null, dgLayer = null, brand = {};
-fetch('/api/config').then(r => r.json()).then(c => { brand = c.brand || {}; }).catch(() => {});
+let dgVector = null;
+fetch('/api/config').then(r => r.json()).then(c => { brand = c.brand || {}; dgVector = c.vector || null; }).catch(() => {});
 const minutes = ms => Math.round(ms / 60000);
 const median = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
 
@@ -48,7 +49,15 @@ function renderDigest() {
   // Carte
   if (!dgMap) {
     dgMap = L.map('dgMap', { zoomControl: true, attributionControl: true });
-    L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(dgMap);
+    // Même fond que l'appli : carte vectorielle du serveur (claire ou sombre selon le thème), sinon tuiles OpenStreetMap
+    if (dgVector && window.protomapsL && window.cortegeVectorLayer) {
+      const make = () => window.cortegeVectorLayer(window.protomapsL, { url: dgVector.url, lang: 'fr', maxDataZoom: dgVector.maxzoom, maxZoom: 20 });
+      let vl = make().addTo(dgMap);
+      window.addEventListener('cortege-theme', () => { const old = vl; vl = make().addTo(dgMap); dgMap.removeLayer(old); dgLayer.bringToFront?.(); });
+    } else {
+      dgMap.getContainer().classList.add('raster');
+      L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(dgMap);
+    }
     dgLayer = L.layerGroup().addTo(dgMap);
   }
   dgLayer.clearLayers();

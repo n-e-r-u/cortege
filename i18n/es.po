@@ -2914,3 +2914,15 @@ msgstr "Claro"
 #: public/index.html
 msgid "Sombre"
 msgstr "Oscuro"
+
+#: public/index.html
+msgid "Apparence de la carte"
+msgstr "Apariencia del mapa"
+
+#: public/index.html
+msgid "Selon l’appareil de qui regarde"
+msgstr "Según el dispositivo de cada persona"
+
+#: public/index.html
+msgid "Claire"
+msgstr "Claro"

@@ -7,7 +7,7 @@
   --bg: #0f1230; --surface: #191d45; --surface-2: #242a59; --line: #363c73;
   --fg: #f3f2fa; --muted: #b0b3d8; --accent: #9eaaff; --accent-fg: #0f1230;
   --brand-grad: linear-gradient(135deg, #ef8f88, #9576a8 55%, #3a4db2); --grad-fg: #ffffff;
-  --fdo: #e5484d; --danger: #f5a524; --soutien: #30a46c; --info: #8e8cd8;
+  --fdo: #e5484d; --danger: #f5a524; --soutien: #30a46c; --info: #8e8cd8; --fdo-strong: #cf3036; --info-strong: #6966c6;
   --ok-text: #7ee2b0; --warn-text: #ffcf7a; --bad-text: #ff9a9d;
   --warn-bg: #3a2c00; --overlay: rgba(25, 29, 69, .92);
   --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

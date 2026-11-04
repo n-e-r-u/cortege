@@ -2950,3 +2950,15 @@ msgstr "فاتح"
 #: public/index.html
 msgid "Sombre"
 msgstr "داكن"
+
+#: public/index.html
+msgid "Apparence de la carte"
+msgstr "مظهر الخريطة"
+
+#: public/index.html
+msgid "Selon l’appareil de qui regarde"
+msgstr "حسب جهاز كل شخص"
+
+#: public/index.html
+msgid "Claire"
+msgstr "فاتح"

@@ -25,7 +25,7 @@
       const n = document.createElement('div'); n.className = 'n'; n.textContent = it.phone;
       list.append(n, who);
     }
-    if (extra) { const n = document.createElement('div'); n.className = 'who'; n.style.fontSize = '6mm'; n.style.color = '#121214'; n.textContent = extra; list.append(n); }
+    if (extra) { const n = document.createElement('div'); n.className = 'who'; n.style.fontSize = '6mm'; n.style.color = '#1c2156'; n.textContent = extra; list.append(n); }
     $('#legal').hidden = !items.length && !extra;
     $('#legalTitle').textContent = c ? 'Legal team · ' + c.name : 'Legal team';
     document.title = 'Affiche Cortège' + (c ? ' · ' + c.name : '');

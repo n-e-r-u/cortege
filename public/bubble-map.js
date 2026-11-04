@@ -53,7 +53,7 @@
   function svg(cities, m, o = {}) {
     const esc = o.esc || escD, fmt = o.numFmt || String, fs = o.fontSize || 26, cw = o.charW || fs * 0.62, h = fs * 1.2;
     const cl = layout(cities, m, o);
-    const dots = cl.map(c => `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${c.r.toFixed(1)}" fill="url(#gr)" fill-opacity=".8" stroke="#121214" stroke-width="2">`
+    const dots = cl.map(c => `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${c.r.toFixed(1)}" fill="url(#gr)" fill-opacity=".8" stroke="#0f1230" stroke-width="2">`
       + `<title>${esc(c.name)}${c.k > 1 ? ' et ' + (c.k - 1) + ' commune' + (c.k > 2 ? 's' : '') + ' voisine' + (c.k > 2 ? 's' : '') : ''} : ${fmt(c.n)}</title></circle>`).join('');
     const placed = [], labels = [];
     // Les villes les plus actives ont toujours leur étiquette : si tout est pris, on s'éloigne un peu du cercle,
@@ -73,8 +73,8 @@
       if (!ok) continue;
       const [bx, by, anchor] = ok; placed.push([bx, by, w, h]);
       const tx = anchor === 'start' ? bx + 3 : anchor === 'end' ? bx + w - 3 : bx + w / 2;
-      labels.push(`<text x="${tx.toFixed(1)}" y="${(by + fs * 0.92).toFixed(1)}" text-anchor="${anchor}"${o.font ? ` font-family="${o.font}"` : ''} font-weight="800" font-size="${fs}" fill="#f2f1f4" paint-order="stroke" stroke="#121214" stroke-width="${Math.round(fs / 4)}" stroke-linejoin="round">`
-        + `${esc(c.name)} <tspan${o.numFont ? ` font-family="${o.numFont}"` : ''} fill="#ec9fa4">${esc(fmt(c.n))}</tspan></text>`);
+      labels.push(`<text x="${tx.toFixed(1)}" y="${(by + fs * 0.92).toFixed(1)}" text-anchor="${anchor}"${o.font ? ` font-family="${o.font}"` : ''} font-weight="800" font-size="${fs}" fill="#f3f2fa" paint-order="stroke" stroke="#0f1230" stroke-width="${Math.round(fs / 4)}" stroke-linejoin="round">`
+        + `${esc(c.name)} <tspan${o.numFont ? ` font-family="${o.numFont}"` : ''} fill="#f6a29c">${esc(fmt(c.n))}</tspan></text>`);
     }
     return { dots, labels: labels.join(''), merged: cl.some(c => c.k > 1), count: cl.length };
   }

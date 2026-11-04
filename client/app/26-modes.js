@@ -2,6 +2,8 @@
   let manif = false; try { manif = localStorage.getItem('cortege-manif') === '1'; } catch {}
   function setManif(on) {
     manif = on; document.body.classList.toggle('manif', on);
+    // Sombre imposé pendant le mode manif : écran discret la nuit, moins de batterie. Le choix d'apparence revient en sortant.
+    if (window.cortegeTheme) window.cortegeTheme.force(on ? 'dark' : null);
     try { localStorage.setItem('cortege-manif', on ? '1' : '0'); } catch {}
     $('#manifTitle').textContent = t('Mode manif') + (cfg.banner && cfg.event ? ' · ' + t(cfg.event) : '');
   }

@@ -47,7 +47,7 @@
     setInterval(renderOrdBar, 60_000);
     function showZone(o) {
       S.layer.clearLayers();
-      const shape = L.polygon(o.p.map(poly => poly.map(r => r.map(([x, y]) => [y, x]))), { color: '#f0a020', weight: 2, dashArray: '6 6', fillOpacity: 0.06, interactive: false }).addTo(S.layer);
+      const shape = L.polygon(o.p.map(poly => poly.map(r => r.map(([x, y]) => [y, x]))), { color: themeCol('--zone-line', '#f0a020'), weight: 2, dashArray: '6 6', fillOpacity: 0.06, interactive: false }).addTo(S.layer);
       closeSheets(); map.fitBounds(shape.getBounds(), { padding: [30, 30] });
       setTimeout(() => S.layer.clearLayers(), 20_000);
     }

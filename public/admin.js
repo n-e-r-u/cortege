@@ -317,7 +317,7 @@ function renderOrgas({ orgas }) {
       const rd = document.createElement('div'); rd.className = 'meta';
       const r = o.readiness;
       rd.textContent = r.ready ? '✓ Prête à être confirmée (' + r.days + ' j, ' + r.actions + ' actions, aucun incident)' : `Surveillance renforcée : ${r.days} j, ${r.actions} action(s)` + (r.bursts ? `, ${r.bursts} rafale(s) bloquée(s)` : '') + (r.restored ? `, ${r.restored} retrait(s) annulé(s)` : '');
-      if (r.ready) rd.style.color = '#7ee2b0';
+      if (r.ready) rd.style.color = 'var(--ok-text)';
       extra = rd;
     }
     const stats = document.createElement('div'); stats.className = 'meta';
@@ -404,7 +404,8 @@ const OUTCOME = { exp: 'expirés normalement', active: 'encore actifs', cont: 'c
 const REMOVED = new Set(['cont', 'orga', 'admin', 'full', 'purge', 'removed', 'old']);
 const KEY_CATS = ['charge', 'nasse', 'lacrymo', 'canon', 'sommations', 'interpellation', 'bac', 'crs'];
 let dg = null, dgMap = null, dgLayer = null, brand = {};
-fetch('/api/config').then(r => r.json()).then(c => { brand = c.brand || {}; }).catch(() => {});
+let dgVector = null;
+fetch('/api/config').then(r => r.json()).then(c => { brand = c.brand || {}; dgVector = c.vector || null; }).catch(() => {});
 const minutes = ms => Math.round(ms / 60000);
 const median = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
 
@@ -448,7 +449,15 @@ function renderDigest() {
   // Carte
   if (!dgMap) {
     dgMap = L.map('dgMap', { zoomControl: true, attributionControl: true });
-    L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(dgMap);
+    // Même fond que l'appli : carte vectorielle du serveur (claire ou sombre selon le thème), sinon tuiles OpenStreetMap
+    if (dgVector && window.protomapsL && window.cortegeVectorLayer) {
+      const make = () => window.cortegeVectorLayer(window.protomapsL, { url: dgVector.url, lang: 'fr', maxDataZoom: dgVector.maxzoom, maxZoom: 20 });
+      let vl = make().addTo(dgMap);
+      window.addEventListener('cortege-theme', () => { const old = vl; vl = make().addTo(dgMap); dgMap.removeLayer(old); dgLayer.bringToFront?.(); });
+    } else {
+      dgMap.getContainer().classList.add('raster');
+      L.tileLayer('/tiles/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(dgMap);
+    }
     dgLayer = L.layerGroup().addTo(dgMap);
   }
   dgLayer.clearLayers();
@@ -789,7 +798,7 @@ const MOD_WHY = {
   isolated: () => 'Isolé : aucun autre signalement à moins de 500 km. Souvent un test ou une position fausse.',
   abroad: () => 'Hors zone : visible sur la carte en direct, mais pas compté dans les bilans.',
 };
-const MOD_TAG = { 1: ['Urgent', 'var(--fdo)'], 2: ['À regarder', 'var(--danger)'], 3: ['À regarder', 'var(--danger)'], 4: ['Info', 'var(--info)'], 5: ['Info', 'var(--muted, #888)'] };
+const MOD_TAG = { 1: ['Urgent', 'var(--bad-text)'], 2: ['À regarder', 'var(--warn-text)'], 3: ['À regarder', 'var(--warn-text)'], 4: ['Info', 'var(--accent)'], 5: ['Info', 'var(--muted, #888)'] };
 let modData = [];
 function renderMod() {
   const city = $('#modCity').value, type = $('#modType').value, low = $('#modLow').checked;

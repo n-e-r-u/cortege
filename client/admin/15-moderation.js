@@ -8,7 +8,7 @@ const MOD_WHY = {
   isolated: () => 'Isolé : aucun autre signalement à moins de 500 km. Souvent un test ou une position fausse.',
   abroad: () => 'Hors zone : visible sur la carte en direct, mais pas compté dans les bilans.',
 };
-const MOD_TAG = { 1: ['Urgent', 'var(--fdo)'], 2: ['À regarder', 'var(--danger)'], 3: ['À regarder', 'var(--danger)'], 4: ['Info', 'var(--info)'], 5: ['Info', 'var(--muted, #888)'] };
+const MOD_TAG = { 1: ['Urgent', 'var(--bad-text)'], 2: ['À regarder', 'var(--warn-text)'], 3: ['À regarder', 'var(--warn-text)'], 4: ['Info', 'var(--accent)'], 5: ['Info', 'var(--muted, #888)'] };
 let modData = [];
 function renderMod() {
   const city = $('#modCity').value, type = $('#modType').value, low = $('#modLow').checked;

@@ -5,6 +5,8 @@
   const I18N = window.I18N || { lang: 'fr', locale: 'fr-FR', t: (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : s, tn: (n, a, b, v) => (n > 1 ? b : a).replace(/\{(\w+)\}/g, (m, k) => ({ n, ...v })[k] ?? m), set() {}, translate() {} };
   const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
+  // Couleur lue dans le thème en cours (clair ou sombre), pour les tracés dessinés sur la carte
+  const themeCol = (name, dflt) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || dflt;
   const MIN = 60_000;
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
@@ -526,7 +528,7 @@
         fix[r.id] = best;
         if (r.cat === 'cortege') {
           const { e, o } = best, pct = Math.round(o.at / o.total * 100);
-          L.polyline(routeSlice(e.route, 0, o.at), { color: '#ec9fa4', weight: 7, opacity: .9, interactive: false }).addTo(flowLayer);
+          L.polyline(routeSlice(e.route, 0, o.at), { color: themeCol('--route', '#f6a29c'), weight: 7, opacity: .9, interactive: false }).addTo(flowLayer);
           const left = o.total - o.at, sp = mo && mo.kmh > 0.3 ? mo.kmh * 1000 / 60 : null; // mètres par minute
           info(r.id).lines.push(t('Parcours « {title} » : {p} % fait', { title: e.title, p: pct }) + (sp ? ' · ' + t('fin dans environ {d}', { d: mins(left / sp) }) : ''));
           if (me && sp) { const mine = onRoute(e.route, me); if (mine.d <= 200 && mine.at > o.at) info(r.id).lines.push(t('Arrive près de toi dans environ {d}', { d: mins((mine.at - o.at) / sp) })); }
@@ -2136,7 +2138,7 @@
     for (const e of evCache.e.filter(evOnMap)) {
       const ty = EVT[e.type] || { glyph: '📍' };
       if (e.route) {
-        L.polyline(e.route, { color: '#ec9fa4', weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
+        L.polyline(e.route, { color: themeCol('--route', '#f6a29c'), weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
         if (e.end) L.marker(e.route[e.route.length - 1], { icon: L.divIcon({ className: '', iconSize: [30, 30], html: '<div class="ev-end">🏁</div>' }), title: t('Dispersion prévue'), keyboard: false })
           .bindPopup(() => el('div', {}, t('Dispersion prévue : {title}', { title: e.title }))).addTo(evLayer);
       }
@@ -2148,6 +2150,8 @@
     try { drawFlow(); } catch {}
     renderFilters();
   }
+  // Thème changé (réglage, système ou mode manif) : les parcours prennent la couleur du nouveau thème
+  window.addEventListener('cortege-theme', () => { try { renderEvents(); drawFlow(); } catch {} });
   function renderAgenda() {
     const scope = document.querySelector('input[name="agScope"]:checked').value;
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
@@ -2241,7 +2245,7 @@
     setInterval(renderOrdBar, 60_000);
     function showZone(o) {
       S.layer.clearLayers();
-      const shape = L.polygon(o.p.map(poly => poly.map(r => r.map(([x, y]) => [y, x]))), { color: '#f0a020', weight: 2, dashArray: '6 6', fillOpacity: 0.06, interactive: false }).addTo(S.layer);
+      const shape = L.polygon(o.p.map(poly => poly.map(r => r.map(([x, y]) => [y, x]))), { color: themeCol('--zone-line', '#f0a020'), weight: 2, dashArray: '6 6', fillOpacity: 0.06, interactive: false }).addTo(S.layer);
       closeSheets(); map.fitBounds(shape.getBounds(), { padding: [30, 30] });
       setTimeout(() => S.layer.clearLayers(), 20_000);
     }
@@ -2325,7 +2329,7 @@
   function redrawDraft() {
     drawLayer.clearLayers();
     const r = draft.route, n = r.length;
-    if (n > 1) L.polyline(r, { color: '#ec9fa4', weight: 5, interactive: false }).addTo(drawLayer);
+    if (n > 1) L.polyline(r, { color: themeCol('--route', '#f6a29c'), weight: 5, interactive: false }).addTo(drawLayer);
     r.forEach((p, i) => L.marker(p, { interactive: false, keyboard: false,
       icon: i === 0 ? L.divIcon({ className: '', iconSize: [38, 38], html: '<div class="ev-pin">📍</div>' }) : L.divIcon({ className: '', iconSize: [14, 14], html: '<div class="draw-pt"></div>' }) }).addTo(drawLayer));
     $('#drawCount').textContent = !n ? t('Aucun point') : n === 1 ? t('Rendez-vous placé') : tn(n - 1, 'Rendez-vous + {n} point de parcours', 'Rendez-vous + {n} points de parcours');
@@ -2486,13 +2490,18 @@
     setTimeout(() => { if (!document.querySelector('.sheet:not([hidden])')) openNews(); }, 2500);
   });
   // ---- La carte sur un autre site (iframe en lecture seule) ----
-  $('#btnEmbed').onclick = () => {
-    closeReport(); closeSheets();
-    const c = map.getCenter(), src = `${location.origin}/embed.html?lat=${c.lat.toFixed(3)}&lng=${c.lng.toFixed(3)}&z=${Math.min(15, Math.max(10, map.getZoom()))}`;
+  function embedCode() {
+    const c = map.getCenter(), th = $('#embedTheme').value;
+    const src = `${location.origin}/embed.html?lat=${c.lat.toFixed(3)}&lng=${c.lng.toFixed(3)}&z=${Math.min(15, Math.max(10, map.getZoom()))}${th ? '&theme=' + th : ''}`;
     $('#embedCode').value = `<iframe src="${src}" width="100%" height="480" style="border:0;border-radius:12px" loading="lazy" title="${t('Carte en direct des manifs (Cortège)')}"></iframe>`;
     $('#embedOpen').href = src;
+  }
+  $('#btnEmbed').onclick = () => {
+    closeReport(); closeSheets();
+    embedCode();
     $('#sheetEmbed').hidden = false;
   };
+  $('#embedTheme').onchange = embedCode;
   $('#emClose').onclick = () => closeSheets();
   $('#embedCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#embedCode').value); toast('Code copié'); } catch { $('#embedCode').select(); } };
   try {
@@ -2704,6 +2713,8 @@
   let manif = false; try { manif = localStorage.getItem('cortege-manif') === '1'; } catch {}
   function setManif(on) {
     manif = on; document.body.classList.toggle('manif', on);
+    // Sombre imposé pendant le mode manif : écran discret la nuit, moins de batterie. Le choix d'apparence revient en sortant.
+    if (window.cortegeTheme) window.cortegeTheme.force(on ? 'dark' : null);
     try { localStorage.setItem('cortege-manif', on ? '1' : '0'); } catch {}
     $('#manifTitle').textContent = t('Mode manif') + (cfg.banner && cfg.event ? ' · ' + t(cfg.event) : '');
   }

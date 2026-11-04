@@ -2908,3 +2908,15 @@ msgstr ""
 #: public/index.html
 msgid "Sombre"
 msgstr ""
+
+#: public/index.html
+msgid "Apparence de la carte"
+msgstr ""
+
+#: public/index.html
+msgid "Selon l’appareil de qui regarde"
+msgstr ""
+
+#: public/index.html
+msgid "Claire"
+msgstr ""
