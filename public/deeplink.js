@@ -1,8 +1,9 @@
 // Liens vers un profil Instagram : ouvre l'appli Instagram si elle est installée, sinon le site.
-// - Android : lien « intent » (Chrome, Samsung Internet, appli installée), avec le site en solution de repli.
+// - Android (Chrome, Edge, Samsung Internet, dans le navigateur ou installé) et iPhone avec Cortège sur l'écran
+//   d'accueil : on passe par l'adresse de l'appli (instagram://), puis on ouvre le site si le téléphone n'a pas
+//   quitté Cortège au bout d'une seconde et demie. Les liens « intent » avec repli intégré ne suffisent pas :
+//   Edge installé en appli ouvre directement le repli dans le navigateur.
 // - iPhone dans Safari : le lien https ordinaire ouvre déjà l'appli (lien universel), on n'y touche pas.
-// - iPhone avec Cortège installé sur l'écran d'accueil : les liens universels n'y marchent pas, on passe par
-//   instagram://, puis on ouvre le site si rien ne s'est passé au bout d'une seconde et demie.
 // Rien n'est envoyé nulle part : le script lit seulement l'adresse du lien touché.
 (function () {
   var ua = navigator.userAgent || '';
@@ -26,16 +27,15 @@
     if (!h) return;
     e.preventDefault();
     var web = 'https://www.instagram.com/' + h + '/';
-    if (android) {
-      location.href = 'intent://instagram.com/_u/' + h + '/#Intent;package=com.instagram.android;scheme=https;S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
-      return;
-    }
     var left = false, timer;
     var gone = function () { if (document.hidden) { left = true; clearTimeout(timer); } };
+    var blurred = function () { left = true; clearTimeout(timer); };
     document.addEventListener('visibilitychange', gone);
     window.addEventListener('pagehide', gone);
+    // Android : la fenêtre perd le focus dès que le système affiche l'appli (ou demande « Ouvrir avec Instagram ? »)
+    if (android) window.addEventListener('blur', blurred, { once: true });
     timer = setTimeout(function () {
-      document.removeEventListener('visibilitychange', gone);
+      document.removeEventListener('visibilitychange', gone); window.removeEventListener('blur', blurred);
       if (!left && !window.open(web, '_blank', 'noopener')) location.href = web;
     }, 1500);
     location.href = 'instagram://user?username=' + encodeURIComponent(h);
