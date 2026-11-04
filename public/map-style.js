@@ -3,7 +3,7 @@
 // rues bien visibles, bâtiments, eau et parcs marqués, noms plus grands en Inter.
 // Partagé par l'appli et la carte à intégrer.
 (() => {
-  // Sombre : bleu nuit NERU, rues bien visibles (grands axes teintés de mauve), bâtiments, eau et parcs marqués
+  // Sombre : bleu nuit, rues bien visibles (grands axes teintés de mauve), bâtiments, eau et parcs marqués
   const D = {
     background: '#12153a', earth: '#151940', water: '#1e2f5c', glacier: '#2a2d4a', sand: '#2a2938', beach: '#2c2b3a',
     park_a: '#17303a', park_b: '#1a3540', wood_a: '#17303a', wood_b: '#1a333d', scrub_a: '#1c2c3a', scrub_b: '#1e2f3c', zoo: '#1a323c',
@@ -24,7 +24,7 @@
     landcover: { grassland: 'rgba(24, 46, 56, 1)', barren: 'rgba(40, 39, 58, 1)', urban_area: 'rgba(25, 29, 69, 1)', farmland: 'rgba(26, 44, 52, 1)',
       glacier: 'rgba(48, 50, 80, 1)', scrub: 'rgba(30, 44, 58, 1)', forest: 'rgba(22, 46, 54, 1)' },
   };
-  // Clair : fond pastel du logo, rues blanches, grands axes pêche, eau bleu pâle, textes à l'encre NERU
+  // Clair : fond pastel du logo, rues blanches, grands axes pêche, eau bleu pâle, textes bleu encre
   const C = {
     background: '#f3eff6', earth: '#f5f1f7', water: '#cdd5f1', glacier: '#eef0f8', sand: '#f3ece0', beach: '#f4ede2',
     park_a: '#dbeedf', park_b: '#d3e9d8', wood_a: '#d3e9d8', wood_b: '#cbe4d1', scrub_a: '#e1ede0', scrub_b: '#d9e8d8', zoo: '#d8ecdc',

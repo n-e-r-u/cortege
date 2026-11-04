@@ -1,4 +1,4 @@
-/* Identité NERU partagée par les pages annexes (légal, admin, bilans, intégration).
+/* Style partagé par les pages annexes (légal, admin, bilans, intégration).
    Sombre par défaut ; theme.js pose data-theme="light" selon le choix de la personne ou du système. */
 @font-face { font-family: Anton; font-weight: 400; font-display: swap; src: url(/vendor/fonts/anton-400.woff2) format('woff2'); }
 @font-face { font-family: Inter; font-weight: 400; font-display: swap; src: url(/vendor/fonts/inter-400.woff2) format('woff2'); }

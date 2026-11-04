@@ -2,19 +2,19 @@
 @font-face { font-family: Inter; font-weight: 700; font-display: swap; src: url(/vendor/fonts/inter-700.woff2) format('woff2'); }
 @font-face { font-family: Anton; font-weight: 400; font-display: swap; src: url(/vendor/fonts/anton-400.woff2) format('woff2'); }
 /* Layout : carte plein écran, barres flottantes en haut et en bas, feuilles qui montent du bas.
-   Identité NERU (2.12) : sombre « nuit » ou clair pastel, au choix (Plus › Réglages : système, clair, sombre).
+   Style (2.12) : sombre « nuit » ou clair pastel, au choix (Plus › Réglages : système, clair, sombre).
    Les couleurs de sens (forces de l'ordre, danger, soutien, infos) sont les mêmes dans les deux thèmes. */
 :root {
-  /* Sombre : bleu nuit dérivé de l'encre NERU. Lisible de nuit, économe en batterie, discret dans la rue. */
+  /* Sombre : bleu nuit dérivé du bleu encre. Lisible de nuit, économe en batterie, discret dans la rue. */
   --bg: #0f1230;
   --surface: #191d45;
   --surface-2: #242a59;
   --line: #363c73;
   --fg: #f3f2fa;
   --muted: #b0b3d8;
-  --accent: #9eaaff;       /* bleu NERU éclairci : liens, bordures actives */
+  --accent: #9eaaff;       /* bleu éclairci : liens, bordures actives */
   --accent-fg: #0f1230;    /* texte sur un fond --accent */
-  --accent-2: #3a4db2;     /* bleu NERU */
+  --accent-2: #3a4db2;     /* bleu principal */
   --brand-grad: linear-gradient(135deg, #ef8f88, #9576a8 55%, #3a4db2);  /* dégradé du logo, pêche vers bleu */
   --grad-fg: #ffffff;      /* texte sur le dégradé */
   --fdo: #e5484d;
@@ -792,8 +792,8 @@ html[lang="ar"] body { font-family: system-ui, "Segoe UI", Tahoma, "Noto Sans Ar
 body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 .leaflet-control-attribution { font-size: 11px; line-height: 1.5; padding: 1px 6px; border-radius: 6px 0 0 0; }
 
-/* ---- 2.12 : identité NERU ----
-   Titres en Anton capitales (comme les chroniques), texte en Inter, actions en bleu NERU, dégradé du logo pour Signaler et Ko-fi.
+/* ---- 2.12 : style ----
+   Titres en Anton capitales, texte en Inter, actions en bleu, dégradé du logo pour Signaler et Ko-fi.
    En clair : fond pastel, cartes blanches façon sticker (ombre dure décalée vers le haut à droite, sans flou). */
 .name, .sheet h2, .kh-top b, .ig-name, .manif-title { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: .015em; }
 .name { font-size: 21px; line-height: 1; }
