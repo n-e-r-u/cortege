@@ -2926,3 +2926,8 @@ msgstr "Follows the viewer’s device"
 #: public/index.html
 msgid "Claire"
 msgstr "Light"
+
+# --- textes à traduire ---
+#: client/app/13-signaler.js
+msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
+msgstr "The crosshair is where you pressed. Move the map if needed, then choose."

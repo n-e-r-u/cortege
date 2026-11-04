@@ -2939,3 +2939,8 @@ msgstr ""
 #: public/index.html
 msgid "Claire"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/13-signaler.js
+msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
+msgstr ""

@@ -2923,3 +2923,8 @@ msgstr "Je nach Gerät der Person"
 #: public/index.html
 msgid "Claire"
 msgstr "Hell"
+
+# --- textes à traduire ---
+#: client/app/13-signaler.js
+msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
+msgstr "Das Fadenkreuz ist dort, wo du gedrückt hast. Verschiebe die Karte bei Bedarf und wähle dann."

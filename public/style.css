@@ -114,7 +114,7 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .credit { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .credit a { color: var(--accent); font-weight: 700; text-decoration: none; }
 .name { font-weight: 800; letter-spacing: .02em; font-size: 17px; line-height: 1.1; }
-.event { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event { color: var(--muted); font-size: 12px; line-height: 1.25; margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
 .status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
 .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
 .status[data-state="live"] .dot { background: var(--ok); box-shadow: 0 0 0 3px rgba(48,164,108,.25); }
@@ -820,3 +820,5 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 .theme-seg button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .embed-theme { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; font-size: 14px; color: var(--muted); }
 .embed-theme select { height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; font-size: 16px; }
+/* Appui long sur la carte = signaler ici : pas de menu ni de sélection de texte natifs */
+#map { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }

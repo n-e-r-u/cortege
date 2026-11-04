@@ -2926,3 +2926,8 @@ msgstr "Según el dispositivo de cada persona"
 #: public/index.html
 msgid "Claire"
 msgstr "Claro"
+
+# --- textes à traduire ---
+#: client/app/13-signaler.js
+msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
+msgstr "El visor está donde pulsaste. Mueve el mapa si hace falta y luego elige."

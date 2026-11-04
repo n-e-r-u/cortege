@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.12.1
+
+- **Appui long pour signaler** : un appui long sur la carte (un peu plus d'une demi-seconde) ouvre « Signaler » avec le viseur posé à cet endroit, zoomé pour être précis ; sur ordinateur, c'est le clic droit. Rien ne part sans choisir une catégorie. L'appui est annulé si le doigt glisse ou si un deuxième doigt zoome, et ne se déclenche pas sur un point, une fenêtre ou un bouton. Le téléphone vibre brièvement pour confirmer. Le double tap garde son rôle de zoom.
+- **Nom de l'événement en haut de la carte** : il passe sur deux lignes au lieu d'être coupé après quelques mots.
+
 ## 2.12.0
 
 - **Nouveau style, partout** : le style est revu sur toute l'appli et ses pages (bilans, agenda, droits, legal teams, mentions légales, presse, outil des créneaux, admin, carte à intégrer). Titres en Anton, texte en Inter, bleu nuit en sombre, pastels pêche, mauve et bleu en clair, cartes « sticker » en relief dans le thème clair. Les couleurs de sens ne changent pas : rouge pour les forces de l'ordre, orange pour les dangers, vert pour le soutien, violet pour l'info.

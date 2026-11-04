@@ -1,76 +1,69 @@
 {
-  "version": "2.12",
+  "version": "2.12.1",
   "items": [
     [
-      "🎨 Nouveau look",
-      "Le style de l’appli est revu : nouveau lettrage, cartes en relief, fond de carte redessiné. Les couleurs des signalements ne changent pas."
-    ],
-    [
-      "🌗 Clair ou sombre",
-      "Choisis l’apparence dans Plus › Réglages : clair, sombre, ou comme ton téléphone (réglage par défaut)."
-    ],
-    [
-      "🇩🇪 Cortège auf Deutsch",
-      "L’appli existe maintenant en allemand. Fais tourner le lien à tes camarades d’Allemagne, de Suisse et d’Autriche."
+      "👆 Appui long pour signaler",
+      "Garde le doigt appuyé sur la carte : « Signaler » s’ouvre avec le viseur à cet endroit. Tu choisis ensuite quoi, rien ne part tout seul."
     ]
   ],
   "items_en": [
     [
-      "🎨 New look",
-      "The app’s style has been redesigned: new lettering, raised cards, a redrawn base map. Report colours stay the same."
-    ],
-    [
-      "🌗 Light or dark",
-      "Pick the appearance in More › Settings: light, dark, or same as your phone (the default)."
-    ],
-    [
-      "🇩🇪 Cortège auf Deutsch",
-      "The app is now available in German. Pass the link on to comrades in Germany, Switzerland and Austria."
+      "👆 Long press to report",
+      "Hold your finger on the map: “Report” opens with the crosshair on that spot. Then pick what it is, nothing is sent on its own."
     ]
   ],
   "items_es": [
     [
-      "🎨 Nuevo aspecto",
-      "El estilo de la app se ha renovado: nueva tipografía, tarjetas en relieve, mapa redibujado. Los colores de los avisos no cambian."
-    ],
-    [
-      "🌗 Claro u oscuro",
-      "Elige la apariencia en Más › Ajustes: claro, oscuro o como tu teléfono (por defecto)."
-    ],
-    [
-      "🇩🇪 Cortège auf Deutsch",
-      "La app ya está en alemán. Pasa el enlace a tus compañeras y compañeros de Alemania, Suiza y Austria."
+      "👆 Mantén pulsado para avisar",
+      "Deja el dedo sobre el mapa: «Avisar» se abre con el visor en ese punto. Luego eliges qué es, nada se envía solo."
     ]
   ],
   "items_ar": [
     [
-      "🎨 مظهر جديد",
-      "تم تجديد مظهر التطبيق: خط جديد، بطاقات بارزة، وخريطة أساس معاد رسمها. ألوان البلاغات لا تتغير."
-    ],
-    [
-      "🌗 فاتح أو داكن",
-      "اختر المظهر من المزيد › الإعدادات: فاتح، داكن، أو مثل هاتفك (الافتراضي)."
-    ],
-    [
-      "🇩🇪 Cortège auf Deutsch",
-      "التطبيق متوفر الآن بالألمانية. شارك الرابط مع رفاقك في ألمانيا وسويسرا والنمسا."
+      "👆 اضغط مطولًا للإبلاغ",
+      "اترك إصبعك على الخريطة: تفتح نافذة الإبلاغ والمؤشر في ذلك المكان. ثم اختر ما يحدث، لا يُرسل شيء تلقائيًا."
     ]
   ],
   "items_de": [
     [
-      "🎨 Neuer Look",
-      "Der Stil der App wurde überarbeitet: neue Schrift, Karten mit Relief, neu gezeichnete Grundkarte. Die Farben der Meldungen bleiben gleich."
-    ],
-    [
-      "🌗 Hell oder dunkel",
-      "Wähle die Darstellung unter Mehr › Einstellungen: hell, dunkel oder wie dein Handy (Standard)."
-    ],
-    [
-      "🇩🇪 Cortège auf Deutsch",
-      "Die App gibt es jetzt auf Deutsch. Teile den Link mit Genoss:innen in Deutschland, der Schweiz und Österreich."
+      "👆 Lange drücken zum Melden",
+      "Halte den Finger auf der Karte: „Melden“ öffnet sich mit dem Fadenkreuz an dieser Stelle. Dann wählst du aus, nichts wird von selbst gesendet."
     ]
   ],
   "history": [
+    {
+      "version": "2.12.1",
+      "items": [
+        [
+          "👆 Appui long pour signaler",
+          "Garde le doigt appuyé sur la carte : « Signaler » s’ouvre avec le viseur à cet endroit. Tu choisis ensuite quoi, rien ne part tout seul."
+        ]
+      ],
+      "items_en": [
+        [
+          "👆 Long press to report",
+          "Hold your finger on the map: “Report” opens with the crosshair on that spot. Then pick what it is, nothing is sent on its own."
+        ]
+      ],
+      "items_es": [
+        [
+          "👆 Mantén pulsado para avisar",
+          "Deja el dedo sobre el mapa: «Avisar» se abre con el visor en ese punto. Luego eliges qué es, nada se envía solo."
+        ]
+      ],
+      "items_ar": [
+        [
+          "👆 اضغط مطولًا للإبلاغ",
+          "اترك إصبعك على الخريطة: تفتح نافذة الإبلاغ والمؤشر في ذلك المكان. ثم اختر ما يحدث، لا يُرسل شيء تلقائيًا."
+        ]
+      ],
+      "items_de": [
+        [
+          "👆 Lange drücken zum Melden",
+          "Halte den Finger auf der Karte: „Melden“ öffnet sich mit dem Fadenkreuz an dieser Stelle. Dann wählst du aus, nichts wird von selbst gesendet."
+        ]
+      ]
+    },
     {
       "version": "2.12",
       "items": [

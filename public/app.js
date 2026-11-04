@@ -1348,8 +1348,8 @@
   sheets.forEach(s => sheetWatch.observe($(s), { attributes: true, attributeFilter: ['hidden'] }));
   backdrop.addEventListener('click', () => closeSheets());
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { map.closePopup(); closeSheets(); if (!$('#crosshair').hidden) closeReport(); } });
-  function openReport() {
-    if (!me && map.getZoom() < 14) {
+  function openReport(at) {
+    if (!at && !me && map.getZoom() < 14) {
       toast('Zoome sur l’endroit exact (ou active ta position) avant de signaler.');
       $('#btnSearch').focus();
       return;
@@ -1362,7 +1362,9 @@
     // Le viseur se place au milieu de la zone de carte encore visible au-dessus de la feuille
     const y = aimY();
     $('#crosshair').style.top = y + 'px';
-    if (me) { map.setView(me, Math.max(map.getZoom(), 17), { animate: false }); map.panBy([0, map.getSize().y / 2 - y], { animate: false }); }
+    const spot = at || me;
+    if (spot) { map.setView(spot, Math.max(map.getZoom(), 17), { animate: false }); map.panBy([0, map.getSize().y / 2 - y], { animate: false }); }
+    if (at) $('#srHint').textContent = t('Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis.');
     catHints();
   }
   // Sous le viseur, un point du même type existe déjà : le bouton l'indique, et l'envoyer le confirmera
@@ -1387,6 +1389,36 @@
     reportBtn(pausedUntil > Date.now() ? 'paused' : 'idle');
   }
   $('#btnReport').onclick = $('#mbReport').onclick = () => ($('#crosshair').hidden ? openReport() : closeReport());
+  // Appui long sur la carte (ou clic droit sur ordinateur) : « Signaler » s'ouvre avec le viseur à cet endroit.
+  // Rien ne part sans choisir une catégorie, et l'appui est annulé dès que le doigt glisse ou qu'un deuxième doigt zoome.
+  {
+    const box = map.getContainer(), HOLD = 550, SLOP = 12;
+    let timer = null, start = null;
+    const skip = el => document.body.classList.contains('drawing') || el.closest('.leaflet-marker-icon, .leaflet-popup, .leaflet-control, .leaflet-interactive');
+    const cancel = () => { clearTimeout(timer); timer = null; start = null; };
+    const fire = (x, y) => {
+      const r = box.getBoundingClientRect(), at = map.containerPointToLatLng([x - r.left, y - r.top]);
+      try { navigator.vibrate?.(30); } catch {}
+      map.closePopup(); openReport(at);
+    };
+    box.addEventListener('touchstart', e => {
+      cancel();
+      delete box.dataset.held;
+      if (e.touches.length !== 1 || skip(e.target)) return;
+      const tch = e.touches[0]; start = [tch.clientX, tch.clientY];
+      timer = setTimeout(() => { const p = start; cancel(); if (p) { box.dataset.held = '1'; fire(p[0], p[1]); } }, HOLD);
+    }, { passive: true });
+    box.addEventListener('touchmove', e => { if (!start) return; const tch = e.touches[0]; if (e.touches.length > 1 || Math.hypot(tch.clientX - start[0], tch.clientY - start[1]) > SLOP) cancel(); }, { passive: true });
+    box.addEventListener('touchend', cancel); box.addEventListener('touchcancel', cancel);
+    map.on('zoomstart', cancel);
+    // Clic droit à la souris ; sur téléphone, le menu natif de l'appui long est bloqué (l'appui est déjà géré ci-dessus)
+    box.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      if (box.dataset.held) { delete box.dataset.held; return; }
+      if (e.pointerType === 'touch' || e.sourceCapabilities?.firesTouchEvents || skip(e.target)) return;
+      fire(e.clientX, e.clientY);
+    });
+  }
   $('#srClose').onclick = closeReport;
 
   (function buildGrid() {
