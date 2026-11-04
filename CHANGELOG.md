@@ -5,6 +5,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 ## 2.12.1
 
 - **Appui long pour signaler** : un appui long sur la carte (un peu plus d'une demi-seconde) ouvre « Signaler » avec le viseur posé à cet endroit, zoomé pour être précis ; sur ordinateur, c'est le clic droit. Rien ne part sans choisir une catégorie. L'appui est annulé si le doigt glisse ou si un deuxième doigt zoome, et ne se déclenche pas sur un point, une fenêtre ou un bouton. Le téléphone vibre brièvement pour confirmer. Le double tap garde son rôle de zoom.
+- **Liens Instagram vers l'appli** : un lien vers un profil Instagram (en-tête, Plus, partage, pages publiques, presse) ouvre directement l'appli Instagram quand elle est installée. Sur Android, par un lien d'application avec le site en repli ; sur iPhone, Safari le faisait déjà, et depuis Cortège installé sur l'écran d'accueil l'appli s'ouvre avec le site en repli si elle est absente. Sur ordinateur, rien ne change. Un petit script commun (`public/deeplink.js`) ne lit que l'adresse du lien touché.
 - **Nom de l'événement en haut de la carte** : il passe sur deux lignes au lieu d'être coupé après quelques mots.
 
 ## 2.12.0
