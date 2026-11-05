@@ -3198,3 +3198,27 @@ msgstr ""
 #: public/index.html
 msgid "Choisir une image"
 msgstr ""
+
+#: public/index.html
+msgid "Lieu de repli"
+msgstr ""
+
+#: public/index.html
+msgid "Un commerce, un local ou un point d’écoute qui accueille les manifestant·es. Enregistre-le une fois, puis ouvre-le le jour d’une manif : il n’apparaît sur la carte que pendant le créneau ouvert, jamais en dehors."
+msgstr ""
+
+#: public/index.html
+msgid "Ouvrir sur ce créneau"
+msgstr ""
+
+#: public/index.html
+msgid "Ajouter mon lieu"
+msgstr ""
+
+#: public/index.html
+msgid "Une orga enregistre un seul lieu de repli pour le moment."
+msgstr ""
+
+#: public/index.html
+msgid "Ton orga a atteint le nombre maximal de lieux."
+msgstr ""

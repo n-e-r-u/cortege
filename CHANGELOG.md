@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.13.1
+
+- **Un lieu de repli par orga pour l'instant** : chaque orga certifiée enregistre un seul lieu (réglable avec `REFUGE_MAX` dans `/etc/cortege.env`, de 1 à 30). L'espace orga s'adapte : « Ajouter mon lieu » disparaît une fois le lieu enregistré, et « Ouvrir sur ce créneau » ouvre le lieu.
+
 ## 2.13.0
 
 - **Lieux de repli tenus par les orgas** : une orga certifiée enregistre une fois ses lieux de repli (commerces, locaux associatifs, points d'écoute), avec l'accord de chaque lieu, puis les ouvre le jour d'une manif pour un créneau de 24 h au plus, tous d'un coup ou un par un. Pendant la manif, un bouton « Complet » ou « Fermer » suffit. Fini de reposer les points à chaque manif.

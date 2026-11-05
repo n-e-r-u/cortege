@@ -3207,3 +3207,27 @@ msgstr "Logo de la organización"
 #: public/index.html
 msgid "Choisir une image"
 msgstr "Elegir una imagen"
+
+#: public/index.html
+msgid "Lieu de repli"
+msgstr "Lugar de refugio"
+
+#: public/index.html
+msgid "Un commerce, un local ou un point d’écoute qui accueille les manifestant·es. Enregistre-le une fois, puis ouvre-le le jour d’une manif : il n’apparaît sur la carte que pendant le créneau ouvert, jamais en dehors."
+msgstr "Un comercio, un local o un punto de escucha que acoge a manifestantes. Guárdalo una vez y ábrelo el día de la manifestación: solo aparece en el mapa durante la franja abierta, nunca fuera de ella."
+
+#: public/index.html
+msgid "Ouvrir sur ce créneau"
+msgstr "Abrir en esta franja"
+
+#: public/index.html
+msgid "Ajouter mon lieu"
+msgstr "Añadir mi lugar"
+
+#: public/index.html
+msgid "Une orga enregistre un seul lieu de repli pour le moment."
+msgstr "Por ahora, una organización solo puede guardar un lugar de refugio."
+
+#: public/index.html
+msgid "Ton orga a atteint le nombre maximal de lieux."
+msgstr "Tu organización ha alcanzado el número máximo de lugares."

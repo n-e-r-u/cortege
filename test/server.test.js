@@ -1047,7 +1047,10 @@ test('lieux de repli : orgas certifiées, accord du lieu, visibles seulement pen
   assert.equal((await asOrga(K, '/api/orga/refuges', lieu)).s, 403, 'en essai : pas de lieux');
   await admin(`/api/admin/orgas/${o.id}/trial`, { trial: false });
   assert.equal((await asOrga(K, '/api/orga/refuges', { ...lieu, consent: false })).s, 400, 'accord du lieu obligatoire');
-  assert.equal((await asOrga(K, '/api/orga/refuges', { ...lieu, color: '#e5484d' })).j.color, '#30a46c', 'pas de rouge : couleur par défaut');
+  const rouge = await asOrga(K, '/api/orga/refuges', { ...lieu, color: '#e5484d' });
+  assert.equal(rouge.j.color, '#30a46c', 'pas de rouge : couleur par défaut');
+  assert.equal((await asOrga(K, '/api/orga/refuges', lieu)).s, 400, 'un seul lieu par orga');
+  await fetch(B + '/api/orga/refuges/' + rouge.j.id, { method: 'DELETE', headers: { 'x-orga-key': K, 'content-type': 'application/json' } });
   const r = await asOrga(K, '/api/orga/refuges', lieu);
   assert.equal(r.s, 201); assert.deepEqual(r.j.services, ['eau', 'wc']); assert.equal(r.j.state, 'closed');
   const live = async () => { await new Promise(x => setTimeout(x, 1200)); return fetch(B + '/live/repli.json').then(x => x.json()); };
@@ -1079,7 +1082,7 @@ test('lieux de repli : orgas certifiées, accord du lieu, visibles seulement pen
   // Fermeture : le lieu disparaît de la carte mais reste enregistré
   await asOrga(K, `/api/orga/refuges/${r.j.id}/state`, { state: 'closed' });
   assert.equal((await live()).p.length, 0);
-  assert.equal((await get('/api/orga/refuges')).refuges.length, 2);
+  assert.equal((await get('/api/orga/refuges')).refuges.length, 1);
   // Orga supprimée : ses lieux et son logo partent avec elle
   const dr = await fetch(B + `/api/admin/orgas/${o.id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
   assert.equal(dr.status, 200, await dr.clone().text());

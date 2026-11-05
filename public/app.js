@@ -2956,7 +2956,7 @@
     const SV_LABEL = { eau: '💧 ' + t('Eau'), wc: '🚻 ' + t('Toilettes'), ecoute: '👂 ' + t('Écoute'), recharge: '🔋 ' + t('Recharge'), soins: '🩹 ' + t('Premiers soins'),
       abri: '☂️ ' + t('À l’abri'), pmr: '♿ ' + t('Accessible PMR') };
     const box = $('#refugeBox'), form = $('#refugeForm'), msg = s => { $('#refugeMsg').textContent = s || ''; };
-    let list = [], editing = null, pos = null, glyph = RC.glyphs[0], color = RC.colors[0];
+    let list = [], max = 1, editing = null, pos = null, glyph = RC.glyphs[0], color = RC.colors[0];
     const hhmm = ms => { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
     const at = (v, base = Date.now()) => { const [h, m] = String(v || '').split(':').map(Number); const d = new Date(base); d.setHours(h || 0, m || 0, 0, 0); return d.getTime(); };
     // Créneau choisi : une fermeture plus tôt que l'ouverture veut dire le lendemain
@@ -2990,7 +2990,8 @@
       pos = r ? [r.lat, r.lng] : null; showPos(); syncPick();
       form.hidden = false; $('#rfAdd').hidden = true; $('#rfName').focus();
     }
-    function closeForm() { form.hidden = true; $('#rfAdd').hidden = false; editing = null; }
+    const canAdd = () => list.length < max;
+    function closeForm() { form.hidden = true; $('#rfAdd').hidden = !canAdd(); editing = null; }
     $('#rfAdd').onclick = () => openForm(null);
     $('#rfCancel').onclick = closeForm;
     form.addEventListener('submit', async e => {
@@ -3029,7 +3030,7 @@
     const armed = new Set();
     function confirmDel(r) { if (armed.has(r.id)) { armed.delete(r.id); return true; } armed.add(r.id); msg(t('Appuie encore sur « Supprimer » pour retirer {name}.', { name: r.name })); setTimeout(() => armed.delete(r.id), 5000); return false; }
     $('#rfOpenAll').onclick = async () => {
-      try { const d = await orgaFetch('/api/orga/refuges/open', { method: 'POST', body: JSON.stringify(slot()) }); msg(tn(d.n, '{n} lieu ouvert.', '{n} lieux ouverts.')); load(); } catch (err) { msg(err.message); }
+      try { const d = await orgaFetch('/api/orga/refuges/open', { method: 'POST', body: JSON.stringify(slot()) }); msg(tn(d.n, '{n} lieu ouvert.', '{n} lieux ouverts.'));  load(); } catch (err) { msg(err.message); }
     };
     // Logo : redimensionné en PNG carré de 128 px sur le téléphone avant l'envoi
     function logoState(l) {
@@ -3057,7 +3058,7 @@
     async function load() {
       box.hidden = !(orga && !orga.trial && !orga.admin);
       if (box.hidden) return;
-      try { const d = await orgaFetch('/api/orga/refuges'); list = d.refuges || []; render(); logoState(d.logo); } catch (err) { msg(err.message); }
+      try { const d = await orgaFetch('/api/orga/refuges'); list = d.refuges || []; max = d.max || 1; $('#rfAdd').hidden = !form.hidden || !canAdd(); render(); logoState(d.logo); } catch (err) { msg(err.message); }
     }
     // Créneau proposé : maintenant jusqu'à 20 h (ou 4 h plus tard si c'est déjà le soir)
     { const now = Date.now(), end = at('20:00'); $('#rfFrom').value = hhmm(now); $('#rfTo').value = hhmm(end > now + 3600e3 ? end : now + 4 * 3600e3); }

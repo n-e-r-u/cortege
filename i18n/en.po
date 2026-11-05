@@ -3207,3 +3207,27 @@ msgstr "Organisation logo"
 #: public/index.html
 msgid "Choisir une image"
 msgstr "Choose an image"
+
+#: public/index.html
+msgid "Lieu de repli"
+msgstr "Safe space"
+
+#: public/index.html
+msgid "Un commerce, un local ou un point d’écoute qui accueille les manifestant·es. Enregistre-le une fois, puis ouvre-le le jour d’une manif : il n’apparaît sur la carte que pendant le créneau ouvert, jamais en dehors."
+msgstr "A shop, venue or listening point that welcomes protesters. Save it once, then open it on protest day: it only appears on the map during the open time slot, never outside it."
+
+#: public/index.html
+msgid "Ouvrir sur ce créneau"
+msgstr "Open for this time slot"
+
+#: public/index.html
+msgid "Ajouter mon lieu"
+msgstr "Add my place"
+
+#: public/index.html
+msgid "Une orga enregistre un seul lieu de repli pour le moment."
+msgstr "An organisation can save only one safe space for now."
+
+#: public/index.html
+msgid "Ton orga a atteint le nombre maximal de lieux."
+msgstr "Your organisation has reached the maximum number of places."

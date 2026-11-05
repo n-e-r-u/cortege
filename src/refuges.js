@@ -19,7 +19,8 @@ const REFUGE_SERVICES = ['eau', 'wc', 'ecoute', 'recharge', 'soins', 'abri', 'pm
 const REFUGE_GLYPHS = ['🕊️', '☕', '🫖', '🛋️', '💧', '🩹', '🎧', '🏠', '📚', '🍞', '🌿', '💜', '🤝', '🎨'];
 // Pas de rouge ni d'orange : ces couleurs veulent dire forces de l'ordre et danger sur la carte
 const REFUGE_COLORS = ['#30a46c', '#2f9e8f', '#3a4db2', '#4b8bff', '#9576a8', '#c2569b', '#4a4f7a'];
-const REFUGE_MAX = 30, REFUGE_TOTAL = 3000, OPEN_MAX = 24 * 60 * MIN;
+// Un lieu par orga pour l'instant (REFUGE_MAX dans /etc/cortege.env pour en permettre plus)
+const REFUGE_MAX = Math.max(1, Math.min(30, Number(process.env.REFUGE_MAX) || 1)), REFUGE_TOTAL = 3000, OPEN_MAX = 24 * 60 * MIN;
 const LOGO_MAX = 40_000, LOGO_PX = [48, 256];
 
 const all = () => q('SELECT data FROM refuges').all().map(x => JSON.parse(x.data));
@@ -51,7 +52,7 @@ function cleanRefuge(b, old) {
 }
 
 function createRefuge(orga, b) {
-  if (q('SELECT COUNT(*) n FROM refuges WHERE oid=?').get(orga.id).n >= REFUGE_MAX) return [400, { error: '30 lieux au plus par orga.' }];
+  if (q('SELECT COUNT(*) n FROM refuges WHERE oid=?').get(orga.id).n >= REFUGE_MAX) return [400, { error: REFUGE_MAX === 1 ? 'Une orga enregistre un seul lieu de repli pour le moment.' : 'Ton orga a atteint le nombre maximal de lieux.' }];
   if (q('SELECT COUNT(*) n FROM refuges').get().n >= REFUGE_TOTAL) return [503, { error: 'Trop de lieux enregistrés sur ce serveur.' }];
   const [st, r] = cleanRefuge(b, { id: crypto.randomBytes(6).toString('base64url'), oid: orga.id, created: Date.now(), state: 'closed', from: 0, to: 0 });
   if (st !== 200) return [st, { error: r }];
