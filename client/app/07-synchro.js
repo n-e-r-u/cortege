@@ -30,6 +30,7 @@
       if (fresh) proximity(r);
     }
     firstSync = false;
+    if (repliDraw) repliDraw(); // après les signalements : un danger tout près met le lieu de repli en alerte
     regroup(); calmNav();
     refreshUI();
   }
@@ -63,7 +64,7 @@
   }
   conn?.addEventListener?.('change', () => { if (slowHint() && !net.lite) setLite(true); });
   // Fichiers gardés pour le hors-ligne (agenda, annonces) : dernière version reçue
-  const KEEP = /\/live\/(events|ann|legal|l\/[\w-]+)\.json$/;
+  const KEEP = /\/live\/(events|ann|legal|repli|l\/[\w-]+)\.json$/;
   const dataCache = () => caches.open('cortege-data');
   async function cacheGet(key) { try { const r = await (await dataCache()).match(key); return r ? r.json() : null; } catch { return null; } }
   function cachePut(key, obj) { try { dataCache().then(c => c.put(key, new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {}); } catch {} }
@@ -167,7 +168,7 @@
     let annChanged = false;
     const g = lite.g;
     if (g) {
-      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord);
+      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli);
       if (g.events && evCache.h !== g.events) { try { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); } catch {} }
       if (annCache.h !== g.ann) { try { annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; annChanged = true; } catch {} }
       await syncLegal(g);
@@ -204,7 +205,7 @@
       // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
       if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
     }
-    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord);
+    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli);
     if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }

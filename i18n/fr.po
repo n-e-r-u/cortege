@@ -2944,3 +2944,279 @@ msgstr ""
 #: client/app/13-signaler.js
 msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/28-repli.js
+msgid "Eau"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Toilettes"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Écoute"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Recharge"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Premiers soins"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "À l’abri"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Accessible PMR"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Lieu de repli vérifié par {who}"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Complet pour l’instant"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "Ouvert jusqu’à {h}"
+msgstr ""
+
+#: client/app/28-repli.js
+msgid "En savoir plus"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "{n} lieu ouvert."
+msgid_plural "{n} lieux ouverts."
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/29-repli-orga.js
+msgid "Déplace la carte sur le lieu, puis place-le au centre."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Place le lieu sur la carte."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Lieu enregistré."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Fermé"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Ouvre à {h}"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Complet"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Ouvert"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "jusqu’à {h}"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Plus complet"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Ouvrir"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Supprimer"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Appuie encore sur « Supprimer » pour retirer {name}."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Logo validé : il s’affiche sur les lieux où tu l’as choisi."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Logo envoyé : en attente de validation par l’admin."
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Image illisible."
+msgstr ""
+
+#: src/refuges.js
+msgid "Trop de lieux enregistrés sur ce serveur."
+msgstr ""
+
+#: src/refuges.js
+msgid "Lieu introuvable."
+msgstr ""
+
+#: src/refuges.js
+msgid "Choisis une heure de fermeture à venir."
+msgstr ""
+
+#: src/refuges.js
+msgid "L’ouverture doit précéder la fermeture."
+msgstr ""
+
+#: src/refuges.js
+msgid "Un créneau dure 24 h au plus et commence dans les 24 h."
+msgstr ""
+
+#: src/refuges.js
+msgid "Aucun lieu choisi."
+msgstr ""
+
+#: src/refuges.js
+msgid "État inconnu."
+msgstr ""
+
+#: src/refuges.js
+msgid "Ouvre d’abord le lieu pour un créneau."
+msgstr ""
+
+#: src/refuges.js
+msgid "Logo illisible : choisis une image."
+msgstr ""
+
+#: src/refuges.js
+msgid "Logo trop lourd (40 Ko au plus)."
+msgstr ""
+
+#: src/refuges.js
+msgid "Le logo doit être une image PNG carrée."
+msgstr ""
+
+#: src/routes/orga.js
+msgid "Les lieux de repli sont réservés aux orgas certifiées."
+msgstr ""
+
+#: src/routes/orga.js
+msgid "Le logo se règle depuis un compte d’orga."
+msgstr ""
+
+# --- textes à traduire ---
+#: client/app/04-zones-calmes.js
+msgid "Lieu de repli · {d}"
+msgstr ""
+
+#: client/app/29-repli-orga.js
+msgid "Position du lieu : {pos}"
+msgstr ""
+
+#: src/refuges.js
+msgid "30 lieux au plus par orga."
+msgstr ""
+
+#: public/index.html
+msgid "Indique le nom du lieu."
+msgstr ""
+
+#: public/index.html
+msgid "Le lieu doit avoir donné son accord pour apparaître sur Cortège."
+msgstr ""
+
+#: public/index.html
+msgid "Mes lieux de repli"
+msgstr ""
+
+#: public/index.html
+msgid "Commerces, locaux et points d’écoute qui accueillent les manifestant·es. Enregistre-les une fois, puis ouvre-les le jour d’une manif : ils n’apparaissent sur la carte que pendant le créneau ouvert, jamais en dehors."
+msgstr ""
+
+#: public/index.html
+msgid "Ouverture"
+msgstr ""
+
+#: public/index.html
+msgid "Fermeture"
+msgstr ""
+
+#: public/index.html
+msgid "Ouvrir tous mes lieux sur ce créneau"
+msgstr ""
+
+#: public/index.html
+msgid "Ajouter un lieu"
+msgstr ""
+
+#: public/index.html
+msgid "Nom du lieu"
+msgstr ""
+
+#: public/index.html
+msgid "ex. : Café des Arts"
+msgstr ""
+
+#: public/index.html
+msgid "Étiquette sur la carte (facultatif)"
+msgstr ""
+
+#: public/index.html
+msgid "Adresse (facultatif)"
+msgstr ""
+
+#: public/index.html
+msgid "ex. : 12 rue de l’Université"
+msgstr ""
+
+#: public/index.html
+msgid "Placer au centre de la carte"
+msgstr ""
+
+#: public/index.html
+msgid "Ce qu’on y trouve"
+msgstr ""
+
+#: public/index.html
+msgid "Message (facultatif)"
+msgstr ""
+
+#: public/index.html
+msgid "ex. : demande au comptoir, on t’ouvre l’arrière-salle"
+msgstr ""
+
+#: public/index.html
+msgid "Lien (facultatif)"
+msgstr ""
+
+#: public/index.html
+msgid "Pictogramme"
+msgstr ""
+
+#: public/index.html
+msgid "Couleur"
+msgstr ""
+
+#: public/index.html
+msgid "Afficher le logo de l’orga à la place (une fois validé)"
+msgstr ""
+
+#: public/index.html
+msgid "Le lieu a donné son accord pour apparaître sur Cortège"
+msgstr ""
+
+#: public/index.html
+msgid "Logo de l’orga"
+msgstr ""
+
+#: public/index.html
+msgid "Choisir une image"
+msgstr ""

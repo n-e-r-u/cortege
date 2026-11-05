@@ -2,6 +2,14 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.13.0
+
+- **Lieux de repli tenus par les orgas** : une orga certifiée enregistre une fois ses lieux de repli (commerces, locaux associatifs, points d'écoute), avec l'accord de chaque lieu, puis les ouvre le jour d'une manif pour un créneau de 24 h au plus, tous d'un coup ou un par un. Pendant la manif, un bouton « Complet » ou « Fermer » suffit. Fini de reposer les points à chaque manif.
+- **Visibles seulement quand ils sont ouverts** : un lieu n'apparaît sur la carte que pendant son créneau. Aucune liste n'est consultable en dehors, pour ne pas exposer les lieux solidaires.
+- **Sur la carte** : anneau vert « soutien » (la couleur de sens ne change pas), coche « vérifié », intérieur choisi par l'orga (pictogramme et couleur, sans rouge ni orange) ou son logo, et nom du lieu sous le point au zoom quartier. La fiche donne l'orga qui le garantit, l'heure de fermeture, les services (eau, toilettes, écoute, recharge, premiers soins, abri, accès PMR), l'adresse et un message. Comme une zone calme vérifiée, un danger signalé à moins de 100 m l'affiche en alerte ou barré. La flèche vers la zone calme la plus proche propose aussi les lieux de repli ouverts. Masqués avec les points « Soutien » dans les calques. Gardés sur le téléphone pour le mode hors ligne.
+- **Logo des orgas** : redimensionné sur le téléphone en PNG carré, vérifié par le serveur, affiché seulement après validation par l'admin (onglet Orgas, carte « Lieux de repli des orgas », avec la liste de tous les lieux et un bouton pour en retirer un). Une orga supprimée emporte ses lieux et son logo.
+- Les signalements anonymes « Zone calme / repli » restent comme avant, avec leur durée de vie de 90 minutes.
+
 ## 2.12.1
 
 - **Appui long pour signaler** : un appui long sur la carte (un peu plus d'une demi-seconde) ouvre « Signaler » avec le viseur posé à cet endroit, zoomé pour être précis ; sur ordinateur, c'est le clic droit. Rien ne part sans choisir une catégorie. L'appui est annulé si le doigt glisse ou si un deuxième doigt zoome, et ne se déclenche pas sur un point, une fenêtre ou un bouton. Le téléphone vibre brièvement pour confirmer. Le double tap garde son rôle de zoom.

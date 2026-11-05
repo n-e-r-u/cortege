@@ -39,6 +39,11 @@
         const st = calmSt.get(r.id); if (st && (st.lvl === 'hid' || st.lvl === 'sus')) continue;
         const d = dist(me, [r.lat, r.lng]); if (d < bd) { bd = d; best = r; }
       }
+      // Lieux de repli ouverts des orgas (sauf complets ou avec un danger tout près)
+      if (typeof repli !== 'undefined' && repli && repliSafe) for (const p of repli.p) {
+        if (p.st === 'full' || !(p.to > Date.now()) || !repliSafe(p)) continue;
+        const d = dist(me, [p.lat, p.lng]); if (d < bd) { bd = d; best = { ...p, refuge: true }; }
+      }
       if (best) calmTarget = { r: best, d: bd };
     }
     btn.hidden = !calmTarget;
@@ -46,7 +51,7 @@
     const h = heading ?? gpsHeading, b = bearing(me, [calmTarget.r.lat, calmTarget.r.lng]);
     $('#calmArrow').style.transform = `rotate(${(b - (h ?? 0) + 360) % 360}deg)`;
     const m = calmTarget.d < 1000 ? Math.round(calmTarget.d / 10) * 10 + ' m' : (calmTarget.d / 1000).toFixed(1).replace('.', ',') + ' km';
-    $('#calmTxt').textContent = '🕊 ' + t('Zone calme · {d}', { d: m }) + (h == null ? ' ' + t('(flèche : nord en haut)') : '');
+    $('#calmTxt').textContent = '🕊 ' + (calmTarget.r.refuge ? t('Lieu de repli · {d}', { d: m }) : t('Zone calme · {d}', { d: m })) + (h == null ? ' ' + t('(flèche : nord en haut)') : '');
     btn.setAttribute('aria-label', t('Zone calme la plus proche à {d}. Afficher sur la carte.', { d: m }));
   }
   // « C'est calme ici » : compte comme un « Plus là » fait sur place pour chaque danger voisin

@@ -7,6 +7,7 @@
 //   live/c/<case>.json  → signalements d'une case de 0,05° (≈ 5 km)
 //   live/all.json       → tous les signalements (vue nationale, réécrit au plus toutes les 10 s)
 //   live/ann.json, live/events.json → annonces et agenda
+//   live/repli.json     → lieux de repli des orgas ouverts en ce moment
 //   live/index.json     → ancien format (toutes les cases), pour les téléphones qui n'ont pas rechargé l'appli
 // Ce module garde ce qui est à republier (dirty) et le minuteur ; la publication elle-même (flush) est branchée par setFlusher.
 const fs = require('fs');
@@ -41,7 +42,7 @@ function writeIfChanged(file, str) {
 const FLUSH_MS = Number(process.env.FLUSH_MS) || 1000;
 const ALL_EVERY = 10_000;
 const LIVE_LOCK = path.join(DATA_DIR, 'live.lock');
-const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false, legal: false, ord: false };
+const dirty = { cells: new Set(), ann: false, events: false, global: false, all: false, legal: false, ord: false, repli: false };
 // Minuteur de publication (partagé avec flush) : timer en cours, échéance, dernière vue nationale
 const pub = { timer: null, due: 0, lastAll: 0 };
 let flusher = () => {};

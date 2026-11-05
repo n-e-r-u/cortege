@@ -11,6 +11,7 @@ const { annActive, annView } = require('../announcements/store');
 const { h8, withLock } = require('../util');
 const { legalAll, legalView } = require('../legal');
 const { ordersLive } = require('../orders');
+const { refugesLive } = require('../refuges');
 const { pausedUntil, cfgHash } = require('../settings');
 const { publicView } = require('../reports/model');
 const { q, getMeta, setMeta, isBusy } = require('../db');
@@ -46,7 +47,7 @@ function writeNational(now) {
 let BUILD = null;
 const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)));
 function writeGlobal(now) {
-  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, ord: getMeta('ordh') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, ord: getMeta('ordh') || null, repli: getMeta('replih') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
   // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
   if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
@@ -58,9 +59,9 @@ function writeGlobal(now) {
 function flush() {
   pub.timer = null;
   const now = Date.now();
-  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doOrd = dirty.ord, doAll = dirty.all && now - pub.lastAll >= ALL_EVERY;
-  const doGlobal = cells.length || doAnn || doEv || doLegal || doOrd || doAll || dirty.global;
-  dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = false; if (doAll) dirty.all = false;
+  const cells = [...dirty.cells], doAnn = dirty.ann, doEv = dirty.events, doLegal = dirty.legal, doOrd = dirty.ord, doRepli = dirty.repli, doAll = dirty.all && now - pub.lastAll >= ALL_EVERY;
+  const doGlobal = cells.length || doAnn || doEv || doLegal || doOrd || doRepli || doAll || dirty.global;
+  dirty.cells.clear(); dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.repli = dirty.global = false; if (doAll) dirty.all = false;
   const changed = new Set();
   if (doGlobal) try {
     withLock(() => {
@@ -78,6 +79,7 @@ function flush() {
       for (const rg of regions) writeRegion(rg);
       if (doAnn) { const str = JSON.stringify({ a: annActive(now).map(annView) }); writeIfChanged(path.join(LIVE_DIR, 'ann.json'), str); setMeta('annh', h8(str)); }
       if (doOrd) { const str = JSON.stringify({ o: ordersLive(now) }); writeIfChanged(path.join(LIVE_DIR, 'ord.json'), str); setMeta('ordh', h8(str)); }
+      if (doRepli) { const v = refugesLive(now), str = JSON.stringify(v); writeIfChanged(path.join(LIVE_DIR, 'repli.json'), str); setMeta('replih', v.p.length ? h8(str) : ''); }
       if (doLegal) { const str = JSON.stringify({ l: legalAll().filter(e => e.ok).map(legalView) }); writeIfChanged(path.join(LIVE_DIR, 'legal.json'), str); setMeta('legalh', h8(str)); }
       if (doEv) {
         const str = JSON.stringify({ e: q("SELECT data FROM events WHERE status='ok' AND start>? ORDER BY (src IS NOT NULL), start LIMIT 3000").all(now - EVENT_KEEP)
@@ -90,12 +92,12 @@ function flush() {
   } catch (e) {
     // occupé : les changements retournent dans la file, nouvel essai dans une demi-seconde
     cells.forEach(c => dirty.cells.add(c));
-    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doLegal) dirty.legal = true; if (doOrd) dirty.ord = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
+    if (doAnn) dirty.ann = true; if (doEv) dirty.events = true; if (doLegal) dirty.legal = true; if (doOrd) dirty.ord = true; if (doRepli) dirty.repli = true; if (doAll) dirty.all = true; if (doGlobal) dirty.global = true;
     if (!isBusy(e)) console.error('publication', e.message);
     return scheduleFlush(500);
   }
   if (dirty.all && !pub.timer) scheduleFlush(Math.max(FLUSH_MS, ALL_EVERY - (Date.now() - pub.lastAll)));
-  if (doGlobal) streamNotify(changed, doAnn || doEv || doLegal || doOrd || dirty.global);
+  if (doGlobal) streamNotify(changed, doAnn || doEv || doLegal || doOrd || doRepli || dirty.global);
 }
 setFlusher(flush);
 // Tout republier (démarrage, purge) : chaque case active, chaque fichier existant, annonces, agenda.
@@ -105,7 +107,7 @@ function rebuildAll() {
   q('SELECT cell FROM cells').all().forEach(x => all.add(x.cell));
   try { fs.readdirSync(path.join(LIVE_DIR, 'c')).forEach(f => f.endsWith('.json') && all.add(f.slice(0, -5))); } catch {}
   all.forEach(c => dirty.cells.add(c));
-  dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.global = dirty.all = true; pub.lastAll = 0;
+  dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.repli = dirty.global = dirty.all = true; pub.lastAll = 0;
   clearTimeout(pub.timer); pub.timer = null;
   flush();
   ensureRegions();

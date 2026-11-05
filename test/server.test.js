@@ -1038,3 +1038,51 @@ test('admin : historique complet de chaque orga (sans limite de durée), filtré
   assert.equal(o.total.verified, 1); assert.equal(o.day.verified, 0);
   assert.equal((await fetch(B + '/api/admin/journal')).status, 403);
 });
+
+test('lieux de repli : orgas certifiées, accord du lieu, visibles seulement pendant le créneau, logo validé par l’admin', async () => {
+  const o = (await admin('/api/admin/orgas', { label: 'La Bulle Test' })).j;
+  const K = (await orgaFrom(o.invite)).key, h = { 'x-orga-key': K };
+  const get = p => fetch(B + p, { headers: h }).then(r => r.json());
+  const lieu = { name: 'Café des Arts', short: 'Café', addr: '12 rue Test', lat: 43.61, lng: 3.87, services: ['eau', 'wc', 'inconnu'], glyph: '☕', color: '#3a4db2', consent: true };
+  assert.equal((await asOrga(K, '/api/orga/refuges', lieu)).s, 403, 'en essai : pas de lieux');
+  await admin(`/api/admin/orgas/${o.id}/trial`, { trial: false });
+  assert.equal((await asOrga(K, '/api/orga/refuges', { ...lieu, consent: false })).s, 400, 'accord du lieu obligatoire');
+  assert.equal((await asOrga(K, '/api/orga/refuges', { ...lieu, color: '#e5484d' })).j.color, '#30a46c', 'pas de rouge : couleur par défaut');
+  const r = await asOrga(K, '/api/orga/refuges', lieu);
+  assert.equal(r.s, 201); assert.deepEqual(r.j.services, ['eau', 'wc']); assert.equal(r.j.state, 'closed');
+  const live = async () => { await new Promise(x => setTimeout(x, 1200)); return fetch(B + '/live/repli.json').then(x => x.json()); };
+  assert.equal((await live()).p.length, 0, 'fermé : invisible');
+  const now = Date.now();
+  assert.equal((await asOrga(K, '/api/orga/refuges/open', { ids: [r.j.id], from: now, to: now + 30 * 3600e3 })).s, 400, '24 h au plus');
+  assert.equal((await asOrga(K, '/api/orga/refuges/open', { ids: [r.j.id], from: now, to: now + 3 * 3600e3 })).s, 200);
+  let L = await live();
+  assert.equal(L.p.length, 1); assert.equal(L.p[0].n, 'Café des Arts'); assert.equal(L.p[0].o, 'La Bulle Test'); assert.equal(L.p[0].lg, null);
+  assert.ok(!('oid' in L.p[0]) && !('consent' in L.p[0]), 'rien d’interne publié');
+  assert.equal((await asOrga(K, `/api/orga/refuges/${r.j.id}/state`, { state: 'full' })).j.state, 'full');
+  assert.equal((await live()).p[0].st, 'full');
+  // Une autre orga ne touche pas aux lieux de La Bulle
+  const o2 = (await admin('/api/admin/orgas', { label: 'Autre' })).j; await admin(`/api/admin/orgas/${o2.id}/trial`, { trial: false });
+  const K2 = (await orgaFrom(o2.invite)).key;
+  assert.equal((await asOrga(K2, `/api/orga/refuges/${r.j.id}/state`, { state: 'closed' })).s, 404);
+  // Logo : PNG carré, en attente puis validé
+  const png = Buffer.alloc(40); png.writeUInt32BE(0x89504e47, 0); png.writeUInt32BE(0x0d0a1a0a, 4); png.writeUInt32BE(13, 8); png.write('IHDR', 12, 'latin1'); png.writeUInt32BE(128, 16); png.writeUInt32BE(128, 20);
+  assert.equal((await asOrga(K, '/api/orga/logo', { png: 'data:image/png;base64,AAAA' })).s, 400);
+  assert.equal((await asOrga(K, '/api/orga/logo', { png: 'data:image/png;base64,' + png.toString('base64') })).s, 200);
+  await asOrga(K, '/api/orga/refuges/' + r.j.id, { useLogo: true });
+  assert.equal((await live()).p[0].lg, null, 'logo pas encore validé');
+  const ad = await fetch(B + '/api/admin/refuges', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  assert.equal(ad.logos.length, 1); assert.equal(ad.logos[0].orga, 'La Bulle Test');
+  assert.equal((await admin(`/api/admin/logos/${o.id}/ok`, {})).s, 200);
+  L = await live();
+  assert.ok(L.p[0].lg && L.lg[L.p[0].lg].startsWith('data:image/png;base64,'), 'logo publié');
+  assert.equal((await get('/api/orga/refuges')).logo.status, 'ok');
+  // Fermeture : le lieu disparaît de la carte mais reste enregistré
+  await asOrga(K, `/api/orga/refuges/${r.j.id}/state`, { state: 'closed' });
+  assert.equal((await live()).p.length, 0);
+  assert.equal((await get('/api/orga/refuges')).refuges.length, 2);
+  // Orga supprimée : ses lieux et son logo partent avec elle
+  const dr = await fetch(B + `/api/admin/orgas/${o.id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  assert.equal(dr.status, 200, await dr.clone().text());
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM refuges').get().n, 0);
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM refuge_logo').get().n, 0);
+});

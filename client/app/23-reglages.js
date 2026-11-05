@@ -29,7 +29,7 @@
   const themeSeg = () => document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePref === (window.cortegeTheme?.pref || 'system'))));
   document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => { b.onclick = () => { window.cortegeTheme?.set(b.dataset.themePref); themeSeg(); }; });
   themeSeg();
-  $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); reports.get(r.id)?.marker?.openPopup?.(); };
+  $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); if (r.refuge) repliOpen?.(r.id); else reports.get(r.id)?.marker?.openPopup?.(); };
   // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
   let news = null;
   async function loadNews() { try { news = await (await fetch('/nouveautes.json', { cache: 'no-cache' })).json(); } catch { news = null; } return news; }

@@ -89,6 +89,8 @@ input[type=checkbox], input[type=radio] { width: 18px; height: 18px; padding: 0;
 .org-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .org-list li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
 .org-list li:first-child { border-top: 0; }
+.org-list li:has(.rf-logo) { grid-template-columns: 48px 1fr auto; }
+.rf-logo { width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 3px solid var(--soutien); object-fit: cover; }
 .org-list .meta { font-size: 13px; color: var(--muted); }
 .org-list button { height: 36px; font-size: 13px; }
 button.danger { background: transparent; border: 1px solid #e5484d; color: var(--bad-text); }
@@ -411,6 +413,14 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   </section>
 
   <section class="panel" id="panelOrgas" role="tabpanel" aria-labelledby="tabOrgas">
+    <section class="card" id="refugeCard">
+      <h2>Lieux de repli des orgas <span id="rfCount"></span></h2>
+      <p class="fine">Enregistrés par les orgas certifiées, avec l’accord des lieux, et visibles sur la carte seulement pendant leurs créneaux d’ouverture. Les logos s’affichent après ta validation : refuse tout logo trompeur, injurieux ou qui imite une institution.</p>
+      <h3 class="group-title">Logos à valider</h3>
+      <ul class="org-list" id="rfLogos"></ul>
+      <h3 class="group-title">Tous les lieux</h3>
+      <ul class="org-list" id="rfList"></ul>
+    </section>
     <section class="card" id="reqCard">
       <h2>Demandes d’accès <span id="reqCount"></span></h2>
       <ul class="org-list" id="reqList"></ul>

@@ -2931,3 +2931,279 @@ msgstr "Light"
 #: client/app/13-signaler.js
 msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
 msgstr "The crosshair is where you pressed. Move the map if needed, then choose."
+
+# --- textes à traduire ---
+#: client/app/28-repli.js
+msgid "Eau"
+msgstr "Water"
+
+#: client/app/28-repli.js
+msgid "Toilettes"
+msgstr "Toilets"
+
+#: client/app/28-repli.js
+msgid "Écoute"
+msgstr "Someone to talk to"
+
+#: client/app/28-repli.js
+msgid "Recharge"
+msgstr "Phone charging"
+
+#: client/app/28-repli.js
+msgid "Premiers soins"
+msgstr "First aid"
+
+#: client/app/28-repli.js
+msgid "À l’abri"
+msgstr "Shelter"
+
+#: client/app/28-repli.js
+msgid "Accessible PMR"
+msgstr "Wheelchair accessible"
+
+#: client/app/28-repli.js
+msgid "Lieu de repli vérifié par {who}"
+msgstr "Safe space verified by {who}"
+
+#: client/app/28-repli.js
+msgid "Complet pour l’instant"
+msgstr "Full for now"
+
+#: client/app/28-repli.js
+msgid "Ouvert jusqu’à {h}"
+msgstr "Open until {h}"
+
+#: client/app/28-repli.js
+msgid "En savoir plus"
+msgstr "Learn more"
+
+#: client/app/29-repli-orga.js
+msgid "{n} lieu ouvert."
+msgid_plural "{n} lieux ouverts."
+msgstr[0] "{n} place opened."
+msgstr[1] "{n} places opened."
+
+#: client/app/29-repli-orga.js
+msgid "Déplace la carte sur le lieu, puis place-le au centre."
+msgstr "Move the map to the place, then set it at the centre."
+
+#: client/app/29-repli-orga.js
+msgid "Place le lieu sur la carte."
+msgstr "Set the place on the map."
+
+#: client/app/29-repli-orga.js
+msgid "Lieu enregistré."
+msgstr "Place saved."
+
+#: client/app/29-repli-orga.js
+msgid "Fermé"
+msgstr "Closed"
+
+#: client/app/29-repli-orga.js
+msgid "Ouvre à {h}"
+msgstr "Opens at {h}"
+
+#: client/app/29-repli-orga.js
+msgid "Complet"
+msgstr "Full"
+
+#: client/app/29-repli-orga.js
+msgid "Ouvert"
+msgstr "Open"
+
+#: client/app/29-repli-orga.js
+msgid "jusqu’à {h}"
+msgstr "until {h}"
+
+#: client/app/29-repli-orga.js
+msgid "Plus complet"
+msgstr "No longer full"
+
+#: client/app/29-repli-orga.js
+msgid "Ouvrir"
+msgstr "Open"
+
+#: client/app/29-repli-orga.js
+msgid "Supprimer"
+msgstr "Delete"
+
+#: client/app/29-repli-orga.js
+msgid "Appuie encore sur « Supprimer » pour retirer {name}."
+msgstr "Tap “Delete” again to remove {name}."
+
+#: client/app/29-repli-orga.js
+msgid "Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin."
+msgstr "Optional. It shows in the centre of your places once the admin approves it."
+
+#: client/app/29-repli-orga.js
+msgid "Logo validé : il s’affiche sur les lieux où tu l’as choisi."
+msgstr "Logo approved: it shows on the places where you chose it."
+
+#: client/app/29-repli-orga.js
+msgid "Logo envoyé : en attente de validation par l’admin."
+msgstr "Logo sent: waiting for the admin’s approval."
+
+#: client/app/29-repli-orga.js
+msgid "Image illisible."
+msgstr "Unreadable image."
+
+#: src/refuges.js
+msgid "Trop de lieux enregistrés sur ce serveur."
+msgstr "Too many places saved on this server."
+
+#: src/refuges.js
+msgid "Lieu introuvable."
+msgstr "Place not found."
+
+#: src/refuges.js
+msgid "Choisis une heure de fermeture à venir."
+msgstr "Choose a closing time in the future."
+
+#: src/refuges.js
+msgid "L’ouverture doit précéder la fermeture."
+msgstr "Opening must come before closing."
+
+#: src/refuges.js
+msgid "Un créneau dure 24 h au plus et commence dans les 24 h."
+msgstr "A time slot lasts 24 h at most and starts within 24 h."
+
+#: src/refuges.js
+msgid "Aucun lieu choisi."
+msgstr "No place selected."
+
+#: src/refuges.js
+msgid "État inconnu."
+msgstr "Unknown status."
+
+#: src/refuges.js
+msgid "Ouvre d’abord le lieu pour un créneau."
+msgstr "Open the place for a time slot first."
+
+#: src/refuges.js
+msgid "Logo illisible : choisis une image."
+msgstr "Unreadable logo: choose an image."
+
+#: src/refuges.js
+msgid "Logo trop lourd (40 Ko au plus)."
+msgstr "Logo too large (40 KB at most)."
+
+#: src/refuges.js
+msgid "Le logo doit être une image PNG carrée."
+msgstr "The logo must be a square PNG image."
+
+#: src/routes/orga.js
+msgid "Les lieux de repli sont réservés aux orgas certifiées."
+msgstr "Safe spaces are for certified organisations only."
+
+#: src/routes/orga.js
+msgid "Le logo se règle depuis un compte d’orga."
+msgstr "The logo is set from an organisation account."
+
+# --- textes à traduire ---
+#: client/app/04-zones-calmes.js
+msgid "Lieu de repli · {d}"
+msgstr "Safe space · {d}"
+
+#: client/app/29-repli-orga.js
+msgid "Position du lieu : {pos}"
+msgstr "Place position: {pos}"
+
+#: src/refuges.js
+msgid "30 lieux au plus par orga."
+msgstr "30 places at most per organisation."
+
+#: public/index.html
+msgid "Indique le nom du lieu."
+msgstr "Enter the name of the place."
+
+#: public/index.html
+msgid "Le lieu doit avoir donné son accord pour apparaître sur Cortège."
+msgstr "The place must have agreed to appear on Cortège."
+
+#: public/index.html
+msgid "Mes lieux de repli"
+msgstr "My safe spaces"
+
+#: public/index.html
+msgid "Commerces, locaux et points d’écoute qui accueillent les manifestant·es. Enregistre-les une fois, puis ouvre-les le jour d’une manif : ils n’apparaissent sur la carte que pendant le créneau ouvert, jamais en dehors."
+msgstr "Shops, venues and listening points that welcome protesters. Save them once, then open them on protest day: they only appear on the map during the open time slot, never outside it."
+
+#: public/index.html
+msgid "Ouverture"
+msgstr "Opening"
+
+#: public/index.html
+msgid "Fermeture"
+msgstr "Closing"
+
+#: public/index.html
+msgid "Ouvrir tous mes lieux sur ce créneau"
+msgstr "Open all my places for this time slot"
+
+#: public/index.html
+msgid "Ajouter un lieu"
+msgstr "Add a place"
+
+#: public/index.html
+msgid "Nom du lieu"
+msgstr "Name of the place"
+
+#: public/index.html
+msgid "ex. : Café des Arts"
+msgstr "e.g. Café des Arts"
+
+#: public/index.html
+msgid "Étiquette sur la carte (facultatif)"
+msgstr "Label on the map (optional)"
+
+#: public/index.html
+msgid "Adresse (facultatif)"
+msgstr "Address (optional)"
+
+#: public/index.html
+msgid "ex. : 12 rue de l’Université"
+msgstr "e.g. 12 rue de l’Université"
+
+#: public/index.html
+msgid "Placer au centre de la carte"
+msgstr "Set at the centre of the map"
+
+#: public/index.html
+msgid "Ce qu’on y trouve"
+msgstr "What’s available"
+
+#: public/index.html
+msgid "Message (facultatif)"
+msgstr "Message (optional)"
+
+#: public/index.html
+msgid "ex. : demande au comptoir, on t’ouvre l’arrière-salle"
+msgstr "e.g. ask at the counter, we’ll open the back room"
+
+#: public/index.html
+msgid "Lien (facultatif)"
+msgstr "Link (optional)"
+
+#: public/index.html
+msgid "Pictogramme"
+msgstr "Icon"
+
+#: public/index.html
+msgid "Couleur"
+msgstr "Colour"
+
+#: public/index.html
+msgid "Afficher le logo de l’orga à la place (une fois validé)"
+msgstr "Show the organisation’s logo instead (once approved)"
+
+#: public/index.html
+msgid "Le lieu a donné son accord pour apparaître sur Cortège"
+msgstr "The place has agreed to appear on Cortège"
+
+#: public/index.html
+msgid "Logo de l’orga"
+msgstr "Organisation logo"
+
+#: public/index.html
+msgid "Choisir une image"
+msgstr "Choose an image"

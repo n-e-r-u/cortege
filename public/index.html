@@ -629,6 +629,38 @@
     <div class="row-btns"><button class="secondary" type="button" id="inviteCopy">Copier le lien</button><button class="secondary" type="button" id="inviteShare">Envoyer…</button></div>
     <p class="fine" id="inviteFine"></p>
   </div>
+  <section id="refugeBox" hidden>
+    <h3 class="group-title">Mes lieux de repli</h3>
+    <p class="hint">Commerces, locaux et points d’écoute qui accueillent les manifestant·es. Enregistre-les une fois, puis ouvre-les le jour d’une manif : ils n’apparaissent sur la carte que pendant le créneau ouvert, jamais en dehors.</p>
+    <div class="refuge-open" id="refugeOpen">
+      <div class="row2">
+        <label class="note-label">Ouverture<input type="time" id="rfFrom"></label>
+        <label class="note-label">Fermeture<input type="time" id="rfTo"></label>
+      </div>
+      <button type="button" class="secondary" id="rfOpenAll">Ouvrir tous mes lieux sur ce créneau</button>
+    </div>
+    <ul class="refuge-list" id="refugeList"></ul>
+    <p class="fine" id="refugeMsg" role="status"></p>
+    <button type="button" class="secondary" id="rfAdd">Ajouter un lieu</button>
+    <form class="orga-form refuge-form" id="refugeForm" hidden>
+      <label class="note-label">Nom du lieu<input id="rfName" maxlength="60" required placeholder="ex. : Café des Arts"></label>
+      <label class="note-label">Étiquette sur la carte (facultatif)<input id="rfShort" maxlength="24" placeholder="ex. : Café des Arts"></label>
+      <label class="note-label">Adresse (facultatif)<input id="rfAddr" maxlength="120" placeholder="ex. : 12 rue de l’Université"></label>
+      <p class="fine" id="rfPos"></p>
+      <button type="button" class="ghost" id="rfHere">Placer au centre de la carte</button>
+      <fieldset class="refuge-checks" id="rfServices"><legend>Ce qu’on y trouve</legend></fieldset>
+      <label class="note-label">Message (facultatif)<textarea id="rfMsg" maxlength="200" rows="2" placeholder="ex. : demande au comptoir, on t’ouvre l’arrière-salle"></textarea></label>
+      <label class="note-label">Lien (facultatif)<input id="rfUrl" type="url" maxlength="300" placeholder="https://…"></label>
+      <fieldset class="refuge-pick" id="rfGlyphs"><legend>Pictogramme</legend></fieldset>
+      <fieldset class="refuge-pick" id="rfColors"><legend>Couleur</legend></fieldset>
+      <label class="check"><input type="checkbox" id="rfUseLogo"> Afficher le logo de l’orga à la place (une fois validé)</label>
+      <label class="check"><input type="checkbox" id="rfConsent"> Le lieu a donné son accord pour apparaître sur Cortège</label>
+      <div class="row2"><button class="install" type="submit" id="rfSave">Enregistrer</button><button type="button" class="secondary" id="rfCancel">Annuler</button></div>
+    </form>
+    <h3 class="group-title">Logo de l’orga</h3>
+    <p class="hint" id="rfLogoState">Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin.</p>
+    <div class="refuge-logo-row"><img id="rfLogoImg" alt="" hidden><label class="secondary file-btn">Choisir une image<input type="file" id="rfLogoFile" accept="image/*" hidden></label><button type="button" class="ghost" id="rfLogoDel" hidden>Retirer</button></div>
+  </section>
   <h3 class="group-title">Mes appareils</h3>
   <p class="hint" id="deviceState"></p>
   <button class="secondary" id="btnAddDevice">Ajouter un appareil</button>

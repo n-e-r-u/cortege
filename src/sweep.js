@@ -10,6 +10,7 @@ const { capTables } = require('./limits');
 const { dirtyCell, dirty, scheduleFlush } = require('./live/files');
 const { pruneKeys } = require('./privacy');
 const { q, tx, getMeta, setMeta, isBusy } = require('./db');
+const { refugesTick } = require('./refuges');
 
 // Ménage toutes les 30 s : signalements, annonces et événements expirés, limites périmées, fin de pause.
 function sweep() {
@@ -39,7 +40,8 @@ function sweep() {
     if (ORGA_LOG_DAYS > 0) q('DELETE FROM orga_log WHERE t<?').run(now - ORGA_LOG_DAYS * 24 * 60 * MIN);
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
-    if (expired.length || dirty.ann || dirty.events || dirty.ord || dirty.global) scheduleFlush(0);
+    try { refugesTick(now); } catch (e) { console.error('lieux de repli', e.message); }
+    if (expired.length || dirty.ann || dirty.events || dirty.ord || dirty.repli || dirty.global) scheduleFlush(0);
   } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
 }
 setInterval(sweep, 30_000).unref();

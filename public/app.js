@@ -257,6 +257,11 @@
         const st = calmSt.get(r.id); if (st && (st.lvl === 'hid' || st.lvl === 'sus')) continue;
         const d = dist(me, [r.lat, r.lng]); if (d < bd) { bd = d; best = r; }
       }
+      // Lieux de repli ouverts des orgas (sauf complets ou avec un danger tout près)
+      if (typeof repli !== 'undefined' && repli && repliSafe) for (const p of repli.p) {
+        if (p.st === 'full' || !(p.to > Date.now()) || !repliSafe(p)) continue;
+        const d = dist(me, [p.lat, p.lng]); if (d < bd) { bd = d; best = { ...p, refuge: true }; }
+      }
       if (best) calmTarget = { r: best, d: bd };
     }
     btn.hidden = !calmTarget;
@@ -264,7 +269,7 @@
     const h = heading ?? gpsHeading, b = bearing(me, [calmTarget.r.lat, calmTarget.r.lng]);
     $('#calmArrow').style.transform = `rotate(${(b - (h ?? 0) + 360) % 360}deg)`;
     const m = calmTarget.d < 1000 ? Math.round(calmTarget.d / 10) * 10 + ' m' : (calmTarget.d / 1000).toFixed(1).replace('.', ',') + ' km';
-    $('#calmTxt').textContent = '🕊 ' + t('Zone calme · {d}', { d: m }) + (h == null ? ' ' + t('(flèche : nord en haut)') : '');
+    $('#calmTxt').textContent = '🕊 ' + (calmTarget.r.refuge ? t('Lieu de repli · {d}', { d: m }) : t('Zone calme · {d}', { d: m })) + (h == null ? ' ' + t('(flèche : nord en haut)') : '');
     btn.setAttribute('aria-label', t('Zone calme la plus proche à {d}. Afficher sur la carte.', { d: m }));
   }
   // « C'est calme ici » : compte comme un « Plus là » fait sur place pour chaque danger voisin
@@ -608,6 +613,7 @@
       if (fresh) proximity(r);
     }
     firstSync = false;
+    if (repliDraw) repliDraw(); // après les signalements : un danger tout près met le lieu de repli en alerte
     regroup(); calmNav();
     refreshUI();
   }
@@ -641,7 +647,7 @@
   }
   conn?.addEventListener?.('change', () => { if (slowHint() && !net.lite) setLite(true); });
   // Fichiers gardés pour le hors-ligne (agenda, annonces) : dernière version reçue
-  const KEEP = /\/live\/(events|ann|legal|l\/[\w-]+)\.json$/;
+  const KEEP = /\/live\/(events|ann|legal|repli|l\/[\w-]+)\.json$/;
   const dataCache = () => caches.open('cortege-data');
   async function cacheGet(key) { try { const r = await (await dataCache()).match(key); return r ? r.json() : null; } catch { return null; } }
   function cachePut(key, obj) { try { dataCache().then(c => c.put(key, new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {}); } catch {} }
@@ -745,7 +751,7 @@
     let annChanged = false;
     const g = lite.g;
     if (g) {
-      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord);
+      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli);
       if (g.events && evCache.h !== g.events) { try { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); } catch {} }
       if (annCache.h !== g.ann) { try { annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; annChanged = true; } catch {} }
       await syncLegal(g);
@@ -782,7 +788,7 @@
       // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
       if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
     }
-    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord);
+    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli);
     if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
@@ -1261,7 +1267,7 @@
       const b = el('button', { type: 'button', class: 'layer', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, el('span', { class: 'n' }, String(n)));
       b.onclick = () => {
         hidden.has(g.id) ? hidden.delete(g.id) : hidden.add(g.id);
-        regroup();
+        regroup(); if (repliDraw) repliDraw();
         refreshUI();
       };
       box.append(b);
@@ -2492,7 +2498,7 @@
   const themeSeg = () => document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePref === (window.cortegeTheme?.pref || 'system'))));
   document.querySelectorAll('#themeSeg [data-theme-pref]').forEach(b => { b.onclick = () => { window.cortegeTheme?.set(b.dataset.themePref); themeSeg(); }; });
   themeSeg();
-  $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); reports.get(r.id)?.marker?.openPopup?.(); };
+  $('#calmNav').onclick = () => { if (!calmTarget) return; const r = calmTarget.r; setFollow(false); map.setView([r.lat, r.lng], Math.max(map.getZoom(), 17)); if (r.refuge) repliOpen?.(r.id); else reports.get(r.id)?.marker?.openPopup?.(); };
   // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
   let news = null;
   async function loadNews() { try { news = await (await fetch('/nouveautes.json', { cache: 'no-cache' })).json(); } catch { news = null; } return news; }
@@ -2870,4 +2876,192 @@
       try { localStorage.setItem('cortege-ready', JSON.stringify({ at: Date.now(), city: legalGroups()[0]?.d < 30000 ? legalGroups()[0].city : '' })); } catch {}
     } finally { delete btn.dataset.busy; }
   };
+  // ---- Lieux de repli des orgas (ouverts en ce moment seulement) ----
+  // Point à anneau vert « soutien », intérieur choisi par l'orga (pictogramme et couleur, ou logo validé par l'admin).
+  // Comme une zone calme vérifiée : un danger signalé à moins de 100 m l'affiche en alerte (isolé) ou barré (confirmé).
+  var repli = { h: null, p: [], lg: {} }, syncRepli = null, repliDraw = null, repliSafe = null, repliOpen = null;
+  {
+    const repliLayer = L.layerGroup().addTo(map), REPLI_M = 100;
+    const SERVICES = { eau: ['💧', t('Eau')], wc: ['🚻', t('Toilettes')], ecoute: ['👂', t('Écoute')], recharge: ['🔋', t('Recharge')], soins: ['🩹', t('Premiers soins')],
+      abri: ['☂️', t('À l’abri')], pmr: ['♿', t('Accessible PMR')] };
+    const hh = ms => new Date(ms).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' });
+    // Danger proche : même règle qu'une zone calme vérifiée par une orga
+    const repliSt = p => {
+      const now = Date.now(); let near = null, d = Infinity, strong = false;
+      for (const { data: x } of reports.values()) {
+        if (!isDangerCat(x.cat) || x.c || x.nf || x.exp <= now) continue;
+        const dx = dist([p.lat, p.lng], [x.lat, x.lng]); if (dx > REPLI_M) continue;
+        if (x.up > 0 || x.ver || x.f) strong = true;
+        if (dx < d) { d = dx; near = x; }
+      }
+      return near ? { lvl: strong ? 'sus' : 'warn', near, d } : null;
+    };
+    repliSafe = p => { const s = repliSt(p); return !s || s.lvl === 'warn'; };
+    const marks = new Map();
+    repliOpen = id => marks.get(id)?.openPopup();
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    function repliIcon(p, st) {
+      const logo = p.lg && repli.lg[p.lg];
+      const inner = logo ? `<img src="${logo}" alt="">` : esc(p.g || '🕊️');
+      const cls = ['pin', 'refuge', logo ? 'logo' : '', p.st === 'full' ? 'full' : '', st ? 'calm-' + st.lvl : ''].join(' ');
+      return L.divIcon({ className: 'refuge-mk', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
+        html: `<div class="${cls}" style="--c:${GROUP_COLOR.soutien};--rbg:${esc(p.c || GROUP_COLOR.soutien)}">${inner}<i class="refuge-ok" aria-hidden="true">✓</i></div>`
+          + (p.s ? `<span class="refuge-lbl">${esc(p.s)}</span>` : '') });
+    }
+    function repliPopup(p, st) {
+      const root = el('div', { class: 'refuge-pop' });
+      root.append(el('div', { class: 'pop-title' }, (p.lg && repli.lg[p.lg] ? '🕊️' : p.g || '🕊️') + ' ', p.n));
+      root.append(el('div', { class: 'pop-ver' }, '✓ ' + t('Lieu de repli vérifié par {who}', { who: p.o })));
+      root.append(el('div', { class: 'pop-meta' }, (p.st === 'full' ? t('Complet pour l’instant') : t('Ouvert jusqu’à {h}', { h: hh(p.to) }))
+        + (me ? ' · ' + fmtDist(dist(me, [p.lat, p.lng])) : '')));
+      if (st) root.append(el('div', { class: 'pop-calm-warn' }, `⚠ ${CAT[st.near.cat].glyph} ` + t(st.lvl === 'warn' ? '{what} à {d} (pas encore confirmé) : zone pas sûre pour l’instant.' : '{what} à {d} : zone pas sûre pour l’instant.',
+        { what: CAT[st.near.cat].label, d: fmtDist(st.d) })));
+      if (p.sv && p.sv.length) root.append(el('div', { class: 'refuge-sv' }, ...p.sv.filter(s => SERVICES[s]).map(s => el('span', {}, SERVICES[s][0] + ' ' + SERVICES[s][1]))));
+      if (p.a) root.append(el('div', { class: 'pop-meta' }, '📍 ' + p.a));
+      if (p.m) root.append(el('p', { class: 'pop-note' }, p.m));
+      if (p.u) root.append(el('a', { href: p.u, target: '_blank', rel: 'noopener noreferrer', class: 'refuge-link' }, t('En savoir plus')));
+      return root;
+    }
+    // Mise à jour par différence : une fiche ouverte reste ouverte pendant les synchros
+    repliDraw = () => {
+      const now = Date.now(), show = hidden.has('soutien') ? [] : repli.p.filter(p => p.to > now), keep = new Set(show.map(p => p.id));
+      for (const [id, m] of marks) if (!keep.has(id)) { repliLayer.removeLayer(m); marks.delete(id); }
+      for (const p of show) {
+        const st = repliSt(p), key = JSON.stringify([p, st && st.lvl, !!repli.lg[p.lg]]);
+        let m = marks.get(p.id);
+        if (m && m._rkey === key) continue;
+        if (!m) {
+          m = L.marker([p.lat, p.lng], { icon: repliIcon(p, st), keyboard: true, title: p.n, zIndexOffset: 200 }).addTo(repliLayer);
+          marks.set(p.id, m);
+        } else { m.setLatLng([p.lat, p.lng]); m.setIcon(repliIcon(p, st)); }
+        m._rkey = key; m._rp = p;
+        const wasOpen = m.isPopupOpen?.();
+        m.unbindPopup().bindPopup(() => repliPopup(m._rp, repliSt(m._rp)), { maxWidth: 280 });
+        if (wasOpen) m.openPopup();
+      }
+    };
+    syncRepli = async h => {
+      if (!h) { if (repli.p.length) { repli = { h: null, p: [], lg: {} }; repliDraw(); } return; }
+      if (h === repli.h) return;
+      try { const d = await getJ('/live/repli.json'); repli = { h, p: d.p || [], lg: d.lg || {} }; repliDraw(); } catch {}
+    };
+    // Étiquette sous le point au zoom quartier ; fermeture à l'heure prévue même sans nouvelle synchro
+    const zoomCls = () => map.getContainer().classList.toggle('z-street', map.getZoom() >= 15);
+    map.on('zoomend', zoomCls); zoomCls();
+    setInterval(() => { if (repli.p.some(p => p.to <= Date.now())) { repli.p = repli.p.filter(p => p.to > Date.now()); repliDraw(); } }, 30_000);
+  }
+  // ---- Espace orga : lieux de repli (orgas certifiées) ----
+  {
+    const RC = cfg.refuge || { glyphs: ['🕊️'], colors: ['#30a46c'], services: [] };
+    const SV_LABEL = { eau: '💧 ' + t('Eau'), wc: '🚻 ' + t('Toilettes'), ecoute: '👂 ' + t('Écoute'), recharge: '🔋 ' + t('Recharge'), soins: '🩹 ' + t('Premiers soins'),
+      abri: '☂️ ' + t('À l’abri'), pmr: '♿ ' + t('Accessible PMR') };
+    const box = $('#refugeBox'), form = $('#refugeForm'), msg = s => { $('#refugeMsg').textContent = s || ''; };
+    let list = [], editing = null, pos = null, glyph = RC.glyphs[0], color = RC.colors[0];
+    const hhmm = ms => { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const at = (v, base = Date.now()) => { const [h, m] = String(v || '').split(':').map(Number); const d = new Date(base); d.setHours(h || 0, m || 0, 0, 0); return d.getTime(); };
+    // Créneau choisi : une fermeture plus tôt que l'ouverture veut dire le lendemain
+    function slot() {
+      const now = Date.now(), from = $('#rfFrom').value ? at($('#rfFrom').value) : now;
+      let to = at($('#rfTo').value); if (to <= from) to += 24 * 3600e3;
+      return { from: Math.max(from, now - 60 * 60e3), to };
+    }
+    // Pictogrammes, couleurs, services : boutons et cases construits une fois
+    for (const s of RC.services) $('#rfServices').append(el('label', { class: 'check' }, el('input', { type: 'checkbox', value: s }), ' ' + (SV_LABEL[s] || s)));
+    const pick = (boxSel, vals, cur, set, render) => {
+      const b = $(boxSel);
+      for (const v of vals) { const x = el('button', { type: 'button', class: 'pick', 'data-v': v, 'aria-pressed': 'false' }, render(v)); x.onclick = () => { set(v); syncPick(); }; b.append(x); }
+    };
+    pick('#rfGlyphs', RC.glyphs, glyph, v => { glyph = v; }, v => v);
+    pick('#rfColors', RC.colors, color, v => { color = v; }, v => el('span', { class: 'swatch', style: `background:${v}` }));
+    function syncPick() {
+      document.querySelectorAll('#rfGlyphs .pick').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === glyph)));
+      document.querySelectorAll('#rfColors .pick').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === color)));
+      document.querySelectorAll('#rfGlyphs .pick').forEach(b => { b.style.background = b.dataset.v === glyph ? color : ''; });
+    }
+    const showPos = () => { $('#rfPos').textContent = pos ? t('Position du lieu : {pos}', { pos: pos[0].toFixed(4) + ', ' + pos[1].toFixed(4) }) : t('Déplace la carte sur le lieu, puis place-le au centre.'); };
+    $('#rfHere').onclick = () => { const c = map.getCenter(); pos = [c.lat, c.lng]; showPos(); };
+    function openForm(r) {
+      editing = r ? r.id : null;
+      $('#rfName').value = r ? r.name : ''; $('#rfShort').value = r ? r.short : ''; $('#rfAddr').value = r ? r.addr : '';
+      $('#rfMsg').value = r ? r.msg : ''; $('#rfUrl').value = r ? r.url : '';
+      document.querySelectorAll('#rfServices input').forEach(i => { i.checked = !!(r && r.services.includes(i.value)); });
+      glyph = r ? r.glyph : RC.glyphs[0]; color = r ? r.color : RC.colors[0];
+      $('#rfUseLogo').checked = !!(r && r.useLogo); $('#rfConsent').checked = !!(r && r.consent);
+      pos = r ? [r.lat, r.lng] : null; showPos(); syncPick();
+      form.hidden = false; $('#rfAdd').hidden = true; $('#rfName').focus();
+    }
+    function closeForm() { form.hidden = true; $('#rfAdd').hidden = false; editing = null; }
+    $('#rfAdd').onclick = () => openForm(null);
+    $('#rfCancel').onclick = closeForm;
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!pos) { msg(t('Place le lieu sur la carte.')); return; }
+      const body = { name: $('#rfName').value, short: $('#rfShort').value, addr: $('#rfAddr').value, msg: $('#rfMsg').value, url: $('#rfUrl').value, lat: pos[0], lng: pos[1],
+        services: [...document.querySelectorAll('#rfServices input:checked')].map(i => i.value), glyph, color, useLogo: $('#rfUseLogo').checked, consent: $('#rfConsent').checked };
+      try {
+        await orgaFetch('/api/orga/refuges' + (editing ? '/' + editing : ''), { method: 'POST', body: JSON.stringify(body) });
+        closeForm(); msg(t('Lieu enregistré.')); load();
+      } catch (err) { msg(err.message); }
+    });
+    const state = r => { const now = Date.now();
+      if (r.state === 'closed' || !(r.to > now)) return t('Fermé');
+      if (r.from > now) return t('Ouvre à {h}', { h: hhmm(r.from) });
+      return (r.state === 'full' ? t('Complet') : t('Ouvert')) + ' · ' + t('jusqu’à {h}', { h: hhmm(r.to) }); };
+    function render() {
+      const ul = $('#refugeList'); ul.textContent = '';
+      $('#refugeOpen').hidden = !list.length;
+      for (const r of list) {
+        const now = Date.now(), open = r.state !== 'closed' && r.to > now;
+        const act = (label, fn, cls = 'ghost') => { const b = el('button', { type: 'button', class: cls }, label); b.onclick = fn; return b; };
+        const setState = s => async () => { try { await orgaFetch(`/api/orga/refuges/${r.id}/state`, { method: 'POST', body: JSON.stringify({ state: s }) }); load(); } catch (err) { msg(err.message); } };
+        const openOne = async () => { try { await orgaFetch('/api/orga/refuges/open', { method: 'POST', body: JSON.stringify({ ids: [r.id], ...slot() }) }); load(); } catch (err) { msg(err.message); } };
+        const del = async () => { if (!confirmDel(r)) return; try { await orgaFetch('/api/orga/refuges/' + r.id, { method: 'DELETE' }); load(); } catch (err) { msg(err.message); } };
+        ul.append(el('li', { class: 'refuge-item' + (open ? ' on' : '') },
+          el('span', { class: 'refuge-dot', style: `background:${r.color}` }, r.glyph),
+          el('div', { class: 'refuge-txt' }, el('b', {}, r.name), el('small', {}, state(r) + (r.addr ? ' · ' + r.addr : ''))),
+          el('div', { class: 'refuge-acts' }, ...[
+            open ? act(r.state === 'full' ? t('Plus complet') : t('Complet'), setState(r.state === 'full' ? 'open' : 'full')) : act(t('Ouvrir'), openOne, 'secondary'),
+            open ? act(t('Fermer'), setState('closed')) : null,
+            act(t('Modifier'), () => openForm(r)), act(t('Supprimer'), del, 'ghost danger-link')].filter(Boolean))));
+      }
+    }
+    // Suppression : deux appuis (pas de fenêtre de confirmation du navigateur)
+    const armed = new Set();
+    function confirmDel(r) { if (armed.has(r.id)) { armed.delete(r.id); return true; } armed.add(r.id); msg(t('Appuie encore sur « Supprimer » pour retirer {name}.', { name: r.name })); setTimeout(() => armed.delete(r.id), 5000); return false; }
+    $('#rfOpenAll').onclick = async () => {
+      try { const d = await orgaFetch('/api/orga/refuges/open', { method: 'POST', body: JSON.stringify(slot()) }); msg(tn(d.n, '{n} lieu ouvert.', '{n} lieux ouverts.')); load(); } catch (err) { msg(err.message); }
+    };
+    // Logo : redimensionné en PNG carré de 128 px sur le téléphone avant l'envoi
+    function logoState(l) {
+      $('#rfLogoImg').hidden = !l; if (l) $('#rfLogoImg').src = l.img;
+      $('#rfLogoDel').hidden = !l;
+      $('#rfLogoState').textContent = !l ? t('Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin.')
+        : l.status === 'ok' ? t('Logo validé : il s’affiche sur les lieux où tu l’as choisi.') : t('Logo envoyé : en attente de validation par l’admin.');
+    }
+    $('#rfLogoFile').onchange = async e => {
+      const f = e.target.files[0]; e.target.value = '';
+      if (!f) return;
+      try {
+        const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = URL.createObjectURL(f); });
+        const c = document.createElement('canvas'); c.width = c.height = 128;
+        const x = c.getContext('2d'), s = Math.max(128 / img.width, 128 / img.height);
+        x.fillStyle = '#fff'; x.fillRect(0, 0, 128, 128);
+        x.drawImage(img, (128 - img.width * s) / 2, (128 - img.height * s) / 2, img.width * s, img.height * s);
+        URL.revokeObjectURL(img.src);
+        const png = c.toDataURL('image/png');
+        await orgaFetch('/api/orga/logo', { method: 'POST', body: JSON.stringify({ png }) });
+        logoState({ status: 'pending', img: png });
+      } catch (err) { msg(err.message || t('Image illisible.')); }
+    };
+    $('#rfLogoDel').onclick = async () => { try { await orgaFetch('/api/orga/logo', { method: 'DELETE' }); logoState(null); } catch (err) { msg(err.message); } };
+    async function load() {
+      box.hidden = !(orga && !orga.trial && !orga.admin);
+      if (box.hidden) return;
+      try { const d = await orgaFetch('/api/orga/refuges'); list = d.refuges || []; render(); logoState(d.logo); } catch (err) { msg(err.message); }
+    }
+    // Créneau proposé : maintenant jusqu'à 20 h (ou 4 h plus tard si c'est déjà le soir)
+    { const now = Date.now(), end = at('20:00'); $('#rfFrom').value = hhmm(now); $('#rfTo').value = hhmm(end > now + 3600e3 ? end : now + 4 * 3600e3); }
+    const prev = $('#btnOrga').onclick;
+    $('#btnOrga').onclick = e => { prev && prev(e); closeForm(); load(); };
+  }
 })();

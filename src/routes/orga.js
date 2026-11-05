@@ -20,6 +20,7 @@ const { quota, ORGA_LIMITS, bump } = require('../limits');
 const { readOrgas, writeOrgas } = require('../orgas/store');
 const { routeDistM, getEvent, EVENT_KEEP, dropEvent } = require('../events/store');
 const { send, readJson } = require('../http/respond');
+const R = require('../refuges');
 const { sha, withLock, keyEq, clean, validLatLng, distM, round } = require('../util');
 
 // Journal des partages de position : l'action et le rôle, jamais la position (protège les orgas même face à l'admin)
@@ -171,6 +172,44 @@ async function orgaRoutes(req, res, url, pathname) {
       return send(res, 200, { invite: token, exp: Date.now() + DEVICE_MS });
     }
   
+    // ---- Lieux de repli : enregistrés une fois, ouverts le jour d'une manif (orgas certifiées) ----
+    if (pathname === '/api/orga/refuges' || pathname.startsWith('/api/orga/refuges/') || pathname === '/api/orga/logo') {
+      if (orga.trial) return send(res, 403, { error: 'Les lieux de repli sont réservés aux orgas certifiées.' });
+      if (req.method === 'GET' && pathname === '/api/orga/refuges') {
+        const l = R.getLogo(orga.id);
+        return send(res, 200, { refuges: R.mine(orga.id).map(R.refugeView), logo: l ? { status: l.status, img: l.data } : null, max: R.REFUGE_MAX });
+      }
+      if (req.method === 'POST' && pathname === '/api/orga/logo') {
+        if (orga.admin) return send(res, 400, { error: 'Le logo se règle depuis un compte d’orga.' });
+        const out = R.setLogo(orga, await readJson(req, 64_000));
+        if (out[0] < 300) orgaLog(orga, 'logo envoyé');
+        return send(res, ...out);
+      }
+      if (req.method === 'DELETE' && pathname === '/api/orga/logo') { R.dropLogo(orga.id); return send(res, 200, { ok: true }); }
+      if (req.method === 'POST' && pathname === '/api/orga/refuges') {
+        const out = R.createRefuge(orga, await readJson(req, 4096));
+        if (out[0] < 300) orgaLog(orga, 'lieu de repli ajouté', { ref: out[1].id, detail: out[1].name });
+        return send(res, ...out);
+      }
+      if (req.method === 'POST' && pathname === '/api/orga/refuges/open') {
+        const out = R.openRefuges(orga, await readJson(req, 4096));
+        if (out[0] < 300) orgaLog(orga, 'lieux de repli ouverts', { detail: String(out[1].n) });
+        return send(res, ...out);
+      }
+      const rf = pathname.match(/^\/api\/orga\/refuges\/([\w-]{1,16})(\/state)?$/);
+      if (rf && req.method === 'POST' && rf[2]) return send(res, ...R.setRefugeState(orga, rf[1], String((await readJson(req)).state || '')));
+      if (rf && req.method === 'POST') {
+        const out = R.updateRefuge(orga, rf[1], await readJson(req, 4096));
+        if (out[0] < 300) orgaLog(orga, 'lieu de repli modifié', { ref: rf[1], detail: out[1].name });
+        return send(res, ...out);
+      }
+      if (rf && req.method === 'DELETE') {
+        const out = R.removeRefuge(orga, rf[1]);
+        if (out[0] < 300) orgaLog(orga, 'lieu de repli supprimé', { ref: rf[1] });
+        return send(res, ...out);
+      }
+      return send(res, 404, { error: 'Introuvable.' });
+    }
     if (req.method === 'POST' && pathname === '/api/announcements') {
       const b = await readJson(req);
       // Annonces : seulement les orgas certifiées (confirmées), et dans un rayon de 3 km au plus (voir createAnnouncement).

@@ -1,36 +1,109 @@
 {
-  "version": "2.12.1",
+  "version": "2.13",
   "items": [
     [
-      "👆 Appui long pour signaler",
-      "Garde le doigt appuyé sur la carte : « Signaler » s’ouvre avec le viseur à cet endroit. Tu choisis ensuite quoi, rien ne part tout seul."
+      "🕊️ Lieux de repli",
+      "Des cafés, locaux et points d’écoute ouverts aux manifestant·es apparaissent sur la carte pendant les manifs, vérifiés par une orga. Touche le point pour voir ce qu’on y trouve et jusqu’à quelle heure."
+    ],
+    [
+      "🧭 La flèche te guide",
+      "La flèche vers la zone calme la plus proche propose aussi les lieux de repli ouverts autour de toi."
     ]
   ],
   "items_en": [
     [
-      "👆 Long press to report",
-      "Hold your finger on the map: “Report” opens with the crosshair on that spot. Then pick what it is, nothing is sent on its own."
+      "🕊️ Safe spaces",
+      "Cafés, venues and listening points that welcome protesters show on the map during protests, verified by an organisation. Tap the point to see what’s there and until when."
+    ],
+    [
+      "🧭 The arrow guides you",
+      "The arrow to the nearest calm zone now also suggests open safe spaces around you."
     ]
   ],
   "items_es": [
     [
-      "👆 Mantén pulsado para avisar",
-      "Deja el dedo sobre el mapa: «Avisar» se abre con el visor en ese punto. Luego eliges qué es, nada se envía solo."
+      "🕊️ Lugares de refugio",
+      "Cafés, locales y puntos de escucha abiertos a manifestantes aparecen en el mapa durante las manifestaciones, verificados por una organización. Toca el punto para ver qué hay y hasta qué hora."
+    ],
+    [
+      "🧭 La flecha te guía",
+      "La flecha hacia la zona tranquila más cercana también propone los lugares de refugio abiertos cerca de ti."
     ]
   ],
   "items_ar": [
     [
-      "👆 اضغط مطولًا للإبلاغ",
-      "اترك إصبعك على الخريطة: تفتح نافذة الإبلاغ والمؤشر في ذلك المكان. ثم اختر ما يحدث، لا يُرسل شيء تلقائيًا."
+      "🕊️ أماكن اللجوء",
+      "مقاهٍ ومقرات ونقاط إصغاء تستقبل المتظاهرين تظهر على الخريطة أثناء المظاهرات، بتحقّق من منظمة. المس النقطة لترى ما يتوفر فيها وحتى أي ساعة."
+    ],
+    [
+      "🧭 السهم يرشدك",
+      "السهم نحو أقرب منطقة هادئة يقترح أيضًا أماكن اللجوء المفتوحة من حولك."
     ]
   ],
   "items_de": [
     [
-      "👆 Lange drücken zum Melden",
-      "Halte den Finger auf der Karte: „Melden“ öffnet sich mit dem Fadenkreuz an dieser Stelle. Dann wählst du aus, nichts wird von selbst gesendet."
+      "🕊️ Rückzugsorte",
+      "Cafés, Räume und Anlaufstellen für Demonstrierende erscheinen während der Demos auf der Karte, geprüft von einer Organisation. Tippe auf den Punkt, um zu sehen, was es dort gibt und bis wann."
+    ],
+    [
+      "🧭 Der Pfeil führt dich",
+      "Der Pfeil zur nächsten ruhigen Zone schlägt jetzt auch geöffnete Rückzugsorte in deiner Nähe vor."
     ]
   ],
   "history": [
+    {
+      "version": "2.13",
+      "items": [
+        [
+          "🕊️ Lieux de repli",
+          "Des cafés, locaux et points d’écoute ouverts aux manifestant·es apparaissent sur la carte pendant les manifs, vérifiés par une orga. Touche le point pour voir ce qu’on y trouve et jusqu’à quelle heure."
+        ],
+        [
+          "🧭 La flèche te guide",
+          "La flèche vers la zone calme la plus proche propose aussi les lieux de repli ouverts autour de toi."
+        ]
+      ],
+      "items_en": [
+        [
+          "🕊️ Safe spaces",
+          "Cafés, venues and listening points that welcome protesters show on the map during protests, verified by an organisation. Tap the point to see what’s there and until when."
+        ],
+        [
+          "🧭 The arrow guides you",
+          "The arrow to the nearest calm zone now also suggests open safe spaces around you."
+        ]
+      ],
+      "items_es": [
+        [
+          "🕊️ Lugares de refugio",
+          "Cafés, locales y puntos de escucha abiertos a manifestantes aparecen en el mapa durante las manifestaciones, verificados por una organización. Toca el punto para ver qué hay y hasta qué hora."
+        ],
+        [
+          "🧭 La flecha te guía",
+          "La flecha hacia la zona tranquila más cercana también propone los lugares de refugio abiertos cerca de ti."
+        ]
+      ],
+      "items_ar": [
+        [
+          "🕊️ أماكن اللجوء",
+          "مقاهٍ ومقرات ونقاط إصغاء تستقبل المتظاهرين تظهر على الخريطة أثناء المظاهرات، بتحقّق من منظمة. المس النقطة لترى ما يتوفر فيها وحتى أي ساعة."
+        ],
+        [
+          "🧭 السهم يرشدك",
+          "السهم نحو أقرب منطقة هادئة يقترح أيضًا أماكن اللجوء المفتوحة من حولك."
+        ]
+      ],
+      "items_de": [
+        [
+          "🕊️ Rückzugsorte",
+          "Cafés, Räume und Anlaufstellen für Demonstrierende erscheinen während der Demos auf der Karte, geprüft von einer Organisation. Tippe auf den Punkt, um zu sehen, was es dort gibt und bis wann."
+        ],
+        [
+          "🧭 Der Pfeil führt dich",
+          "Der Pfeil zur nächsten ruhigen Zone schlägt jetzt auch geöffnete Rückzugsorte in deiner Nähe vor."
+        ]
+      ]
+    },
     {
       "version": "2.12.1",
       "items": [

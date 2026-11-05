@@ -46,6 +46,7 @@ const { sseClients } = require('../live/stream');
 const { strictUntil } = require('../limits');
 const { withLock, sha, validLatLng } = require('../util');
 const { parisDay } = require('../time');
+const R = require('../refuges');
 
 async function adminRoutes(req, res, url, pathname) {
   // ---- Admin : gestion des orgas ----
@@ -322,6 +323,24 @@ async function adminRoutes(req, res, url, pathname) {
       await legalWatch(true);
       return send(res, 200, { done: true });
     }
+    // --- Lieux de repli des orgas : liste, retrait, logos à valider ---
+    if (req.method === 'GET' && pathname === '/api/admin/refuges') {
+      const labels = Object.fromEntries(readOrgas().map(o => [o.id, o.label])), now = Date.now();
+      return send(res, 200, { refuges: R.all().map(r => ({ ...R.refugeView(r), oid: r.oid, open: r.state !== 'closed' && r.from <= now && r.to > now })).sort((a, b) => (a.orga || '').localeCompare(b.orga || '', 'fr') || a.name.localeCompare(b.name, 'fr')),
+        logos: R.logosPending().map(l => ({ oid: l.oid, orga: labels[l.oid] || l.oid, t: l.t, img: l.data })) });
+    }
+    const lgAct = pathname.match(/^\/api\/admin\/logos\/([\w:-]{1,40})\/(ok|no)$/);
+    if (lgAct && req.method === 'POST') {
+      if (!R.judgeLogo(lgAct[1], lgAct[2] === 'ok')) return send(res, 404, { error: 'Introuvable.' });
+      orgaLog({ id: 'admin', label: adminLabel() }, lgAct[2] === 'ok' ? 'logo validé' : 'logo refusé', { ref: lgAct[1] });
+      return send(res, 200, { ok: true });
+    }
+    const rfDel = pathname.match(/^\/api\/admin\/refuges\/([\w-]{1,16})$/);
+    if (rfDel && req.method === 'DELETE') {
+      if (!R.dropRefuge(rfDel[1])) return send(res, 404, { error: 'Introuvable.' });
+      orgaLog({ id: 'admin', label: adminLabel() }, 'lieu de repli retiré', { ref: rfDel[1] });
+      return send(res, 200, { ok: true });
+    }
     // --- Arrêtés : propositions à valider, publiés, import d'un bloc préparé ---
     if (req.method === 'GET' && pathname === '/api/admin/orders') return send(res, 200, { orders: ordersAll().map(orderView), kinds: ORDER_KINDS, deps: DEPS.map(d => [d.c, d.n]) });
     if (req.method === 'POST' && pathname === '/api/admin/orders') {
@@ -503,6 +522,8 @@ async function adminRoutes(req, res, url, pathname) {
         const list = readOrgas(); const next = list.filter(o => o.id !== del[1]);
         if (next.length === list.length) return false; writeOrgas(next); return true;
       });
+      // Ses lieux de repli et son logo partent avec elle
+      if (ok) { for (const r of R.mine(del[1])) R.dropRefuge(r.id); R.dropLogo(del[1]); }
       return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Orga introuvable.' });
     }
     // Instance, pays, langues, serveur

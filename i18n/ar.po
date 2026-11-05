@@ -2967,3 +2967,283 @@ msgstr "فاتح"
 #: client/app/13-signaler.js
 msgid "Le viseur est là où tu as appuyé. Déplace la carte si besoin, puis choisis."
 msgstr "المؤشر في المكان الذي ضغطت عليه. حرّك الخريطة إذا لزم الأمر، ثم اختر."
+
+# --- textes à traduire ---
+#: client/app/28-repli.js
+msgid "Eau"
+msgstr "ماء"
+
+#: client/app/28-repli.js
+msgid "Toilettes"
+msgstr "مراحيض"
+
+#: client/app/28-repli.js
+msgid "Écoute"
+msgstr "إصغاء"
+
+#: client/app/28-repli.js
+msgid "Recharge"
+msgstr "شحن"
+
+#: client/app/28-repli.js
+msgid "Premiers soins"
+msgstr "إسعافات أولية"
+
+#: client/app/28-repli.js
+msgid "À l’abri"
+msgstr "مأوى"
+
+#: client/app/28-repli.js
+msgid "Accessible PMR"
+msgstr "متاح لذوي الإعاقة"
+
+#: client/app/28-repli.js
+msgid "Lieu de repli vérifié par {who}"
+msgstr "مكان لجوء تحقّق منه {who}"
+
+#: client/app/28-repli.js
+msgid "Complet pour l’instant"
+msgstr "ممتلئ حاليًا"
+
+#: client/app/28-repli.js
+msgid "Ouvert jusqu’à {h}"
+msgstr "مفتوح حتى {h}"
+
+#: client/app/28-repli.js
+msgid "En savoir plus"
+msgstr "اعرف المزيد"
+
+#: client/app/29-repli-orga.js
+msgid "{n} lieu ouvert."
+msgid_plural "{n} lieux ouverts."
+msgstr[0] "تم فتح {n} مكان."
+msgstr[1] "تم فتح {n} مكان."
+msgstr[2] "تم فتح {n} مكان."
+msgstr[3] "تم فتح {n} مكان."
+msgstr[4] "تم فتح {n} مكان."
+msgstr[5] "تم فتح {n} مكان."
+
+#: client/app/29-repli-orga.js
+msgid "Déplace la carte sur le lieu, puis place-le au centre."
+msgstr "حرّك الخريطة إلى المكان ثم ضعه في المنتصف."
+
+#: client/app/29-repli-orga.js
+msgid "Place le lieu sur la carte."
+msgstr "ضع المكان على الخريطة."
+
+#: client/app/29-repli-orga.js
+msgid "Lieu enregistré."
+msgstr "تم حفظ المكان."
+
+#: client/app/29-repli-orga.js
+msgid "Fermé"
+msgstr "مغلق"
+
+#: client/app/29-repli-orga.js
+msgid "Ouvre à {h}"
+msgstr "يفتح الساعة {h}"
+
+#: client/app/29-repli-orga.js
+msgid "Complet"
+msgstr "ممتلئ"
+
+#: client/app/29-repli-orga.js
+msgid "Ouvert"
+msgstr "مفتوح"
+
+#: client/app/29-repli-orga.js
+msgid "jusqu’à {h}"
+msgstr "حتى {h}"
+
+#: client/app/29-repli-orga.js
+msgid "Plus complet"
+msgstr "لم يعد ممتلئًا"
+
+#: client/app/29-repli-orga.js
+msgid "Ouvrir"
+msgstr "افتح"
+
+#: client/app/29-repli-orga.js
+msgid "Supprimer"
+msgstr "احذف"
+
+#: client/app/29-repli-orga.js
+msgid "Appuie encore sur « Supprimer » pour retirer {name}."
+msgstr "اضغط مرة أخرى على «احذف» لإزالة {name}."
+
+#: client/app/29-repli-orga.js
+msgid "Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin."
+msgstr "اختياري. يظهر في وسط أماكنك بعد موافقة المشرف."
+
+#: client/app/29-repli-orga.js
+msgid "Logo validé : il s’affiche sur les lieux où tu l’as choisi."
+msgstr "تمت الموافقة على الشعار: يظهر على الأماكن التي اخترته لها."
+
+#: client/app/29-repli-orga.js
+msgid "Logo envoyé : en attente de validation par l’admin."
+msgstr "تم إرسال الشعار: بانتظار موافقة المشرف."
+
+#: client/app/29-repli-orga.js
+msgid "Image illisible."
+msgstr "صورة غير مقروءة."
+
+#: src/refuges.js
+msgid "Trop de lieux enregistrés sur ce serveur."
+msgstr "أماكن كثيرة جدًا محفوظة على هذا الخادم."
+
+#: src/refuges.js
+msgid "Lieu introuvable."
+msgstr "المكان غير موجود."
+
+#: src/refuges.js
+msgid "Choisis une heure de fermeture à venir."
+msgstr "اختر ساعة إغلاق قادمة."
+
+#: src/refuges.js
+msgid "L’ouverture doit précéder la fermeture."
+msgstr "يجب أن يسبق الفتح الإغلاق."
+
+#: src/refuges.js
+msgid "Un créneau dure 24 h au plus et commence dans les 24 h."
+msgstr "لا تتجاوز الفترة 24 ساعة وتبدأ خلال 24 ساعة."
+
+#: src/refuges.js
+msgid "Aucun lieu choisi."
+msgstr "لم يتم اختيار أي مكان."
+
+#: src/refuges.js
+msgid "État inconnu."
+msgstr "حالة غير معروفة."
+
+#: src/refuges.js
+msgid "Ouvre d’abord le lieu pour un créneau."
+msgstr "افتح المكان لفترة زمنية أولًا."
+
+#: src/refuges.js
+msgid "Logo illisible : choisis une image."
+msgstr "شعار غير مقروء: اختر صورة."
+
+#: src/refuges.js
+msgid "Logo trop lourd (40 Ko au plus)."
+msgstr "الشعار كبير جدًا (40 كيلوبايت كحد أقصى)."
+
+#: src/refuges.js
+msgid "Le logo doit être une image PNG carrée."
+msgstr "يجب أن يكون الشعار صورة PNG مربعة."
+
+#: src/routes/orga.js
+msgid "Les lieux de repli sont réservés aux orgas certifiées."
+msgstr "أماكن اللجوء مخصّصة للمنظمات المعتمدة فقط."
+
+#: src/routes/orga.js
+msgid "Le logo se règle depuis un compte d’orga."
+msgstr "يُضبط الشعار من حساب منظمة."
+
+# --- textes à traduire ---
+#: client/app/04-zones-calmes.js
+msgid "Lieu de repli · {d}"
+msgstr "مكان لجوء · {d}"
+
+#: client/app/29-repli-orga.js
+msgid "Position du lieu : {pos}"
+msgstr "موقع المكان: {pos}"
+
+#: src/refuges.js
+msgid "30 lieux au plus par orga."
+msgstr "30 مكانًا كحد أقصى لكل منظمة."
+
+#: public/index.html
+msgid "Indique le nom du lieu."
+msgstr "أدخل اسم المكان."
+
+#: public/index.html
+msgid "Le lieu doit avoir donné son accord pour apparaître sur Cortège."
+msgstr "يجب أن يكون المكان قد وافق على الظهور في Cortège."
+
+#: public/index.html
+msgid "Mes lieux de repli"
+msgstr "أماكن اللجوء الخاصة بي"
+
+#: public/index.html
+msgid "Commerces, locaux et points d’écoute qui accueillent les manifestant·es. Enregistre-les une fois, puis ouvre-les le jour d’une manif : ils n’apparaissent sur la carte que pendant le créneau ouvert, jamais en dehors."
+msgstr "متاجر ومقرات ونقاط إصغاء تستقبل المتظاهرين. احفظها مرة واحدة ثم افتحها يوم المظاهرة: لا تظهر على الخريطة إلا خلال الفترة المفتوحة."
+
+#: public/index.html
+msgid "Ouverture"
+msgstr "الفتح"
+
+#: public/index.html
+msgid "Fermeture"
+msgstr "الإغلاق"
+
+#: public/index.html
+msgid "Ouvrir tous mes lieux sur ce créneau"
+msgstr "افتح كل أماكني في هذه الفترة"
+
+#: public/index.html
+msgid "Ajouter un lieu"
+msgstr "أضف مكانًا"
+
+#: public/index.html
+msgid "Nom du lieu"
+msgstr "اسم المكان"
+
+#: public/index.html
+msgid "ex. : Café des Arts"
+msgstr "مثال: Café des Arts"
+
+#: public/index.html
+msgid "Étiquette sur la carte (facultatif)"
+msgstr "التسمية على الخريطة (اختياري)"
+
+#: public/index.html
+msgid "Adresse (facultatif)"
+msgstr "العنوان (اختياري)"
+
+#: public/index.html
+msgid "ex. : 12 rue de l’Université"
+msgstr "مثال: 12 rue de l’Université"
+
+#: public/index.html
+msgid "Placer au centre de la carte"
+msgstr "ضعه في وسط الخريطة"
+
+#: public/index.html
+msgid "Ce qu’on y trouve"
+msgstr "ما المتوفر هناك"
+
+#: public/index.html
+msgid "Message (facultatif)"
+msgstr "رسالة (اختياري)"
+
+#: public/index.html
+msgid "ex. : demande au comptoir, on t’ouvre l’arrière-salle"
+msgstr "مثال: اسأل عند المنضدة، سنفتح لك الغرفة الخلفية"
+
+#: public/index.html
+msgid "Lien (facultatif)"
+msgstr "رابط (اختياري)"
+
+#: public/index.html
+msgid "Pictogramme"
+msgstr "رمز"
+
+#: public/index.html
+msgid "Couleur"
+msgstr "اللون"
+
+#: public/index.html
+msgid "Afficher le logo de l’orga à la place (une fois validé)"
+msgstr "اعرض شعار المنظمة بدلًا منه (بعد الموافقة)"
+
+#: public/index.html
+msgid "Le lieu a donné son accord pour apparaître sur Cortège"
+msgstr "وافق المكان على الظهور في Cortège"
+
+#: public/index.html
+msgid "Logo de l’orga"
+msgstr "شعار المنظمة"
+
+#: public/index.html
+msgid "Choisir une image"
+msgstr "اختر صورة"

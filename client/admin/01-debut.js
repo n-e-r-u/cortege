@@ -10,7 +10,7 @@ const api = (url, opts = {}) => fetch(url, { ...opts, headers: { 'Content-Type':
 
 async function login() {
   KEY = $('#key').value;
-  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); srvBadge(); }
+  try { await api('/api/admin/orgas').then(renderOrgas); loadAgenda(); loadBadges(); loadRequests(); loadRefuges(); srvBadge(); }
   catch (e) { $('#loginMsg').textContent = e.message; $('#app').hidden = true; return; }
   try { localStorage.setItem('cortege-admin', KEY); } catch {}
   $('#loginMsg').textContent = ''; $('#loginForm').hidden = true; $('#app').hidden = false; document.querySelector('main').classList.add('wide');

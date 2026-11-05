@@ -120,7 +120,7 @@
       const b = el('button', { type: 'button', class: 'layer', style: `--c:${GROUP_COLOR[g.id]}`, 'aria-pressed': String(!hidden.has(g.id)) }, g.label, el('span', { class: 'n' }, String(n)));
       b.onclick = () => {
         hidden.has(g.id) ? hidden.delete(g.id) : hidden.add(g.id);
-        regroup();
+        regroup(); if (repliDraw) repliDraw();
         refreshUI();
       };
       box.append(b);
