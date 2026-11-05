@@ -3231,3 +3231,7 @@ msgstr "Por ahora, una organización solo puede guardar un lugar de refugio."
 #: public/index.html
 msgid "Ton orga a atteint le nombre maximal de lieux."
 msgstr "Tu organización ha alcanzado el número máximo de lugares."
+
+#: public/index.html
+msgid "Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin."
+msgstr "Reservado a las organizaciones certificadas: tu acceso sigue en prueba. Pide la certificación al admin."

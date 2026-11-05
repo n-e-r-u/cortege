@@ -325,7 +325,7 @@ async function adminRoutes(req, res, url, pathname) {
     }
     // --- Lieux de repli des orgas : liste, retrait, logos à valider ---
     if (req.method === 'GET' && pathname === '/api/admin/refuges') {
-      const labels = Object.fromEntries(readOrgas().map(o => [o.id, o.label])), now = Date.now();
+      const labels = { admin: adminLabel(), ...Object.fromEntries(readOrgas().map(o => [o.id, o.label])) }, now = Date.now();
       return send(res, 200, { refuges: R.all().map(r => ({ ...R.refugeView(r), oid: r.oid, open: r.state !== 'closed' && r.from <= now && r.to > now })).sort((a, b) => (a.orga || '').localeCompare(b.orga || '', 'fr') || a.name.localeCompare(b.name, 'fr')),
         logos: R.logosPending().map(l => ({ oid: l.oid, orga: labels[l.oid] || l.oid, t: l.t, img: l.data })) });
     }

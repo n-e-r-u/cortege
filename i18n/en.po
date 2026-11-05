@@ -3231,3 +3231,7 @@ msgstr "An organisation can save only one safe space for now."
 #: public/index.html
 msgid "Ton orga a atteint le nombre maximal de lieux."
 msgstr "Your organisation has reached the maximum number of places."
+
+#: public/index.html
+msgid "Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin."
+msgstr "For certified organisations only: your access is still on trial. Ask the admin for certification."

@@ -180,7 +180,6 @@ async function orgaRoutes(req, res, url, pathname) {
         return send(res, 200, { refuges: R.mine(orga.id).map(R.refugeView), logo: l ? { status: l.status, img: l.data } : null, max: R.REFUGE_MAX });
       }
       if (req.method === 'POST' && pathname === '/api/orga/logo') {
-        if (orga.admin) return send(res, 400, { error: 'Le logo se règle depuis un compte d’orga.' });
         const out = R.setLogo(orga, await readJson(req, 64_000));
         if (out[0] < 300) orgaLog(orga, 'logo envoyé');
         return send(res, ...out);

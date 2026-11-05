@@ -5,6 +5,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 ## 2.13.1
 
 - **Un lieu de repli par orga pour l'instant** : chaque orga certifiée enregistre un seul lieu (réglable avec `REFUGE_MAX` dans `/etc/cortege.env`, de 1 à 30). L'espace orga s'adapte : « Ajouter mon lieu » disparaît une fois le lieu enregistré, et « Ouvrir sur ce créneau » ouvre le lieu.
+- **Section « Lieu de repli » visible pour l'admin** (connecté à l'appli avec sa clé), qui peut tenir son propre lieu ; son logo est validé d'office. Pour une orga en essai, la section s'affiche avec le message « Réservé aux orgas certifiées » au lieu d'être cachée.
 
 ## 2.13.0
 

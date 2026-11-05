@@ -3050,14 +3050,17 @@
         x.drawImage(img, (128 - img.width * s) / 2, (128 - img.height * s) / 2, img.width * s, img.height * s);
         URL.revokeObjectURL(img.src);
         const png = c.toDataURL('image/png');
-        await orgaFetch('/api/orga/logo', { method: 'POST', body: JSON.stringify({ png }) });
-        logoState({ status: 'pending', img: png });
+        const d = await orgaFetch('/api/orga/logo', { method: 'POST', body: JSON.stringify({ png }) });
+        logoState({ status: d.status || 'pending', img: png });
       } catch (err) { msg(err.message || t('Image illisible.')); }
     };
     $('#rfLogoDel').onclick = async () => { try { await orgaFetch('/api/orga/logo', { method: 'DELETE' }); logoState(null); } catch (err) { msg(err.message); } };
     async function load() {
-      box.hidden = !(orga && !orga.trial && !orga.admin);
-      if (box.hidden) return;
+      // Visible pour toute orga connectée (et l'admin) ; en essai, la section explique qu'il faut être certifiée
+      box.hidden = !orga;
+      const trial = !!(orga && orga.trial);
+      $('#refugeTrial').hidden = !trial; $('#refugeBody').hidden = trial;
+      if (box.hidden || trial) return;
       try { const d = await orgaFetch('/api/orga/refuges'); list = d.refuges || []; max = d.max || 1; $('#rfAdd').hidden = !form.hidden || !canAdd(); render(); logoState(d.logo); } catch (err) { msg(err.message); }
     }
     // Créneau proposé : maintenant jusqu'à 20 h (ou 4 h plus tard si c'est déjà le soir)

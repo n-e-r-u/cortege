@@ -113,9 +113,11 @@ function setLogo(orga, b) {
   if (buf.length > LOGO_MAX) return [400, { error: 'Logo trop lourd (40 Ko au plus).' }];
   const sz = pngSize(buf);
   if (!sz || sz[0] !== sz[1] || sz[0] < LOGO_PX[0] || sz[0] > LOGO_PX[1]) return [400, { error: 'Le logo doit être une image PNG carrée.' }];
-  q('INSERT OR REPLACE INTO refuge_logo(oid,status,t,data) VALUES(?,?,?,?)').run(orga.id, 'pending', Date.now(), 'data:image/png;base64,' + buf.toString('base64'));
+  // Le logo de l'admin n'a pas besoin de sa propre validation
+  const status = orga.admin ? 'ok' : 'pending';
+  q('INSERT OR REPLACE INTO refuge_logo(oid,status,t,data) VALUES(?,?,?,?)').run(orga.id, status, Date.now(), 'data:image/png;base64,' + buf.toString('base64'));
   dirty.repli = true; scheduleFlush();
-  return [200, { status: 'pending' }];
+  return [200, { status }];
 }
 function dropLogo(oid) { const n = q('DELETE FROM refuge_logo WHERE oid=?').run(oid).changes; if (n) { dirty.repli = true; scheduleFlush(); } return n > 0; }
 function judgeLogo(oid, ok) {

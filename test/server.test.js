@@ -1083,6 +1083,12 @@ test('lieux de repli : orgas certifiées, accord du lieu, visibles seulement pen
   await asOrga(K, `/api/orga/refuges/${r.j.id}/state`, { state: 'closed' });
   assert.equal((await live()).p.length, 0);
   assert.equal((await get('/api/orga/refuges')).refuges.length, 1);
+  // L'admin peut aussi tenir un lieu, et son logo est validé d'office
+  const ra = await asOrga(ADMIN, '/api/orga/refuges', { ...lieu, name: 'Point admin' });
+  assert.equal(ra.s, 201);
+  assert.equal((await asOrga(ADMIN, '/api/orga/logo', { png: 'data:image/png;base64,' + png.toString('base64') })).j.status, 'ok');
+  await fetch(B + '/api/orga/refuges/' + ra.j.id, { method: 'DELETE', headers: { 'x-orga-key': ADMIN, 'content-type': 'application/json' } });
+  await fetch(B + '/api/orga/logo', { method: 'DELETE', headers: { 'x-orga-key': ADMIN, 'content-type': 'application/json' } });
   // Orga supprimée : ses lieux et son logo partent avec elle
   const dr = await fetch(B + `/api/admin/orgas/${o.id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
   assert.equal(dr.status, 200, await dr.clone().text());
