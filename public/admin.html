@@ -89,8 +89,8 @@ input[type=checkbox], input[type=radio] { width: 18px; height: 18px; padding: 0;
 .org-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .org-list li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
 .org-list li:first-child { border-top: 0; }
-.org-list li:has(.rf-logo) { grid-template-columns: 48px 1fr auto; }
-.rf-logo { width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 3px solid var(--soutien); object-fit: cover; }
+.org-list li:has(.rf-pend) { grid-template-columns: 48px 1fr auto; }
+.rf-pend { width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 3px solid var(--soutien); object-fit: cover; }
 .org-list .meta { font-size: 13px; color: var(--muted); }
 .org-list button { height: 36px; font-size: 13px; }
 button.danger { background: transparent; border: 1px solid #e5484d; color: var(--bad-text); }
@@ -132,6 +132,25 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 #panelOrders .orga-form input, #panelOrders .orga-form select, #panelOrders .orga-form textarea { width: 100%; box-sizing: border-box; }
 #panelOrders .orga-form textarea { min-height: 120px; font-family: inherit; }
 #panelOrders .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+/* Lieux de repli (2.13.5) */
+.rf-map { height: 260px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.rf-checks { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.rf-checks legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; padding: 0; }
+.rf-checks label, label.check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--fg); }
+.rf-checks label { padding: 6px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-2); }
+.stack > label.check { flex-direction: row; align-items: center; color: var(--fg); font-size: 14px; }
+#rfLogoImg { display: none; }
+.rf-checks input, label.check input { width: 18px; height: 18px; margin: 0; flex: none; }
+.rf-preview { width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 19px; border: 3px solid var(--soutien); align-self: end; overflow: hidden; background: #fff; }
+.rf-preview img { width: 100%; height: 100%; object-fit: cover; }
+.rf-logo { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.rf-logo img { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--soutien); object-fit: cover; background: #fff; }
+.btn-like { display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--accent); color: var(--accent); font-weight: 700; cursor: pointer; }
+.rf-slot input[type=time] { height: 40px; }
+.rf-quota { width: 72px; }
+.org-list li .rf-thumb { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--soutien); display: grid; place-items: center; font-size: 17px; overflow: hidden; background: #fff; }
+.org-list li .rf-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.org-list li:has(.rf-thumb) { grid-template-columns: 36px 1fr auto; }
 </style>
 </head>
 <body>
@@ -414,12 +433,49 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 
   <section class="panel" id="panelOrgas" role="tabpanel" aria-labelledby="tabOrgas">
     <section class="card" id="refugeCard">
-      <h2>Lieux de repli des orgas <span id="rfCount"></span></h2>
-      <p class="fine">Enregistrés par les orgas certifiées, avec l’accord des lieux, et visibles sur la carte seulement pendant leurs créneaux d’ouverture. Les logos s’affichent après ta validation : refuse tout logo trompeur, injurieux ou qui imite une institution.</p>
-      <h3 class="group-title">Logos à valider</h3>
-      <ul class="org-list" id="rfLogos"></ul>
+      <h2>Lieux de repli <span id="rfCount"></span></h2>
+      <p class="fine">Visibles sur la carte seulement pendant leurs créneaux d’ouverture. Toutes les orgas associées à un lieu peuvent l’ouvrir, le fermer et le modifier depuis leur espace orga. Le logo du lieu passe avant celui des orgas. Refuse tout logo trompeur, injurieux ou qui imite une institution.</p>
+      <div class="controls"><button type="button" id="rfNew">Nouveau lieu</button></div>
+      <form class="stack rf-form" id="rfForm" hidden>
+        <h3 class="group-title" id="rfFormTitle">Nouveau lieu</h3>
+        <div class="controls">
+          <label style="flex:2;min-width:200px">Nom du lieu<input id="rfName" maxlength="60" required></label>
+          <label style="flex:1;min-width:140px">Étiquette sur la carte<input id="rfShort" maxlength="24"></label>
+        </div>
+        <label>Adresse (facultatif)<input id="rfAddr" maxlength="120"></label>
+        <label>Position : touche la carte, ou colle « latitude, longitude »<input id="rfPos" placeholder="43.6108, 3.8767" required></label>
+        <div id="rfMap" class="rf-map"></div>
+        <fieldset class="rf-checks" id="rfServices"><legend>Ce qu’on y trouve</legend></fieldset>
+        <label>Message (facultatif)<textarea id="rfMsg" maxlength="200" rows="2"></textarea></label>
+        <label>Lien (facultatif)<input id="rfUrl" type="url" maxlength="300" placeholder="https://…"></label>
+        <div class="controls">
+          <label>Pictogramme<select id="rfGlyph"></select></label>
+          <label>Couleur<select id="rfColor"></select></label>
+          <span class="rf-preview" id="rfPreview" aria-hidden="true"></span>
+        </div>
+        <div class="rf-logo">
+          <img id="rfLogoImg" alt="Logo du lieu" hidden>
+          <label class="btn-like">Logo du lieu<input type="file" id="rfLogoFile" accept="image/*" hidden></label>
+          <button type="button" class="ghost" id="rfLogoDel" hidden>Retirer le logo</button>
+          <label class="check"><input type="checkbox" id="rfUseLogo"> Sinon, logo de l’orga associée (s’il est validé)</label>
+        </div>
+        <fieldset class="rf-checks" id="rfOrgas"><legend>Orgas associées (elles peuvent ouvrir et modifier le lieu)</legend></fieldset>
+        <label class="check"><input type="checkbox" id="rfConsent"> Le lieu a donné son accord pour apparaître sur Cortège</label>
+        <div class="controls"><button type="submit">Enregistrer</button><button type="button" class="ghost" id="rfCancel">Annuler</button></div>
+        <p class="fine" id="rfFormMsg" role="status"></p>
+      </form>
       <h3 class="group-title">Tous les lieux</h3>
+      <div class="controls rf-slot">
+        <label>Ouvrir de<input type="time" id="rfFrom"></label>
+        <label>à<input type="time" id="rfTo"></label>
+        <span class="fine">créneau utilisé par les boutons « Ouvrir »</span>
+      </div>
       <ul class="org-list" id="rfList"></ul>
+      <h3 class="group-title">Nombre de lieux par orga</h3>
+      <p class="fine" id="rfQuotaHint"></p>
+      <ul class="org-list" id="rfQuotas"></ul>
+      <h3 class="group-title">Logos d’orgas à valider</h3>
+      <ul class="org-list" id="rfLogos"></ul>
     </section>
     <section class="card" id="reqCard">
       <h2>Demandes d’accès <span id="reqCount"></span></h2>

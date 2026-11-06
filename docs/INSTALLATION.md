@@ -24,7 +24,7 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » (admin) |
 | `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme (jours) |
 | `ORGA_LOG_DAYS` | `0` | Durée de conservation du journal des orgas, en jours. `0` : historique complet, gardé sans limite |
-| `REFUGE_MAX` | `1` | Nombre de lieux de repli qu'une orga certifiée peut enregistrer (1 à 30) |
+| `REFUGE_MAX` | `1` | Nombre de lieux de repli qu'une orga certifiée peut enregistrer par défaut (1 à 30) ; l'admin peut le régler orga par orga |
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel. Les en-têtes du proxy ne sont crus que pour les connexions venant de la machine elle-même (ou de `PROXY_IPS`) |
 | `PROXY_IPS` | vide | Adresses du proxy s'il n'est pas sur la même machine (ex. passerelle Docker `172.17.0.1`), séparées par des virgules |
 | `CLOUDFLARE` | `0` | `1` seulement si l'instance est vraiment derrière Cloudflare : l'en-tête `CF-Connecting-IP` est alors cru. Sinon il est ignoré (n'importe qui peut l'envoyer) |

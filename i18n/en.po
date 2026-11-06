@@ -3276,3 +3276,8 @@ msgstr "Inviting other organisations is for certified organisations only. Once t
 #: public/index.html
 msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
 msgstr "<b>Safest option: add a second device now</b> (“Add a device” button above)."
+
+# --- textes à traduire ---
+#: client/app/29-repli-orga.js
+msgid "Partagé avec : {who}"
+msgstr "Shared with: {who}"

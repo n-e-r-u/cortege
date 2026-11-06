@@ -2,6 +2,17 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.13.5
+
+- **Lieux de repli gérés depuis l'admin** (onglet Orgas, carte « Lieux de repli ») :
+  - créer et modifier un lieu : nom, étiquette, adresse, position sur une carte (toucher la carte, déplacer le repère ou coller « latitude, longitude »), services, message, lien, pictogramme, couleur, accord du lieu, avec un aperçu du point ;
+  - **associer le lieu à une ou plusieurs orgas** : toutes peuvent l'ouvrir, le fermer et le modifier depuis leur espace orga (sans pouvoir changer les orgas associées ni le logo). Sur la carte, la fiche cite toutes les orgas associées ; un lieu sans orga est présenté au nom de l'admin ;
+  - **logo propre au lieu**, recadré en carré dans le navigateur, vérifié par le serveur ; il passe avant le logo des orgas ;
+  - ouvrir un lieu sur un créneau, le passer en complet, le fermer, le retirer.
+- **Nombre de lieux par orga** réglable orga par orga, de 0 à 30 (par défaut `REFUGE_MAX`, soit 1). Les lieux que l'admin associe lui-même ne comptent pas dans cette limite.
+- Orga supprimée : elle est retirée de ses lieux ; un lieu qui n'a plus d'orga disparaît, sauf s'il a été créé par l'admin.
+- Espace orga : un lieu partagé indique avec quelles autres orgas.
+
 ## 2.13.2
 
 - **Espace orga en 4 onglets** au lieu d'une longue page :

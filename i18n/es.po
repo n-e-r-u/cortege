@@ -3276,3 +3276,8 @@ msgstr "Invitar a otras organizaciones está reservado a las organizaciones cert
 #: public/index.html
 msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
 msgstr "<b>Lo más seguro: añade ya un segundo dispositivo</b> (botón «Añadir un dispositivo» de arriba)."
+
+# --- textes à traduire ---
+#: client/app/29-repli-orga.js
+msgid "Partagé avec : {who}"
+msgstr "Compartido con: {who}"

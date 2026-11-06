@@ -326,8 +326,32 @@ async function adminRoutes(req, res, url, pathname) {
     // --- Lieux de repli des orgas : liste, retrait, logos à valider ---
     if (req.method === 'GET' && pathname === '/api/admin/refuges') {
       const labels = { admin: adminLabel(), ...Object.fromEntries(readOrgas().map(o => [o.id, o.label])) }, now = Date.now();
-      return send(res, 200, { refuges: R.all().map(r => ({ ...R.refugeView(r), oid: r.oid, open: r.state !== 'closed' && r.from <= now && r.to > now })).sort((a, b) => (a.orga || '').localeCompare(b.orga || '', 'fr') || a.name.localeCompare(b.name, 'fr')),
-        logos: R.logosPending().map(l => ({ oid: l.oid, orga: labels[l.oid] || l.oid, t: l.t, img: l.data })) });
+      return send(res, 200, {
+        refuges: R.all().map(r => ({ ...R.adminView(r), open: r.state !== 'closed' && r.from <= now && r.to > now })).sort((a, b) => a.name.localeCompare(b.name, 'fr')),
+        logos: R.logosPending().map(l => ({ oid: l.oid, orga: labels[l.oid] || l.oid, t: l.t, img: l.data })),
+        quotas: R.quotas(), defaultMax: R.REFUGE_MAX, quotaMax: R.QUOTA_MAX });
+    }
+    const adm = () => ({ id: 'admin', label: adminLabel(), admin: true, trial: false });
+    if (req.method === 'POST' && pathname === '/api/admin/refuges') {
+      const out = R.adminSave(await readJson(req, 80_000));
+      if (out[0] < 300) orgaLog(adm(), 'lieu de repli créé', { ref: out[1].id, detail: out[1].name });
+      return send(res, ...out);
+    }
+    if (req.method === 'POST' && pathname === '/api/admin/refuges/open') return send(res, ...R.openRefuges(adm(), await readJson(req, 4096)));
+    const rfAdm = pathname.match(/^\/api\/admin\/refuges\/([\w-]{1,16})(\/state)?$/);
+    if (rfAdm && req.method === 'POST' && rfAdm[2]) return send(res, ...R.setRefugeState(adm(), rfAdm[1], String((await readJson(req)).state || '')));
+    if (rfAdm && req.method === 'POST') {
+      const out = R.adminSave(await readJson(req, 80_000), rfAdm[1]);
+      if (out[0] < 300) orgaLog(adm(), 'lieu de repli modifié', { ref: rfAdm[1], detail: out[1].name });
+      return send(res, ...out);
+    }
+    const quAct = pathname.match(/^\/api\/admin\/refuge-quota\/([\w:-]{1,40})$/);
+    if (quAct && req.method === 'POST') {
+      if (!readOrgas().some(o => o.id === quAct[1])) return send(res, 404, { error: 'Orga introuvable.' });
+      const n = (await readJson(req)).max;
+      if (!R.setQuota(quAct[1], n)) return send(res, 400, { error: 'Entre 0 et 30 lieux.' });
+      orgaLog(adm(), 'nombre de lieux de repli réglé', { ref: quAct[1], detail: String(n) });
+      return send(res, 200, { ok: true, max: R.quotaOf(quAct[1]) });
     }
     const lgAct = pathname.match(/^\/api\/admin\/logos\/([\w:-]{1,40})\/(ok|no)$/);
     if (lgAct && req.method === 'POST') {
@@ -523,7 +547,7 @@ async function adminRoutes(req, res, url, pathname) {
         if (next.length === list.length) return false; writeOrgas(next); return true;
       });
       // Ses lieux de repli et son logo partent avec elle
-      if (ok) { for (const r of R.mine(del[1])) R.dropRefuge(r.id); R.dropLogo(del[1]); }
+      if (ok) R.forgetOrga(del[1]);
       return ok ? send(res, 200, { removed: true }) : send(res, 404, { error: 'Orga introuvable.' });
     }
     // Instance, pays, langues, serveur

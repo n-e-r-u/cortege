@@ -1095,3 +1095,42 @@ test('lieux de repli : orgas certifiées, accord du lieu, visibles seulement pen
   assert.equal(db.prepare('SELECT COUNT(*) n FROM refuges').get().n, 0);
   assert.equal(db.prepare('SELECT COUNT(*) n FROM refuge_logo').get().n, 0);
 });
+
+test('lieux de repli gérés par l’admin : plusieurs orgas, logo du lieu, nombre de lieux par orga', async () => {
+  const mk = async label => { const o = (await admin('/api/admin/orgas', { label })).j; await admin(`/api/admin/orgas/${o.id}/trial`, { trial: false }); return { ...o, key: (await orgaFrom(o.invite)).key }; };
+  const A = await mk('Orga A Repli'), Bo = await mk('Orga B Repli');
+  const png = Buffer.alloc(40); png.writeUInt32BE(0x89504e47, 0); png.writeUInt32BE(0x0d0a1a0a, 4); png.writeUInt32BE(13, 8); png.write('IHDR', 12, 'latin1'); png.writeUInt32BE(128, 16); png.writeUInt32BE(128, 20);
+  const logo = 'data:image/png;base64,' + png.toString('base64');
+  const lieu = { name: 'Local partagé', lat: 43.6, lng: 3.88, consent: true, orgas: [A.id, Bo.id, 'inconnue'], logo };
+  const c = await admin('/api/admin/refuges', lieu);
+  assert.equal(c.s, 201); assert.deepEqual(c.j.orgas, [A.id, Bo.id], 'orgas inconnues écartées'); assert.equal(c.j.logo, logo);
+  assert.equal((await admin('/api/admin/refuges', { ...lieu, logo: 'data:image/png;base64,AAAA' })).s, 400, 'logo vérifié');
+  // Les deux orgas voient le lieu et peuvent l'ouvrir ; le libellé cite les deux
+  const now = Date.now();
+  const op = await asOrga(Bo.key, '/api/orga/refuges/open', { ids: [c.j.id], from: now, to: now + 3600e3 });
+  assert.equal(op.s, 200); assert.equal(op.j.refuges[0].orga, 'Orga A Repli, Orga B Repli');
+  await new Promise(x => setTimeout(x, 1200));
+  const L = await fetch(B + '/live/repli.json').then(x => x.json());
+  const p = L.p.find(x => x.id === c.j.id);
+  assert.ok(p && p.lg && L.lg[p.lg] === logo, 'logo du lieu publié');
+  // Une orga associée qui modifie le lieu ne touche ni aux orgas ni au logo
+  await asOrga(A.key, '/api/orga/refuges/' + c.j.id, { name: 'Local partagé (rue X)', orgas: [A.id], logo: null });
+  const ad = await fetch(B + '/api/admin/refuges', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  const r = ad.refuges.find(x => x.id === c.j.id);
+  assert.equal(r.name, 'Local partagé (rue X)'); assert.deepEqual(r.orgas, [A.id, Bo.id]); assert.equal(r.logo, logo);
+  // Nombre de lieux : A en a déjà un (limite par défaut 1) ; l'admin lui en permet 2
+  assert.equal((await asOrga(A.key, '/api/orga/refuges', { name: 'Second', lat: 43.61, lng: 3.87, consent: true })).s, 400);
+  assert.equal((await admin(`/api/admin/refuge-quota/${A.id}`, { max: 99 })).s, 400);
+  assert.equal((await admin(`/api/admin/refuge-quota/${A.id}`, { max: 2 })).j.max, 2);
+  assert.equal((await asOrga(A.key, '/api/orga/refuges', { name: 'Second', lat: 43.61, lng: 3.87, consent: true })).s, 201);
+  assert.equal(ad.quotas.find(q => q.id === A.id).count, 1);
+  // Orga B supprimée : retirée du lieu partagé, qui reste avec A
+  await fetch(B + `/api/admin/orgas/${Bo.id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  const ad2 = await fetch(B + '/api/admin/refuges', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  assert.deepEqual(ad2.refuges.find(x => x.id === c.j.id).orgas, [A.id]);
+  // Lieu créé par l'admin sans orga : il reste même si plus aucune orga n'y est associée
+  await fetch(B + `/api/admin/orgas/${A.id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+  const ad3 = await fetch(B + '/api/admin/refuges', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
+  assert.ok(ad3.refuges.find(x => x.id === c.j.id), 'lieu de l’admin gardé'); assert.ok(!ad3.refuges.some(x => x.name === 'Second'), 'lieu de l’orga supprimée parti');
+  await fetch(B + '/api/admin/refuges/' + c.j.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
+});

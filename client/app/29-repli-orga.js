@@ -67,7 +67,7 @@
         const del = async () => { if (!confirmDel(r)) return; try { await orgaFetch('/api/orga/refuges/' + r.id, { method: 'DELETE' }); load(); } catch (err) { msg(err.message); } };
         ul.append(el('li', { class: 'refuge-item' + (open ? ' on' : '') },
           el('span', { class: 'refuge-dot', style: `background:${r.color}` }, r.glyph),
-          el('div', { class: 'refuge-txt' }, el('b', {}, r.name), el('small', {}, state(r) + (r.addr ? ' · ' + r.addr : ''))),
+          el('div', { class: 'refuge-txt' }, el('b', {}, r.name), el('small', {}, state(r) + (r.addr ? ' · ' + r.addr : '') + (r.orga && r.orga.includes(', ') ? ' · ' + t('Partagé avec : {who}', { who: r.orga }) : ''))),
           el('div', { class: 'refuge-acts' }, ...[
             open ? act(r.state === 'full' ? t('Plus complet') : t('Complet'), setState(r.state === 'full' ? 'open' : 'full')) : act(t('Ouvrir'), openOne, 'secondary'),
             open ? act(t('Fermer'), setState('closed')) : null,

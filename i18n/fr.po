@@ -3289,3 +3289,8 @@ msgstr ""
 #: public/index.html
 msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/29-repli-orga.js
+msgid "Partagé avec : {who}"
+msgstr ""

@@ -3316,3 +3316,8 @@ msgstr "دعوة منظمات أخرى مخصّصة للمنظمات المعت�
 #: public/index.html
 msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
 msgstr "<b>الأكثر أمانًا: أضف جهازًا ثانيًا الآن</b> (زر «أضف جهازًا» أعلاه)."
+
+# --- textes à traduire ---
+#: client/app/29-repli-orga.js
+msgid "Partagé avec : {who}"
+msgstr "مشترك مع: {who}"
