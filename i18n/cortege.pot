@@ -3226,3 +3226,43 @@ msgstr ""
 #: public/index.html
 msgid "Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin."
 msgstr ""
+
+#: client/app/30-orga-onglets.js
+msgid "Admin"
+msgstr ""
+
+#: client/app/30-orga-onglets.js
+msgid "Parrainée, en essai"
+msgstr ""
+
+#: client/app/30-orga-onglets.js
+msgid "En essai"
+msgstr ""
+
+#: client/app/30-orga-onglets.js
+msgid "Orga certifiée"
+msgstr ""
+
+#: public/index.html
+msgid "Annonces"
+msgstr ""
+
+#: public/index.html
+msgid "Terrain"
+msgstr ""
+
+#: public/index.html
+msgid "Réseau"
+msgstr ""
+
+#: public/index.html
+msgid "Mon orga"
+msgstr ""
+
+#: public/index.html
+msgid "Inviter d’autres orgas est réservé aux orgas certifiées. Une fois ton orga certifiée par l’admin, tu pourras en faire entrer jusqu’à 3 par semaine."
+msgstr ""
+
+#: public/index.html
+msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
+msgstr ""

@@ -108,6 +108,7 @@
       box.hidden = !orga;
       const trial = !!(orga && orga.trial);
       $('#refugeTrial').hidden = !trial; $('#refugeBody').hidden = trial;
+      $('#orgaLogoBox').hidden = box.hidden || trial;
       if (box.hidden || trial) return;
       try { const d = await orgaFetch('/api/orga/refuges'); list = d.refuges || []; max = d.max || 1; $('#rfAdd').hidden = !form.hidden || !canAdd(); render(); logoState(d.logo); } catch (err) { msg(err.message); }
     }

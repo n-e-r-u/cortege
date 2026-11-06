@@ -3232,3 +3232,44 @@ msgstr "Deine Organisation hat die maximale Anzahl an Orten erreicht."
 #: public/index.html
 msgid "Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin."
 msgstr "Nur für zertifizierte Organisationen: Dein Zugang ist noch in der Testphase. Bitte den Admin um Zertifizierung."
+
+# --- textes à traduire ---
+#: client/app/30-orga-onglets.js
+msgid "Admin"
+msgstr "Admin"
+
+#: client/app/30-orga-onglets.js
+msgid "Parrainée, en essai"
+msgstr "Mit Pate, in der Testphase"
+
+#: client/app/30-orga-onglets.js
+msgid "En essai"
+msgstr "In der Testphase"
+
+#: client/app/30-orga-onglets.js
+msgid "Orga certifiée"
+msgstr "Zertifizierte Organisation"
+
+#: public/index.html
+msgid "Annonces"
+msgstr "Ankündigungen"
+
+#: public/index.html
+msgid "Terrain"
+msgstr "Vor Ort"
+
+#: public/index.html
+msgid "Réseau"
+msgstr "Netzwerk"
+
+#: public/index.html
+msgid "Mon orga"
+msgstr "Meine Organisation"
+
+#: public/index.html
+msgid "Inviter d’autres orgas est réservé aux orgas certifiées. Une fois ton orga certifiée par l’admin, tu pourras en faire entrer jusqu’à 3 par semaine."
+msgstr "Andere Organisationen einladen können nur zertifizierte Organisationen. Sobald der Admin deine zertifiziert, kannst du bis zu 3 pro Woche einladen."
+
+#: public/index.html
+msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
+msgstr "<b>Am sichersten: Füge jetzt ein zweites Gerät hinzu</b> (Schaltfläche „Gerät hinzufügen“ oben)."

@@ -541,133 +541,151 @@
     <h2 id="orTitle">Espace orga</h2>
     <button class="x" id="orClose" aria-label="Fermer">×</button>
   </div>
-  <p class="hint"><span>Tu publies en tant que</span> <b id="orgaName">—</b>. <span>L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier.</span></p>
-  <div class="access-warn" id="orgaAccessWarn">
-    <b>⚠ Ton accès orga n’existe que sur cet appareil.</b>
-    Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, «&nbsp;effacer l’historique&nbsp;»), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir.
-    <span id="orgaRecover">Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.</span>
-    <span><b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton plus bas).</span>
+  <div class="orga-tabs" role="tablist" aria-label="Espace orga">
+    <button type="button" role="tab" id="otab-ann" aria-controls="opane-ann" data-pane="ann">📢 <span>Annonces</span></button>
+    <button type="button" role="tab" id="otab-terrain" aria-controls="opane-terrain" data-pane="terrain">📍 <span>Terrain</span></button>
+    <button type="button" role="tab" id="otab-reseau" aria-controls="opane-reseau" data-pane="reseau">🤝 <span>Réseau</span></button>
+    <button type="button" role="tab" id="otab-compte" aria-controls="opane-compte" data-pane="compte">👤 <span>Mon orga</span></button>
   </div>
-  <p class="hint trial-note" id="orgaSponsored" hidden></p>
-  <p class="hint trial-note" id="orgaTrial" hidden>Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée.</p>
-  <div class="bk-box" id="bkBox" hidden>
-    <h3 class="group-title">Ma position en direct</h3>
-    <p class="hint">Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt.</p>
-    <p class="fine">Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus.</p>
-    <div class="bk-row">
-      <label>Je suis<select id="bkRole">
-        <option value="cortege">📣 la tête de cortège</option>
-        <option value="queue">🔚 la queue de cortège</option>
-        <option value="medic">⛑️ street medic</option>
-        <option value="legal">⚖️ legal team</option>
-        <option value="presse">🎥 presse</option>
-      </select></label>
-      <label>Pendant<select id="bkDur">
-        <option value="30">30 min</option>
-        <option value="60" selected>1 h</option>
-        <option value="120">2 h</option>
-        <option value="240">4 h</option>
-      </select></label>
-    </div>
-    <label class="bk-note">Message affiché sur ton point (facultatif)<input id="bkNote" maxlength="120" placeholder="ex. : devant la fontaine, viens me voir"></label>
-    <button type="button" class="secondary" id="bkBtn">Partager ma position</button>
-    <p class="fine" id="bkState" role="status"></p>
-  </div>
-  <form id="annForm" class="orga-form">
-    <fieldset class="seg">
-      <legend>Type</legend>
-      <label><input type="radio" name="kind" value="info" checked> Annonce</label>
-      <label><input type="radio" name="kind" value="legal"> Numéro legal team</label>
-    </fieldset>
-    <div id="annInfoFields">
-      <label class="note-label" for="annText">Message</label>
-      <textarea id="annText" maxlength="220" rows="3" placeholder="ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail"></textarea>
+  <div class="orga-pane" role="tabpanel" id="opane-ann" aria-labelledby="otab-ann" hidden>
+    <p class="hint"><span>Tu publies en tant que</span> <b id="orgaName">—</b>. <span>L’annonce est centrée sur <b>le milieu de la carte</b> : déplace la carte avant de publier.</span></p>
+    <form id="annForm" class="orga-form">
       <fieldset class="seg">
-        <legend>Importance</legend>
-        <label><input type="radio" name="level" value="info" checked> Info</label>
-        <label><input type="radio" name="level" value="urgent"> Urgent (vibre + notification)</label>
+        <legend>Type</legend>
+        <label><input type="radio" name="kind" value="info" checked> Annonce</label>
+        <label><input type="radio" name="kind" value="legal"> Numéro legal team</label>
       </fieldset>
-      <label class="check" id="annNationalWrap" hidden><input type="checkbox" id="annNational"> Annonce nationale (toute la France)</label>
-    </div>
-    <div id="annLegalFields" hidden>
-      <label class="note-label" for="annCity">Ville</label>
-      <input id="annCity" maxlength="40" autocomplete="address-level2" placeholder="ex. : Montpellier">
-      <label class="note-label" for="annPhone">Numéro de téléphone</label>
-      <input id="annPhone" type="tel" inputmode="tel" maxlength="20" placeholder="06 00 00 00 00">
-      <label class="note-label" for="annLegalText">Précision (facultatif)</label>
-      <input id="annLegalText" maxlength="120" placeholder="ex. : permanence jusqu’à 22 h">
-    </div>
-    <div class="row2" id="annZoneRow">
-      <label class="note-label" for="annRadius" id="annRadiusWrap">Zone
-        <select id="annRadius"><option value="1">1 km</option><option value="3" selected>3 km</option><option value="10">10 km</option><option value="30">30 km</option></select>
-      </label>
-      <label class="note-label" for="annMinutes" id="annMinutesWrap">Durée
-        <select id="annMinutes"><option value="30">30 min</option><option value="60">1 h</option><option value="180" selected>3 h</option><option value="360">6 h</option><option value="720">12 h</option></select>
-      </label>
-    </div>
-    <p class="fine" id="annLegalHint" hidden>Le numéro apparaît dans « Mes droits » sous le nom de la ville, pour tout le monde (en premier pour les personnes les plus proches), jusqu’à ce que tu le retires.</p>
-    <button class="install" type="submit">Publier</button>
-  </form>
-  <button class="secondary orga-event-btn" id="btnOrgaEvent">Publier une manif ou un blocus (avec parcours)</button>
-  <h3 class="group-title" id="annListTitle">Annonces actives dans la zone</h3>
-  <ol id="annList" class="list"></ol>
-  <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
-  <section id="orgaInviteBox" hidden>
-    <h3 class="group-title">Inviter une orga</h3>
-    <p class="hint">Tu peux faire entrer une orga que tu connais (3 par semaine). Elle restera « parrainée » et plus surveillée jusqu’à ce que toi ou l’admin la confirmiez. Si elle est révoquée pour abus, tu ne pourras plus inviter pendant 30 jours : n’invite que des personnes de confiance.</p>
-    <form class="controls-inline" id="orgaInviteForm">
-      <input id="orgaInviteLabel" maxlength="60" placeholder="Nom affiché, ex. : Legal Team Nîmes" aria-label="Nom de l’orga invitée">
-      <button class="secondary" type="submit">Créer l’invitation</button>
-    </form>
-    <h3 class="group-title">Mes orgas invitées</h3>
-    <ul class="filleules" id="filleulList"></ul>
-  </section>
-  <div class="invite-out" id="inviteOut" hidden>
-    <div id="inviteTitle"></div>
-    <div class="qr-invite" id="inviteQr"></div>
-    <code id="inviteUrl"></code>
-    <div class="row-btns"><button class="secondary" type="button" id="inviteCopy">Copier le lien</button><button class="secondary" type="button" id="inviteShare">Envoyer…</button></div>
-    <p class="fine" id="inviteFine"></p>
-  </div>
-  <section id="refugeBox" hidden>
-    <h3 class="group-title">Lieu de repli</h3>
-    <p class="hint">Un commerce, un local ou un point d’écoute qui accueille les manifestant·es. Enregistre-le une fois, puis ouvre-le le jour d’une manif : il n’apparaît sur la carte que pendant le créneau ouvert, jamais en dehors.</p>
-    <p class="hint" id="refugeTrial" hidden>Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin.</p>
-    <div id="refugeBody">
-    <div class="refuge-open" id="refugeOpen">
-      <div class="row2">
-        <label class="note-label">Ouverture<input type="time" id="rfFrom"></label>
-        <label class="note-label">Fermeture<input type="time" id="rfTo"></label>
+      <div id="annInfoFields">
+        <label class="note-label" for="annText">Message</label>
+        <textarea id="annText" maxlength="220" rows="3" placeholder="ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail"></textarea>
+        <fieldset class="seg">
+          <legend>Importance</legend>
+          <label><input type="radio" name="level" value="info" checked> Info</label>
+          <label><input type="radio" name="level" value="urgent"> Urgent (vibre + notification)</label>
+        </fieldset>
+        <label class="check" id="annNationalWrap" hidden><input type="checkbox" id="annNational"> Annonce nationale (toute la France)</label>
       </div>
-      <button type="button" class="secondary" id="rfOpenAll">Ouvrir sur ce créneau</button>
-    </div>
-    <ul class="refuge-list" id="refugeList"></ul>
-    <p class="fine" id="refugeMsg" role="status"></p>
-    <button type="button" class="secondary" id="rfAdd">Ajouter mon lieu</button>
-    <form class="orga-form refuge-form" id="refugeForm" hidden>
-      <label class="note-label">Nom du lieu<input id="rfName" maxlength="60" required placeholder="ex. : Café des Arts"></label>
-      <label class="note-label">Étiquette sur la carte (facultatif)<input id="rfShort" maxlength="24" placeholder="ex. : Café des Arts"></label>
-      <label class="note-label">Adresse (facultatif)<input id="rfAddr" maxlength="120" placeholder="ex. : 12 rue de l’Université"></label>
-      <p class="fine" id="rfPos"></p>
-      <button type="button" class="ghost" id="rfHere">Placer au centre de la carte</button>
-      <fieldset class="refuge-checks" id="rfServices"><legend>Ce qu’on y trouve</legend></fieldset>
-      <label class="note-label">Message (facultatif)<textarea id="rfMsg" maxlength="200" rows="2" placeholder="ex. : demande au comptoir, on t’ouvre l’arrière-salle"></textarea></label>
-      <label class="note-label">Lien (facultatif)<input id="rfUrl" type="url" maxlength="300" placeholder="https://…"></label>
-      <fieldset class="refuge-pick" id="rfGlyphs"><legend>Pictogramme</legend></fieldset>
-      <fieldset class="refuge-pick" id="rfColors"><legend>Couleur</legend></fieldset>
-      <label class="check"><input type="checkbox" id="rfUseLogo"> Afficher le logo de l’orga à la place (une fois validé)</label>
-      <label class="check"><input type="checkbox" id="rfConsent"> Le lieu a donné son accord pour apparaître sur Cortège</label>
-      <div class="row2"><button class="install" type="submit" id="rfSave">Enregistrer</button><button type="button" class="secondary" id="rfCancel">Annuler</button></div>
+      <div id="annLegalFields" hidden>
+        <label class="note-label" for="annCity">Ville</label>
+        <input id="annCity" maxlength="40" autocomplete="address-level2" placeholder="ex. : Montpellier">
+        <label class="note-label" for="annPhone">Numéro de téléphone</label>
+        <input id="annPhone" type="tel" inputmode="tel" maxlength="20" placeholder="06 00 00 00 00">
+        <label class="note-label" for="annLegalText">Précision (facultatif)</label>
+        <input id="annLegalText" maxlength="120" placeholder="ex. : permanence jusqu’à 22 h">
+      </div>
+      <div class="row2" id="annZoneRow">
+        <label class="note-label" for="annRadius" id="annRadiusWrap">Zone
+          <select id="annRadius"><option value="1">1 km</option><option value="3" selected>3 km</option><option value="10">10 km</option><option value="30">30 km</option></select>
+        </label>
+        <label class="note-label" for="annMinutes" id="annMinutesWrap">Durée
+          <select id="annMinutes"><option value="30">30 min</option><option value="60">1 h</option><option value="180" selected>3 h</option><option value="360">6 h</option><option value="720">12 h</option></select>
+        </label>
+      </div>
+      <p class="fine" id="annLegalHint" hidden>Le numéro apparaît dans « Mes droits » sous le nom de la ville, pour tout le monde (en premier pour les personnes les plus proches), jusqu’à ce que tu le retires.</p>
+      <button class="install" type="submit">Publier</button>
     </form>
-    <h3 class="group-title">Logo de l’orga</h3>
-    <p class="hint" id="rfLogoState">Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin.</p>
-    <div class="refuge-logo-row"><img id="rfLogoImg" alt="" hidden><label class="secondary file-btn">Choisir une image<input type="file" id="rfLogoFile" accept="image/*" hidden></label><button type="button" class="ghost" id="rfLogoDel" hidden>Retirer</button></div>
+    <button class="secondary orga-event-btn" id="btnOrgaEvent">Publier une manif ou un blocus (avec parcours)</button>
+    <h3 class="group-title" id="annListTitle">Annonces actives dans la zone</h3>
+    <ol id="annList" class="list"></ol>
+    <p class="fine">Sur la carte, ouvre un signalement pour le marquer « Vérifié » ou le retirer s’il est faux.</p>
+  </div>
+  <div class="orga-pane" role="tabpanel" id="opane-terrain" aria-labelledby="otab-terrain" hidden>
+    <div class="bk-box" id="bkBox" hidden>
+      <h3 class="group-title">Ma position en direct</h3>
+      <p class="hint">Pour qu’on te trouve facilement : ton point se met à jour tout seul toutes les 30 secondes, tant que l’appli reste ouverte sur ce téléphone. Il disparaît 3 minutes après l’arrêt.</p>
+      <p class="fine">Pour ne jamais révéler où tu vas après la manif : le partage s’arrête tout seul si tu t’éloignes de plus de 2 km, si tu ne confirmes pas toutes les 30 minutes que tu y es toujours, et au bout de 4 h au plus.</p>
+      <div class="bk-row">
+        <label>Je suis<select id="bkRole">
+          <option value="cortege">📣 la tête de cortège</option>
+          <option value="queue">🔚 la queue de cortège</option>
+          <option value="medic">⛑️ street medic</option>
+          <option value="legal">⚖️ legal team</option>
+          <option value="presse">🎥 presse</option>
+        </select></label>
+        <label>Pendant<select id="bkDur">
+          <option value="30">30 min</option>
+          <option value="60" selected>1 h</option>
+          <option value="120">2 h</option>
+          <option value="240">4 h</option>
+        </select></label>
+      </div>
+      <label class="bk-note">Message affiché sur ton point (facultatif)<input id="bkNote" maxlength="120" placeholder="ex. : devant la fontaine, viens me voir"></label>
+      <button type="button" class="secondary" id="bkBtn">Partager ma position</button>
+      <p class="fine" id="bkState" role="status"></p>
     </div>
-  </section>
-  <h3 class="group-title">Mes appareils</h3>
-  <p class="hint" id="deviceState"></p>
-  <button class="secondary" id="btnAddDevice">Ajouter un appareil</button>
-  <button class="ghost danger-link" id="btnOrgaLogout">Quitter le mode orga sur ce téléphone</button>
+    <section id="refugeBox" hidden>
+      <h3 class="group-title">Lieu de repli</h3>
+      <p class="hint">Un commerce, un local ou un point d’écoute qui accueille les manifestant·es. Enregistre-le une fois, puis ouvre-le le jour d’une manif : il n’apparaît sur la carte que pendant le créneau ouvert, jamais en dehors.</p>
+      <p class="hint" id="refugeTrial" hidden>Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin.</p>
+      <div id="refugeBody">
+      <div class="refuge-open" id="refugeOpen">
+        <div class="row2">
+          <label class="note-label">Ouverture<input type="time" id="rfFrom"></label>
+          <label class="note-label">Fermeture<input type="time" id="rfTo"></label>
+        </div>
+        <button type="button" class="secondary" id="rfOpenAll">Ouvrir sur ce créneau</button>
+      </div>
+      <ul class="refuge-list" id="refugeList"></ul>
+      <p class="fine" id="refugeMsg" role="status"></p>
+      <button type="button" class="secondary" id="rfAdd">Ajouter mon lieu</button>
+      <form class="orga-form refuge-form" id="refugeForm" hidden>
+        <label class="note-label">Nom du lieu<input id="rfName" maxlength="60" required placeholder="ex. : Café des Arts"></label>
+        <label class="note-label">Étiquette sur la carte (facultatif)<input id="rfShort" maxlength="24" placeholder="ex. : Café des Arts"></label>
+        <label class="note-label">Adresse (facultatif)<input id="rfAddr" maxlength="120" placeholder="ex. : 12 rue de l’Université"></label>
+        <p class="fine" id="rfPos"></p>
+        <button type="button" class="ghost" id="rfHere">Placer au centre de la carte</button>
+        <fieldset class="refuge-checks" id="rfServices"><legend>Ce qu’on y trouve</legend></fieldset>
+        <label class="note-label">Message (facultatif)<textarea id="rfMsg" maxlength="200" rows="2" placeholder="ex. : demande au comptoir, on t’ouvre l’arrière-salle"></textarea></label>
+        <label class="note-label">Lien (facultatif)<input id="rfUrl" type="url" maxlength="300" placeholder="https://…"></label>
+        <fieldset class="refuge-pick" id="rfGlyphs"><legend>Pictogramme</legend></fieldset>
+        <fieldset class="refuge-pick" id="rfColors"><legend>Couleur</legend></fieldset>
+        <label class="check"><input type="checkbox" id="rfUseLogo"> Afficher le logo de l’orga à la place (une fois validé)</label>
+        <label class="check"><input type="checkbox" id="rfConsent"> Le lieu a donné son accord pour apparaître sur Cortège</label>
+        <div class="row2"><button class="install" type="submit" id="rfSave">Enregistrer</button><button type="button" class="secondary" id="rfCancel">Annuler</button></div>
+      </form>
+      </div>
+    </section>
+  </div>
+  <div class="orga-pane" role="tabpanel" id="opane-reseau" aria-labelledby="otab-reseau" hidden>
+    <p class="hint" id="orgaInviteOff" hidden>Inviter d’autres orgas est réservé aux orgas certifiées. Une fois ton orga certifiée par l’admin, tu pourras en faire entrer jusqu’à 3 par semaine.</p>
+    <section id="orgaInviteBox" hidden>
+      <h3 class="group-title">Inviter une orga</h3>
+      <p class="hint">Tu peux faire entrer une orga que tu connais (3 par semaine). Elle restera « parrainée » et plus surveillée jusqu’à ce que toi ou l’admin la confirmiez. Si elle est révoquée pour abus, tu ne pourras plus inviter pendant 30 jours : n’invite que des personnes de confiance.</p>
+      <form class="controls-inline" id="orgaInviteForm">
+        <input id="orgaInviteLabel" maxlength="60" placeholder="Nom affiché, ex. : Legal Team Nîmes" aria-label="Nom de l’orga invitée">
+        <button class="secondary" type="submit">Créer l’invitation</button>
+      </form>
+      <h3 class="group-title">Mes orgas invitées</h3>
+      <ul class="filleules" id="filleulList"></ul>
+    </section>
+    <div class="invite-out" id="inviteOut" hidden>
+      <div id="inviteTitle"></div>
+      <div class="qr-invite" id="inviteQr"></div>
+      <code id="inviteUrl"></code>
+      <div class="row-btns"><button class="secondary" type="button" id="inviteCopy">Copier le lien</button><button class="secondary" type="button" id="inviteShare">Envoyer…</button></div>
+      <p class="fine" id="inviteFine"></p>
+    </div>
+  </div>
+  <div class="orga-pane" role="tabpanel" id="opane-compte" aria-labelledby="otab-compte" hidden>
+    <p class="orga-status"><b id="orgaStatusName">—</b> <span class="orga-status-chip" id="orgaStatusChip"></span></p>
+    <p class="hint trial-note" id="orgaSponsored" hidden></p>
+    <p class="hint trial-note" id="orgaTrial" hidden>Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée.</p>
+    <div id="orgaLogoBox" hidden>
+        <h3 class="group-title">Logo de l’orga</h3>
+        <p class="hint" id="rfLogoState">Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin.</p>
+        <div class="refuge-logo-row"><img id="rfLogoImg" alt="" hidden><label class="secondary file-btn">Choisir une image<input type="file" id="rfLogoFile" accept="image/*" hidden></label><button type="button" class="ghost" id="rfLogoDel" hidden>Retirer</button></div>
+    </div>
+    <h3 class="group-title">Mes appareils</h3>
+    <p class="hint" id="deviceState"></p>
+    <button class="secondary" id="btnAddDevice">Ajouter un appareil</button>
+    <div class="access-warn" id="orgaAccessWarn">
+      <b>⚠ Ton accès orga n’existe que sur cet appareil.</b>
+      Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, «&nbsp;effacer l’historique&nbsp;»), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir.
+      <span id="orgaRecover">Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.</span>
+      <span><b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus).</span>
+    </div>
+    <button class="ghost danger-link" id="btnOrgaLogout">Quitter le mode orga sur ce téléphone</button>
+  </div>
 </section>
 
 <!-- Bien se préparer -->

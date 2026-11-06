@@ -2,6 +2,16 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.13.2
+
+- **Espace orga en 4 onglets** au lieu d'une longue page :
+  - **Annonces** : publier une annonce ou un numéro de legal team, publier une manif ou un blocus, annonces actives ;
+  - **Terrain** : position en direct et lieu de repli ;
+  - **Réseau** : inviter une orga et suivre les orgas invitées (ou, en essai, ce qu'il faut pour pouvoir inviter) ;
+  - **Mon orga** : nom et statut (certifiée, en essai, parrainée, admin), logo, appareils, avertissement sur la perte d'accès, sortie du mode orga.
+- Pastilles sur les onglets : verte sur « Terrain » quand ta position ou ton lieu de repli est en ligne, « ! » sur « Mon orga » tant qu'un seul appareil a l'accès. Le dernier onglet ouvert est gardé ; une orga qui vient d'entrer arrive sur « Mon orga ». Navigation au clavier avec les flèches.
+- La feuille garde la même hauteur d'un onglet à l'autre. Corrigés au passage : la case « Annonce nationale » démesurée et le menu « Pendant » qui débordait quand l'admin partage sa position.
+
 ## 2.13.1
 
 - **Un lieu de repli par orga pour l'instant** : chaque orga certifiée enregistre un seul lieu (réglable avec `REFUGE_MAX` dans `/etc/cortege.env`, de 1 à 30). L'espace orga s'adapte : « Ajouter mon lieu » disparaît une fois le lieu enregistré, et « Ouvrir sur ce créneau » ouvre le lieu.

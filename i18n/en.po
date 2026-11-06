@@ -3235,3 +3235,44 @@ msgstr "Your organisation has reached the maximum number of places."
 #: public/index.html
 msgid "Réservé aux orgas certifiées : ton accès est encore en essai. Demande la certification à l’admin."
 msgstr "For certified organisations only: your access is still on trial. Ask the admin for certification."
+
+# --- textes à traduire ---
+#: client/app/30-orga-onglets.js
+msgid "Admin"
+msgstr "Admin"
+
+#: client/app/30-orga-onglets.js
+msgid "Parrainée, en essai"
+msgstr "Sponsored, on trial"
+
+#: client/app/30-orga-onglets.js
+msgid "En essai"
+msgstr "On trial"
+
+#: client/app/30-orga-onglets.js
+msgid "Orga certifiée"
+msgstr "Certified organisation"
+
+#: public/index.html
+msgid "Annonces"
+msgstr "Announcements"
+
+#: public/index.html
+msgid "Terrain"
+msgstr "On the ground"
+
+#: public/index.html
+msgid "Réseau"
+msgstr "Network"
+
+#: public/index.html
+msgid "Mon orga"
+msgstr "My organisation"
+
+#: public/index.html
+msgid "Inviter d’autres orgas est réservé aux orgas certifiées. Une fois ton orga certifiée par l’admin, tu pourras en faire entrer jusqu’à 3 par semaine."
+msgstr "Inviting other organisations is for certified organisations only. Once the admin certifies yours, you can bring in up to 3 a week."
+
+#: public/index.html
+msgid "<b>Le plus sûr : ajoute dès maintenant un deuxième appareil</b> (bouton « Ajouter un appareil » ci-dessus)."
+msgstr "<b>Safest option: add a second device now</b> (“Add a device” button above)."

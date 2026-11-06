@@ -59,7 +59,8 @@
     try {
       const who = await orgaFetch('/api/orga/me'); setOrga(who);
       // Premier accès : on ouvre l'espace orga pour que l'avertissement sur la perte d'accès soit lu
-      if (justJoined) setTimeout(() => $('#btnOrga').click(), 600); else toast(t('Mode orga : {who}', { who: who.label }));
+      // Première ouverture : onglet « Mon orga », pour voir tout de suite comment ne pas perdre l'accès
+      if (justJoined) { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} setTimeout(() => $('#btnOrga').click(), 600); } else toast(t('Mode orga : {who}', { who: who.label }));
     }
     catch (e) { toast(e.message); }
   })();
