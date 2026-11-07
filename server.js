@@ -33,6 +33,7 @@ require('./src/digest/archive');
 const ROUTES = [
   require('./src/routes/pages').pagesRoutes,         // pages publiques, bilans, plan du site, tuiles vectorielles
   require('./src/routes/public-api').publicApiRoutes, // configuration, notifications, santé, recherche de lieux
+  require('./src/routes/ideas').ideasRoutes,         // boîte à idées (avant l'admin : /api/admin/ideas est traité ici)
   require('./src/routes/admin').adminRoutes,          // /api/admin/…
   require('./src/routes/reports').reportsRoutes,      // signalements, votes, précisions, propositions
   require('./src/routes/orga').orgaRoutes,            // invitations et espace orga

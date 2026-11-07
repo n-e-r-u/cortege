@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.14.0
+
+- **Boîte à idées** (Plus › Idées) : chacun peut proposer une amélioration de Cortège (titre de 80 caractères, explication facultative de 400) et voter pour celles qui lui parlent. Quatre onglets : les plus votées, récentes, faites, pas retenues. Pendant la saisie, l'appli montre les idées déjà proposées qui y ressemblent, pour voter plutôt que créer un doublon.
+- **Validation avant publication** : une idée n'est visible qu'une fois publiée par l'admin (nouvel onglet Idées, avec une pastille du nombre d'idées à valider). L'admin peut corriger le titre, donner un statut (proposée, à l'étude, prévue, faite, pas retenue) avec la version et une réponse courte publique, fusionner les doublons (les votes s'additionnent) ou supprimer.
+- **Anonymat** : pas de compte. Un vote par téléphone et par idée, retirable. Le jeton de vote est propre à chaque idée (HMAC de l'identifiant du téléphone avec une clé du serveur) : impossible de relier les votes d'un même téléphone entre deux idées ; l'identifiant brut et l'adresse IP ne sont jamais gardés. Au plus 3 idées par téléphone et par jour, liens refusés. Plus de vote sur une idée faite ou pas retenue.
+
 ## 2.13.7
 
 - **Lieux de repli visibles seulement au zoom quartier** (15 et plus) : ce sont des lieux locaux, ils ne s'affichent plus sur la vue d'une ville ou du pays. La flèche vers la zone calme la plus proche continue de les proposer à tout zoom.

@@ -3281,3 +3281,162 @@ msgstr "<b>Safest option: add a second device now</b> (“Add a device” button
 #: client/app/29-repli-orga.js
 msgid "Partagé avec : {who}"
 msgstr "Shared with: {who}"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} vote"
+msgid_plural "{n} votes"
+msgstr[0] "{n} vote"
+msgstr[1] "{n} votes"
+
+#: client/app/31-idees.js
+msgid "Proposée"
+msgstr "Proposed"
+
+#: client/app/31-idees.js
+msgid "À l’étude"
+msgstr "Under review"
+
+#: client/app/31-idees.js
+msgid "Prévue"
+msgstr "Planned"
+
+#: client/app/31-idees.js
+msgid "Faite"
+msgstr "Done"
+
+#: client/app/31-idees.js
+msgid "Pas retenue"
+msgstr "Not taken up"
+
+#: client/app/31-idees.js
+msgid "Pas de connexion."
+msgstr "No connection."
+
+#: client/app/31-idees.js
+msgid "Retirer mon vote"
+msgstr "Remove my vote"
+
+#: client/app/31-idees.js
+msgid "Je veux ça"
+msgstr "I want this"
+
+#: client/app/31-idees.js
+msgid "Rien de terminé pour l’instant."
+msgstr "Nothing done yet."
+
+#: client/app/31-idees.js
+msgid "Aucune idée écartée."
+msgstr "No ideas turned down."
+
+#: client/app/31-idees.js
+msgid "Pas encore d’idée publiée. Lance-toi !"
+msgstr "No ideas published yet. Go for it!"
+
+#: client/app/31-idees.js
+msgid "Merci ! Ton idée sera publiée après relecture."
+msgstr "Thanks! Your idea will be published after review."
+
+#: src/ideas.js
+msgid "Donne un titre un peu plus précis."
+msgstr "Give a slightly more precise title."
+
+#: src/ideas.js
+msgid "Les liens ne sont pas acceptés dans les idées."
+msgstr "Links are not allowed in ideas."
+
+#: src/ideas.js
+msgid "La boîte à idées est pleine pour l’instant. Réessaie plus tard."
+msgstr "The idea box is full for now. Try again later."
+
+#: src/ideas.js
+msgid "3 idées par jour au plus. Merci pour ton enthousiasme !"
+msgstr "3 ideas a day at most. Thanks for your enthusiasm!"
+
+#: src/ideas.js
+msgid "Idée introuvable ou plus ouverte aux votes."
+msgstr "Idea not found or no longer open to votes."
+
+#: src/ideas.js
+msgid "Mets à jour l’appli pour voter."
+msgstr "Update the app to vote."
+
+#: src/ideas.js
+msgid "Trop de votes d’un coup, patiente un peu."
+msgstr "Too many votes at once, wait a bit."
+
+#: src/ideas.js
+msgid "Idée introuvable."
+msgstr "Idea not found."
+
+#: src/ideas.js
+msgid "Statut inconnu."
+msgstr "Unknown status."
+
+#: src/ideas.js
+msgid "Titre trop court."
+msgstr "Title too short."
+
+#: public/index.html
+msgid "Idées"
+msgstr "Ideas"
+
+#: public/index.html
+msgid "Proposer, voter"
+msgstr "Suggest, vote"
+
+#: public/index.html
+msgid "Idées pour Cortège"
+msgstr "Ideas for Cortège"
+
+#: public/index.html
+msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgstr "Suggest an improvement or vote for the ones you like: the most supported ideas come first. Every idea is reviewed before it’s published. No account, and your vote isn’t linked to anything else."
+
+#: public/index.html
+msgid "Les plus votées"
+msgstr "Most voted"
+
+#: public/index.html
+msgid "Récentes"
+msgstr "Recent"
+
+#: public/index.html
+msgid "Faites"
+msgstr "Done"
+
+#: public/index.html
+msgid "Pas retenues"
+msgstr "Not taken up"
+
+#: public/index.html
+msgid "Proposer une idée"
+msgstr "Suggest an idea"
+
+#: public/index.html
+msgid "Ton idée en une phrase"
+msgstr "Your idea in one sentence"
+
+#: public/index.html
+msgid "ex. : afficher les toilettes publiques"
+msgstr "e.g. show public toilets"
+
+#: public/index.html
+msgid "Ça ressemble peut-être à :"
+msgstr "This might be similar to:"
+
+#: public/index.html
+msgid "Explique en quelques mots (facultatif)"
+msgstr "Explain in a few words (optional)"
+
+#: public/index.html
+msgid "À quoi ça servirait pendant une manif ?"
+msgstr "How would it help during a protest?"
+
+#: public/index.html
+msgid "Pas de lien ni d’information personnelle. 3 idées par jour au plus."
+msgstr "No links or personal information. 3 ideas a day at most."
+
+#: public/index.html
+msgid "Envoyer"
+msgstr "Send"

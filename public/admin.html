@@ -151,6 +151,14 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .org-list li .rf-thumb { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--soutien); display: grid; place-items: center; font-size: 17px; overflow: hidden; background: #fff; }
 .org-list li .rf-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .org-list li:has(.rf-thumb) { grid-template-columns: 36px 1fr auto; }
+.idea-admin li { grid-template-columns: 64px 1fr; align-items: start; }
+.idea-admin .iv { font-size: 20px; font-weight: 800; text-align: center; }
+.idea-admin .iv small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+.idea-admin .ib { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.idea-admin .ib p { margin: 0; overflow-wrap: anywhere; }
+.idea-admin .ib .controls { gap: 6px; }
+.idea-admin .ib input, .idea-admin .ib select { height: 36px; }
+.idea-admin .st-pending { border-left: 4px solid var(--danger); padding-left: 8px; }
 </style>
 </head>
 <body>
@@ -182,6 +190,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda"><span class="ni" aria-hidden="true">📅</span>Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas"><span class="ni" aria-hidden="true">👥</span>Orgas <span id="reqBadge"></span></button>
     <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal"><span class="ni" aria-hidden="true">⚖</span>Legal teams <span id="legalBadge"></span></button>
+    <button class="tab" role="tab" id="tabIdeas" aria-selected="false" aria-controls="panelIdeas"><span class="ni" aria-hidden="true">💡</span>Idées <span id="ideaBadge"></span></button>
     <button class="tab" role="tab" id="tabPlaces" aria-selected="false" aria-controls="panelPlaces"><span class="ni" aria-hidden="true">🏛</span>Lieux</button>
     <div class="nav-group" role="presentation">Bilans et contrôle</div>
     <button class="tab" role="tab" id="tabDigest" aria-selected="false" aria-controls="panelDigest"><span class="ni" aria-hidden="true">📊</span>Digest</button>
@@ -569,6 +578,14 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     </section>
   </section>
 
+  <section class="panel" id="panelIdeas" role="tabpanel" aria-labelledby="tabIdeas" hidden>
+    <section class="card">
+      <h2>Boîte à idées <span id="ideaCount"></span></h2>
+      <p class="fine">Les idées envoyées depuis l’appli (Plus › Idées) attendent ta validation avant d’être visibles. Publie-les, donne un statut (à l’étude, prévue, faite, pas retenue) avec la version et une réponse courte, fusionne les doublons (les votes s’additionnent) ou supprime.</p>
+      <div class="controls"><label>Afficher<select id="ideaFilter"><option value="">Toutes</option><option value="pending">À valider</option><option value="proposed">Proposées</option><option value="study">À l’étude</option><option value="planned">Prévues</option><option value="done">Faites</option><option value="no">Pas retenues</option></select></label></div>
+      <ul class="org-list idea-admin" id="ideaAdminList"></ul>
+    </section>
+  </section>
   <section class="panel" id="panelLegal" role="tabpanel" aria-labelledby="tabLegal" hidden>
     <section class="card">
       <h2>Annuaire permanent <span id="legalCount"></span></h2>

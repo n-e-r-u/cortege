@@ -266,6 +266,7 @@
     <button class="tile" id="btnShare"><span class="ico" aria-hidden="true">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"></path></svg></span><span><b>Partager</b><small>QR code à scanner</small></span></button>
     <a class="tile" href="/affiche.html" id="btnPoster"><span class="ico" aria-hidden="true">🖨</span><span><b>Affiche</b><small>À imprimer pour ta ville</small></span></a>
+    <button class="tile" id="btnIdeas"><span class="ico" aria-hidden="true">💡</span><span><b>Idées</b><small>Proposer, voter</small></span></button>
     <button class="tile" id="btnEmbed"><span class="ico" aria-hidden="true">🧩</span><span><b>Sur ton site</b><small>Intégrer la carte</small></span></button>
     <a class="tile" id="githubLink" href="https://github.com/n-e-r-u/cortege" target="_blank" rel="noopener noreferrer"><span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"></path></svg></span><span><b>Code ouvert</b><small>Sur GitHub</small></span></a>
   </div>
@@ -380,6 +381,29 @@
 </section>
 
 <!-- Carte à intégrer -->
+<section class="sheet" id="sheetIdeas" hidden aria-labelledby="idTitle">
+  <div class="sheet-head">
+    <h2 id="idTitle">Idées pour Cortège</h2>
+    <button class="x" id="idClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="fine">Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre.</p>
+  <div class="idea-tabs" role="tablist" aria-label="Idées">
+    <button type="button" role="tab" data-v="top" aria-selected="true">Les plus votées</button>
+    <button type="button" role="tab" data-v="new" aria-selected="false">Récentes</button>
+    <button type="button" role="tab" data-v="done" aria-selected="false">Faites</button>
+    <button type="button" role="tab" data-v="no" aria-selected="false">Pas retenues</button>
+  </div>
+  <ul class="idea-list" id="ideaList" aria-live="polite"></ul>
+  <button type="button" class="install" id="ideaNew">Proposer une idée</button>
+  <form class="idea-form" id="ideaForm" hidden>
+    <label class="note-label">Ton idée en une phrase<input id="ideaTitle" maxlength="80" required placeholder="ex. : afficher les toilettes publiques"></label>
+    <div class="idea-similar" id="ideaSimilar" hidden><p class="fine">Ça ressemble peut-être à :</p><ul id="ideaSimilarList"></ul></div>
+    <label class="note-label">Explique en quelques mots (facultatif)<textarea id="ideaBody" maxlength="400" rows="3" placeholder="À quoi ça servirait pendant une manif ?"></textarea></label>
+    <p class="fine">Pas de lien ni d’information personnelle. 3 idées par jour au plus.</p>
+    <div class="row2"><button class="install" type="submit">Envoyer</button><button type="button" class="secondary" id="ideaCancel">Annuler</button></div>
+  </form>
+  <p class="fine" id="ideaMsg" role="status"></p>
+</section>
 <section class="sheet" id="sheetEmbed" hidden aria-labelledby="emTitle">
   <div class="sheet-head">
     <h2 id="emTitle">La carte sur ton site</h2>

@@ -3294,3 +3294,162 @@ msgstr ""
 #: client/app/29-repli-orga.js
 msgid "Partagé avec : {who}"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} vote"
+msgid_plural "{n} votes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/31-idees.js
+msgid "Proposée"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "À l’étude"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Prévue"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Faite"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Pas retenue"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Pas de connexion."
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Retirer mon vote"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Je veux ça"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Rien de terminé pour l’instant."
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Aucune idée écartée."
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Pas encore d’idée publiée. Lance-toi !"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Merci ! Ton idée sera publiée après relecture."
+msgstr ""
+
+#: src/ideas.js
+msgid "Donne un titre un peu plus précis."
+msgstr ""
+
+#: src/ideas.js
+msgid "Les liens ne sont pas acceptés dans les idées."
+msgstr ""
+
+#: src/ideas.js
+msgid "La boîte à idées est pleine pour l’instant. Réessaie plus tard."
+msgstr ""
+
+#: src/ideas.js
+msgid "3 idées par jour au plus. Merci pour ton enthousiasme !"
+msgstr ""
+
+#: src/ideas.js
+msgid "Idée introuvable ou plus ouverte aux votes."
+msgstr ""
+
+#: src/ideas.js
+msgid "Mets à jour l’appli pour voter."
+msgstr ""
+
+#: src/ideas.js
+msgid "Trop de votes d’un coup, patiente un peu."
+msgstr ""
+
+#: src/ideas.js
+msgid "Idée introuvable."
+msgstr ""
+
+#: src/ideas.js
+msgid "Statut inconnu."
+msgstr ""
+
+#: src/ideas.js
+msgid "Titre trop court."
+msgstr ""
+
+#: public/index.html
+msgid "Idées"
+msgstr ""
+
+#: public/index.html
+msgid "Proposer, voter"
+msgstr ""
+
+#: public/index.html
+msgid "Idées pour Cortège"
+msgstr ""
+
+#: public/index.html
+msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgstr ""
+
+#: public/index.html
+msgid "Les plus votées"
+msgstr ""
+
+#: public/index.html
+msgid "Récentes"
+msgstr ""
+
+#: public/index.html
+msgid "Faites"
+msgstr ""
+
+#: public/index.html
+msgid "Pas retenues"
+msgstr ""
+
+#: public/index.html
+msgid "Proposer une idée"
+msgstr ""
+
+#: public/index.html
+msgid "Ton idée en une phrase"
+msgstr ""
+
+#: public/index.html
+msgid "ex. : afficher les toilettes publiques"
+msgstr ""
+
+#: public/index.html
+msgid "Ça ressemble peut-être à :"
+msgstr ""
+
+#: public/index.html
+msgid "Explique en quelques mots (facultatif)"
+msgstr ""
+
+#: public/index.html
+msgid "À quoi ça servirait pendant une manif ?"
+msgstr ""
+
+#: public/index.html
+msgid "Pas de lien ni d’information personnelle. 3 idées par jour au plus."
+msgstr ""
+
+#: public/index.html
+msgid "Envoyer"
+msgstr ""

@@ -3321,3 +3321,166 @@ msgstr "<b>الأكثر أمانًا: أضف جهازًا ثانيًا الآن<
 #: client/app/29-repli-orga.js
 msgid "Partagé avec : {who}"
 msgstr "مشترك مع: {who}"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} vote"
+msgid_plural "{n} votes"
+msgstr[0] "{n} صوت"
+msgstr[1] "{n} صوت"
+msgstr[2] "{n} صوت"
+msgstr[3] "{n} صوت"
+msgstr[4] "{n} صوت"
+msgstr[5] "{n} صوت"
+
+#: client/app/31-idees.js
+msgid "Proposée"
+msgstr "مقترحة"
+
+#: client/app/31-idees.js
+msgid "À l’étude"
+msgstr "قيد الدراسة"
+
+#: client/app/31-idees.js
+msgid "Prévue"
+msgstr "مخطط لها"
+
+#: client/app/31-idees.js
+msgid "Faite"
+msgstr "منجزة"
+
+#: client/app/31-idees.js
+msgid "Pas retenue"
+msgstr "لم تُعتمد"
+
+#: client/app/31-idees.js
+msgid "Pas de connexion."
+msgstr "لا يوجد اتصال."
+
+#: client/app/31-idees.js
+msgid "Retirer mon vote"
+msgstr "سحب صوتي"
+
+#: client/app/31-idees.js
+msgid "Je veux ça"
+msgstr "أريد هذا"
+
+#: client/app/31-idees.js
+msgid "Rien de terminé pour l’instant."
+msgstr "لا شيء منجز حتى الآن."
+
+#: client/app/31-idees.js
+msgid "Aucune idée écartée."
+msgstr "لم تُستبعد أي فكرة."
+
+#: client/app/31-idees.js
+msgid "Pas encore d’idée publiée. Lance-toi !"
+msgstr "لا توجد أفكار منشورة بعد. ابدأ أنت!"
+
+#: client/app/31-idees.js
+msgid "Merci ! Ton idée sera publiée après relecture."
+msgstr "شكرًا! ستُنشر فكرتك بعد المراجعة."
+
+#: src/ideas.js
+msgid "Donne un titre un peu plus précis."
+msgstr "أعطِ عنوانًا أدق قليلًا."
+
+#: src/ideas.js
+msgid "Les liens ne sont pas acceptés dans les idées."
+msgstr "الروابط غير مقبولة في الأفكار."
+
+#: src/ideas.js
+msgid "La boîte à idées est pleine pour l’instant. Réessaie plus tard."
+msgstr "صندوق الأفكار ممتلئ حاليًا. حاول لاحقًا."
+
+#: src/ideas.js
+msgid "3 idées par jour au plus. Merci pour ton enthousiasme !"
+msgstr "3 أفكار يوميًا كحد أقصى. شكرًا لحماسك!"
+
+#: src/ideas.js
+msgid "Idée introuvable ou plus ouverte aux votes."
+msgstr "الفكرة غير موجودة أو لم تعد مفتوحة للتصويت."
+
+#: src/ideas.js
+msgid "Mets à jour l’appli pour voter."
+msgstr "حدّث التطبيق للتصويت."
+
+#: src/ideas.js
+msgid "Trop de votes d’un coup, patiente un peu."
+msgstr "أصوات كثيرة دفعة واحدة، انتظر قليلًا."
+
+#: src/ideas.js
+msgid "Idée introuvable."
+msgstr "الفكرة غير موجودة."
+
+#: src/ideas.js
+msgid "Statut inconnu."
+msgstr "حالة غير معروفة."
+
+#: src/ideas.js
+msgid "Titre trop court."
+msgstr "العنوان قصير جدًا."
+
+#: public/index.html
+msgid "Idées"
+msgstr "أفكار"
+
+#: public/index.html
+msgid "Proposer, voter"
+msgstr "اقترح، صوّت"
+
+#: public/index.html
+msgid "Idées pour Cortège"
+msgstr "أفكار لـ Cortège"
+
+#: public/index.html
+msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgstr "اقترح تحسينًا أو صوّت لما يعجبك: الأفكار الأكثر دعمًا لها الأولوية. تُراجع كل فكرة قبل نشرها. لا حساب، وصوتك غير مرتبط بأي شيء آخر."
+
+#: public/index.html
+msgid "Les plus votées"
+msgstr "الأكثر تصويتًا"
+
+#: public/index.html
+msgid "Récentes"
+msgstr "الأحدث"
+
+#: public/index.html
+msgid "Faites"
+msgstr "المنجزة"
+
+#: public/index.html
+msgid "Pas retenues"
+msgstr "غير المعتمدة"
+
+#: public/index.html
+msgid "Proposer une idée"
+msgstr "اقترح فكرة"
+
+#: public/index.html
+msgid "Ton idée en une phrase"
+msgstr "فكرتك في جملة واحدة"
+
+#: public/index.html
+msgid "ex. : afficher les toilettes publiques"
+msgstr "مثال: عرض المراحيض العامة"
+
+#: public/index.html
+msgid "Ça ressemble peut-être à :"
+msgstr "ربما تشبه:"
+
+#: public/index.html
+msgid "Explique en quelques mots (facultatif)"
+msgstr "اشرح ببضع كلمات (اختياري)"
+
+#: public/index.html
+msgid "À quoi ça servirait pendant une manif ?"
+msgstr "كيف سيساعد ذلك أثناء المظاهرة؟"
+
+#: public/index.html
+msgid "Pas de lien ni d’information personnelle. 3 idées par jour au plus."
+msgstr "لا روابط ولا معلومات شخصية. 3 أفكار يوميًا كحد أقصى."
+
+#: public/index.html
+msgid "Envoyer"
+msgstr "أرسل"

@@ -1,56 +1,109 @@
 {
-  "version": "2.13",
+  "version": "2.14",
   "items": [
     [
-      "🕊️ Lieux de repli",
-      "Des cafés, locaux et points d’écoute ouverts aux manifestant·es apparaissent sur la carte pendant les manifs, vérifiés par une orga. Touche le point pour voir ce qu’on y trouve et jusqu’à quelle heure."
+      "💡 Idées pour Cortège",
+      "Une idée pour améliorer l’appli ? Propose-la dans Plus › Idées, et vote pour celles des autres. Les plus soutenues passent en priorité."
     ],
     [
-      "🧭 La flèche te guide",
-      "La flèche vers la zone calme la plus proche propose aussi les lieux de repli ouverts autour de toi."
+      "📍 Lieux de repli",
+      "Les lieux de repli s’affichent maintenant seulement quand tu zoomes sur le quartier."
     ]
   ],
   "items_en": [
     [
-      "🕊️ Safe spaces",
-      "Cafés, venues and listening points that welcome protesters show on the map during protests, verified by an organisation. Tap the point to see what’s there and until when."
+      "💡 Ideas for Cortège",
+      "Got an idea to improve the app? Suggest it in More › Ideas, and vote for other people’s. The most supported ones come first."
     ],
     [
-      "🧭 The arrow guides you",
-      "The arrow to the nearest calm zone now also suggests open safe spaces around you."
+      "📍 Safe spaces",
+      "Safe spaces now only show when you zoom in to the neighbourhood."
     ]
   ],
   "items_es": [
     [
-      "🕊️ Lugares de refugio",
-      "Cafés, locales y puntos de escucha abiertos a manifestantes aparecen en el mapa durante las manifestaciones, verificados por una organización. Toca el punto para ver qué hay y hasta qué hora."
+      "💡 Ideas para Cortège",
+      "¿Tienes una idea para mejorar la app? Propónla en Más › Ideas y vota las de los demás. Las más apoyadas tienen prioridad."
     ],
     [
-      "🧭 La flecha te guía",
-      "La flecha hacia la zona tranquila más cercana también propone los lugares de refugio abiertos cerca de ti."
+      "📍 Lugares de refugio",
+      "Los lugares de refugio ahora solo aparecen al acercarte al barrio."
     ]
   ],
   "items_ar": [
     [
-      "🕊️ أماكن اللجوء",
-      "مقاهٍ ومقرات ونقاط إصغاء تستقبل المتظاهرين تظهر على الخريطة أثناء المظاهرات، بتحقّق من منظمة. المس النقطة لترى ما يتوفر فيها وحتى أي ساعة."
+      "💡 أفكار لـ Cortège",
+      "لديك فكرة لتحسين التطبيق؟ اقترحها في المزيد › أفكار، وصوّت لأفكار الآخرين. الأكثر دعمًا لها الأولوية."
     ],
     [
-      "🧭 السهم يرشدك",
-      "السهم نحو أقرب منطقة هادئة يقترح أيضًا أماكن اللجوء المفتوحة من حولك."
+      "📍 أماكن اللجوء",
+      "تظهر أماكن اللجوء الآن فقط عند التكبير على الحي."
     ]
   ],
   "items_de": [
     [
-      "🕊️ Rückzugsorte",
-      "Cafés, Räume und Anlaufstellen für Demonstrierende erscheinen während der Demos auf der Karte, geprüft von einer Organisation. Tippe auf den Punkt, um zu sehen, was es dort gibt und bis wann."
+      "💡 Ideen für Cortège",
+      "Eine Idee, wie die App besser wird? Schlag sie unter Mehr › Ideen vor und stimme für die der anderen. Die meistunterstützten kommen zuerst."
     ],
     [
-      "🧭 Der Pfeil führt dich",
-      "Der Pfeil zur nächsten ruhigen Zone schlägt jetzt auch geöffnete Rückzugsorte in deiner Nähe vor."
+      "📍 Rückzugsorte",
+      "Rückzugsorte erscheinen jetzt nur, wenn du auf das Viertel zoomst."
     ]
   ],
   "history": [
+    {
+      "version": "2.14",
+      "items": [
+        [
+          "💡 Idées pour Cortège",
+          "Une idée pour améliorer l’appli ? Propose-la dans Plus › Idées, et vote pour celles des autres. Les plus soutenues passent en priorité."
+        ],
+        [
+          "📍 Lieux de repli",
+          "Les lieux de repli s’affichent maintenant seulement quand tu zoomes sur le quartier."
+        ]
+      ],
+      "items_en": [
+        [
+          "💡 Ideas for Cortège",
+          "Got an idea to improve the app? Suggest it in More › Ideas, and vote for other people’s. The most supported ones come first."
+        ],
+        [
+          "📍 Safe spaces",
+          "Safe spaces now only show when you zoom in to the neighbourhood."
+        ]
+      ],
+      "items_es": [
+        [
+          "💡 Ideas para Cortège",
+          "¿Tienes una idea para mejorar la app? Propónla en Más › Ideas y vota las de los demás. Las más apoyadas tienen prioridad."
+        ],
+        [
+          "📍 Lugares de refugio",
+          "Los lugares de refugio ahora solo aparecen al acercarte al barrio."
+        ]
+      ],
+      "items_ar": [
+        [
+          "💡 أفكار لـ Cortège",
+          "لديك فكرة لتحسين التطبيق؟ اقترحها في المزيد › أفكار، وصوّت لأفكار الآخرين. الأكثر دعمًا لها الأولوية."
+        ],
+        [
+          "📍 أماكن اللجوء",
+          "تظهر أماكن اللجوء الآن فقط عند التكبير على الحي."
+        ]
+      ],
+      "items_de": [
+        [
+          "💡 Ideen für Cortège",
+          "Eine Idee, wie die App besser wird? Schlag sie unter Mehr › Ideen vor und stimme für die der anderen. Die meistunterstützten kommen zuerst."
+        ],
+        [
+          "📍 Rückzugsorte",
+          "Rückzugsorte erscheinen jetzt nur, wenn du auf das Viertel zoomst."
+        ]
+      ]
+    },
     {
       "version": "2.13",
       "items": [

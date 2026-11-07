@@ -37,7 +37,8 @@ function periodKey(kind, bucket) {
 }
 // Seules la période en cours et la précédente sont gardées
 function pruneKeys() {
-  const keep = new Set([`ip-${ipBucket()}`, `ip-${ipBucket() - 1}`, `dev-${dayBucket()}`, `dev-${dayBucket() - 1}`]);
+  // idea-0 : clé durable des votes de la boîte à idées (un vote par téléphone et par idée, sans lien entre idées)
+  const keep = new Set([`ip-${ipBucket()}`, `ip-${ipBucket() - 1}`, `dev-${dayBucket()}`, `dev-${dayBucket() - 1}`, 'idea-0']);
   for (const id of keyCache.keys()) if (!keep.has(id)) keyCache.delete(id);
   if (!SECRET_MEMORY) try { for (const f of fs.readdirSync(KEY_DIR)) if (!keep.has(f)) try { fs.unlinkSync(path.join(KEY_DIR, f)); } catch {} } catch {}
 }

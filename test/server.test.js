@@ -1136,3 +1136,39 @@ test('lieux de repli gérés par l’admin : plusieurs orgas, logo du lieu, nomb
   assert.ok((await fetch(B + '/api/orga/refuges', { headers: { 'x-orga-key': ADMIN } }).then(x => x.json())).refuges.some(x => x.id === c.j.id), 'visible dans l’espace orga de l’admin'); assert.ok(!ad3.refuges.some(x => x.name === 'Second'), 'lieu de l’orga supprimée parti');
   await fetch(B + '/api/admin/refuges/' + c.j.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
 });
+
+test('boîte à idées : validation avant publication, un vote par téléphone, statuts, fusion', async () => {
+  const p1 = phone(), p2 = phone();
+  const list = (v = 'top', ph = p1) => fetch(B + '/api/ideas?v=' + v, { headers: { 'x-device': ph.dev, 'x-forwarded-for': ph.ip } }).then(r => r.json()).then(j => j.ideas);
+  assert.equal((await post('/api/ideas', { title: 'court' }, p1)).s, 400, 'titre trop court');
+  assert.equal((await post('/api/ideas', { title: 'Voir https://exemple.fr pour ça', body: '' }, p1)).s, 400, 'pas de lien');
+  assert.equal((await post('/api/ideas', { title: 'Carte des toilettes publiques', body: 'Pratique en manif', lang: 'fr' }, p1)).s, 201);
+  assert.equal((await post('/api/ideas', { title: 'Toilettes publiques sur la carte', body: '', lang: 'fr' }, p1)).s, 201);
+  assert.equal((await post('/api/ideas', { title: 'Troisième idée du jour', lang: 'fr' }, p1)).s, 201);
+  assert.equal((await post('/api/ideas', { title: 'Quatrième idée du jour', lang: 'fr' }, p1)).s, 429, '3 idées par jour');
+  assert.equal((await list()).length, 0, 'invisible avant validation');
+  const ad = await fetch(B + '/api/admin/ideas', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.equal(ad.pending, 3);
+  const [a, b] = ['Carte des toilettes publiques', 'Toilettes publiques sur la carte'].map(t => ad.ideas.find(i => i.title === t).id);
+  for (const id of [a, b]) assert.equal((await admin('/api/admin/ideas/' + id, { status: 'proposed' })).s, 200);
+  assert.equal((await list()).length, 2);
+  // Votes : un par téléphone, retirable
+  { const rv = await post(`/api/ideas/${a}/vote`, { on: true }, p1); assert.equal(rv.j.votes, 1, JSON.stringify(rv)); }
+  assert.equal((await post(`/api/ideas/${a}/vote`, { on: true }, p1)).j.votes, 1, 'pas de double vote');
+  assert.equal((await post(`/api/ideas/${a}/vote`, { on: true }, p2)).j.votes, 2);
+  assert.equal((await post(`/api/ideas/${b}/vote`, { on: true }, p2)).j.votes, 1);
+  assert.equal((await list('top', p1)).find(i => i.id === a).voted, true);
+  assert.equal((await list('top', p1)).find(i => i.id === b).voted, false);
+  assert.equal((await post(`/api/ideas/${a}/vote`, { on: false }, p1)).j.votes, 1, 'vote retiré');
+  // Fusion du doublon b dans a : les votes s'additionnent, b disparaît de la liste
+  assert.equal((await admin(`/api/admin/ideas/${b}/merge`, { into: a })).s, 200);
+  const top = await list();
+  assert.equal(top.length, 1); assert.equal(top[0].votes, 2);
+  // Statut « faite » avec version et réponse : passe dans l'onglet Faites, plus de vote possible
+  await admin('/api/admin/ideas/' + a, { status: 'done', version: '2.15', reply: 'Merci, c’est en ligne.' });
+  const done = await list('done');
+  assert.equal(done[0].version, '2.15'); assert.equal(done[0].reply, 'Merci, c’est en ligne.');
+  assert.equal((await post(`/api/ideas/${a}/vote`, { on: true }, p2)).s, 404);
+  assert.ok(!('tok' in done[0]) && !('lang' in done[0] && done[0].lang !== 'fr'));
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM idea_votes WHERE tok LIKE ?').get('%' + p1.dev + '%').n, 0, 'identifiant brut jamais stocké');
+});

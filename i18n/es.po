@@ -3281,3 +3281,162 @@ msgstr "<b>Lo más seguro: añade ya un segundo dispositivo</b> (botón «Añadi
 #: client/app/29-repli-orga.js
 msgid "Partagé avec : {who}"
 msgstr "Compartido con: {who}"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} vote"
+msgid_plural "{n} votes"
+msgstr[0] "{n} voto"
+msgstr[1] "{n} votos"
+
+#: client/app/31-idees.js
+msgid "Proposée"
+msgstr "Propuesta"
+
+#: client/app/31-idees.js
+msgid "À l’étude"
+msgstr "En estudio"
+
+#: client/app/31-idees.js
+msgid "Prévue"
+msgstr "Prevista"
+
+#: client/app/31-idees.js
+msgid "Faite"
+msgstr "Hecha"
+
+#: client/app/31-idees.js
+msgid "Pas retenue"
+msgstr "No adoptada"
+
+#: client/app/31-idees.js
+msgid "Pas de connexion."
+msgstr "Sin conexión."
+
+#: client/app/31-idees.js
+msgid "Retirer mon vote"
+msgstr "Quitar mi voto"
+
+#: client/app/31-idees.js
+msgid "Je veux ça"
+msgstr "Lo quiero"
+
+#: client/app/31-idees.js
+msgid "Rien de terminé pour l’instant."
+msgstr "Nada terminado por ahora."
+
+#: client/app/31-idees.js
+msgid "Aucune idée écartée."
+msgstr "Ninguna idea descartada."
+
+#: client/app/31-idees.js
+msgid "Pas encore d’idée publiée. Lance-toi !"
+msgstr "Aún no hay ideas publicadas. ¡Anímate!"
+
+#: client/app/31-idees.js
+msgid "Merci ! Ton idée sera publiée après relecture."
+msgstr "¡Gracias! Tu idea se publicará tras revisarla."
+
+#: src/ideas.js
+msgid "Donne un titre un peu plus précis."
+msgstr "Pon un título un poco más preciso."
+
+#: src/ideas.js
+msgid "Les liens ne sont pas acceptés dans les idées."
+msgstr "No se aceptan enlaces en las ideas."
+
+#: src/ideas.js
+msgid "La boîte à idées est pleine pour l’instant. Réessaie plus tard."
+msgstr "El buzón de ideas está lleno por ahora. Vuelve a intentarlo más tarde."
+
+#: src/ideas.js
+msgid "3 idées par jour au plus. Merci pour ton enthousiasme !"
+msgstr "3 ideas al día como máximo. ¡Gracias por tu entusiasmo!"
+
+#: src/ideas.js
+msgid "Idée introuvable ou plus ouverte aux votes."
+msgstr "Idea no encontrada o ya cerrada a votos."
+
+#: src/ideas.js
+msgid "Mets à jour l’appli pour voter."
+msgstr "Actualiza la app para votar."
+
+#: src/ideas.js
+msgid "Trop de votes d’un coup, patiente un peu."
+msgstr "Demasiados votos de golpe, espera un poco."
+
+#: src/ideas.js
+msgid "Idée introuvable."
+msgstr "Idea no encontrada."
+
+#: src/ideas.js
+msgid "Statut inconnu."
+msgstr "Estado desconocido."
+
+#: src/ideas.js
+msgid "Titre trop court."
+msgstr "Título demasiado corto."
+
+#: public/index.html
+msgid "Idées"
+msgstr "Ideas"
+
+#: public/index.html
+msgid "Proposer, voter"
+msgstr "Proponer, votar"
+
+#: public/index.html
+msgid "Idées pour Cortège"
+msgstr "Ideas para Cortège"
+
+#: public/index.html
+msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgstr "Propón una mejora o vota las que te interesen: las ideas más apoyadas tienen prioridad. Cada idea se revisa antes de publicarse. Sin cuenta, y tu voto no se vincula a nada más."
+
+#: public/index.html
+msgid "Les plus votées"
+msgstr "Más votadas"
+
+#: public/index.html
+msgid "Récentes"
+msgstr "Recientes"
+
+#: public/index.html
+msgid "Faites"
+msgstr "Hechas"
+
+#: public/index.html
+msgid "Pas retenues"
+msgstr "No adoptadas"
+
+#: public/index.html
+msgid "Proposer une idée"
+msgstr "Proponer una idea"
+
+#: public/index.html
+msgid "Ton idée en une phrase"
+msgstr "Tu idea en una frase"
+
+#: public/index.html
+msgid "ex. : afficher les toilettes publiques"
+msgstr "p. ej.: mostrar los baños públicos"
+
+#: public/index.html
+msgid "Ça ressemble peut-être à :"
+msgstr "Quizá se parezca a:"
+
+#: public/index.html
+msgid "Explique en quelques mots (facultatif)"
+msgstr "Explícalo en pocas palabras (opcional)"
+
+#: public/index.html
+msgid "À quoi ça servirait pendant une manif ?"
+msgstr "¿Para qué serviría durante una manifestación?"
+
+#: public/index.html
+msgid "Pas de lien ni d’information personnelle. 3 idées par jour au plus."
+msgstr "Sin enlaces ni información personal. 3 ideas al día como máximo."
+
+#: public/index.html
+msgid "Envoyer"
+msgstr "Enviar"
