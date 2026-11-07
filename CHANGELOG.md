@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.13.6
+
+- **Lieux créés dans l'admin visibles dans l'espace orga de l'admin** : connecté à l'appli avec la clé admin, l'onglet Terrain liste maintenant tous les lieux que l'admin a créés, depuis l'admin ou depuis l'appli, même associés à des orgas. Avant, il ne montrait que ceux associés au compte admin lui-même.
+
 ## 2.13.5
 
 - **Lieux de repli gérés depuis l'admin** (onglet Orgas, carte « Lieux de repli ») :

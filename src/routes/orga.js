@@ -177,7 +177,7 @@ async function orgaRoutes(req, res, url, pathname) {
       if (orga.trial) return send(res, 403, { error: 'Les lieux de repli sont réservés aux orgas certifiées.' });
       if (req.method === 'GET' && pathname === '/api/orga/refuges') {
         const l = R.getLogo(orga.id);
-        return send(res, 200, { refuges: R.mine(orga.id).map(R.refugeView), logo: l ? { status: l.status, img: l.data } : null, max: orga.admin ? R.QUOTA_MAX : R.quotaOf(orga.id) });
+        return send(res, 200, { refuges: R.mineFor(orga).map(R.refugeView), logo: l ? { status: l.status, img: l.data } : null, max: orga.admin ? R.QUOTA_MAX : R.quotaOf(orga.id) });
       }
       if (req.method === 'POST' && pathname === '/api/orga/logo') {
         const out = R.setLogo(orga, await readJson(req, 64_000));

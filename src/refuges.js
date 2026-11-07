@@ -32,6 +32,10 @@ const all = () => q('SELECT data FROM refuges').all().map(x => JSON.parse(x.data
 const orgasOf = r => Array.isArray(r.orgas) ? r.orgas : (r.oid ? [r.oid] : []);
 const canManage = (orga, r) => !!r && (orga.admin || orgasOf(r).includes(orga.id));
 const mine = oid => all().filter(r => orgasOf(r).includes(oid)).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+// Lieux d'un compte : ceux de ses orgas associées ; pour l'admin, aussi tous ceux qu'il a créés (depuis l'admin ou l'appli)
+const mineFor = orga => orga.admin
+  ? all().filter(r => (r.owner || r.oid) === 'admin' || orgasOf(r).includes('admin')).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  : mine(orga.id);
 const quotaOf = oid => { const x = q('SELECT n FROM refuge_quota WHERE oid=?').get(oid); return x ? x.n : REFUGE_MAX; };
 function setQuota(oid, n) {
   n = Math.round(Number(n));
@@ -67,7 +71,7 @@ function cleanRefuge(b, old) {
 
 function createRefuge(orga, b) {
   const max = orga.admin ? QUOTA_MAX : quotaOf(orga.id);
-  if (mine(orga.id).length >= max) return [400, { error: max === 1 ? 'Une orga enregistre un seul lieu de repli pour le moment.' : 'Ton orga a atteint le nombre maximal de lieux.' }];
+  if (mineFor(orga).length >= max) return [400, { error: max === 1 ? 'Une orga enregistre un seul lieu de repli pour le moment.' : 'Ton orga a atteint le nombre maximal de lieux.' }];
   if (q('SELECT COUNT(*) n FROM refuges').get().n >= REFUGE_TOTAL) return [503, { error: 'Trop de lieux enregistrés sur ce serveur.' }];
   const [st, r] = cleanRefuge(b, { id: crypto.randomBytes(6).toString('base64url'), oid: orga.id, orgas: [orga.id], owner: orga.id, created: Date.now(), state: 'closed', from: 0, to: 0 });
   if (st !== 200) return [st, { error: r }];
@@ -97,10 +101,10 @@ function openRefuges(orga, b, now = Date.now()) {
   if (from >= to) return [400, { error: 'L’ouverture doit précéder la fermeture.' }];
   if (from < now - 60 * MIN || to - Math.max(from, now) > OPEN_MAX || from > now + OPEN_MAX) return [400, { error: 'Un créneau dure 24 h au plus et commence dans les 24 h.' }];
   const ids = Array.isArray(b.ids) ? new Set(b.ids.map(String)) : null;
-  const list = (orga.admin && ids ? all() : mine(orga.id)).filter(r => !ids || ids.has(r.id));
+  const list = (orga.admin && ids ? all() : mineFor(orga)).filter(r => !ids || ids.has(r.id));
   if (!list.length) return [400, { error: 'Aucun lieu choisi.' }];
   for (const r of list) { r.from = Math.max(from, now - 60 * MIN); r.to = to; r.state = 'open'; saveRefuge(r); }
-  return [200, { n: list.length, refuges: mine(orga.id).map(refugeView) }];
+  return [200, { n: list.length, refuges: mineFor(orga).map(refugeView) }];
 }
 // Pendant la manif : complet, rouvert, ou fermé (fin du créneau tout de suite)
 function setRefugeState(orga, id, state, now = Date.now()) {
@@ -216,5 +220,5 @@ function refugesTick(now = Date.now()) {
   return false;
 }
 
-module.exports = { REFUGE_SERVICES, REFUGE_GLYPHS, REFUGE_COLORS, REFUGE_MAX, QUOTA_MAX, quotaOf, setQuota, quotas, adminSave, adminView, forgetOrga, orgasOf, mine, all, getRefuge, createRefuge, updateRefuge, removeRefuge, dropRefuge, openRefuges, setRefugeState,
+module.exports = { REFUGE_SERVICES, REFUGE_GLYPHS, REFUGE_COLORS, REFUGE_MAX, QUOTA_MAX, quotaOf, setQuota, quotas, adminSave, adminView, forgetOrga, orgasOf, mine, mineFor, all, getRefuge, createRefuge, updateRefuge, removeRefuge, dropRefuge, openRefuges, setRefugeState,
   refugeView, setLogo, dropLogo, judgeLogo, getLogo, logosPending, refugesLive, refugesTick, pngSize };

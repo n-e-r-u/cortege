@@ -1131,6 +1131,8 @@ test('lieux de repli gérés par l’admin : plusieurs orgas, logo du lieu, nomb
   // Lieu créé par l'admin sans orga : il reste même si plus aucune orga n'y est associée
   await fetch(B + `/api/admin/orgas/${A.id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
   const ad3 = await fetch(B + '/api/admin/refuges', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json());
-  assert.ok(ad3.refuges.find(x => x.id === c.j.id), 'lieu de l’admin gardé'); assert.ok(!ad3.refuges.some(x => x.name === 'Second'), 'lieu de l’orga supprimée parti');
+  assert.ok(ad3.refuges.find(x => x.id === c.j.id), 'lieu de l’admin gardé');
+  // Les lieux créés dans l'admin apparaissent dans l'espace orga de l'admin (appli)
+  assert.ok((await fetch(B + '/api/orga/refuges', { headers: { 'x-orga-key': ADMIN } }).then(x => x.json())).refuges.some(x => x.id === c.j.id), 'visible dans l’espace orga de l’admin'); assert.ok(!ad3.refuges.some(x => x.name === 'Second'), 'lieu de l’orga supprimée parti');
   await fetch(B + '/api/admin/refuges/' + c.j.id, { method: 'DELETE', headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' } });
 });
