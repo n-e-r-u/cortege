@@ -3,7 +3,7 @@
   // Comme une zone calme vérifiée : un danger signalé à moins de 100 m l'affiche en alerte (isolé) ou barré (confirmé).
   var repli = { h: null, p: [], lg: {} }, syncRepli = null, repliDraw = null, repliSafe = null, repliOpen = null;
   {
-    const repliLayer = L.layerGroup().addTo(map), REPLI_M = 100;
+    const repliLayer = L.layerGroup().addTo(map), REPLI_M = 100, REPLI_Z = 15;
     const SERVICES = { eau: ['💧', t('Eau')], wc: ['🚻', t('Toilettes')], ecoute: ['👂', t('Écoute')], recharge: ['🔋', t('Recharge')], soins: ['🩹', t('Premiers soins')],
       abri: ['☂️', t('À l’abri')], pmr: ['♿', t('Accessible PMR')] };
     const hh = ms => new Date(ms).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' });
@@ -46,7 +46,8 @@
     }
     // Mise à jour par différence : une fiche ouverte reste ouverte pendant les synchros
     repliDraw = () => {
-      const now = Date.now(), show = hidden.has('soutien') ? [] : repli.p.filter(p => p.to > now), keep = new Set(show.map(p => p.id));
+      // Lieux locaux : visibles seulement au zoom quartier (15 et plus), jamais sur la vue d'une ville ou du pays
+      const now = Date.now(), show = hidden.has('soutien') || map.getZoom() < REPLI_Z ? [] : repli.p.filter(p => p.to > now), keep = new Set(show.map(p => p.id));
       for (const [id, m] of marks) if (!keep.has(id)) { repliLayer.removeLayer(m); marks.delete(id); }
       for (const p of show) {
         const st = repliSt(p), key = JSON.stringify([p, st && st.lvl, !!repli.lg[p.lg]]);
@@ -69,6 +70,6 @@
     };
     // Étiquette sous le point au zoom quartier ; fermeture à l'heure prévue même sans nouvelle synchro
     const zoomCls = () => map.getContainer().classList.toggle('z-street', map.getZoom() >= 15);
-    map.on('zoomend', zoomCls); zoomCls();
+    map.on('zoomend', () => { zoomCls(); repliDraw(); }); zoomCls();
     setInterval(() => { if (repli.p.some(p => p.to <= Date.now())) { repli.p = repli.p.filter(p => p.to > Date.now()); repliDraw(); } }, 30_000);
   }
