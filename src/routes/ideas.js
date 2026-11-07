@@ -9,7 +9,7 @@ async function ideasRoutes(req, res, url) {
   const p = url.pathname;
   if (!p.startsWith('/api/ideas') && !p.startsWith('/api/admin/ideas')) return NEXT;
   if (req.method === 'GET' && p === '/api/ideas') {
-    const view = ['top', 'new', 'done', 'no'].includes(url.searchParams.get('v')) ? url.searchParams.get('v') : 'top';
+    const view = ['top', 'new', 'done', 'no', 'vote'].includes(url.searchParams.get('v')) ? url.searchParams.get('v') : 'top';
     res.setHeader('Cache-Control', 'no-store');
     return send(res, 200, { ideas: I.listIdeas(req, view) });
   }

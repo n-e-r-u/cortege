@@ -913,3 +913,9 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 .idea-similar { padding: 8px 10px; border-radius: 10px; background: var(--surface-2); }
 .idea-similar ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .idea-near { background: none; border: 0; padding: 4px 0; color: var(--accent); font: 700 14px var(--font); text-align: start; text-decoration: underline; }
+/* Rond 💡 des idées au vote, avec pastille */
+.round.idea-tool { position: relative; font-size: 20px; }
+.idea-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px; display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-fg); font: 800 11px/1 var(--font); border: 2px solid var(--bg); }
+.idea.feat { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.idea-feat { align-self: flex-start; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-fg); }

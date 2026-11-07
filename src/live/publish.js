@@ -47,7 +47,7 @@ function writeNational(now) {
 let BUILD = null;
 const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)));
 function writeGlobal(now) {
-  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, ord: getMeta('ordh') || null, repli: getMeta('replih') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
+  const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, ord: getMeta('ordh') || null, repli: getMeta('replih') || null, ideas: getMeta('ideash') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
   // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
   if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }

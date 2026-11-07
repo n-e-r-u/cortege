@@ -3428,3 +3428,17 @@ msgstr ""
 #: public/index.html
 msgid "Envoyer"
 msgstr ""
+
+#: client/app/31-idees.js
+msgid "{n} idée à voter"
+msgid_plural "{n} idées à voter"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/31-idees.js
+msgid "Au vote en ce moment"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Idées au vote"
+msgstr ""

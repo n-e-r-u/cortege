@@ -168,7 +168,7 @@
     let annChanged = false;
     const g = lite.g;
     if (g) {
-      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli);
+      setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli); if (syncIdeas) syncIdeas(g.ideas);
       if (g.events && evCache.h !== g.events) { try { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); } catch {} }
       if (annCache.h !== g.ann) { try { annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; annChanged = true; } catch {} }
       await syncLegal(g);
@@ -205,7 +205,7 @@
       // Un signalement de moins de 15 min autour de toi : ça bouge, on reste au rythme rapide
       if (list.some(r => now - r.t < 15 * 60_000)) lastActivity = now;
     }
-    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli);
+    setPaused(g.paused); checkBuild(g.build); checkCfg(g.cfg); syncPois(g.pois); if (syncOrd) syncOrd(g.ord); if (syncRepli) syncRepli(g.repli); if (syncIdeas) syncIdeas(g.ideas);
     if (g.events && evCache.h !== g.events) { evCache = { h: g.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }

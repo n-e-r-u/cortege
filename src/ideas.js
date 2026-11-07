@@ -8,6 +8,8 @@ const crypto = require('crypto');
 const { q, db, tx } = require('./db');
 const { periodKey, deviceHash } = require('./privacy');
 const { quota } = require('./limits');
+const { getMeta, setMeta } = require('./db');
+const { dirty, scheduleFlush } = require('./live/files');
 
 db.exec(`CREATE TABLE IF NOT EXISTS ideas(id TEXT PRIMARY KEY, status TEXT, t INTEGER, votes INTEGER DEFAULT 0, data TEXT);
   CREATE TABLE IF NOT EXISTS idea_votes(iid TEXT, tok TEXT, PRIMARY KEY(iid, tok));
@@ -32,13 +34,24 @@ function voteToken(req, iid) {
   return crypto.createHmac('sha256', periodKey('idea', 0)).update(iid + '|' + d).digest('base64url').slice(0, 22);
 }
 const publicView = (i, voted) => ({ id: i.id, title: i.title, body: i.body, lang: i.lang, t: i.t, status: i.status, votes: i.votes,
-  version: i.version || '', reply: i.reply || '', voted: !!voted });
+  version: i.version || '', reply: i.reply || '', voted: !!voted, feat: !!i.featured });
+// Idées mises au vote par l'admin : le rond 💡 de la carte apparaît tant qu'il y en a au moins une. Leur empreinte va dans
+// live/g.json (clé « ideas ») pour que les téléphones rechargent la liste quand elle change.
+const OPEN = ['proposed', 'study', 'planned'];
+function featuredIds() { return q("SELECT id, data FROM ideas WHERE status IN ('proposed','study','planned')").all().filter(r => JSON.parse(r.data).featured).map(r => r.id).sort(); }
+function ideasPublish() {
+  const ids = featuredIds(), h = ids.length ? crypto.createHash('sha256').update(ids.join(',')).digest('base64url').slice(0, 8) : '';
+  if ((getMeta('ideash') || '') !== h) { setMeta('ideash', h); dirty.global = true; scheduleFlush(); }
+}
 
 // Liste publique : par votes, récentes, faites ou pas retenues ; le téléphone sait pour lesquelles il a voté
 function listIdeas(req, view) {
   const where = view === 'done' ? "status='done'" : view === 'no' ? "status='no'" : "status IN ('proposed','study','planned')";
   const order = view === 'new' ? 't DESC' : view === 'done' || view === 'no' ? 't DESC' : 'votes DESC, t DESC';
-  const rows = q(`SELECT * FROM ideas WHERE ${where} ORDER BY ${order} LIMIT 200`).all().map(rowView);
+  let rows = q(`SELECT * FROM ideas WHERE ${where} ORDER BY ${order} LIMIT 200`).all().map(rowView);
+  // « vote » : seulement les idées mises au vote ; « top » : elles passent en tête
+  if (view === 'vote') rows = rows.filter(i => i.featured);
+  if (view === 'top') rows.sort((a, b) => (!!b.featured - !!a.featured));
   return rows.map(i => { const tok = voteToken(req, i.id); return publicView(i, tok && q('SELECT 1 FROM idea_votes WHERE iid=? AND tok=?').get(i.id, tok)); });
 }
 function proposeIdea(req, b, now = Date.now()) {
@@ -75,7 +88,9 @@ function adminUpdate(id, b) {
   if (b.body !== undefined) i.body = cleanText(b.body, BODY);
   if (b.reply !== undefined) i.reply = cleanText(b.reply, 300);
   if (b.version !== undefined) i.version = /^\d+\.\d+(\.\d+)?$/.test(String(b.version).trim()) ? String(b.version).trim() : '';
-  saveIdea(i);
+  if (b.featured !== undefined) i.featured = b.featured === true;
+  if (!OPEN.includes(i.status)) i.featured = false; // une idée faite, écartée ou à valider n'est pas au vote
+  saveIdea(i); ideasPublish();
   return [200, i];
 }
 // Fusion d'un doublon : ses votes rejoignent l'idée gardée (un téléphone qui a voté pour les deux ne compte qu'une fois)
@@ -86,11 +101,12 @@ function adminMerge(id, into) {
     // Les jetons sont propres à chaque idée : on ne peut pas dédoublonner, on additionne donc les votes
     q('UPDATE ideas SET votes=votes+? WHERE id=?').run(a.votes, into);
     q('DELETE FROM idea_votes WHERE iid=?').run(id);
-    a.status = 'merged'; a.mergedInto = into; a.votes = 0; saveIdea(a);
+    a.status = 'merged'; a.mergedInto = into; a.votes = 0; a.featured = false; saveIdea(a);
   });
+  ideasPublish();
   return [200, { ok: true }];
 }
-function adminDelete(id) { const n = q('DELETE FROM ideas WHERE id=?').run(id).changes; q('DELETE FROM idea_votes WHERE iid=?').run(id); return n > 0; }
+function adminDelete(id) { const n = q('DELETE FROM ideas WHERE id=?').run(id).changes; q('DELETE FROM idea_votes WHERE iid=?').run(id); ideasPublish(); return n > 0; }
 const pendingCount = () => q("SELECT COUNT(*) n FROM ideas WHERE status='pending'").get().n;
 
-module.exports = { listIdeas, proposeIdea, voteIdea, adminList, adminUpdate, adminMerge, adminDelete, pendingCount, getIdea, STATUSES };
+module.exports = { ideasPublish, featuredIds, listIdeas, proposeIdea, voteIdea, adminList, adminUpdate, adminMerge, adminDelete, pendingCount, getIdea, STATUSES };

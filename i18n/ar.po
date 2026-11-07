@@ -3484,3 +3484,22 @@ msgstr "لا روابط ولا معلومات شخصية. 3 أفكار يومي�
 #: public/index.html
 msgid "Envoyer"
 msgstr "أرسل"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} idée à voter"
+msgid_plural "{n} idées à voter"
+msgstr[0] "{n} فكرة للتصويت"
+msgstr[1] "{n} فكرة للتصويت"
+msgstr[2] "{n} فكرة للتصويت"
+msgstr[3] "{n} فكرة للتصويت"
+msgstr[4] "{n} فكرة للتصويت"
+msgstr[5] "{n} فكرة للتصويت"
+
+#: client/app/31-idees.js
+msgid "Au vote en ce moment"
+msgstr "مطروحة للتصويت الآن"
+
+#: client/app/31-idees.js
+msgid "Idées au vote"
+msgstr "أفكار مطروحة للتصويت"

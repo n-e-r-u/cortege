@@ -3437,3 +3437,18 @@ msgstr "Keine Links und keine persönlichen Daten. Höchstens 3 Ideen pro Tag."
 #: public/index.html
 msgid "Envoyer"
 msgstr "Senden"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} idée à voter"
+msgid_plural "{n} idées à voter"
+msgstr[0] "{n} Idee zum Abstimmen"
+msgstr[1] "{n} Ideen zum Abstimmen"
+
+#: client/app/31-idees.js
+msgid "Au vote en ce moment"
+msgstr "Gerade zur Abstimmung"
+
+#: client/app/31-idees.js
+msgid "Idées au vote"
+msgstr "Ideen zur Abstimmung"

@@ -1,4 +1,6 @@
   // ---- Boîte à idées (Plus › Idées) : proposer une amélioration, voter, suivre ce qui est fait ----
+  // Idées mises au vote par l'admin : rond 💡 sur la carte, avec une pastille du nombre d'idées pas encore votées
+  var syncIdeas = null;
   {
     const STATUS = { proposed: ['💬', t('Proposée')], study: ['🔎', t('À l’étude')], planned: ['🗓', t('Prévue')], done: ['✅', t('Faite')], no: ['✖', t('Pas retenue')] };
     let view = 'top', ideas = [], busy = false;
@@ -14,15 +16,17 @@
       vote.setAttribute('aria-label', tn(i.votes, '{n} vote', '{n} votes') + (open ? ' · ' + (i.voted ? t('Retirer mon vote') : t('Je veux ça')) : ''));
       if (open) vote.onclick = async () => {
         if (busy) return; busy = true;
-        try { const d = await api(`/api/ideas/${i.id}/vote`, { method: 'POST', body: JSON.stringify({ on: !i.voted }) }); i.voted = d.voted; i.votes = d.votes; render(); }
+        try { const d = await api(`/api/ideas/${i.id}/vote`, { method: 'POST', body: JSON.stringify({ on: !i.voted }) }); i.voted = d.voted; i.votes = d.votes; render(); if (i.feat) refreshBadge(); }
         catch (e) { msg(e.message); } finally { busy = false; }
       };
       const meta = [ic + ' ' + lab + (i.version && (i.status === 'planned' || i.status === 'done') ? ' · ' + i.version : ''), i.lang && i.lang !== I18N.lang ? i.lang.toUpperCase() : ''].filter(Boolean).join(' · ');
-      const body = el('div', { class: 'idea-txt' }, el('b', { lang: i.lang || 'fr' }, i.title));
+      const body = el('div', { class: 'idea-txt' });
+      if (i.feat && open) body.append(el('span', { class: 'idea-feat' }, '🗳 ' + t('Au vote en ce moment')));
+      body.append(el('b', { lang: i.lang || 'fr' }, i.title));
       if (i.body) body.append(el('p', { lang: i.lang || 'fr' }, i.body));
       body.append(el('small', {}, meta));
       if (i.reply) body.append(el('p', { class: 'idea-reply' }, '↳ ' + i.reply));
-      return el('li', { class: 'idea st-' + i.status }, vote, body);
+      return el('li', { class: 'idea st-' + i.status + (i.feat && open ? ' feat' : '') }, vote, body);
     }
     function render() {
       const ul = $('#ideaList'); ul.textContent = '';
@@ -64,6 +68,24 @@
         closeForm(); msg(t('Merci ! Ton idée sera publiée après relecture.'));
       } catch (err) { msg(err.message); }
     };
-    $('#btnIdeas').onclick = () => { closeReport(); closeSheets(); $('#sheetIdeas').hidden = false; closeForm(); load(); };
+    const openIdeas = () => { closeReport(); closeSheets(); $('#sheetIdeas').hidden = false; closeForm();
+      view = 'top'; document.querySelectorAll('.idea-tabs [role="tab"]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.v === 'top'))); load(); };
+    $('#btnIdeas').onclick = openIdeas;
+    $('#btnIdeaVote').onclick = openIdeas;
+    // Rond 💡 : visible tant qu'au moins une idée est au vote ; pastille = celles pour lesquelles ce téléphone n'a pas voté
+    let ideasH = null;
+    async function refreshBadge() {
+      try {
+        const list = (await api('/api/ideas?v=vote')).ideas || [], left = list.filter(i => !i.voted).length;
+        $('#btnIdeaVote').hidden = !list.length;
+        $('#ideaBadgeMap').hidden = !left; $('#ideaBadgeMap').textContent = left > 9 ? '9+' : String(left);
+        $('#btnIdeaVote').setAttribute('aria-label', list.length ? tn(left, '{n} idée à voter', '{n} idées à voter') : t('Idées au vote'));
+      } catch {}
+    }
+    syncIdeas = h => {
+      if (!h) { ideasH = null; $('#btnIdeaVote').hidden = true; return; }
+      if (h === ideasH) return;
+      ideasH = h; refreshBadge();
+    };
     $('#idClose').onclick = () => closeSheets();
   }

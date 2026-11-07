@@ -1164,11 +1164,19 @@ test('boîte à idées : validation avant publication, un vote par téléphone, 
   assert.equal((await admin(`/api/admin/ideas/${b}/merge`, { into: a })).s, 200);
   const top = await list();
   assert.equal(top.length, 1); assert.equal(top[0].votes, 2);
+  // Mise au vote : visible dans la vue « vote », empreinte publiée dans live/g.json
+  assert.equal((await list('vote')).length, 0);
+  await admin('/api/admin/ideas/' + a, { featured: true });
+  const fv = await list('vote');
+  assert.equal(fv.length, 1); assert.equal(fv[0].feat, true);
+  await new Promise(x => setTimeout(x, 1200));
+  assert.ok((await fetch(B + '/live/g.json').then(r => r.json())).ideas, 'empreinte des idées au vote publiée');
   // Statut « faite » avec version et réponse : passe dans l'onglet Faites, plus de vote possible
   await admin('/api/admin/ideas/' + a, { status: 'done', version: '2.15', reply: 'Merci, c’est en ligne.' });
   const done = await list('done');
   assert.equal(done[0].version, '2.15'); assert.equal(done[0].reply, 'Merci, c’est en ligne.');
   assert.equal((await post(`/api/ideas/${a}/vote`, { on: true }, p2)).s, 404);
+  assert.equal((await list('vote')).length, 0, 'une idée faite n’est plus au vote');
   assert.ok(!('tok' in done[0]) && !('lang' in done[0] && done[0].lang !== 'fr'));
   assert.equal(db.prepare('SELECT COUNT(*) n FROM idea_votes WHERE tok LIKE ?').get('%' + p1.dev + '%').n, 0, 'identifiant brut jamais stocké');
 });
