@@ -1,56 +1,69 @@
 {
-  "version": "2.14",
+  "version": "2.14.1",
   "items": [
     [
-      "💡 Idées pour Cortège",
-      "Une idée pour améliorer l’appli ? Propose-la dans Plus › Idées, et vote pour celles des autres. Les plus soutenues passent en priorité."
-    ],
-    [
-      "📍 Lieux de repli",
-      "Les lieux de repli s’affichent maintenant seulement quand tu zoomes sur le quartier."
+      "👍👎 Pour ou contre",
+      "Dans les idées, tu peux maintenant voter contre. Le classement suit le solde : les pour moins les contre."
     ]
   ],
   "items_en": [
     [
-      "💡 Ideas for Cortège",
-      "Got an idea to improve the app? Suggest it in More › Ideas, and vote for other people’s. The most supported ones come first."
-    ],
-    [
-      "📍 Safe spaces",
-      "Safe spaces now only show when you zoom in to the neighbourhood."
+      "👍👎 For or against",
+      "You can now vote against an idea too. Ideas are ranked by their balance: votes for minus votes against."
     ]
   ],
   "items_es": [
     [
-      "💡 Ideas para Cortège",
-      "¿Tienes una idea para mejorar la app? Propónla en Más › Ideas y vota las de los demás. Las más apoyadas tienen prioridad."
-    ],
-    [
-      "📍 Lugares de refugio",
-      "Los lugares de refugio ahora solo aparecen al acercarte al barrio."
+      "👍👎 A favor o en contra",
+      "Ahora también puedes votar en contra de una idea. El orden sigue el saldo: votos a favor menos votos en contra."
     ]
   ],
   "items_ar": [
     [
-      "💡 أفكار لـ Cortège",
-      "لديك فكرة لتحسين التطبيق؟ اقترحها في المزيد › أفكار، وصوّت لأفكار الآخرين. الأكثر دعمًا لها الأولوية."
-    ],
-    [
-      "📍 أماكن اللجوء",
-      "تظهر أماكن اللجوء الآن فقط عند التكبير على الحي."
+      "👍👎 مع أو ضد",
+      "يمكنك الآن التصويت ضد فكرة أيضًا. الترتيب حسب الرصيد: أصوات مع ناقص أصوات ضد."
     ]
   ],
   "items_de": [
     [
-      "💡 Ideen für Cortège",
-      "Eine Idee, wie die App besser wird? Schlag sie unter Mehr › Ideen vor und stimme für die der anderen. Die meistunterstützten kommen zuerst."
-    ],
-    [
-      "📍 Rückzugsorte",
-      "Rückzugsorte erscheinen jetzt nur, wenn du auf das Viertel zoomst."
+      "👍👎 Dafür oder dagegen",
+      "Du kannst jetzt auch gegen eine Idee stimmen. Die Reihenfolge folgt der Bilanz: Stimmen dafür minus Stimmen dagegen."
     ]
   ],
   "history": [
+    {
+      "version": "2.14.1",
+      "items": [
+        [
+          "👍👎 Pour ou contre",
+          "Dans les idées, tu peux maintenant voter contre. Le classement suit le solde : les pour moins les contre."
+        ]
+      ],
+      "items_en": [
+        [
+          "👍👎 For or against",
+          "You can now vote against an idea too. Ideas are ranked by their balance: votes for minus votes against."
+        ]
+      ],
+      "items_es": [
+        [
+          "👍👎 A favor o en contra",
+          "Ahora también puedes votar en contra de una idea. El orden sigue el saldo: votos a favor menos votos en contra."
+        ]
+      ],
+      "items_ar": [
+        [
+          "👍👎 مع أو ضد",
+          "يمكنك الآن التصويت ضد فكرة أيضًا. الترتيب حسب الرصيد: أصوات مع ناقص أصوات ضد."
+        ]
+      ],
+      "items_de": [
+        [
+          "👍👎 Dafür oder dagegen",
+          "Du kannst jetzt auch gegen eine Idee stimmen. Die Reihenfolge folgt der Bilanz: Stimmen dafür minus Stimmen dagegen."
+        ]
+      ]
+    },
     {
       "version": "2.14",
       "items": [

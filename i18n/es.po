@@ -3390,8 +3390,8 @@ msgid "Idées pour Cortège"
 msgstr "Ideas para Cortège"
 
 #: public/index.html
-msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
-msgstr "Propón una mejora o vota las que te interesen: las ideas más apoyadas tienen prioridad. Cada idea se revisa antes de publicarse. Sin cuenta, y tu voto no se vincula a nada más."
+msgid "Propose une amélioration, ou vote pour ou contre celles des autres : les idées les mieux soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgstr "Propón una mejora, o vota a favor o en contra de las de los demás: las ideas con más apoyo tienen prioridad. Cada idea se revisa antes de publicarse. Sin cuenta, y tu voto no se vincula a nada más."
 
 #: public/index.html
 msgid "Les plus votées"
@@ -3455,3 +3455,28 @@ msgstr "En votación ahora"
 #: client/app/31-idees.js
 msgid "Idées au vote"
 msgstr "Ideas en votación"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} pour"
+msgid_plural "{n} pour"
+msgstr[0] "{n} a favor"
+msgstr[1] "{n} a favor"
+
+#: client/app/31-idees.js
+msgid "{n} contre"
+msgid_plural "{n} contre"
+msgstr[0] "{n} en contra"
+msgstr[1] "{n} en contra"
+
+#: client/app/31-idees.js
+msgid "Ton avis"
+msgstr "Tu opinión"
+
+#: client/app/31-idees.js
+msgid "Je suis contre"
+msgstr "Estoy en contra"
+
+#: src/ideas.js
+msgid "Vote invalide."
+msgstr "Voto no válido."

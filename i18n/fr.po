@@ -3403,7 +3403,7 @@ msgid "Idées pour Cortège"
 msgstr ""
 
 #: public/index.html
-msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgid "Propose une amélioration, ou vote pour ou contre celles des autres : les idées les mieux soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
 msgstr ""
 
 #: public/index.html
@@ -3467,4 +3467,29 @@ msgstr ""
 
 #: client/app/31-idees.js
 msgid "Idées au vote"
+msgstr ""
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} pour"
+msgid_plural "{n} pour"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/31-idees.js
+msgid "{n} contre"
+msgid_plural "{n} contre"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/31-idees.js
+msgid "Ton avis"
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Je suis contre"
+msgstr ""
+
+#: src/ideas.js
+msgid "Vote invalide."
 msgstr ""

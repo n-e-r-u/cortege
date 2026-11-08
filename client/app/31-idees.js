@@ -1,5 +1,5 @@
   // ---- Boîte à idées (Plus › Idées) : proposer une amélioration, voter, suivre ce qui est fait ----
-  // Idées mises au vote par l'admin : rond 💡 sur la carte, avec une pastille du nombre d'idées pas encore votées
+  // Vote pour ou contre, classement au solde. Idées mises au vote par l'admin : rond 💡 sur la carte, avec une pastille du nombre d'idées pas encore votées
   var syncIdeas = null;
   {
     const STATUS = { proposed: ['💬', t('Proposée')], study: ['🔎', t('À l’étude')], planned: ['🗓', t('Prévue')], done: ['✅', t('Faite')], no: ['✖', t('Pas retenue')] };
@@ -10,15 +10,22 @@
     function card(i) {
       const [ic, lab] = STATUS[i.status] || STATUS.proposed;
       const open = i.status !== 'done' && i.status !== 'no';
-      const vote = el('button', { type: 'button', class: 'idea-vote' + (i.voted ? ' on' : ''), 'aria-pressed': String(!!i.voted) },
-        el('span', { 'aria-hidden': 'true' }, '👍'), el('b', {}, String(i.votes)));
-      vote.disabled = !open;
-      vote.setAttribute('aria-label', tn(i.votes, '{n} vote', '{n} votes') + (open ? ' · ' + (i.voted ? t('Retirer mon vote') : t('Je veux ça')) : ''));
-      if (open) vote.onclick = async () => {
-        if (busy) return; busy = true;
-        try { const d = await api(`/api/ideas/${i.id}/vote`, { method: 'POST', body: JSON.stringify({ on: !i.voted }) }); i.voted = d.voted; i.votes = d.votes; render(); if (i.feat) refreshBadge(); }
-        catch (e) { msg(e.message); } finally { busy = false; }
+      // Pour ou contre : un appui sur le vote déjà choisi le retire, l'autre bouton change d'avis
+      const my = i.my ?? (i.voted ? 1 : 0);
+      const btn = (v, glyph, n, on, off) => {
+        const b = el('button', { type: 'button', class: 'idea-vote ' + (v > 0 ? 'up' : 'down') + (my === v ? ' on' : ''), 'aria-pressed': String(my === v) },
+          el('span', { 'aria-hidden': 'true' }, glyph), el('b', {}, String(n)));
+        b.disabled = !open;
+        b.setAttribute('aria-label', (v > 0 ? tn(n, '{n} pour', '{n} pour') : tn(n, '{n} contre', '{n} contre')) + (open ? ' · ' + (my === v ? off : on) : ''));
+        if (open) b.onclick = async () => {
+          if (busy) return; busy = true;
+          try { const d = await api(`/api/ideas/${i.id}/vote`, { method: 'POST', body: JSON.stringify({ v: my === v ? 0 : v }) }); i.my = d.my ?? (d.voted ? 1 : 0); i.votes = d.votes; i.down = d.down ?? i.down; render(); if (i.feat) refreshBadge(); }
+          catch (e) { msg(e.message); } finally { busy = false; }
+        };
+        return b;
       };
+      const vote = el('div', { class: 'idea-votes', role: 'group', 'aria-label': t('Ton avis') },
+        btn(1, '👍', i.votes, t('Je veux ça'), t('Retirer mon vote')), btn(-1, '👎', i.down || 0, t('Je suis contre'), t('Retirer mon vote')));
       const meta = [ic + ' ' + lab + (i.version && (i.status === 'planned' || i.status === 'done') ? ' · ' + i.version : ''), i.lang && i.lang !== I18N.lang ? i.lang.toUpperCase() : ''].filter(Boolean).join(' · ');
       const body = el('div', { class: 'idea-txt' });
       if (i.feat && open) body.append(el('span', { class: 'idea-feat' }, '🗳 ' + t('Au vote en ce moment')));
@@ -76,7 +83,7 @@
     let ideasH = null;
     async function refreshBadge() {
       try {
-        const list = (await api('/api/ideas?v=vote')).ideas || [], left = list.filter(i => !i.voted).length;
+        const list = (await api('/api/ideas?v=vote')).ideas || [], left = list.filter(i => !(i.my || i.voted)).length;
         $('#btnIdeaVote').hidden = !list.length;
         $('#ideaBadgeMap').hidden = !left; $('#ideaBadgeMap').textContent = left > 9 ? '9+' : String(left);
         $('#btnIdeaVote').setAttribute('aria-label', list.length ? tn(left, '{n} idée à voter', '{n} idées à voter') : t('Idées au vote'));

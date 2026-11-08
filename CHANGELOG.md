@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.14.1
+
+- **Vote contre dans la boîte à idées** : sous 👍, un bouton 👎. Un téléphone a un seul vote par idée, pour ou contre ; appuyer sur l'autre bouton change d'avis, appuyer sur le vote déjà choisi le retire. Les deux nombres sont affichés. Le classement « Les plus votées » suit le solde (pour moins contre), puis le nombre de pour. L'admin voit le solde et le détail ; une fusion de doublons additionne aussi les contre. La pastille du rond 💡 compte comme votée une idée où le téléphone a voté contre. Les téléphones pas encore à jour continuent de voter pour.
+- **Thème sombre** : les couleurs des textes « vérifié », « attention » et « danger » (et l'anneau des signalements vérifiés) avaient disparu depuis la 2.12. Elles sont rétablies.
+- Onglets de la boîte à idées : plus de barre de défilement visible sous les onglets.
+
 ## 2.14.0
 
 - **Boîte à idées** (Plus › Idées) : chacun peut proposer une amélioration de Cortège (titre de 80 caractères, explication facultative de 400) et voter pour celles qui lui parlent. Quatre onglets : les plus votées, récentes, faites, pas retenues. Pendant la saisie, l'appli montre les idées déjà proposées qui y ressemblent, pour voter plutôt que créer un doublon.

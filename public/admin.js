@@ -1504,7 +1504,7 @@ function renderIdeas() {
   if (!list.length) return empty(ul, 'Aucune idée ici.');
   for (const i of list) {
     const l = document.createElement('li'); l.className = 'st-' + i.status; l.dataset.title = i.title;
-    const v = document.createElement('div'); v.className = 'iv'; v.textContent = i.votes; const vs = document.createElement('small'); vs.textContent = 'vote(s)'; v.append(vs);
+    const v = document.createElement('div'); v.className = 'iv'; v.textContent = (i.votes - (i.down || 0) > 0 ? '+' : '') + (i.votes - (i.down || 0)); const vs = document.createElement('small'); vs.textContent = `👍 ${i.votes} · 👎 ${i.down || 0}`; v.append(vs);
     const b = document.createElement('div'); b.className = 'ib';
     const title = document.createElement('input'); title.value = i.title; title.maxLength = 80; title.setAttribute('aria-label', 'Titre');
     const body = document.createElement('p'); body.textContent = i.body || '(sans description)';
@@ -1524,7 +1524,7 @@ function renderIdeas() {
     const row2 = document.createElement('div'); row2.className = 'controls';
     const into = document.createElement('select'); into.setAttribute('aria-label', 'Fusionner dans');
     into.append(new Option('Fusionner dans…', ''));
-    for (const o of ideaData) if (o.id !== i.id && o.status !== 'pending') into.append(new Option(`${o.title.slice(0, 50)} (${o.votes})`, o.id));
+    for (const o of ideaData) if (o.id !== i.id && o.status !== 'pending') into.append(new Option(`${o.title.slice(0, 50)} (👍 ${o.votes} · 👎 ${o.down || 0})`, o.id));
     const merge = btn('Fusionner');
     merge.onclick = async () => { if (!into.value) return; try { await api(`/api/admin/ideas/${i.id}/merge`, { method: 'POST', body: JSON.stringify({ into: into.value }) }); loadIdeas(); } catch (e) { alertMsg(e.message); } };
     const del = btn('Supprimer', 'danger');

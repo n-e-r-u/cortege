@@ -15,7 +15,8 @@ async function ideasRoutes(req, res, url) {
   }
   if (req.method === 'POST' && p === '/api/ideas') return send(res, ...I.proposeIdea(req, await readJson(req, 2048)));
   const v = p.match(/^\/api\/ideas\/([\w-]{1,16})\/vote$/);
-  if (v && req.method === 'POST') return send(res, ...I.voteIdea(req, v[1], (await readJson(req)).on !== false));
+  // { v: 1 | -1 | 0 } ; { on: true | false } des téléphones pas encore à jour vaut pour ou retrait
+  if (v && req.method === 'POST') { const b = await readJson(req); return send(res, ...I.voteIdea(req, v[1], 'v' in b ? Number(b.v) : (b.on !== false ? 1 : 0))); }
   if (p.startsWith('/api/admin/ideas')) {
     if (!isAdmin(req)) return send(res, 403, { error: 'Clé incorrecte.' });
     if (req.method === 'GET' && p === '/api/admin/ideas') return send(res, 200, { ideas: I.adminList(), pending: I.pendingCount() });

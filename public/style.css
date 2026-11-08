@@ -26,9 +26,9 @@
   --route: #f6a29c;       /* tracé des parcours sur la carte */
   --zone-line: #f0a020;   /* contour des périmètres d'arrêté */
   --ok: #30a46c;
-  --ok-text: var(--ok-text);
-  --warn-text: var(--warn-text);
-  --bad-text: var(--bad-text);
+  --ok-text: #7ee2b0;      /* textes et anneaux « vérifié » sur fond sombre */
+  --warn-text: #ffcf7a;
+  --bad-text: #ff9a9d;
   --live-bg: #10261c; --live-text: #d9fbe9; --ask-bg: #3a2a08; --ask-text: #fff3d6;
   --map-bg: #12153a;
   --map-label: #e9e7f0; --map-halo: #12153a;
@@ -890,14 +890,17 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 #btnOrgaLogout { color: var(--bad-text); display: block; margin: 14px auto 4px; }
 
 /* ---- 2.14 : boîte à idées ---- */
-.idea-tabs { display: flex; gap: 6px; overflow-x: auto; margin: 10px 0; padding-bottom: 2px; }
+.idea-tabs { display: flex; gap: 6px; overflow-x: auto; margin: 10px 0; padding-bottom: 2px; scrollbar-width: none; }
+.idea-tabs::-webkit-scrollbar { display: none; }
 .idea-tabs [role="tab"] { flex: none; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 700 13px var(--font); }
 .idea-tabs [role="tab"][aria-selected="true"] { background: var(--surface-2); color: var(--fg); border-color: var(--accent); }
 .idea-list { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 8px; }
 .idea { display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: start; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
-.idea-vote { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 56px; min-height: 56px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font: 700 13px var(--font); }
+.idea-votes { display: flex; flex-direction: column; gap: 6px; }
+.idea-vote { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; width: 56px; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font: 700 13px var(--font); }
 .idea-vote b { font-size: 16px; }
 .idea-vote.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+.idea-vote.down.on { border-color: var(--bad-text); background: color-mix(in srgb, var(--bad-text) 14%, var(--surface)); }
 .idea-vote:disabled { opacity: .65; }
 .idea-txt { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .idea-txt b { font-size: 15px; overflow-wrap: anywhere; }

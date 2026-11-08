@@ -1160,10 +1160,16 @@ test('boîte à idées : validation avant publication, un vote par téléphone, 
   assert.equal((await list('top', p1)).find(i => i.id === a).voted, true);
   assert.equal((await list('top', p1)).find(i => i.id === b).voted, false);
   assert.equal((await post(`/api/ideas/${a}/vote`, { on: false }, p1)).j.votes, 1, 'vote retiré');
+  // Vote contre : compté à part, on passe de l'un à l'autre sans double compte, le classement suit le solde
+  { const r = await post(`/api/ideas/${a}/vote`, { v: -1 }, p1); assert.deepEqual([r.j.votes, r.j.down, r.j.my], [1, 1, -1]); }
+  { const r = await post(`/api/ideas/${a}/vote`, { v: 1 }, p1); assert.deepEqual([r.j.votes, r.j.down], [2, 0]); }
+  { const r = await post(`/api/ideas/${a}/vote`, { v: -1 }, p1); assert.deepEqual([r.j.votes, r.j.down], [1, 1]); }
+  assert.equal((await post(`/api/ideas/${a}/vote`, { v: 3 }, p1)).s, 400);
+  { const l = await list('top', p1); assert.equal(l[0].id, b, 'solde 1 avant solde 0'); assert.equal(l.find(i => i.id === a).my, -1); assert.equal(l.find(i => i.id === a).voted, false); }
   // Fusion du doublon b dans a : les votes s'additionnent, b disparaît de la liste
   assert.equal((await admin(`/api/admin/ideas/${b}/merge`, { into: a })).s, 200);
   const top = await list();
-  assert.equal(top.length, 1); assert.equal(top[0].votes, 2);
+  assert.equal(top.length, 1); assert.equal(top[0].votes, 2); assert.equal(top[0].down, 1);
   // Mise au vote : visible dans la vue « vote », empreinte publiée dans live/g.json
   assert.equal((await list('vote')).length, 0);
   await admin('/api/admin/ideas/' + a, { featured: true });

@@ -3434,8 +3434,8 @@ msgid "Idées pour Cortège"
 msgstr "أفكار لـ Cortège"
 
 #: public/index.html
-msgid "Propose une amélioration ou vote pour celles qui te parlent : les idées les plus soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
-msgstr "اقترح تحسينًا أو صوّت لما يعجبك: الأفكار الأكثر دعمًا لها الأولوية. تُراجع كل فكرة قبل نشرها. لا حساب، وصوتك غير مرتبط بأي شيء آخر."
+msgid "Propose une amélioration, ou vote pour ou contre celles des autres : les idées les mieux soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre."
+msgstr "اقترح تحسينًا، أو صوّت مع أفكار الآخرين أو ضدها: الأفكار الأكثر دعمًا لها الأولوية. تُراجَع كل فكرة قبل نشرها. بلا حساب، وتصويتك غير مرتبط بأي شيء آخر."
 
 #: public/index.html
 msgid "Les plus votées"
@@ -3503,3 +3503,36 @@ msgstr "مطروحة للتصويت الآن"
 #: client/app/31-idees.js
 msgid "Idées au vote"
 msgstr "أفكار مطروحة للتصويت"
+
+# --- textes à traduire ---
+#: client/app/31-idees.js
+msgid "{n} pour"
+msgid_plural "{n} pour"
+msgstr[0] "{n} مع"
+msgstr[1] "{n} مع"
+msgstr[2] "{n} مع"
+msgstr[3] "{n} مع"
+msgstr[4] "{n} مع"
+msgstr[5] "{n} مع"
+
+#: client/app/31-idees.js
+msgid "{n} contre"
+msgid_plural "{n} contre"
+msgstr[0] "{n} ضد"
+msgstr[1] "{n} ضد"
+msgstr[2] "{n} ضد"
+msgstr[3] "{n} ضد"
+msgstr[4] "{n} ضد"
+msgstr[5] "{n} ضد"
+
+#: client/app/31-idees.js
+msgid "Ton avis"
+msgstr "رأيك"
+
+#: client/app/31-idees.js
+msgid "Je suis contre"
+msgstr "أنا ضد"
+
+#: src/ideas.js
+msgid "Vote invalide."
+msgstr "تصويت غير صالح."
