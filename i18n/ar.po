@@ -3536,3 +3536,109 @@ msgstr "أنا ضد"
 #: src/ideas.js
 msgid "Vote invalide."
 msgstr "تصويت غير صالح."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Bilan · {t}"
+msgstr "حصيلة · {t}"
+
+#: src/social.js
+msgid "Bilan du {d}"
+msgstr "حصيلة {d}"
+
+#: src/social.js
+msgid "{what} dans {where}."
+msgstr "{what} في {where}."
+
+#: src/social.js
+msgid "En tête : {list}."
+msgstr "في المقدمة: {list}."
+
+#: src/social.js
+msgid "Parcours, heures fortes, arrêtés et données ouvertes :"
+msgstr "المسار، ساعات الذروة، القرارات والبيانات المفتوحة:"
+
+#: src/social.js
+msgid "Le bilan public de la journée sur Cortège."
+msgstr "الحصيلة العامة لليوم على Cortège."
+
+#: src/social.js
+msgid "Nouvel arrêté à partir du {d}. La zone, les horaires et la source sont sur la carte :"
+msgstr "قرار جديد ابتداءً من {d}. المنطقة والمواعيد والمصدر على الخريطة:"
+
+#: src/social.js
+msgid "et {n} autres"
+msgstr "و{n} أخرى"
+
+#: src/social.js
+msgid "{n} nouveaux arrêtés"
+msgstr "{n} قرارات جديدة"
+
+#: src/social.js
+msgid "Zones, horaires et sources sur la carte :"
+msgstr "المناطق والمواعيد والمصادر على الخريطة:"
+
+#: src/social.js
+msgid "Arrêtés en cours"
+msgstr "القرارات السارية"
+
+#: src/social.js
+msgid "Rendez-vous, arrêtés et numéros utiles : prépare-toi sur Cortège, et signale ce que tu vois le jour J."
+msgstr "نقاط التجمع والقرارات والأرقام المفيدة: استعد على Cortège، وأبلغ عمّا تراه في اليوم الموعود."
+
+#: src/social.js
+msgid "La carte des manifs en direct."
+msgstr "خريطة المظاهرات المباشرة."
+
+#: src/social.js
+msgid "C’est aujourd’hui : {t}"
+msgstr "إنه اليوم: {t}"
+
+#: src/social.js
+msgid "{n} rendez-vous dans l’agenda."
+msgstr "{n} مواعيد في الأجندة."
+
+#: src/social.js
+msgid "Regarde ce que les autres signalent, signale ce que tu vois :"
+msgstr "شاهد ما يبلغ عنه الآخرون، وأبلغ عمّا تراه:"
+
+#: src/social.js
+msgid "Écris le message."
+msgstr "اكتب الرسالة."
+
+#: src/social.js
+msgid "Le lien doit commencer par https://"
+msgstr "يجب أن يبدأ الرابط بـ https://"
+
+#: src/social.js
+msgid "Aucun réseau prêt : ajoute les identifiants dans les variables du serveur, ou réactive un réseau."
+msgstr "لا توجد شبكة جاهزة: أضف بيانات الدخول إلى متغيرات الخادم، أو أعد تفعيل شبكة."
+
+#: src/social.js
+msgid "Message introuvable."
+msgstr "الرسالة غير موجودة."
+
+#: src/social.js
+msgid "Ce message n’attend pas de relecture."
+msgstr "هذه الرسالة لا تنتظر المراجعة."
+
+#: src/social.js
+msgid "Déjà envoyé."
+msgstr "أُرسلت بالفعل."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "{n} signalements"
+msgstr "{n} بلاغات"
+
+#: src/social.js
+msgid "{n} signalement"
+msgstr "{n} بلاغ"
+
+#: src/social.js
+msgid "{n} villes"
+msgstr "{n} مدن"
+
+#: src/social.js
+msgid "{n} ville"
+msgstr "{n} مدينة"

@@ -105,6 +105,7 @@ async function approveOrder(id) {
 const ORDER_PUSH_WAIT = +(process.env.ORDER_PUSH_WAIT_MS || 60_000);
 let orderPushQ = [], orderPushT = null;
 function orderPushLater(o) {
+  try { require('./social').noteOrder(o); } catch (e) { console.error('réseaux (arrêté)', e.message); }
   orderPushQ.push(o.id);
   clearTimeout(orderPushT);
   orderPushT = setTimeout(() => { const ids = orderPushQ; orderPushQ = []; orderPush(ids).catch(e => console.error('push arrêtés', e.message)); }, ORDER_PUSH_WAIT);

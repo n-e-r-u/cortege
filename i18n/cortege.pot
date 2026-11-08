@@ -3466,3 +3466,107 @@ msgstr ""
 #: src/ideas.js
 msgid "Vote invalide."
 msgstr ""
+
+#: src/social.js
+msgid "Bilan · {t}"
+msgstr ""
+
+#: src/social.js
+msgid "Bilan du {d}"
+msgstr ""
+
+#: src/social.js
+msgid "{what} dans {where}."
+msgstr ""
+
+#: src/social.js
+msgid "En tête : {list}."
+msgstr ""
+
+#: src/social.js
+msgid "Parcours, heures fortes, arrêtés et données ouvertes :"
+msgstr ""
+
+#: src/social.js
+msgid "Le bilan public de la journée sur Cortège."
+msgstr ""
+
+#: src/social.js
+msgid "Nouvel arrêté à partir du {d}. La zone, les horaires et la source sont sur la carte :"
+msgstr ""
+
+#: src/social.js
+msgid "et {n} autres"
+msgstr ""
+
+#: src/social.js
+msgid "{n} nouveaux arrêtés"
+msgstr ""
+
+#: src/social.js
+msgid "Zones, horaires et sources sur la carte :"
+msgstr ""
+
+#: src/social.js
+msgid "Arrêtés en cours"
+msgstr ""
+
+#: src/social.js
+msgid "Rendez-vous, arrêtés et numéros utiles : prépare-toi sur Cortège, et signale ce que tu vois le jour J."
+msgstr ""
+
+#: src/social.js
+msgid "La carte des manifs en direct."
+msgstr ""
+
+#: src/social.js
+msgid "C’est aujourd’hui : {t}"
+msgstr ""
+
+#: src/social.js
+msgid "{n} rendez-vous dans l’agenda."
+msgstr ""
+
+#: src/social.js
+msgid "Regarde ce que les autres signalent, signale ce que tu vois :"
+msgstr ""
+
+#: src/social.js
+msgid "Écris le message."
+msgstr ""
+
+#: src/social.js
+msgid "Le lien doit commencer par https://"
+msgstr ""
+
+#: src/social.js
+msgid "Aucun réseau prêt : ajoute les identifiants dans les variables du serveur, ou réactive un réseau."
+msgstr ""
+
+#: src/social.js
+msgid "Message introuvable."
+msgstr ""
+
+#: src/social.js
+msgid "Ce message n’attend pas de relecture."
+msgstr ""
+
+#: src/social.js
+msgid "Déjà envoyé."
+msgstr ""
+
+#: src/social.js
+msgid "{n} signalements"
+msgstr ""
+
+#: src/social.js
+msgid "{n} signalement"
+msgstr ""
+
+#: src/social.js
+msgid "{n} villes"
+msgstr ""
+
+#: src/social.js
+msgid "{n} ville"
+msgstr ""

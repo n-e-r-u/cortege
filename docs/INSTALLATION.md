@@ -57,6 +57,9 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `PLACES_SOURCE` | auto | `osm` (copie Geofabrik triée par osmium, par défaut si `osmium` est installé), `carte` (lus dans le fichier PMTiles, sans caméras), `overpass` |
 | `GEOFABRIK_URLS` | France entière | Fichier(s) `.osm.pbf` de Geofabrik à télécharger chaque mois, séparés par des virgules (ex. une seule région pour un petit serveur). Les contours des communes (bilans par commune) sortent du même fichier |
 | `GOOGLE_SITE_VERIFICATION` | vide | Nom du fichier de validation Google Search Console (ex. `google0123456789abcdef.html`) : le serveur le sert à la racine |
+| `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` | vide | Compte Bluesky de l'instance (ex. `moncollectif.bsky.social`) et **mot de passe d'application** (Bluesky › Réglages › Confidentialité et sécurité › Mots de passe d'application), jamais le mot de passe du compte. Active le partage automatique (admin › Réseaux) |
+| `BLUESKY_PDS` | `https://bsky.social` | Serveur du compte Bluesky, seulement s'il est hébergé ailleurs |
+| `MASTODON_URL` / `MASTODON_TOKEN` | vide | Adresse de l'instance Mastodon (ex. `https://mastodon.social`) et jeton d'accès d'une application créée dans Préférences › Développement, avec le seul droit `write:statuses` (et `read:accounts` pour « Tester la connexion ») |
 | `GEO_API` | geo.api.gouv.fr | API Géo de l'État : contour officiel d'une commune, demandé par le serveur à la validation d'un arrêté |
 | `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |

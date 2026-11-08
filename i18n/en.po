@@ -3480,3 +3480,109 @@ msgstr "I’m against it"
 #: src/ideas.js
 msgid "Vote invalide."
 msgstr "Invalid vote."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Bilan · {t}"
+msgstr "Report · {t}"
+
+#: src/social.js
+msgid "Bilan du {d}"
+msgstr "Report for {d}"
+
+#: src/social.js
+msgid "{what} dans {where}."
+msgstr "{what} in {where}."
+
+#: src/social.js
+msgid "En tête : {list}."
+msgstr "Top: {list}."
+
+#: src/social.js
+msgid "Parcours, heures fortes, arrêtés et données ouvertes :"
+msgstr "Route, peak hours, orders and open data:"
+
+#: src/social.js
+msgid "Le bilan public de la journée sur Cortège."
+msgstr "The public report for the day on Cortège."
+
+#: src/social.js
+msgid "Nouvel arrêté à partir du {d}. La zone, les horaires et la source sont sur la carte :"
+msgstr "New order from {d}. The area, times and source are on the map:"
+
+#: src/social.js
+msgid "et {n} autres"
+msgstr "and {n} more"
+
+#: src/social.js
+msgid "{n} nouveaux arrêtés"
+msgstr "{n} new orders"
+
+#: src/social.js
+msgid "Zones, horaires et sources sur la carte :"
+msgstr "Areas, times and sources on the map:"
+
+#: src/social.js
+msgid "Arrêtés en cours"
+msgstr "Orders in force"
+
+#: src/social.js
+msgid "Rendez-vous, arrêtés et numéros utiles : prépare-toi sur Cortège, et signale ce que tu vois le jour J."
+msgstr "Meeting points, orders and useful numbers: get ready on Cortège, and report what you see on the day."
+
+#: src/social.js
+msgid "La carte des manifs en direct."
+msgstr "The live protest map."
+
+#: src/social.js
+msgid "C’est aujourd’hui : {t}"
+msgstr "It’s today: {t}"
+
+#: src/social.js
+msgid "{n} rendez-vous dans l’agenda."
+msgstr "{n} meeting points in the calendar."
+
+#: src/social.js
+msgid "Regarde ce que les autres signalent, signale ce que tu vois :"
+msgstr "See what others report, report what you see:"
+
+#: src/social.js
+msgid "Écris le message."
+msgstr "Write the message."
+
+#: src/social.js
+msgid "Le lien doit commencer par https://"
+msgstr "The link must start with https://"
+
+#: src/social.js
+msgid "Aucun réseau prêt : ajoute les identifiants dans les variables du serveur, ou réactive un réseau."
+msgstr "No network ready: add the credentials to the server variables, or turn a network back on."
+
+#: src/social.js
+msgid "Message introuvable."
+msgstr "Message not found."
+
+#: src/social.js
+msgid "Ce message n’attend pas de relecture."
+msgstr "This message isn’t waiting for review."
+
+#: src/social.js
+msgid "Déjà envoyé."
+msgstr "Already sent."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "{n} signalements"
+msgstr "{n} reports"
+
+#: src/social.js
+msgid "{n} signalement"
+msgstr "{n} report"
+
+#: src/social.js
+msgid "{n} villes"
+msgstr "{n} cities"
+
+#: src/social.js
+msgid "{n} ville"
+msgstr "{n} city"

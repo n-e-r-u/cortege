@@ -2,6 +2,20 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.15.0
+
+- **Partage automatique sur Bluesky et Mastodon** (admin › Réseaux). Le serveur publie lui-même sur les comptes de l'instance :
+  - la veille d'une journée de mobilisation, dès 19 h ;
+  - le matin du jour J, dès 8 h, avec le nombre de rendez-vous de l'agenda ;
+  - les nouveaux arrêtés, regroupés en un seul message 10 minutes après le dernier validé (un import de 30 arrêtés = un message) ;
+  - le bilan public d'une journée, au moment où l'admin le publie ;
+  - les messages écrits à la main dans l'onglet, avec un lien facultatif.
+- Chaque message ne part qu'une fois (un bilan republié ne refait pas de message). Le texte est coupé pour tenir dans la limite du réseau (300 caractères sur Bluesky, 500 sur Mastodon), lien et mots-clés gardés. Sur Bluesky, liens et mots-clés sont cliquables et le lien s'affiche en carte avec l'image de l'appli.
+- Réglages : publier directement ou relire avant l'envoi (texte modifiable ; veille, jour J et arrêtés en attente sont abandonnés au bout de 12 h), choix des types de messages, réseaux actifs, mots-clés ajoutés à chaque message.
+- Erreur d'un réseau : nouvel essai 2, 4, 8 puis 16 minutes plus tard ; l'autre réseau n'attend pas. Un message publié peut être retiré des deux réseaux depuis l'admin.
+- Identifiants dans les variables du serveur seulement (`BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `MASTODON_URL`, `MASTODON_TOKEN`), jamais dans la base ni dans l'admin ; « Tester la connexion » les vérifie sans rien publier. Sans ces variables, rien ne change.
+- Seuls des totaux, des noms de villes et des liens publics sont envoyés. Textes des messages traduits dans la langue de l'instance.
+
 ## 2.14.1
 
 - **Vote contre dans la boîte à idées** : sous 👍, un bouton 👎. Un téléphone a un seul vote par idée, pour ou contre ; appuyer sur l'autre bouton change d'avis, appuyer sur le vote déjà choisi le retire. Les deux nombres sont affichés. Le classement « Les plus votées » suit le solde (pour moins contre), puis le nombre de pour. L'admin voit le solde et le détail ; une fusion de doublons additionne aussi les contre. La pastille du rond 💡 compte comme votée une idée où le téléphone a voté contre. Les téléphones pas encore à jour continuent de voter pour.

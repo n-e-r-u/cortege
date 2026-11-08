@@ -109,7 +109,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 @media (max-width: 600px) { .org-list li { grid-template-columns: 1fr; } .org-list .acts { justify-content: flex-start; } }
 .story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 12px; }
 .story-grid img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
-#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty), #modBadge:not(:empty), #mobBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo-strong); color: #fff; font-size: 12px; }
+#pendingBadge:not(:empty), #annBadge:not(:empty), #legalBadge:not(:empty), #reqBadge:not(:empty), #modBadge:not(:empty), #mobBadge:not(:empty), #ideaBadge:not(:empty), #socialBadge:not(:empty) { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--fdo-strong); color: #fff; font-size: 12px; }
 @media (max-width: 520px) { .bar { grid-template-columns: minmax(0, 120px) 1fr 36px; } }
 #toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 20px); max-width: min(92vw, 560px); background: var(--surface-2); color: var(--fg); border: 1px solid var(--accent);
   border-radius: 12px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: .2s; z-index: 50; }
@@ -135,6 +135,12 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 /* Lieux de repli (2.13.5) */
 .rf-map { height: 260px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
 .rf-checks { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.soc-checks { flex-direction: column; align-items: flex-start; }
+.soc-list li { grid-template-columns: 1fr; }
+.soc-list .soc-text { white-space: pre-wrap; margin: 4px 0; }
+.soc-list textarea { width: 100%; }
+.soc-nets { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+.soc-nets .bad { color: var(--bad-text, #c0392b); }
 .rf-checks legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; padding: 0; }
 .rf-checks label, label.check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--fg); }
 .rf-checks label { padding: 6px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-2); }
@@ -187,6 +193,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabOrders" aria-selected="false" aria-controls="panelOrders"><span class="ni" aria-hidden="true">🚫</span>Arrêtés <span id="ordBadge"></span></button>
     <div class="nav-group" role="presentation">Organiser</div>
     <button class="tab" role="tab" id="tabMobs" aria-selected="false" aria-controls="panelMobs"><span class="ni" aria-hidden="true">🗓</span>Journées <span id="mobBadge"></span></button>
+    <button class="tab" role="tab" id="tabSocial" aria-selected="false" aria-controls="panelSocial"><span class="ni" aria-hidden="true">📢</span>Réseaux <span id="socialBadge"></span></button>
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda"><span class="ni" aria-hidden="true">📅</span>Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas"><span class="ni" aria-hidden="true">👥</span>Orgas <span id="reqBadge"></span></button>
     <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal"><span class="ni" aria-hidden="true">⚖</span>Legal teams <span id="legalBadge"></span></button>
@@ -578,6 +585,55 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     </section>
   </section>
 
+  <section class="panel" id="panelSocial" role="tabpanel" aria-labelledby="tabSocial" hidden>
+    <section class="card">
+      <h2>Bluesky et Mastodon</h2>
+      <p class="fine">Le serveur publie lui-même sur les comptes de l’instance : la veille d’une journée de mobilisation (dès 19 h), le matin du jour J (dès 8 h), les nouveaux arrêtés (regroupés, 10 minutes après le dernier validé), le bilan public d’une journée quand tu le publies, et les messages que tu écris ici. Chaque message ne part qu’une fois. Seuls des totaux, des noms de villes et des liens publics sont envoyés.</p>
+      <p class="fine">Identifiants à mettre dans les variables du serveur (fichier d’environnement), jamais ici : <code>BLUESKY_HANDLE</code> et <code>BLUESKY_APP_PASSWORD</code> (un mot de passe d’application, créé dans Bluesky › Réglages › Mots de passe d’application) ; <code>MASTODON_URL</code> (adresse de l’instance) et <code>MASTODON_TOKEN</code> (jeton d’une application créée dans Préférences › Développement, droit <code>write:statuses</code>). Puis redémarre le serveur.</p>
+      <ul class="org-list" id="socNets"></ul>
+      <div class="controls"><button type="button" class="ghost" id="socTest">Tester la connexion</button></div>
+      <p class="fine" id="socTestMsg"></p>
+    </section>
+    <section class="card">
+      <h2>Réglages</h2>
+      <form class="stack" id="socCfg">
+        <label>Envoi
+          <select id="socMode"><option value="auto">Publier directement</option><option value="review">Me laisser relire avant l’envoi</option></select>
+        </label>
+        <fieldset class="rf-checks soc-checks"><legend>Messages automatiques</legend>
+          <label class="check"><input type="checkbox" data-k="eve"> 📣 Veille d’une journée de mobilisation</label>
+          <label class="check"><input type="checkbox" data-k="day"> ✊ Matin du jour J (avec le nombre de rendez-vous de l’agenda)</label>
+          <label class="check"><input type="checkbox" data-k="ord"> ⛔ Nouveaux arrêtés</label>
+          <label class="check"><input type="checkbox" data-k="pub"> 📊 Bilan public publié</label>
+        </fieldset>
+        <fieldset class="rf-checks soc-checks"><legend>Réseaux</legend>
+          <label class="check"><input type="checkbox" data-n="bsky"> Bluesky</label>
+          <label class="check"><input type="checkbox" data-n="masto"> Mastodon</label>
+        </fieldset>
+        <label>Mots-clés ajoutés à chaque message (5 au plus)
+          <input id="socTags" maxlength="120" placeholder="ex. : #manif #Cortège">
+        </label>
+        <div class="controls"><button type="submit">Enregistrer</button><span class="fine" id="socCfgMsg"></span></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Écrire un message</h2>
+      <form class="stack" id="socForm">
+        <label>Message
+          <textarea id="socText" rows="4" maxlength="1000" required></textarea>
+        </label>
+        <label>Lien (facultatif)
+          <input id="socLink" type="url" maxlength="300" placeholder="https://…">
+        </label>
+        <p class="fine" id="socCount"></p>
+        <div class="controls"><button type="submit" id="socSend">Publier sur les réseaux</button><span class="fine" id="socMsg"></span></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Messages <span id="socCountAll"></span></h2>
+      <ul class="org-list soc-list" id="socList"></ul>
+    </section>
+  </section>
   <section class="panel" id="panelIdeas" role="tabpanel" aria-labelledby="tabIdeas" hidden>
     <section class="card">
       <h2>Boîte à idées <span id="ideaCount"></span></h2>

@@ -3480,3 +3480,109 @@ msgstr "Estoy en contra"
 #: src/ideas.js
 msgid "Vote invalide."
 msgstr "Voto no válido."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Bilan · {t}"
+msgstr "Balance · {t}"
+
+#: src/social.js
+msgid "Bilan du {d}"
+msgstr "Balance del {d}"
+
+#: src/social.js
+msgid "{what} dans {where}."
+msgstr "{what} en {where}."
+
+#: src/social.js
+msgid "En tête : {list}."
+msgstr "A la cabeza: {list}."
+
+#: src/social.js
+msgid "Parcours, heures fortes, arrêtés et données ouvertes :"
+msgstr "Recorrido, horas clave, decretos y datos abiertos:"
+
+#: src/social.js
+msgid "Le bilan public de la journée sur Cortège."
+msgstr "El balance público del día en Cortège."
+
+#: src/social.js
+msgid "Nouvel arrêté à partir du {d}. La zone, les horaires et la source sont sur la carte :"
+msgstr "Nuevo decreto a partir del {d}. La zona, los horarios y la fuente están en el mapa:"
+
+#: src/social.js
+msgid "et {n} autres"
+msgstr "y {n} más"
+
+#: src/social.js
+msgid "{n} nouveaux arrêtés"
+msgstr "{n} nuevos decretos"
+
+#: src/social.js
+msgid "Zones, horaires et sources sur la carte :"
+msgstr "Zonas, horarios y fuentes en el mapa:"
+
+#: src/social.js
+msgid "Arrêtés en cours"
+msgstr "Decretos vigentes"
+
+#: src/social.js
+msgid "Rendez-vous, arrêtés et numéros utiles : prépare-toi sur Cortège, et signale ce que tu vois le jour J."
+msgstr "Puntos de encuentro, decretos y números útiles: prepárate en Cortège y avisa de lo que veas el día D."
+
+#: src/social.js
+msgid "La carte des manifs en direct."
+msgstr "El mapa de las manifestaciones en directo."
+
+#: src/social.js
+msgid "C’est aujourd’hui : {t}"
+msgstr "Es hoy: {t}"
+
+#: src/social.js
+msgid "{n} rendez-vous dans l’agenda."
+msgstr "{n} convocatorias en la agenda."
+
+#: src/social.js
+msgid "Regarde ce que les autres signalent, signale ce que tu vois :"
+msgstr "Mira lo que avisan los demás, avisa de lo que ves:"
+
+#: src/social.js
+msgid "Écris le message."
+msgstr "Escribe el mensaje."
+
+#: src/social.js
+msgid "Le lien doit commencer par https://"
+msgstr "El enlace debe empezar por https://"
+
+#: src/social.js
+msgid "Aucun réseau prêt : ajoute les identifiants dans les variables du serveur, ou réactive un réseau."
+msgstr "Ninguna red lista: añade las credenciales en las variables del servidor o reactiva una red."
+
+#: src/social.js
+msgid "Message introuvable."
+msgstr "Mensaje no encontrado."
+
+#: src/social.js
+msgid "Ce message n’attend pas de relecture."
+msgstr "Este mensaje no está pendiente de revisión."
+
+#: src/social.js
+msgid "Déjà envoyé."
+msgstr "Ya enviado."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "{n} signalements"
+msgstr "{n} avisos"
+
+#: src/social.js
+msgid "{n} signalement"
+msgstr "{n} aviso"
+
+#: src/social.js
+msgid "{n} villes"
+msgstr "{n} ciudades"
+
+#: src/social.js
+msgid "{n} ville"
+msgstr "{n} ciudad"

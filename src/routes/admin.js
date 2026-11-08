@@ -276,6 +276,8 @@ async function adminRoutes(req, res, url, pathname) {
       const snap = pubSnapshot(pubA[1]);
       if (!snap) return send(res, 404, { error: 'Aucun signalement ce jour-là.' });
       q('INSERT OR REPLACE INTO pub(date,t,data) VALUES(?,?,?)').run(pubA[1], Date.now(), JSON.stringify(snap)); cityIdx.at = 0;
+      // Bilan publié : message sur Bluesky et Mastodon (une seule fois par date, même si le bilan est republié)
+      try { require('../social').onPub(pubA[1], snap); } catch (e) { console.error('réseaux (bilan)', e.message); }
       return send(res, 200, { url: '/manif/' + pubA[1], total: snap.total });
     }
     if (pubA && req.method === 'DELETE') { q('DELETE FROM pub WHERE date=?').run(pubA[1]); return send(res, 200, { removed: true }); }

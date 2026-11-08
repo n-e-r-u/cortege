@@ -118,6 +118,10 @@ L’interface existe en français, anglais, espagnol, allemand et arabe (afficha
 - Les notifications suivent la langue de l’appli (envoyée au serveur avec l’abonnement) et utilisent les mêmes fichiers de traduction.
 - Restent en français : les textes écrits par les orgas et l’admin (annonces, titres de journée), le texte des arrêtés, et les pages annexes (mentions légales, bilans, presse, affiche).
 
+## Partage sur Bluesky et Mastodon
+
+Onglet Réseaux de l'administration. Le serveur publie lui-même sur les comptes Bluesky et Mastodon de l'instance : la veille d'une journée de mobilisation (dès 19 h), le matin du jour J (dès 8 h, avec le nombre de rendez-vous de l'agenda), les nouveaux arrêtés (regroupés en un message 10 minutes après le dernier validé), le bilan public d'une journée quand l'admin le publie, et les messages écrits dans l'onglet. Chaque message n'est publié qu'une fois, même si le bilan est republié. Le texte est coupé pour tenir dans la limite du réseau (300 caractères sur Bluesky, 500 sur Mastodon), lien et mots-clés gardés ; sur Bluesky, le lien s'affiche en carte avec l'image de l'appli. Réglages : publier directement ou relire avant l'envoi (texte modifiable ; veille, jour J et arrêtés ne partent plus 12 h après), types de messages, réseaux actifs, mots-clés ajoutés. En cas d'erreur du réseau, nouvel essai 2, 4, 8 puis 16 minutes plus tard. Un message publié peut être retiré des deux réseaux depuis l'onglet. Identifiants dans les variables du serveur seulement (voir [INSTALLATION.md](INSTALLATION.md)) ; « Tester la connexion » les vérifie sans rien publier. Seuls des totaux, des noms de villes et des liens publics sont envoyés.
+
 ## Ce que le serveur sait et ne sait pas
 
 - Aucun compte, aucun cookie. Les signalements actifs sont gardés dans une base hors du dossier web et supprimés à expiration.

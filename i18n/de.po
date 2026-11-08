@@ -3477,3 +3477,109 @@ msgstr "Ich bin dagegen"
 #: src/ideas.js
 msgid "Vote invalide."
 msgstr "Ungültige Stimme."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Bilan · {t}"
+msgstr "Bilanz · {t}"
+
+#: src/social.js
+msgid "Bilan du {d}"
+msgstr "Bilanz vom {d}"
+
+#: src/social.js
+msgid "{what} dans {where}."
+msgstr "{what} in {where}."
+
+#: src/social.js
+msgid "En tête : {list}."
+msgstr "Vorne: {list}."
+
+#: src/social.js
+msgid "Parcours, heures fortes, arrêtés et données ouvertes :"
+msgstr "Route, Spitzenzeiten, Verfügungen und offene Daten:"
+
+#: src/social.js
+msgid "Le bilan public de la journée sur Cortège."
+msgstr "Die öffentliche Tagesbilanz auf Cortège."
+
+#: src/social.js
+msgid "Nouvel arrêté à partir du {d}. La zone, les horaires et la source sont sur la carte :"
+msgstr "Neue Verfügung ab {d}. Gebiet, Zeiten und Quelle stehen auf der Karte:"
+
+#: src/social.js
+msgid "et {n} autres"
+msgstr "und {n} weitere"
+
+#: src/social.js
+msgid "{n} nouveaux arrêtés"
+msgstr "{n} neue Verfügungen"
+
+#: src/social.js
+msgid "Zones, horaires et sources sur la carte :"
+msgstr "Gebiete, Zeiten und Quellen auf der Karte:"
+
+#: src/social.js
+msgid "Arrêtés en cours"
+msgstr "Geltende Verfügungen"
+
+#: src/social.js
+msgid "Rendez-vous, arrêtés et numéros utiles : prépare-toi sur Cortège, et signale ce que tu vois le jour J."
+msgstr "Treffpunkte, Verfügungen und wichtige Nummern: bereite dich auf Cortège vor und melde am Tag selbst, was du siehst."
+
+#: src/social.js
+msgid "La carte des manifs en direct."
+msgstr "Die Live-Karte der Demos."
+
+#: src/social.js
+msgid "C’est aujourd’hui : {t}"
+msgstr "Heute ist es so weit: {t}"
+
+#: src/social.js
+msgid "{n} rendez-vous dans l’agenda."
+msgstr "{n} Termine im Kalender."
+
+#: src/social.js
+msgid "Regarde ce que les autres signalent, signale ce que tu vois :"
+msgstr "Sieh, was andere melden, und melde, was du siehst:"
+
+#: src/social.js
+msgid "Écris le message."
+msgstr "Schreib die Nachricht."
+
+#: src/social.js
+msgid "Le lien doit commencer par https://"
+msgstr "Der Link muss mit https:// beginnen"
+
+#: src/social.js
+msgid "Aucun réseau prêt : ajoute les identifiants dans les variables du serveur, ou réactive un réseau."
+msgstr "Kein Netzwerk bereit: Trag die Zugangsdaten in die Servervariablen ein oder aktiviere ein Netzwerk wieder."
+
+#: src/social.js
+msgid "Message introuvable."
+msgstr "Nachricht nicht gefunden."
+
+#: src/social.js
+msgid "Ce message n’attend pas de relecture."
+msgstr "Diese Nachricht wartet nicht auf Prüfung."
+
+#: src/social.js
+msgid "Déjà envoyé."
+msgstr "Bereits gesendet."
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "{n} signalements"
+msgstr "{n} Meldungen"
+
+#: src/social.js
+msgid "{n} signalement"
+msgstr "{n} Meldung"
+
+#: src/social.js
+msgid "{n} villes"
+msgstr "{n} Städten"
+
+#: src/social.js
+msgid "{n} ville"
+msgstr "{n} Stadt"
