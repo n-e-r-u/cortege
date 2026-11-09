@@ -3659,3 +3659,12 @@ msgstr "Dirección borrada"
 #: client/app/05-marqueurs.js
 msgid "Direction notée"
 msgstr "Dirección anotada"
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Cortège {v} est en ligne :"
+msgstr "Cortège {v} ya está disponible:"
+
+#: src/social.js
+msgid "Nouveautés de Cortège {v}"
+msgstr "Novedades de Cortège {v}"

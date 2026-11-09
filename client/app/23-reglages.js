@@ -47,6 +47,8 @@
     try { localStorage.setItem('cortege-news', news.version); } catch {}
   }
   $('#btnNews').onclick = async () => { if (!news) await loadNews(); openNews(); };
+  // Lien partagé sur les réseaux (/?nouveautes) : ouvre directement les nouveautés
+  if (/[?&]nouveautes\b/.test(location.search)) { history.replaceState(null, '', location.pathname); loadNews().then(() => setTimeout(openNews, 600)); }
   $('#nwClose').onclick = () => closeSheets();
   // Première visite : rien à annoncer (tout est nouveau) ; ensuite, une fois par version
   let returning = false; try { returning = !!localStorage.getItem('cortege-seen'); } catch {}

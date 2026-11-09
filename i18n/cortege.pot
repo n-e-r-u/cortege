@@ -3642,3 +3642,11 @@ msgstr ""
 #: client/app/05-marqueurs.js
 msgid "Direction notée"
 msgstr ""
+
+#: src/social.js
+msgid "Cortège {v} est en ligne :"
+msgstr ""
+
+#: src/social.js
+msgid "Nouveautés de Cortège {v}"
+msgstr ""

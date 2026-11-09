@@ -3715,3 +3715,12 @@ msgstr "تم مسح الاتجاه"
 #: client/app/05-marqueurs.js
 msgid "Direction notée"
 msgstr "تم تسجيل الاتجاه"
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Cortège {v} est en ligne :"
+msgstr "Cortège {v} متاح الآن:"
+
+#: src/social.js
+msgid "Nouveautés de Cortège {v}"
+msgstr "جديد Cortège {v}"

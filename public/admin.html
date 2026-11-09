@@ -588,7 +588,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   <section class="panel" id="panelSocial" role="tabpanel" aria-labelledby="tabSocial" hidden>
     <section class="card">
       <h2>Bluesky et Mastodon</h2>
-      <p class="fine">Le serveur publie lui-même sur les comptes de l’instance : la veille d’une journée de mobilisation (dès 19 h), le matin du jour J (dès 8 h), les nouveaux arrêtés (regroupés, 10 minutes après le dernier validé), le bilan public d’une journée quand tu le publies, chaque idée que tu mets au vote, et les messages que tu écris ici. Chaque message ne part qu’une fois. Seuls des totaux, des noms de villes et des liens publics sont envoyés.</p>
+      <p class="fine">Le serveur publie lui-même sur les comptes de l’instance : la veille d’une journée de mobilisation (dès 19 h), le matin du jour J (dès 8 h), les nouveaux arrêtés (regroupés, 10 minutes après le dernier validé), le bilan public d’une journée quand tu le publies, chaque idée que tu mets au vote, les nouveautés d’une nouvelle version, et les messages que tu écris ici. Chaque message ne part qu’une fois. Seuls des totaux, des noms de villes et des liens publics sont envoyés.</p>
       <p class="fine">Identifiants à mettre dans les variables du serveur (fichier d’environnement), jamais ici : <code>BLUESKY_HANDLE</code> et <code>BLUESKY_APP_PASSWORD</code> (un mot de passe d’application, créé dans Bluesky › Réglages › Mots de passe d’application) ; <code>MASTODON_URL</code> (adresse de l’instance) et <code>MASTODON_TOKEN</code> (jeton d’une application créée dans Préférences › Développement, droit <code>write:statuses</code>). Puis redémarre le serveur.</p>
       <ul class="org-list" id="socNets"></ul>
       <div class="controls"><button type="button" class="ghost" id="socTest">Tester la connexion</button></div>
@@ -606,6 +606,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
           <label class="check"><input type="checkbox" data-k="ord"> ⛔ Nouveaux arrêtés</label>
           <label class="check"><input type="checkbox" data-k="pub"> 📊 Bilan public publié</label>
           <label class="check"><input type="checkbox" data-k="idea"> 💡 Idée mise au vote</label>
+          <label class="check"><input type="checkbox" data-k="news"> 🆕 Nouveautés d’une nouvelle version (une fois, après la mise à jour du serveur)</label>
         </fieldset>
         <fieldset class="rf-checks soc-checks"><legend>Réseaux</legend>
           <label class="check"><input type="checkbox" data-n="bsky"> Bluesky</label>

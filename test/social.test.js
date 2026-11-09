@@ -63,6 +63,21 @@ test('réseaux : admin seulement, état des comptes, test de connexion', async (
   assert.deepEqual([t.j.bsky.ok, t.j.masto.ok, t.j.masto.who], [true, true, '@cortege']);
 });
 
+test('réseaux : nouveautés de la version publiées une fois au démarrage, version courte sur Bluesky', async () => {
+  const news = JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'nouveautes.json'), 'utf8'));
+  const p = await until(async () => (await state()).posts.find(x => x.kind === 'news' && x.status === 'done'));
+  assert.ok(p, 'nouveautés publiées');
+  assert.equal(p.key, 'news:' + news.version); assert.equal(p.link, 'https://cortege.example/?nouveautes');
+  assert.ok(p.text.startsWith('🆕 Cortège ' + news.version + ' est en ligne :\n' + news.items[0][0] + ' : ' + news.items[0][1]));
+  const mt = calls.find(c => c.p === '/api/v1/statuses' && c.body.status.startsWith('🆕')).body.status;
+  const bt = calls.find(c => c.p.endsWith('createRecord') && c.body.record.text.startsWith('🆕')).body.record.text;
+  assert.ok(mt.includes(news.items[0][1]), 'Mastodon : texte complet');
+  assert.ok([...new Intl.Segmenter('fr', { granularity: 'grapheme' }).segment(bt)].length <= 300);
+  for (const [ti] of news.items) assert.ok(bt.includes(ti), 'Bluesky : chaque titre, en entier tant que ça tient');
+  await wait(600);
+  assert.equal((await state()).posts.filter(x => x.kind === 'news').length, 1, 'une seule fois');
+});
+
 test('réseaux : message écrit à la main, publié sur les deux réseaux avec lien, mots-clés et carte', async () => {
   await req('POST', '/api/admin/social/config', { tags: 'manif #Cortège bad-tag!' });
   assert.equal((await state()).cfg.tags, '#manif #Cortège #badtag');

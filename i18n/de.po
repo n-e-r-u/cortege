@@ -3656,3 +3656,12 @@ msgstr "Richtung gelöscht"
 #: client/app/05-marqueurs.js
 msgid "Direction notée"
 msgstr "Richtung notiert"
+
+# --- textes à traduire ---
+#: src/social.js
+msgid "Cortège {v} est en ligne :"
+msgstr "Cortège {v} ist online:"
+
+#: src/social.js
+msgid "Nouveautés de Cortège {v}"
+msgstr "Neu in Cortège {v}"

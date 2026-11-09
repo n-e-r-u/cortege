@@ -27,7 +27,7 @@ const NETS = {
   bsky: { name: 'Bluesky', max: 300, ready: e => !!(e.bsky.handle && e.bsky.pass) },
   masto: { name: 'Mastodon', max: 500, ready: e => !!(e.masto.url && e.masto.token) },
 };
-const KINDS = ['eve', 'day', 'ord', 'pub', 'idea', 'man'];
+const KINDS = ['eve', 'day', 'ord', 'pub', 'idea', 'news', 'man'];
 const MAX_TRIES = 5;
 const base = () => (process.env.PUBLIC_URL || PUBLIC_URL).replace(/\/+$/, '');
 
@@ -142,13 +142,14 @@ function save(p) {
   q('INSERT OR REPLACE INTO social(id,t,key,status,at,data) VALUES(?,?,?,?,?,?)').run(id, t, key, status, at, JSON.stringify(data));
 }
 // Nouveau message : ignoré si ce type est coupé, si aucun réseau n'est prêt, ou si la clé a déjà servi
-function queuePost(kind, key, { text, link = '', title = '', desc = '' }, { force = false, review } = {}) {
+// short : version courte facultative, prise quand le texte complet ne tient pas (Bluesky)
+function queuePost(kind, key, { text, short = '', link = '', title = '', desc = '' }, { force = false, review } = {}) {
   const c = socialCfg(), nets = liveNets();
   if (!nets.length || (!force && !c.kinds[kind])) return null;
   if (q('SELECT 1 FROM social WHERE key=?').get(key)) return null;
   const now = Date.now();
   const p = { id: crypto.randomBytes(6).toString('base64url'), t: now, key, status: (review ?? c.mode === 'review') ? 'review' : 'queued', at: now,
-    kind, text: String(text).trim().slice(0, 1000), link, title, desc, lang: defaultLang(), nets: Object.fromEntries(nets.map(n => [n, { st: 'wait', tries: 0 }])) };
+    kind, text: String(text).trim().slice(0, 1000), ...(short ? { short: String(short).trim().slice(0, 1000) } : {}), link, title, desc, lang: defaultLang(), nets: Object.fromEntries(nets.map(n => [n, { st: 'wait', tries: 0 }])) };
   save(p); kick();
   return p;
 }
@@ -164,7 +165,7 @@ async function socialSend() {
       for (const [n, s] of Object.entries(p.nets)) {
         if (s.st !== 'wait' || (s.next && s.next > now)) continue;
         if (!NETS[n].ready(e) || c.off[n]) { s.st = 'off'; continue; }
-        const text = fit(p.text, p.link, tags, NETS[n].max);
+        const full = fit(p.text, p.link, tags, Infinity), text = fit(p.short && glen(full) > NETS[n].max ? p.short : p.text, p.link, tags, NETS[n].max);
         try {
           Object.assign(s, n === 'bsky' ? await sendBsky(p, text) : await sendMasto(p, text, p.id), { st: 'ok', sent: Date.now(), err: '' });
         } catch (err) {
@@ -203,6 +204,24 @@ function onIdea(i) {
   const text = '💡 ' + tr(l, 'Idée au vote sur Cortège :') + '\n« ' + i.title + ' »' + (body ? '\n' + (body.length > 140 ? body.slice(0, 139).trimEnd() + '…' : body) : '')
     + '\n' + tr(l, 'Pour ou contre ? Ton vote compte :');
   return queuePost('idea', 'idea:' + i.id, { text, link: base() + '/?idee=' + encodeURIComponent(i.id), title: i.title, desc: tr(l, 'Propose et vote pour les prochaines fonctions de Cortège.') });
+}
+// Nouvelle version en ligne : ses nouveautés (public/nouveautes.json, celles que l'appli montre), une fois par version.
+// Texte complet (titre et phrase de chaque nouveauté) pour Mastodon ; seulement les titres s'il ne tient pas (Bluesky).
+const NEWS = path.join(__dirname, '..', 'public', 'nouveautes.json');
+function newsPost() {
+  let n; try { n = JSON.parse(fs.readFileSync(NEWS, 'utf8')); } catch { return null; }
+  if (!n || !n.version || q('SELECT 1 FROM social WHERE key=?').get('news:' + n.version)) return null;
+  const l = L(), items = n['items_' + l] || n.items || [];
+  if (!items.length) return null;
+  const head = '🆕 ' + tr(l, 'Cortège {v} est en ligne :', { v: n.version }), link = base() + '/?nouveautes', tags = socialCfg().tags;
+  // Version courte (300 caractères) : chaque nouveauté en entier tant que ça tient, puis seulement son titre
+  const room = 300 - glen('\n\n' + link + (tags ? '\n' + tags : '')), lines = [head];
+  items.forEach(([ti, d], k) => {
+    const rest = items.slice(k + 1).reduce((s2, [t2]) => s2 + 1 + glen(t2), 0), cur = lines.reduce((s2, x) => s2 + glen(x) + 1, -1);
+    lines.push(cur + 1 + glen(ti + ' : ' + d) + rest <= room ? ti + ' : ' + d : ti);
+  });
+  return queuePost('news', 'news:' + n.version, { text: head + '\n' + items.map(([ti, d]) => ti + ' : ' + d).join('\n'),
+    short: lines.join('\n'), link, title: tr(l, 'Nouveautés de Cortège {v}', { v: n.version }), desc: items.map(([ti]) => ti).join(' · ') });
 }
 // Arrêtés validés : notés ici, publiés ensemble une fois que plus rien n'arrive depuis 10 minutes
 const ORD_QUIET = +(process.env.SOCIAL_ORDER_WAIT_MS || 10 * MIN);
@@ -250,7 +269,7 @@ function mobPosts(now) {
 }
 function socialTick() {
   const now = Date.now();
-  try { if (liveNets().length) { mobPosts(now); flushOrders(now); } } catch (e) { console.error('réseaux (journées, arrêtés)', e.message); }
+  try { if (liveNets().length) { mobPosts(now); flushOrders(now); newsPost(); } } catch (e) { console.error('réseaux (journées, arrêtés, nouveautés)', e.message); }
   q('DELETE FROM social WHERE t<?').run(now - 90 * 24 * 60 * MIN);
   // Veille, jour J, arrêtés : plus d'actualité 12 h après, ils ne partent plus s'ils attendent encore une relecture
   q("UPDATE social SET status='skip' WHERE status='review' AND t<? AND json_extract(data,'$.kind') IN ('eve','day','ord')").run(now - 12 * 60 * MIN);
@@ -303,4 +322,4 @@ async function socialDelete(id) {
   return errors.length ? [502, { error: errors.join(' · ') }] : [200, p];
 }
 
-module.exports = { socialCfg, saveSocialCfg, queuePost, socialSend, socialTick, onPub, onIdea, noteOrder, flushOrders, socialAdmin, socialManual, socialAct, socialDelete, socialTest, fit, facets };
+module.exports = { socialCfg, saveSocialCfg, queuePost, socialSend, socialTick, onPub, onIdea, newsPost, noteOrder, flushOrders, socialAdmin, socialManual, socialAct, socialDelete, socialTest, fit, facets };

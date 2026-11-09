@@ -14,6 +14,7 @@ Deux idées venues de la boîte à idées.
   - une flèche autour du point montre la direction, et la fiche dit « Se dirige vers le nord-est · il y a 2 min ». Au bout de 5 minutes sans nouvelle, la flèche disparaît.
 - **Idées au vote sur Bluesky et Mastodon** : quand l'admin met une idée au vote, elle est publiée (titre, début du texte, lien qui ouvre l'idée dans l'appli). Une seule fois par idée. Type de message réglable dans Admin › Réseaux.
 - Lien `/?idee=…` : ouvre la boîte à idées sur l'idée, mise en avant un instant.
+- **Nouveautés publiées automatiquement** sur Bluesky et Mastodon, une fois par version, dès que le serveur tourne avec la nouvelle version : les nouveautés que l'appli montre (fichier des nouveautés), dans la langue de l'instance. Mastodon reçoit chaque nouveauté en entier ; sur Bluesky (300 caractères), chaque nouveauté est en entier tant que ça tient, puis seulement son titre. Le lien `/?nouveautes` ouvre la fenêtre des nouveautés dans l'appli. Type de message réglable dans Admin › Réseaux.
 
 ## 2.15.0
 
