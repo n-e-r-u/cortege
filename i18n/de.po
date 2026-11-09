@@ -2043,6 +2043,9 @@ msgid "Sommations"
 msgstr "Durchsagen der Polizei"
 
 #. Type de signalement : secouristes bénévoles des manifestations.
+msgid "Secours (pompiers, SAMU)"
+msgstr "Rettungsdienste (Feuerwehr, Krankenwagen)"
+
 msgid "Street medic"
 msgstr "Demosanis"
 
@@ -3583,3 +3586,73 @@ msgstr "{n} Städten"
 #: src/social.js
 msgid "{n} ville"
 msgstr "{n} Stadt"
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Il se dirige vers…"
+msgstr "Bewegt sich Richtung…"
+
+#: client/app/05-marqueurs.js
+msgid "Ne bouge pas"
+msgstr "Bewegt sich nicht"
+
+#: client/app/05-marqueurs.js
+msgid "Vers {dir}"
+msgstr "Richtung {dir}"
+
+#: client/app/05-marqueurs.js
+msgid "Se dirige {dir}"
+msgstr "Bewegt sich {dir}"
+
+#: client/app/05-marqueurs.js
+msgid "Corriger"
+msgstr "Korrigieren"
+
+#: client/app/05-marqueurs.js
+msgid "Indiquer sa direction"
+msgstr "Richtung angeben"
+
+#: client/app/12-lieux-calques.js
+msgid "URG"
+msgstr "NOT"
+
+#: client/app/12-lieux-calques.js
+msgid "Urgences"
+msgstr "Notaufnahme"
+
+#: client/app/14-precisions-liste.js
+msgid "Ça bouge ? Vers où :"
+msgstr "In Bewegung? Wohin:"
+
+#: src/routes/reports.js
+msgid "Direction invalide."
+msgstr "Ungültige Richtung."
+
+#: src/routes/reports.js
+msgid "Pas de direction pour ce type."
+msgstr "Keine Richtung für diesen Typ."
+
+#: src/social.js
+msgid "Idée au vote sur Cortège :"
+msgstr "Idee zur Abstimmung auf Cortège:"
+
+#: src/social.js
+msgid "Pour ou contre ? Ton vote compte :"
+msgstr "Dafür oder dagegen? Deine Stimme zählt:"
+
+#: src/social.js
+msgid "Propose et vote pour les prochaines fonctions de Cortège."
+msgstr "Schlag die nächsten Funktionen von Cortège vor und stimm darüber ab."
+
+#: profiles/de.json
+msgid "Secours (pompiers, ambulances)"
+msgstr "Rettungsdienste (Feuerwehr, Krankenwagen)"
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Direction effacée"
+msgstr "Richtung gelöscht"
+
+#: client/app/05-marqueurs.js
+msgid "Direction notée"
+msgstr "Richtung notiert"

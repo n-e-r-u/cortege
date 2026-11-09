@@ -2,6 +2,19 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.16.0
+
+Deux idées venues de la boîte à idées.
+- **Secours sur la carte** : nouveau type de signalement « Secours (pompiers, SAMU) » 🚑, dans le soutien. Il dure 15 minutes et le point suit le véhicule. Pas d'alerte ni de vibration.
+- **Urgences plus visibles** : les hôpitaux qui ont un service d'urgences apparaissent dès le zoom ville, avec un bord plus épais et une pastille « URG ». Les autres hôpitaux gardent leur zoom.
+- **Direction des véhicules** (police, CRS, BAC, unités d'intervention, blindés, canons à eau, groupes fascistes, secours) :
+  - juste après le signalement, une rose des vents permet d'indiquer d'un appui vers où ça va (facultatif, le signalement part toujours d'un seul appui) ;
+  - dans la fiche d'un point, « Indiquer sa direction » ou « Corriger » : n'importe qui sur place peut la donner ou la mettre à jour, « ■ » efface ;
+  - quand un point est revu 40 m plus loin, sa direction est déduite du déplacement ;
+  - une flèche autour du point montre la direction, et la fiche dit « Se dirige vers le nord-est · il y a 2 min ». Au bout de 5 minutes sans nouvelle, la flèche disparaît.
+- **Idées au vote sur Bluesky et Mastodon** : quand l'admin met une idée au vote, elle est publiée (titre, début du texte, lien qui ouvre l'idée dans l'appli). Une seule fois par idée. Type de message réglable dans Admin › Réseaux.
+- Lien `/?idee=…` : ouvre la boîte à idées sur l'idée, mise en avant un instant.
+
 ## 2.15.0
 
 - **Partage automatique sur Bluesky et Mastodon** (admin › Réseaux). Le serveur publie lui-même sur les comptes de l'instance :

@@ -1,4 +1,28 @@
   // ---- Marqueurs ----
+  // Direction d'un véhicule ou d'un groupe qui bouge : flèche autour du point, 5 minutes après avoir été indiquée ou déduite
+  const DIR_CAT = new Set(cfg.dirCats || []), DIR_MS = 5 * MIN;
+  const dirOf = r => DIR_CAT.has(r.cat) && r.dir != null && r.dt && Date.now() - r.dt * 1000 < DIR_MS ? r.dir : null;
+  async function sendDir(id, d) {
+    try {
+      const res = await fetch(`/api/reports/${id}/dir`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ d }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(body.error || 'Envoi impossible.');
+      if (d === null) toast('Direction effacée'); else toast('Direction notée'); sync();
+    } catch { toast('Pas de réseau.'); }
+  }
+  // Rose des vents 3 × 3 (la carte a toujours le nord en haut) ; au centre : « ne bouge pas », qui efface la direction
+  function dirPicker(id, cur, done) {
+    const box = el('div', { class: 'dir-pick', role: 'group', 'aria-label': t('Il se dirige vers…') });
+    const NAMES = ['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'];
+    for (const d of [7, 0, 1, 6, null, 2, 5, 4, 3]) {
+      const b = el('button', { type: 'button', class: 'dir-b' + (d === null ? ' stop' : '') + (d !== null && cur === d * 45 ? ' on' : '') },
+        d === null ? '■' : el('span', { style: `--d:${d * 45}deg`, 'aria-hidden': 'true' }, '↑'));
+      b.setAttribute('aria-label', d === null ? t('Ne bouge pas') : t('Vers {dir}', { dir: t(NAMES[d]) }));
+      b.onclick = () => { box.querySelectorAll('.dir-b').forEach(x => x.classList.toggle('on', x === b && d !== null)); sendDir(id, d); done && done(d); };
+      box.append(b);
+    }
+    return box;
+  }
   function icon(r, fresh) {
     const c = CAT[r.cat];
     const age = Date.now() - (r.last || r.t), ttl = c.ttl * MIN;
@@ -6,7 +30,7 @@
     const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : '', cs ? 'calm-' + cs.lvl : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
       html: r.cat === 'contact' ? `<div class="pin admin live" style="--c:#a191d8"><img src="/brand/logo.png" alt=""></div>`
-        : `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
+        : `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}${dirOf(r) != null ? `<i class="pin-dir" style="--d:${dirOf(r)}deg" aria-hidden="true"></i>` : ''}</div>` });
   }
   function popup(r) {
     const c = CAT[r.cat];
@@ -15,6 +39,15 @@
     const revu = r.last && r.last - r.t >= MIN ? ' · ' + t('revu {ago}', { ago: ago(r.last) }) : '';
     const meta = ago(r.t) + revu + ' · ' + t('expire dans {d}', { d: left(r.exp) }) + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
     root.append(el('div', { class: 'pop-meta' }, meta));
+    // Direction : la dernière connue (5 min), et de quoi l'indiquer ou la corriger
+    if (DIR_CAT.has(r.cat)) {
+      const d = dirOf(r), line = el('div', { class: 'pop-dir' });
+      if (d != null) line.append(el('span', { class: 'pop-dir-a', style: `--d:${d}deg`, 'aria-hidden': 'true' }, '↑'), ' ' + t('Se dirige {dir}', { dir: cardinal(d) }) + ' · ' + ago(r.dt * 1000));
+      const pick = el('button', { type: 'button', class: 'link-btn' }, d != null ? t('Corriger') : '➚ ' + t('Indiquer sa direction'));
+      const wrap = el('div', { hidden: '' });
+      pick.onclick = () => { pick.hidden = true; wrap.hidden = false; wrap.append(dirPicker(r.id, d, () => map.closePopup())); };
+      line.append(pick); root.append(line, wrap);
+    }
     if (r.live) root.append(el('div', { class: 'pop-live' }, t('En direct : position partagée par {who}', { who: r.ver || t('une orga') })));
     // Point de l'admin : on vient le voir pour devenir orga certifiée
     if (r.cat === 'contact') { const jb = el('button', { class: 'secondary', style: 'margin:6px 0' }, t('Demander un accès orga')); jb.onclick = () => { map.closePopup(); openJoin(); }; root.append(jb); }
@@ -110,6 +143,8 @@
       reports.set(r.id, { data: r, marker }); // affiché par regroup()
     }
   }
+  // Une direction de plus de 5 min disparaît même sans nouvelle synchro
+  setInterval(() => { for (const x of reports.values()) if (x.data.dir != null) x.marker.setIcon(icon(x.data, false)); }, 30_000);
   function drop(id) {
     const cur = reports.get(id);
     if (cur) { layer.removeLayer(cur.marker); reports.delete(id); }

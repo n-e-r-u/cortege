@@ -202,6 +202,18 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 /* ---- Marqueurs ---- */
 .pin { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; background: var(--surface); border: 3px solid var(--c); box-shadow: 0 3px 10px rgba(0,0,0,.6); transition: opacity .3s; }
 .pin.old { opacity: .55; }
+/* Direction d'un véhicule : triangle à l'extérieur du rond, tourné vers où il va */
+.pin:has(.pin-dir) { position: relative; }
+.pin-dir { position: absolute; left: 50%; top: 50%; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid var(--c);
+  transform: translate(-50%, -50%) rotate(var(--d)) translateY(-29px); filter: drop-shadow(0 0 1.5px var(--bg)) drop-shadow(0 1px 2px rgba(0,0,0,.5)); pointer-events: none; }
+.pop-dir { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 4px 0; font-weight: 600; }
+.pop-dir-a { display: inline-block; transform: rotate(var(--d)); font-weight: 800; color: var(--accent); }
+.dir-pick { display: grid; grid-template-columns: repeat(3, 44px); gap: 6px; margin: 6px 0; }
+.dir-b { width: 44px; height: 44px; padding: 0; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); font-size: 22px; font-weight: 800; display: grid; place-items: center; }
+.dir-b span { display: inline-block; transform: rotate(var(--d)); }
+.dir-b.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+.dir-b.stop { font-size: 14px; color: var(--muted); }
+.note-dir { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 8px; }
 .pin.fresh { animation: pulse 1.6s ease-out 2; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent); } 100% { box-shadow: 0 0 0 18px transparent; } }
 @media (prefers-reduced-motion: reduce) { .pin.fresh { animation: none; } }
@@ -595,6 +607,9 @@ body.contrast .leaflet-container { filter: contrast(1.15); }
   display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.55); }
 .poi-aide { border-color: #3fcf86; }
 .poi-etude { border-color: #f2b33d; }
+/* Hôpital avec urgences : bord plus épais, pastille « URG » (vert soin, jamais le rouge des forces de l'ordre) */
+.poi-urg { border-width: 3px; border-color: #3fcf86; }
+.poi-urg-b { position: absolute; top: -8px; right: -12px; padding: 1px 4px; border-radius: 6px; background: #1f7a4d; color: #fff; font: 800 9px/1.2 var(--font-num, sans-serif); letter-spacing: .03em; }
 .poi-sm { width: 24px; height: 24px; border-radius: 7px; }
 .poi-g { font-size: 16px; line-height: 1; }
 .poi-sm .poi-g { font-size: 13px; }
@@ -900,6 +915,9 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 .idea-vote { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; width: 56px; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font: 700 13px var(--font); }
 .idea-vote b { font-size: 16px; }
 .idea-vote.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+.idea.flash { animation: ideaflash 2.4s ease-out; }
+@keyframes ideaflash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .idea.flash { animation: none; outline: 3px solid var(--accent); } }
 .idea-vote.down.on { border-color: var(--bad-text); background: color-mix(in srgb, var(--bad-text) 14%, var(--surface)); }
 .idea-vote:disabled { opacity: .65; }
 .idea-txt { min-width: 0; display: flex; flex-direction: column; gap: 4px; }

@@ -33,7 +33,7 @@
       if (i.body) body.append(el('p', { lang: i.lang || 'fr' }, i.body));
       body.append(el('small', {}, meta));
       if (i.reply) body.append(el('p', { class: 'idea-reply' }, '↳ ' + i.reply));
-      return el('li', { class: 'idea st-' + i.status + (i.feat && open ? ' feat' : '') }, vote, body);
+      return el('li', { class: 'idea st-' + i.status + (i.feat && open ? ' feat' : ''), 'data-id': i.id }, vote, body);
     }
     function render() {
       const ul = $('#ideaList'); ul.textContent = '';
@@ -75,10 +75,15 @@
         closeForm(); msg(t('Merci ! Ton idée sera publiée après relecture.'));
       } catch (err) { msg(err.message); }
     };
-    const openIdeas = () => { closeReport(); closeSheets(); $('#sheetIdeas').hidden = false; closeForm();
-      view = 'top'; document.querySelectorAll('.idea-tabs [role="tab"]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.v === 'top'))); load(); };
-    $('#btnIdeas').onclick = openIdeas;
-    $('#btnIdeaVote').onclick = openIdeas;
+    // focus : idée à montrer (lien partagé sur les réseaux, /?idee=…), mise en avant un instant
+    const openIdeas = async focus => { closeReport(); closeSheets(); $('#sheetIdeas').hidden = false; closeForm();
+      view = 'top'; document.querySelectorAll('.idea-tabs [role="tab"]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.v === 'top'))); await load();
+      const li = typeof focus === 'string' && [...document.querySelectorAll('#ideaList .idea')].find(x => x.dataset.id === focus);
+      if (li) { li.scrollIntoView({ block: 'center' }); li.classList.add('flash'); setTimeout(() => li.classList.remove('flash'), 2500); } };
+    $('#btnIdeas').onclick = () => openIdeas();
+    $('#btnIdeaVote').onclick = () => openIdeas();
+    { const id = new URLSearchParams(location.search).get('idee');
+      if (id && /^[\w-]{1,16}$/.test(id)) { history.replaceState(null, '', location.pathname); setTimeout(() => openIdeas(id), 800); } }
     // Rond 💡 : visible tant qu'au moins une idée est au vote ; pastille = celles pour lesquelles ce téléphone n'a pas voté
     let ideasH = null;
     async function refreshBadge() {

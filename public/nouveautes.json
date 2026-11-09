@@ -1,36 +1,109 @@
 {
-  "version": "2.14.1",
+  "version": "2.16",
   "items": [
     [
-      "👍👎 Pour ou contre",
-      "Dans les idées, tu peux maintenant voter contre. Le classement suit le solde : les pour moins les contre."
+      "🚑 Secours",
+      "Nouveau signalement « Secours (pompiers, SAMU) ». Les hôpitaux avec urgences sont visibles dès le zoom ville, pastille URG."
+    ],
+    [
+      "➚ Direction",
+      "Police, blindés, secours… : indique vers où ça va d’un appui après ton signalement, ou dans la fiche du point. La flèche reste 5 minutes."
     ]
   ],
   "items_en": [
     [
-      "👍👎 For or against",
-      "You can now vote against an idea too. Ideas are ranked by their balance: votes for minus votes against."
+      "🚑 Emergency services",
+      "New report type “Emergency services (fire, ambulance)”. Hospitals with an emergency department show from city zoom, with an ER badge."
+    ],
+    [
+      "➚ Direction",
+      "Police, armoured vehicles, ambulances…: show which way they’re heading with one tap after your report, or in the point’s card. The arrow stays 5 minutes."
     ]
   ],
   "items_es": [
     [
-      "👍👎 A favor o en contra",
-      "Ahora también puedes votar en contra de una idea. El orden sigue el saldo: votos a favor menos votos en contra."
+      "🚑 Emergencias",
+      "Nuevo aviso «Emergencias (bomberos, ambulancias)». Los hospitales con urgencias se ven desde el zoom ciudad, con la etiqueta URG."
+    ],
+    [
+      "➚ Dirección",
+      "Policía, blindados, ambulancias…: indica hacia dónde van con un toque tras tu aviso, o en la ficha del punto. La flecha dura 5 minutos."
     ]
   ],
   "items_ar": [
     [
-      "👍👎 مع أو ضد",
-      "يمكنك الآن التصويت ضد فكرة أيضًا. الترتيب حسب الرصيد: أصوات مع ناقص أصوات ضد."
+      "🚑 الإسعاف",
+      "بلاغ جديد «الإسعاف (إطفاء، سيارات إسعاف)». المستشفيات التي فيها قسم طوارئ تظهر من مستوى المدينة مع شارة طوارئ."
+    ],
+    [
+      "➚ الاتجاه",
+      "الشرطة، المدرعات، الإسعاف…: حدّد اتجاهها بلمسة بعد بلاغك أو في بطاقة النقطة. يبقى السهم 5 دقائق."
     ]
   ],
   "items_de": [
     [
-      "👍👎 Dafür oder dagegen",
-      "Du kannst jetzt auch gegen eine Idee stimmen. Die Reihenfolge folgt der Bilanz: Stimmen dafür minus Stimmen dagegen."
+      "🚑 Rettungsdienste",
+      "Neuer Meldetyp „Rettungsdienste (Feuerwehr, Krankenwagen)“. Krankenhäuser mit Notaufnahme sind ab Stadtzoom sichtbar, mit NOT-Plakette."
+    ],
+    [
+      "➚ Richtung",
+      "Polizei, Panzerwagen, Krankenwagen…: Gib mit einem Tipp nach deiner Meldung oder in der Karte des Punkts an, wohin sie fahren. Der Pfeil bleibt 5 Minuten."
     ]
   ],
   "history": [
+    {
+      "version": "2.16",
+      "items": [
+        [
+          "🚑 Secours",
+          "Nouveau signalement « Secours (pompiers, SAMU) ». Les hôpitaux avec urgences sont visibles dès le zoom ville, pastille URG."
+        ],
+        [
+          "➚ Direction",
+          "Police, blindés, secours… : indique vers où ça va d’un appui après ton signalement, ou dans la fiche du point. La flèche reste 5 minutes."
+        ]
+      ],
+      "items_en": [
+        [
+          "🚑 Emergency services",
+          "New report type “Emergency services (fire, ambulance)”. Hospitals with an emergency department show from city zoom, with an ER badge."
+        ],
+        [
+          "➚ Direction",
+          "Police, armoured vehicles, ambulances…: show which way they’re heading with one tap after your report, or in the point’s card. The arrow stays 5 minutes."
+        ]
+      ],
+      "items_es": [
+        [
+          "🚑 Emergencias",
+          "Nuevo aviso «Emergencias (bomberos, ambulancias)». Los hospitales con urgencias se ven desde el zoom ciudad, con la etiqueta URG."
+        ],
+        [
+          "➚ Dirección",
+          "Policía, blindados, ambulancias…: indica hacia dónde van con un toque tras tu aviso, o en la ficha del punto. La flecha dura 5 minutos."
+        ]
+      ],
+      "items_ar": [
+        [
+          "🚑 الإسعاف",
+          "بلاغ جديد «الإسعاف (إطفاء، سيارات إسعاف)». المستشفيات التي فيها قسم طوارئ تظهر من مستوى المدينة مع شارة طوارئ."
+        ],
+        [
+          "➚ الاتجاه",
+          "الشرطة، المدرعات، الإسعاف…: حدّد اتجاهها بلمسة بعد بلاغك أو في بطاقة النقطة. يبقى السهم 5 دقائق."
+        ]
+      ],
+      "items_de": [
+        [
+          "🚑 Rettungsdienste",
+          "Neuer Meldetyp „Rettungsdienste (Feuerwehr, Krankenwagen)“. Krankenhäuser mit Notaufnahme sind ab Stadtzoom sichtbar, mit NOT-Plakette."
+        ],
+        [
+          "➚ Richtung",
+          "Polizei, Panzerwagen, Krankenwagen…: Gib mit einem Tipp nach deiner Meldung oder in der Karte des Punkts an, wohin sie fahren. Der Pfeil bleibt 5 Minuten."
+        ]
+      ]
+    },
     {
       "version": "2.14.1",
       "items": [

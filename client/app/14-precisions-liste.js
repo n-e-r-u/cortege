@@ -21,6 +21,9 @@
     $('#noteTitle').textContent = '✓ ' + title;
     $('#noteInput').value = ''; $('#noteInput').placeholder = notePlaceholder(cat);
     $('#noteCard').hidden = false;
+    // Véhicule ou groupe qui bouge : sa direction se donne d'un appui (facultatif)
+    const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat);
+    if (!nd.hidden) nd.append(el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), dirPicker(id, null, () => clearTimeout(openNoteCard.t)));
     clearTimeout(openNoteCard.t);
     openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);
   }

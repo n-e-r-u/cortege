@@ -281,6 +281,30 @@
   }
 
   // ---- Marqueurs ----
+  // Direction d'un véhicule ou d'un groupe qui bouge : flèche autour du point, 5 minutes après avoir été indiquée ou déduite
+  const DIR_CAT = new Set(cfg.dirCats || []), DIR_MS = 5 * MIN;
+  const dirOf = r => DIR_CAT.has(r.cat) && r.dir != null && r.dt && Date.now() - r.dt * 1000 < DIR_MS ? r.dir : null;
+  async function sendDir(id, d) {
+    try {
+      const res = await fetch(`/api/reports/${id}/dir`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ d }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(body.error || 'Envoi impossible.');
+      if (d === null) toast('Direction effacée'); else toast('Direction notée'); sync();
+    } catch { toast('Pas de réseau.'); }
+  }
+  // Rose des vents 3 × 3 (la carte a toujours le nord en haut) ; au centre : « ne bouge pas », qui efface la direction
+  function dirPicker(id, cur, done) {
+    const box = el('div', { class: 'dir-pick', role: 'group', 'aria-label': t('Il se dirige vers…') });
+    const NAMES = ['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'];
+    for (const d of [7, 0, 1, 6, null, 2, 5, 4, 3]) {
+      const b = el('button', { type: 'button', class: 'dir-b' + (d === null ? ' stop' : '') + (d !== null && cur === d * 45 ? ' on' : '') },
+        d === null ? '■' : el('span', { style: `--d:${d * 45}deg`, 'aria-hidden': 'true' }, '↑'));
+      b.setAttribute('aria-label', d === null ? t('Ne bouge pas') : t('Vers {dir}', { dir: t(NAMES[d]) }));
+      b.onclick = () => { box.querySelectorAll('.dir-b').forEach(x => x.classList.toggle('on', x === b && d !== null)); sendDir(id, d); done && done(d); };
+      box.append(b);
+    }
+    return box;
+  }
   function icon(r, fresh) {
     const c = CAT[r.cat];
     const age = Date.now() - (r.last || r.t), ttl = c.ttl * MIN;
@@ -288,7 +312,7 @@
     const cls = ['pin', fresh ? 'fresh' : '', age > ttl * 0.6 ? 'old' : '', r.c ? 'contested' : '', cs ? 'calm-' + cs.lvl : ''].join(' ');
     return L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
       html: r.cat === 'contact' ? `<div class="pin admin live" style="--c:#a191d8"><img src="/brand/logo.png" alt=""></div>`
-        : `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}</div>` });
+        : `<div class="${cls}${r.ver ? ' ver' : ''}${r.live ? ' live' : ''}" style="--c:${GROUP_COLOR[c.group]}">${c.glyph}${dirOf(r) != null ? `<i class="pin-dir" style="--d:${dirOf(r)}deg" aria-hidden="true"></i>` : ''}</div>` });
   }
   function popup(r) {
     const c = CAT[r.cat];
@@ -297,6 +321,15 @@
     const revu = r.last && r.last - r.t >= MIN ? ' · ' + t('revu {ago}', { ago: ago(r.last) }) : '';
     const meta = ago(r.t) + revu + ' · ' + t('expire dans {d}', { d: left(r.exp) }) + (me ? ` · ${fmtDist(dist(me, [r.lat, r.lng]))}` : '');
     root.append(el('div', { class: 'pop-meta' }, meta));
+    // Direction : la dernière connue (5 min), et de quoi l'indiquer ou la corriger
+    if (DIR_CAT.has(r.cat)) {
+      const d = dirOf(r), line = el('div', { class: 'pop-dir' });
+      if (d != null) line.append(el('span', { class: 'pop-dir-a', style: `--d:${d}deg`, 'aria-hidden': 'true' }, '↑'), ' ' + t('Se dirige {dir}', { dir: cardinal(d) }) + ' · ' + ago(r.dt * 1000));
+      const pick = el('button', { type: 'button', class: 'link-btn' }, d != null ? t('Corriger') : '➚ ' + t('Indiquer sa direction'));
+      const wrap = el('div', { hidden: '' });
+      pick.onclick = () => { pick.hidden = true; wrap.hidden = false; wrap.append(dirPicker(r.id, d, () => map.closePopup())); };
+      line.append(pick); root.append(line, wrap);
+    }
     if (r.live) root.append(el('div', { class: 'pop-live' }, t('En direct : position partagée par {who}', { who: r.ver || t('une orga') })));
     // Point de l'admin : on vient le voir pour devenir orga certifiée
     if (r.cat === 'contact') { const jb = el('button', { class: 'secondary', style: 'margin:6px 0' }, t('Demander un accès orga')); jb.onclick = () => { map.closePopup(); openJoin(); }; root.append(jb); }
@@ -392,6 +425,8 @@
       reports.set(r.id, { data: r, marker }); // affiché par regroup()
     }
   }
+  // Une direction de plus de 5 min disparaît même sans nouvelle synchro
+  setInterval(() => { for (const x of reports.values()) if (x.data.dir != null) x.marker.setIcon(icon(x.data, false)); }, 30_000);
   function drop(id) {
     const cur = reports.get(id);
     if (cur) { layer.removeLayer(cur.marker); reports.delete(id); }
@@ -1148,10 +1183,13 @@
   // ---- Filtres ----
   // ---- Lieux permanents (OpenStreetMap) : préfectures, mairies, commissariats, tribunaux, CRA, lycées et facs, hôpitaux ; pharmacies et eau au zoom rue ----
   const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
-  const POI_Z = 14, POI_STREET_Z = 16, POI_MAX = 350;
+  const POI_Z = 13, POI_STREET_Z = 16, POI_MAX = 350;
   // Zoom à partir duquel chaque type apparaît : les grands lieux d'abord, les mairies et commissariats au zoom quartier, le reste au zoom rue
   const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, cam: 17 };
   const POI_CAM_Z = 17;
+  // Hôpitaux avec service d'urgences : visibles dès le zoom ville (13), marqués à part ; les autres lieux gardent leur zoom
+  const isUrg = x => x[1] === 'hopital' && !!x[7];
+  const minZ = x => isUrg(x) ? 13 : POI_MINZ[x[1]] || POI_STREET_Z;
   // Filtres proposés (préfectures et sous-préfectures ensemble, commissariats et gendarmeries ensemble)
   const POI_FILTERS = [['pref', '🏢 Préfectures et sous-préfectures', ['pref', 'spref']], ['mairie', '🏛 Mairies', ['mairie']], ['police', '👮 Commissariats et gendarmeries', ['police', 'gend']],
     ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['cam', '📷 Caméras de surveillance', ['cam']]];
@@ -1226,7 +1264,8 @@
   function poiIcon(x, labels) {
     if (x[1] === 'cam') return camIcon(x);
     const k = PK[x[1]] || { glyph: '📍', grp: 'pouvoir' };
-    const box = el('div', { class: `poi poi-${k.grp}${k.street ? ' poi-sm' : ''}` }, el('span', { class: 'poi-g', 'aria-hidden': 'true' }, k.glyph));
+    const box = el('div', { class: `poi poi-${k.grp}${k.street ? ' poi-sm' : ''}${isUrg(x) ? ' poi-urg' : ''}` }, el('span', { class: 'poi-g', 'aria-hidden': 'true' }, k.glyph));
+    if (isUrg(x)) box.append(el('span', { class: 'poi-urg-b', 'aria-hidden': 'true' }, t('URG')));
     if (labels && x[4]) box.append(el('span', { class: 'poi-l' }, x[4].length > 28 ? x[4].slice(0, 27) + '…' : x[4]));
     const s = k.street ? 24 : 30;
     return L.divIcon({ className: 'poi-wrap', html: box, iconSize: [s, s], iconAnchor: [s / 2, s / 2], popupAnchor: [0, -s / 2] });
@@ -1242,13 +1281,13 @@
     const vb = b.pad(0.15), c = map.getCenter();
     // Noms : au zoom quartier pour les grands lieux, seulement au zoom le plus proche pour les pharmacies et l'eau (sinon illisible)
     const labOf = x => x[1] !== 'cam' && z >= ((PK[x[1]] && PK[x[1]].street) ? 18 : 15);
-    let want = rows.filter(x => vb.contains([x[2], x[3]]) && z >= (POI_MINZ[x[1]] || POI_STREET_Z) && poiShown(x[1]));
+    let want = rows.filter(x => vb.contains([x[2], x[3]]) && z >= minZ(x) && poiShown(x[1]));
     if (want.length > POI_MAX) want = want.map(x => [x, map.distance(c, [x[2], x[3]])]).sort((a, b2) => a[1] - b2[1]).slice(0, POI_MAX).map(x => x[0]);
     const keep = new Map(want.map(x => [x[0], x]));
     for (const [id, m] of poiDrawn) if (!keep.has(id) || m.options.lab !== labOf(keep.get(id) || []) || m.options.sig !== keep.get(id).join('|')) { poiLayer.removeLayer(m); poiDrawn.delete(id); }
     for (const [id, x] of keep) {
       if (poiDrawn.has(id)) continue;
-      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: x[1] === 'cam' ? t(x[5] ? 'Caméra publique' : 'Caméra privée') : (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
+      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: x[1] === 'cam' ? t(x[5] ? 'Caméra publique' : 'Caméra privée') : (PK[x[1]]?.label || '') + (isUrg(x) ? ' · ' + t('Urgences') : '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
       m.bindPopup(() => poiPopup(x));
       poiLayer.addLayer(m); poiDrawn.set(id, m);
     }
@@ -1604,6 +1643,9 @@
     $('#noteTitle').textContent = '✓ ' + title;
     $('#noteInput').value = ''; $('#noteInput').placeholder = notePlaceholder(cat);
     $('#noteCard').hidden = false;
+    // Véhicule ou groupe qui bouge : sa direction se donne d'un appui (facultatif)
+    const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat);
+    if (!nd.hidden) nd.append(el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), dirPicker(id, null, () => clearTimeout(openNoteCard.t)));
     clearTimeout(openNoteCard.t);
     openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);
   }
@@ -3146,7 +3188,7 @@
       if (i.body) body.append(el('p', { lang: i.lang || 'fr' }, i.body));
       body.append(el('small', {}, meta));
       if (i.reply) body.append(el('p', { class: 'idea-reply' }, '↳ ' + i.reply));
-      return el('li', { class: 'idea st-' + i.status + (i.feat && open ? ' feat' : '') }, vote, body);
+      return el('li', { class: 'idea st-' + i.status + (i.feat && open ? ' feat' : ''), 'data-id': i.id }, vote, body);
     }
     function render() {
       const ul = $('#ideaList'); ul.textContent = '';
@@ -3188,10 +3230,15 @@
         closeForm(); msg(t('Merci ! Ton idée sera publiée après relecture.'));
       } catch (err) { msg(err.message); }
     };
-    const openIdeas = () => { closeReport(); closeSheets(); $('#sheetIdeas').hidden = false; closeForm();
-      view = 'top'; document.querySelectorAll('.idea-tabs [role="tab"]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.v === 'top'))); load(); };
-    $('#btnIdeas').onclick = openIdeas;
-    $('#btnIdeaVote').onclick = openIdeas;
+    // focus : idée à montrer (lien partagé sur les réseaux, /?idee=…), mise en avant un instant
+    const openIdeas = async focus => { closeReport(); closeSheets(); $('#sheetIdeas').hidden = false; closeForm();
+      view = 'top'; document.querySelectorAll('.idea-tabs [role="tab"]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.v === 'top'))); await load();
+      const li = typeof focus === 'string' && [...document.querySelectorAll('#ideaList .idea')].find(x => x.dataset.id === focus);
+      if (li) { li.scrollIntoView({ block: 'center' }); li.classList.add('flash'); setTimeout(() => li.classList.remove('flash'), 2500); } };
+    $('#btnIdeas').onclick = () => openIdeas();
+    $('#btnIdeaVote').onclick = () => openIdeas();
+    { const id = new URLSearchParams(location.search).get('idee');
+      if (id && /^[\w-]{1,16}$/.test(id)) { history.replaceState(null, '', location.pathname); setTimeout(() => openIdeas(id), 800); } }
     // Rond 💡 : visible tant qu'au moins une idée est au vote ; pastille = celles pour lesquelles ce téléphone n'a pas voté
     let ideasH = null;
     async function refreshBadge() {

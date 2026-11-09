@@ -3,7 +3,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const { ADMIN_KEY, NOTE_MAX, MIN, RATE, MAX_PER_NET_ZONE, MAX_PER_ZONE, MAX_REPORTS } = require('../config');
-const { CATEGORIES, GROUPS, CAT, isDanger, CALM_KILL_M, MERGE, ALERT_CATS } = require('../categories');
+const { CATEGORIES, GROUPS, CAT, isDanger, CALM_KILL_M, MERGE, ALERT_CATS, DIR_CATS } = require('../categories');
 const { NEXT } = require('./next');
 const { catAllowed } = require('../profiles');
 const { abuseOnce, abuseLog, calmSeries, SERIES, snapshotContested } = require('../moderation');
@@ -27,7 +27,7 @@ const { round, validLatLng, distM } = require('../util');
 const { send, readJson } = require('../http/respond');
 const { strictUntil, allow, bump, quota } = require('../limits');
 const { sweep } = require('../sweep');
-const { toReport, addTrail, addNote, publicView, authorOf } = require('../reports/model');
+const { toReport, addTrail, addNote, publicView, authorOf, bearing45 } = require('../reports/model');
 const { parisDay } = require('../time');
 
 async function reportsRoutes(req, res, url, pathname) {
@@ -99,7 +99,11 @@ async function reportsRoutes(req, res, url, pathname) {
           else if ((r.dw || 0) < contestNeed(r)) { r.ct = 0; r.down = 0; r.downIps = []; r.dw = 0; }
         }
         // Point qui suit (forces mobiles, tête, queue) : il se déplace, sauf s'il est partagé en direct par une orga (sa position fait foi)
-        if (m.move && !r.bk && t0 >= (r.last || r.t) && (r.lat !== pos.lat || r.lng !== pos.lng)) { addTrail(r, now); r.lat = pos.lat; r.lng = pos.lng; }
+        if (m.move && !r.bk && t0 >= (r.last || r.t) && (r.lat !== pos.lat || r.lng !== pos.lng)) {
+          // Véhicule revu 40 m plus loin : sa direction est déduite du déplacement
+          if (DIR_CATS.has(r.cat) && distM(r, pos) >= 40) { r.dir = bearing45(r, pos); r.dirt = now; }
+          addTrail(r, now); r.lat = pos.lat; r.lng = pos.lng;
+        }
         if (note) addNote(r, note, dev, t0);
         // Seul un autre téléphone prolonge le point, plafonné à 4× la durée de base (une orga confirmée peut aller jusqu'à sa propre durée).
         // Une position d'orga en direct est seulement confirmée : seule l'orga fait vivre sa durée.
@@ -160,6 +164,25 @@ async function reportsRoutes(req, res, url, pathname) {
     return send(res, ...out);
   }
   
+  // Direction d'un véhicule (pompiers, police, blindé…) : 0 à 7 (nord, nord-est… nord-ouest), ou null pour l'effacer.
+  // N'importe quel téléphone peut l'indiquer ou la corriger ; elle s'affiche 5 minutes.
+  const dirRoute = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/dir$/);
+  if (req.method === 'POST' && dirRoute) {
+    const b = await readJson(req), d = b.d === null ? null : Number(b.d);
+    if (d !== null && !(Number.isInteger(d) && d >= 0 && d <= 7)) return send(res, 400, { error: 'Direction invalide.' });
+    const ipH = clientHash(req), dev = deviceHash(req);
+    const result = tx(() => {
+      const now = Date.now(), r = getReport(dirRoute[1], now);
+      if (!r) return [404, { error: 'Signalement expiré.' }];
+      if (!DIR_CATS.has(r.cat)) return [400, { error: 'Pas de direction pour ce type.' }];
+      if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop d’envois, patiente un peu.' }];
+      if (d === null) { r.dir = null; r.dirt = null; } else { r.dir = d * 45; r.dirt = now; }
+      saveReport(r);
+      return [200, publicView(r)];
+    });
+    return send(res, ...result);
+  }
+
   // Ajouter une précision à un point existant (une par téléphone, la sienne peut être corrigée)
   const noteRoute = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/note$/);
   if (req.method === 'POST' && noteRoute) {

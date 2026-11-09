@@ -139,6 +139,20 @@ test('réseaux : arrêtés importés regroupés en un seul message', async () =>
   assert.equal((await state()).posts.filter(x => x.kind === 'ord').length, 1);
 });
 
+test('réseaux : idée mise au vote publiée une fois, lien vers l’idée', async () => {
+  const dev = { 'x-device': 'dev-idea-social-xxxxxxxxx', 'x-forwarded-for': '82.1.1.1', 'content-type': 'application/json' };
+  const made = await fetch(B + '/api/ideas', { method: 'POST', headers: dev, body: JSON.stringify({ title: 'Voir les pompiers sur la carte', body: 'Pour dégager le passage.', lang: 'fr' }) }).then(r => r.json());
+  const id = made.id || (await req('GET', '/api/admin/ideas')).j.ideas[0].id;
+  await req('POST', '/api/admin/ideas/' + id, { status: 'proposed', featured: true });
+  const p = await until(async () => (await state()).posts.find(x => x.kind === 'idea' && x.status === 'done'));
+  assert.ok(p, 'idée publiée');
+  assert.match(p.text, /^💡 Idée au vote sur Cortège :\n« Voir les pompiers sur la carte »\nPour dégager le passage\.\nPour ou contre \?/);
+  assert.equal(p.link, 'https://cortege.example/?idee=' + id);
+  await req('POST', '/api/admin/ideas/' + id, { featured: false });
+  await req('POST', '/api/admin/ideas/' + id, { featured: true });
+  assert.equal((await state()).posts.filter(x => x.kind === 'idea').length, 1, 'remise au vote : pas de second message');
+});
+
 test('réseaux : réseau coupé dans les réglages, rien envoyé dessus', async () => {
   await req('POST', '/api/admin/social/config', { off: { masto: true } });
   calls = [];

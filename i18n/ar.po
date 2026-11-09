@@ -2077,6 +2077,9 @@ msgstr "نقطة ساخنة"
 msgid "Sommations"
 msgstr "إنذارات تفريق"
 
+msgid "Secours (pompiers, SAMU)"
+msgstr "الإسعاف (إطفاء، سيارات إسعاف)"
+
 msgid "Street medic"
 msgstr "مسعفو الشارع"
 
@@ -3642,3 +3645,73 @@ msgstr "{n} مدن"
 #: src/social.js
 msgid "{n} ville"
 msgstr "{n} مدينة"
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Il se dirige vers…"
+msgstr "يتّجه نحو…"
+
+#: client/app/05-marqueurs.js
+msgid "Ne bouge pas"
+msgstr "لا يتحرك"
+
+#: client/app/05-marqueurs.js
+msgid "Vers {dir}"
+msgstr "نحو {dir}"
+
+#: client/app/05-marqueurs.js
+msgid "Se dirige {dir}"
+msgstr "يتّجه {dir}"
+
+#: client/app/05-marqueurs.js
+msgid "Corriger"
+msgstr "تصحيح"
+
+#: client/app/05-marqueurs.js
+msgid "Indiquer sa direction"
+msgstr "حدّد اتجاهه"
+
+#: client/app/12-lieux-calques.js
+msgid "URG"
+msgstr "طوارئ"
+
+#: client/app/12-lieux-calques.js
+msgid "Urgences"
+msgstr "قسم الطوارئ"
+
+#: client/app/14-precisions-liste.js
+msgid "Ça bouge ? Vers où :"
+msgstr "يتحرك؟ إلى أين:"
+
+#: src/routes/reports.js
+msgid "Direction invalide."
+msgstr "اتجاه غير صالح."
+
+#: src/routes/reports.js
+msgid "Pas de direction pour ce type."
+msgstr "لا اتجاه لهذا النوع."
+
+#: src/social.js
+msgid "Idée au vote sur Cortège :"
+msgstr "فكرة مطروحة للتصويت على Cortège:"
+
+#: src/social.js
+msgid "Pour ou contre ? Ton vote compte :"
+msgstr "مع أو ضد؟ صوتك مهم:"
+
+#: src/social.js
+msgid "Propose et vote pour les prochaines fonctions de Cortège."
+msgstr "اقترح وصوّت على ميزات Cortège القادمة."
+
+#: profiles/de.json
+msgid "Secours (pompiers, ambulances)"
+msgstr "الإسعاف (إطفاء، سيارات إسعاف)"
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Direction effacée"
+msgstr "تم مسح الاتجاه"
+
+#: client/app/05-marqueurs.js
+msgid "Direction notée"
+msgstr "تم تسجيل الاتجاه"

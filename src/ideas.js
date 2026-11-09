@@ -92,6 +92,7 @@ function voteIdea(req, id, v) {
 const adminList = () => q("SELECT * FROM ideas WHERE status!='merged' ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, votes-down DESC, votes DESC, t DESC").all().map(rowView);
 function adminUpdate(id, b) {
   const i = getIdea(id); if (!i) return [404, { error: 'Idée introuvable.' }];
+  const wasFeat = !!i.featured;
   if (b.status !== undefined) { if (!STATUSES.includes(b.status) || b.status === 'merged') return [400, { error: 'Statut inconnu.' }]; i.status = b.status; }
   if (b.title !== undefined) { const t = cleanText(b.title, TITLE[1]); if (t.length < 3) return [400, { error: 'Titre trop court.' }]; i.title = t; }
   if (b.body !== undefined) i.body = cleanText(b.body, BODY);
@@ -100,6 +101,8 @@ function adminUpdate(id, b) {
   if (b.featured !== undefined) i.featured = b.featured === true;
   if (!OPEN.includes(i.status)) i.featured = false; // une idée faite, écartée ou à valider n'est pas au vote
   saveIdea(i); ideasPublish();
+  // Mise au vote : message sur Bluesky et Mastodon (une seule fois par idée, même si elle est retirée puis remise au vote)
+  if (!wasFeat && i.featured) try { require('./social').onIdea(i); } catch (e) { console.error('réseaux (idée)', e.message); }
   return [200, i];
 }
 // Fusion d'un doublon : ses votes rejoignent l'idée gardée (un téléphone qui a voté pour les deux ne compte qu'une fois)

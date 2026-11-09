@@ -73,6 +73,9 @@ try { db.exec('ALTER TABLE reports ADD COLUMN bk INTEGER DEFAULT 0'); } catch {}
 // Point de départ du partage de position en direct (jamais publié) : le partage s'arrête si l'orga s'en éloigne de plus de 2 km
 try { db.exec('ALTER TABLE reports ADD COLUMN bkla REAL'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN bklo REAL'); } catch {}
+// Direction d'un véhicule (degrés, par pas de 45) et son heure : affichée 5 minutes, ensuite elle n'est plus sûre
+try { db.exec('ALTER TABLE reports ADD COLUMN dir INTEGER'); } catch {}
+try { db.exec('ALTER TABLE reports ADD COLUMN dirt INTEGER'); } catch {}
 // Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
 // Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');

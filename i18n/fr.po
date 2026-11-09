@@ -2046,6 +2046,10 @@ msgstr ""
 msgid "Sommations"
 msgstr ""
 
+#. Type de signalement : pompiers, SAMU, ambulances (le point suit le véhicule).
+msgid "Secours (pompiers, SAMU)"
+msgstr ""
+
 #. Type de signalement : secouristes bénévoles des manifestations.
 msgid "Street medic"
 msgstr ""
@@ -3598,4 +3602,74 @@ msgstr ""
 
 #: src/social.js
 msgid "{n} ville"
+msgstr ""
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Il se dirige vers…"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Ne bouge pas"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Vers {dir}"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Se dirige {dir}"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Corriger"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Indiquer sa direction"
+msgstr ""
+
+#: client/app/12-lieux-calques.js
+msgid "URG"
+msgstr ""
+
+#: client/app/12-lieux-calques.js
+msgid "Urgences"
+msgstr ""
+
+#: client/app/14-precisions-liste.js
+msgid "Ça bouge ? Vers où :"
+msgstr ""
+
+#: src/routes/reports.js
+msgid "Direction invalide."
+msgstr ""
+
+#: src/routes/reports.js
+msgid "Pas de direction pour ce type."
+msgstr ""
+
+#: src/social.js
+msgid "Idée au vote sur Cortège :"
+msgstr ""
+
+#: src/social.js
+msgid "Pour ou contre ? Ton vote compte :"
+msgstr ""
+
+#: src/social.js
+msgid "Propose et vote pour les prochaines fonctions de Cortège."
+msgstr ""
+
+#: profiles/de.json
+msgid "Secours (pompiers, ambulances)"
+msgstr ""
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Direction effacée"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Direction notée"
 msgstr ""

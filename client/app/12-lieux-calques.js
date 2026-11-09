@@ -1,10 +1,13 @@
   // ---- Filtres ----
   // ---- Lieux permanents (OpenStreetMap) : préfectures, mairies, commissariats, tribunaux, CRA, lycées et facs, hôpitaux ; pharmacies et eau au zoom rue ----
   const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
-  const POI_Z = 14, POI_STREET_Z = 16, POI_MAX = 350;
+  const POI_Z = 13, POI_STREET_Z = 16, POI_MAX = 350;
   // Zoom à partir duquel chaque type apparaît : les grands lieux d'abord, les mairies et commissariats au zoom quartier, le reste au zoom rue
   const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, cam: 17 };
   const POI_CAM_Z = 17;
+  // Hôpitaux avec service d'urgences : visibles dès le zoom ville (13), marqués à part ; les autres lieux gardent leur zoom
+  const isUrg = x => x[1] === 'hopital' && !!x[7];
+  const minZ = x => isUrg(x) ? 13 : POI_MINZ[x[1]] || POI_STREET_Z;
   // Filtres proposés (préfectures et sous-préfectures ensemble, commissariats et gendarmeries ensemble)
   const POI_FILTERS = [['pref', '🏢 Préfectures et sous-préfectures', ['pref', 'spref']], ['mairie', '🏛 Mairies', ['mairie']], ['police', '👮 Commissariats et gendarmeries', ['police', 'gend']],
     ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['cam', '📷 Caméras de surveillance', ['cam']]];
@@ -79,7 +82,8 @@
   function poiIcon(x, labels) {
     if (x[1] === 'cam') return camIcon(x);
     const k = PK[x[1]] || { glyph: '📍', grp: 'pouvoir' };
-    const box = el('div', { class: `poi poi-${k.grp}${k.street ? ' poi-sm' : ''}` }, el('span', { class: 'poi-g', 'aria-hidden': 'true' }, k.glyph));
+    const box = el('div', { class: `poi poi-${k.grp}${k.street ? ' poi-sm' : ''}${isUrg(x) ? ' poi-urg' : ''}` }, el('span', { class: 'poi-g', 'aria-hidden': 'true' }, k.glyph));
+    if (isUrg(x)) box.append(el('span', { class: 'poi-urg-b', 'aria-hidden': 'true' }, t('URG')));
     if (labels && x[4]) box.append(el('span', { class: 'poi-l' }, x[4].length > 28 ? x[4].slice(0, 27) + '…' : x[4]));
     const s = k.street ? 24 : 30;
     return L.divIcon({ className: 'poi-wrap', html: box, iconSize: [s, s], iconAnchor: [s / 2, s / 2], popupAnchor: [0, -s / 2] });
@@ -95,13 +99,13 @@
     const vb = b.pad(0.15), c = map.getCenter();
     // Noms : au zoom quartier pour les grands lieux, seulement au zoom le plus proche pour les pharmacies et l'eau (sinon illisible)
     const labOf = x => x[1] !== 'cam' && z >= ((PK[x[1]] && PK[x[1]].street) ? 18 : 15);
-    let want = rows.filter(x => vb.contains([x[2], x[3]]) && z >= (POI_MINZ[x[1]] || POI_STREET_Z) && poiShown(x[1]));
+    let want = rows.filter(x => vb.contains([x[2], x[3]]) && z >= minZ(x) && poiShown(x[1]));
     if (want.length > POI_MAX) want = want.map(x => [x, map.distance(c, [x[2], x[3]])]).sort((a, b2) => a[1] - b2[1]).slice(0, POI_MAX).map(x => x[0]);
     const keep = new Map(want.map(x => [x[0], x]));
     for (const [id, m] of poiDrawn) if (!keep.has(id) || m.options.lab !== labOf(keep.get(id) || []) || m.options.sig !== keep.get(id).join('|')) { poiLayer.removeLayer(m); poiDrawn.delete(id); }
     for (const [id, x] of keep) {
       if (poiDrawn.has(id)) continue;
-      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: x[1] === 'cam' ? t(x[5] ? 'Caméra publique' : 'Caméra privée') : (PK[x[1]]?.label || '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
+      const m = L.marker([x[2], x[3]], { icon: poiIcon(x, labOf(x)), zIndexOffset: -1000, keyboard: false, title: x[1] === 'cam' ? t(x[5] ? 'Caméra publique' : 'Caméra privée') : (PK[x[1]]?.label || '') + (isUrg(x) ? ' · ' + t('Urgences') : '') + (x[4] ? ' · ' + x[4] : ''), lab: labOf(x), sig: x.join('|') });
       m.bindPopup(() => poiPopup(x));
       poiLayer.addLayer(m); poiDrawn.set(id, m);
     }

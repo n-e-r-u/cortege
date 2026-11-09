@@ -25,6 +25,8 @@ const CATEGORIES = [
   { id: 'presse',         group: 'soutien', label: 'Presse',                  glyph: '🎥', ttl: 45 },
   { id: 'calme',          group: 'soutien', label: 'Zone calme / repli',      glyph: '🕊️', ttl: 90 },
   { id: 'eau',            group: 'soutien', label: 'Eau / sérum phy',         glyph: '💧', ttl: 90 },
+  // Pompiers, SAMU, ambulances : pour dégager le passage ou trouver vite les secours ; le point suit le véhicule (2.16)
+  { id: 'secours',        group: 'soutien', label: 'Secours (pompiers, SAMU)', glyph: '🚑', ttl: 15 },
   // Tête et queue : un seul point chacune, qui suit le cortège (avec sa trace des 30 dernières minutes)
   { id: 'cortege',        group: 'info',    label: 'Tête de cortège',         glyph: '📣', ttl: 10 },
   { id: 'queue',          group: 'info',    label: 'Queue de cortège',        glyph: '🔚', ttl: 10 },
@@ -48,7 +50,7 @@ const MERGE = {
   crs: { r: 100, move: true }, police: { r: 100, move: true }, bac: { r: 100, move: true }, canon: { r: 100, move: true },
   inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 }, facho: { r: 150, move: true },
   nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
-  medic: { r: 40 }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
+  medic: { r: 40 }, secours: { r: 100, move: true }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
   cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
 };
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
@@ -77,6 +79,8 @@ const GROUPS = [
   { id: 'soutien', label: 'Soutien' },
   { id: 'info', label: 'Infos cortège' },
 ];
+// Véhicules et groupes qui roulent ou marchent : leur direction s'affiche (flèche), indiquée par un téléphone ou déduite du déplacement du point
+const DIR_CATS = new Set(['crs', 'police', 'bac', 'inter', 'blinde', 'canon', 'facho', 'secours']);
 const BASE_TTL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.ttl]));
 
-module.exports = { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL };
+module.exports = { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL, DIR_CATS };

@@ -14,6 +14,7 @@
     "lacrymo": "Lacrymo / spray au poivre",
     "sommations": "Annonces de la police (Durchsagen)",
     "medic": "Street medics (Demosanis)",
+    "secours": "Secours (pompiers, ambulances)",
     "legal": "Legal team (EA)"
   },
   "hidden": ["militaires"],

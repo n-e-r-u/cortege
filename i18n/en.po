@@ -2041,6 +2041,9 @@ msgstr "Hot spot"
 msgid "Sommations"
 msgstr "Dispersal warnings"
 
+msgid "Secours (pompiers, SAMU)"
+msgstr "Emergency services (fire, ambulance)"
+
 msgid "Street medic"
 msgstr "Street medic"
 
@@ -3586,3 +3589,73 @@ msgstr "{n} cities"
 #: src/social.js
 msgid "{n} ville"
 msgstr "{n} city"
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Il se dirige vers…"
+msgstr "Heading towards…"
+
+#: client/app/05-marqueurs.js
+msgid "Ne bouge pas"
+msgstr "Not moving"
+
+#: client/app/05-marqueurs.js
+msgid "Vers {dir}"
+msgstr "Towards {dir}"
+
+#: client/app/05-marqueurs.js
+msgid "Se dirige {dir}"
+msgstr "Heading {dir}"
+
+#: client/app/05-marqueurs.js
+msgid "Corriger"
+msgstr "Correct"
+
+#: client/app/05-marqueurs.js
+msgid "Indiquer sa direction"
+msgstr "Show its direction"
+
+#: client/app/12-lieux-calques.js
+msgid "URG"
+msgstr "ER"
+
+#: client/app/12-lieux-calques.js
+msgid "Urgences"
+msgstr "Emergency department"
+
+#: client/app/14-precisions-liste.js
+msgid "Ça bouge ? Vers où :"
+msgstr "Moving? Which way:"
+
+#: src/routes/reports.js
+msgid "Direction invalide."
+msgstr "Invalid direction."
+
+#: src/routes/reports.js
+msgid "Pas de direction pour ce type."
+msgstr "No direction for this type."
+
+#: src/social.js
+msgid "Idée au vote sur Cortège :"
+msgstr "Idea up for a vote on Cortège:"
+
+#: src/social.js
+msgid "Pour ou contre ? Ton vote compte :"
+msgstr "For or against? Your vote counts:"
+
+#: src/social.js
+msgid "Propose et vote pour les prochaines fonctions de Cortège."
+msgstr "Suggest and vote on Cortège’s next features."
+
+#: profiles/de.json
+msgid "Secours (pompiers, ambulances)"
+msgstr "Emergency services (fire, ambulance)"
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Direction effacée"
+msgstr "Direction cleared"
+
+#: client/app/05-marqueurs.js
+msgid "Direction notée"
+msgstr "Direction noted"

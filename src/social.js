@@ -27,7 +27,7 @@ const NETS = {
   bsky: { name: 'Bluesky', max: 300, ready: e => !!(e.bsky.handle && e.bsky.pass) },
   masto: { name: 'Mastodon', max: 500, ready: e => !!(e.masto.url && e.masto.token) },
 };
-const KINDS = ['eve', 'day', 'ord', 'pub', 'man'];
+const KINDS = ['eve', 'day', 'ord', 'pub', 'idea', 'man'];
 const MAX_TRIES = 5;
 const base = () => (process.env.PUBLIC_URL || PUBLIC_URL).replace(/\/+$/, '');
 
@@ -197,6 +197,13 @@ function onPub(date, snap) {
     + (top ? ' ' + tr(l, 'En tête : {list}.', { list: top }) : '') + '\n' + tr(l, 'Parcours, heures fortes, arrêtés et données ouvertes :');
   return queuePost('pub', 'pub:' + date, { text, link: base() + '/manif/' + date, title: head.replace(/^📊 /, ''), desc: tr(l, 'Le bilan public de la journée sur Cortège.') });
 }
+// Idée mise au vote par l'admin : titre et début du texte, lien qui ouvre l'idée dans l'appli
+function onIdea(i) {
+  const l = L(), body = String(i.body || '').trim();
+  const text = '💡 ' + tr(l, 'Idée au vote sur Cortège :') + '\n« ' + i.title + ' »' + (body ? '\n' + (body.length > 140 ? body.slice(0, 139).trimEnd() + '…' : body) : '')
+    + '\n' + tr(l, 'Pour ou contre ? Ton vote compte :');
+  return queuePost('idea', 'idea:' + i.id, { text, link: base() + '/?idee=' + encodeURIComponent(i.id), title: i.title, desc: tr(l, 'Propose et vote pour les prochaines fonctions de Cortège.') });
+}
 // Arrêtés validés : notés ici, publiés ensemble une fois que plus rien n'arrive depuis 10 minutes
 const ORD_QUIET = +(process.env.SOCIAL_ORDER_WAIT_MS || 10 * MIN);
 function noteOrder(o) {
@@ -296,4 +303,4 @@ async function socialDelete(id) {
   return errors.length ? [502, { error: errors.join(' · ') }] : [200, p];
 }
 
-module.exports = { socialCfg, saveSocialCfg, queuePost, socialSend, socialTick, onPub, noteOrder, flushOrders, socialAdmin, socialManual, socialAct, socialDelete, socialTest, fit, facets };
+module.exports = { socialCfg, saveSocialCfg, queuePost, socialSend, socialTick, onPub, onIdea, noteOrder, flushOrders, socialAdmin, socialManual, socialAct, socialDelete, socialTest, fit, facets };

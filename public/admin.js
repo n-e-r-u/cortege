@@ -1541,7 +1541,7 @@ function renderIdeas() {
 $('#ideaFilter').onchange = renderIdeas;
 $('#tabIdeas').onclick = () => { showTab('Ideas'); loadIdeas(); };
 // ---- Réseaux : partage sur Bluesky et Mastodon (réglages, relecture, message écrit à la main, retrait) ----
-const SOC_KIND = { eve: '📣 Veille de journée', day: '✊ Jour J', ord: '⛔ Arrêtés', pub: '📊 Bilan', man: '✍ Message écrit' };
+const SOC_KIND = { eve: '📣 Veille de journée', day: '✊ Jour J', ord: '⛔ Arrêtés', pub: '📊 Bilan', idea: '💡 Idée au vote', man: '✍ Message écrit' };
 const SOC_ST = { review: '⏳ À relire', queued: '📤 En cours d’envoi', done: '✓ Publié', error: '⚠ Échec', skip: '✖ Ignoré', deleted: '🗑 Retiré des réseaux' };
 const SOC_NET = { bsky: 'Bluesky', masto: 'Mastodon' };
 let socData = null;

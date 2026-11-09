@@ -1186,3 +1186,23 @@ test('boîte à idées : validation avant publication, un vote par téléphone, 
   assert.ok(!('tok' in done[0]) && !('lang' in done[0] && done[0].lang !== 'fr'));
   assert.equal(db.prepare('SELECT COUNT(*) n FROM idea_votes WHERE tok LIKE ?').get('%' + p1.dev + '%').n, 0, 'identifiant brut jamais stocké');
 });
+
+test('direction des véhicules : indiquée d’un appui, déduite du déplacement, refusée pour les autres types', async () => {
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.ok(cfg.categories.some(c => c.id === 'secours' && c.group === 'soutien'));
+  assert.ok(cfg.dirCats.includes('secours') && cfg.dirCats.includes('police') && !cfg.dirCats.includes('medic'));
+  const p = place(), a = await post('/api/reports', { cat: 'police', ...p });
+  assert.equal(a.s, 201); assert.equal(a.j.dir, undefined);
+  assert.equal((await post(`/api/reports/${a.j.id}/dir`, { d: 9 })).s, 400);
+  const d = await post(`/api/reports/${a.j.id}/dir`, { d: 2 });
+  assert.equal(d.s, 200); assert.equal(d.j.dir, 90); assert.ok(Math.abs(d.j.dt * 1000 - Date.now()) < 5000);
+  // Revu 55 m plus au nord par un autre téléphone : le point glisse, direction nord
+  const m = await post('/api/reports', { cat: 'police', lat: p.lat + 0.0005, lng: p.lng });
+  assert.equal(m.j.merged, true); assert.equal(m.j.dir, 0);
+  // Direction trop ancienne : plus publiée
+  db.prepare('UPDATE reports SET dirt=? WHERE id=?').run(Date.now() - 6 * 60_000, a.j.id);
+  assert.equal((await post(`/api/reports/${a.j.id}/note`, { note: 'deux fourgons' })).j.dir, undefined);
+  assert.equal((await post(`/api/reports/${a.j.id}/dir`, { d: null })).j.dir, undefined);
+  const med = await post('/api/reports', { cat: 'medic', ...place() });
+  assert.equal((await post(`/api/reports/${med.j.id}/dir`, { d: 1 })).s, 400);
+});
