@@ -16,6 +16,15 @@ Cortège est une appli web gratuite et libre : pendant une manif, chacun·e sign
 - 📶 **Tenir quand le réseau sature** : mode léger, signalements gardés jusqu'à ce que ça capte, dernière situation connue affichée hors ligne, carte gardée sur le téléphone.
 - 📣 **Pour les orgas et legal teams** : annonces localisées, vérification et retrait des faux signalements, accès par QR code sans mot de passe.
 
+## Contre les faux signalements
+
+- Un « Plus là » ne supprime jamais un point à lui seul. Il faut plusieurs votes, venant d'au moins deux réseaux différents, pour qu'un point devienne « contesté » : il est alors grisé et s'éteint au bout de quelques minutes, sauf si quelqu'un le confirme.
+- Les votes n'ont pas tous le même poids : un vote fait près du point compte davantage, celui d'un téléphone apparu il y a quelques minutes compte moins, et les votes en rafale ne sont pas comptés. Un point déjà confirmé demande plus de votes.
+- Un point vérifié par une orga ne peut pas être contesté par les votes. Les points contestés passent par la corbeille de l'admin, qui peut les rétablir.
+- Les orgas entrent par invitation, avec une période d'essai ou un parrainage. Un accès révoqué coupe aussi les orgas que celle-ci a fait entrer.
+
+Détails : [anti-abus](docs/FONCTIONNEMENT.md#anti-abus).
+
 ## Ta vie privée
 
 - Ta position ne quitte jamais ton téléphone : seuls les signalements partent, arrondis à une dizaine de mètres.
