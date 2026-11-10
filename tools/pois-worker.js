@@ -18,6 +18,7 @@ function kindOf(p) {
   if (k === 'school' || k === 'college') return /\blyc[ée]es?\b|\bgymnasium\b|\bhigh school\b/i.test(name) && !/^(coll[èe]ge|[ée]cole)\b/i.test(name) ? 'lycee' : null;
   if (k === 'pharmacy') return 'pharma';
   if (k === 'drinking_water') return 'eau';
+  if (k === 'defibrillator') return 'dae'; // rarement présent dans les tuiles : les défibrillateurs viennent surtout d'OpenStreetMap
   return null;
 }
 

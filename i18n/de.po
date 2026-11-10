@@ -3665,3 +3665,275 @@ msgstr "Cortège {v} ist online:"
 #: src/social.js
 msgid "Nouveautés de Cortège {v}"
 msgstr "Neu in Cortège {v}"
+
+msgid "Rester volontairement dans un attroupement <b>après les sommations</b> est un délit : jusqu’à 1 an de prison et 15 000 € d’amende, 3 ans et 45 000 € avec le visage dissimulé pour ne pas être reconnu·e."
+msgstr "Wer <b>nach den Aufforderungen</b> wissentlich in einer Menschenansammlung bleibt, begeht eine Straftat: bis zu 1 Jahr Haft und 15 000 € Geldstrafe, 3 Jahre und 45 000 € mit verhülltem Gesicht, um nicht erkannt zu werden."
+
+msgid "Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche et le procureur."
+msgstr "Ohne Ausweis kannst du zur Identitätsprüfung <b>höchstens 4 Stunden</b> festgehalten werden, mit dem Recht, eine nahestehende Person und die Staatsanwaltschaft benachrichtigen zu lassen."
+
+msgid "Pendant cette vérification, empreintes et photos ne sont possibles qu’avec l’autorisation du procureur."
+msgstr "Während dieser Prüfung sind Fingerabdrücke und Fotos nur mit Erlaubnis der Staatsanwaltschaft möglich."
+
+msgid "Droit de faire prévenir un proche et ton employeur (l’appel doit être passé dans les 3 heures après ta demande, sauf report décidé par le procureur), de voir un médecin, d’avoir un·e interprète."
+msgstr "Recht, eine nahestehende Person und deinen Arbeitgeber benachrichtigen zu lassen (der Anruf muss innerhalb von 3 Stunden nach deiner Bitte erfolgen, außer die Staatsanwaltschaft schiebt ihn auf), einen Arzt zu sehen und einen Dolmetscher zu haben."
+
+msgid "Audition libre (convocation au commissariat)"
+msgstr "Freiwillige Vernehmung (Vorladung aufs Kommissariat)"
+
+msgid "Tu n’es pas en garde à vue : tu peux <b>partir à tout moment</b>."
+msgstr "Du bist nicht in Gewahrsam: du kannst <b>jederzeit gehen</b>."
+
+msgid "Tu as le droit de te taire, d’avoir un·e interprète et, si l’infraction est punie de prison, d’être assisté·e par un·e avocat·e (gratuit·e selon tes revenus, avec l’aide juridictionnelle)."
+msgstr "Du hast das Recht zu schweigen, auf einen Dolmetscher und, wenn auf die Tat Haft steht, auf einen Anwalt (je nach Einkommen kostenlos, über Prozesskostenhilfe)."
+
+msgid "On doit te dire avant de t’entendre ce qu’on te reproche, où et quand."
+msgstr "Vor der Vernehmung muss man dir sagen, was dir vorgeworfen wird, wo und wann."
+
+msgid "Palpation et fouille"
+msgstr "Abtasten und Durchsuchung"
+
+msgid "La palpation de sécurité sert seulement à vérifier que tu ne portes rien de dangereux. Elle n’est pas systématique et se fait si possible à l’abri des regards."
+msgstr "Das Abtasten dient nur dazu, zu prüfen, dass du nichts Gefährliches bei dir hast. Es ist nicht automatisch und erfolgt wenn möglich außer Sichtweite."
+
+msgid "Aux abords d’une manif, si le procureur l’a autorisé par écrit, la police peut fouiller les sacs et les véhicules pour chercher des armes."
+msgstr "Im Umfeld einer Demo darf die Polizei, wenn die Staatsanwaltschaft es schriftlich erlaubt hat, Taschen und Fahrzeuge nach Waffen durchsuchen."
+
+msgid "Être déshabillé·e entièrement n’est possible qu’en garde à vue, dans le cadre prévu par la loi."
+msgstr "Vollständig entkleidet werden darfst du nur im Polizeigewahrsam, im gesetzlich vorgesehenen Rahmen."
+
+msgid "Empreintes, photos, ADN"
+msgstr "Fingerabdrücke, Fotos, DNA"
+
+msgid "Si on te soupçonne d’une infraction, la police peut prendre tes <b>empreintes et ta photo</b>. Refuser est un délit (1 an de prison et 15 000 € d’amende). Dans certains cas précis (seul moyen de t’identifier, infraction punie d’au moins 3 ans, autorisation écrite du procureur), elles peuvent être prises de force."
+msgstr "Wenn du einer Straftat verdächtigt wirst, kann die Polizei deine <b>Fingerabdrücke und ein Foto</b> nehmen. Verweigern ist eine Straftat (1 Jahr Haft und 15 000 € Geldstrafe). In bestimmten Fällen (einziges Mittel, dich zu identifizieren, Tat mit mindestens 3 Jahren Strafe, schriftliche Erlaubnis der Staatsanwaltschaft) dürfen sie mit Zwang genommen werden."
+
+msgid "Le <b>prélèvement ADN</b> n’est possible que pour une liste d’infractions, dont les violences, les dégradations et le port d’arme en manif. L’outrage et la rébellion seuls n’y sont pas. La décision doit être écrite et motivée."
+msgstr "Eine <b>DNA-Probe</b> ist nur bei einer Liste von Straftaten möglich, darunter Gewalt, Sachbeschädigung und das Tragen einer Waffe auf einer Demo. Beleidigung und Widerstand allein gehören nicht dazu. Die Entscheidung muss schriftlich und begründet sein."
+
+msgid "Refuser le prélèvement ADN est un délit distinct (1 an de prison et 15 000 € d’amende). Si tu es seulement suspect·e et pas mis·e en examen, ton profil ADN est supprimé."
+msgstr "Die DNA-Probe zu verweigern ist eine eigene Straftat (1 Jahr Haft und 15 000 € Geldstrafe). Bist du nur verdächtig und nicht angeklagt, wird dein DNA-Profil gelöscht."
+
+msgid "Ce sont des sujets à voir avec ton avocat·e, avant de décider."
+msgstr "Das sind Fragen, die du vor einer Entscheidung mit deinem Anwalt besprichst."
+
+msgid "Moins de 18 ans"
+msgstr "Unter 18"
+
+msgid "Avant 10 ans : ni retenue ni garde à vue."
+msgstr "Unter 10 Jahren: weder Festhalten noch Gewahrsam."
+
+msgid "De 10 à 13 ans : seulement une <b>retenue</b>, si on te soupçonne d’une infraction punie d’au moins 5 ans de prison. 12 heures maximum, prolongeables une fois. Avocat·e et médecin obligatoires."
+msgstr "Von 10 bis 13 Jahren: nur ein <b>Festhalten</b> (retenue), wenn du einer Tat verdächtigt wirst, auf die mindestens 5 Jahre Haft stehen. Höchstens 12 Stunden, einmal verlängerbar. Anwalt und Arzt sind Pflicht."
+
+msgid "Dès 13 ans : garde à vue possible, 24 heures, prolongeable de 24 heures (avant 16 ans, pas de prolongation pour un délit puni de moins de 5 ans)."
+msgstr "Ab 13 Jahren: Polizeigewahrsam möglich, 24 Stunden, um 24 Stunden verlängerbar (unter 16 keine Verlängerung bei einer Tat mit weniger als 5 Jahren Strafe)."
+
+msgid "En garde à vue, <b>un·e avocat·e est obligatoire dès le début</b>. Si personne n’en choisit, un·e avocat·e commis·e d’office vient, gratuitement."
+msgstr "Im Gewahrsam ist <b>ein Anwalt von Anfang an Pflicht</b>. Wählt niemand einen, kommt kostenlos ein Pflichtanwalt."
+
+msgid "Tes parents sont prévenus, en principe dans les 3 heures. S’ils sont injoignables, un autre adulte, que tu peux choisir, les remplace."
+msgstr "Deine Eltern werden benachrichtigt, normalerweise innerhalb von 3 Stunden. Sind sie nicht erreichbar, ersetzt sie ein anderer Erwachsener, den du wählen kannst."
+
+msgid "Avant 16 ans, un examen médical est obligatoire. Dès 16 ans, toi, tes parents ou ton avocat·e pouvez le demander."
+msgstr "Unter 16 ist eine ärztliche Untersuchung Pflicht. Ab 16 können du, deine Eltern oder dein Anwalt sie verlangen."
+
+msgid "Les interrogatoires en garde à vue sont filmés."
+msgstr "Vernehmungen im Gewahrsam werden gefilmt."
+
+msgid "Pas de comparution immédiate avant 18 ans. En général, le juge décide d’abord si tu es coupable, puis de la sanction plusieurs mois après."
+msgstr "Kein Schnellverfahren unter 18. Meist entscheidet das Gericht zuerst über die Schuld und einige Monate später über die Sanktion."
+
+msgid "Ce qui est décidé avant tes 18 ans n’apparaît pas sur les extraits de casier que voient les employeurs."
+msgstr "Was vor deinem 18. Geburtstag entschieden wird, erscheint nicht in den Registerauszügen, die Arbeitgeber sehen."
+
+msgid "Ce qu’on peut te proposer à la place d’un procès"
+msgstr "Was man dir statt eines Prozesses anbieten kann"
+
+msgid "<b>Avertissement pénal probatoire</b> (il remplace le rappel à la loi) : l’affaire est réexaminée si tu commets une nouvelle infraction dans les 2 ans. Impossible pour des violences ou un délit contre un policier ou un gendarme."
+msgstr "<b>Strafrechtliche Bewährungsverwarnung</b> (ersetzt den früheren „rappel à la loi“): der Fall wird neu aufgerollt, wenn du innerhalb von 2 Jahren eine neue Straftat begehst. Nicht möglich bei Gewalt oder einer Tat gegen Polizei oder Gendarmerie."
+
+msgid "<b>Composition pénale</b> : tu reconnais les faits et tu acceptes une mesure (amende, travail non rémunéré, stage…). Elle est inscrite à ton casier."
+msgstr "<b>Composition pénale</b>: du gibst die Tat zu und nimmst eine Maßnahme an (Geldbetrag, unbezahlte Arbeit, Kurs…). Sie wird ins Strafregister eingetragen."
+
+msgid "<b>Reconnaissance préalable de culpabilité</b> (« plaider-coupable ») : tu reconnais les faits et le procureur propose une peine : au plus 3 ans de prison, et jamais plus de la moitié de la peine prévue. Avocat·e obligatoire, et tu peux demander <b>10 jours pour réfléchir</b>. Si tu acceptes, c’est une condamnation."
+msgstr "<b>Schuldanerkenntnis</b> (CRPC, „plaider-coupable“): du gibst die Tat zu und die Staatsanwaltschaft schlägt eine Strafe vor: höchstens 3 Jahre Haft und nie mehr als die Hälfte der vorgesehenen Strafe. Ein Anwalt ist Pflicht, und du kannst <b>10 Tage Bedenkzeit</b> verlangen. Nimmst du an, ist es eine Verurteilung."
+
+msgid "Rien ne t’oblige à accepter : parles-en d’abord avec ton avocat·e."
+msgstr "Nichts zwingt dich zuzustimmen: sprich zuerst mit deinem Anwalt."
+
+msgid "Refuser de donner le code de déverrouillage peut être poursuivi, mais seulement si le téléphone chiffre ses données et que le code sert à les déchiffrer : le juge doit le vérifier (Cour de cassation, 2022 et 2026)."
+msgstr "Die Verweigerung des Entsperrcodes kann verfolgt werden, aber nur, wenn das Telefon seine Daten verschlüsselt und der Code zum Entschlüsseln dient: das Gericht muss das prüfen (Cour de cassation, 2022 und 2026)."
+
+msgid "Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit (1 an de prison et 15 000 € d’amende). La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer."
+msgstr "Das Gesicht auf einer Demo absichtlich zu verbergen, wenn es Unruhen gibt oder geben könnte, ist eine Straftat (1 Jahr Haft und 15 000 € Geldstrafe). Das Gesetz sieht eine Ausnahme bei einem <b>berechtigten Grund</b> vor (zum Beispiel Gesundheit), den du erklären können musst."
+
+msgid "En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Le procès est alors renvoyé de 4 à 10 semaines."
+msgstr "Im <b>Schnellverfahren</b> (comparution immédiate) kannst du Zeit für deine Verteidigung verlangen. Der Prozess wird dann um 4 bis 10 Wochen verschoben."
+
+msgid "Après un jugement, tu as <b>10 jours pour faire appel</b>."
+msgstr "Nach einem Urteil hast du <b>10 Tage, um Berufung einzulegen</b>."
+
+msgid "En cas de condamnation, tu peux demander au tribunal qu’elle ne figure pas sur l’extrait de casier que voient les employeurs (bulletin n° 2)."
+msgstr "Bei einer Verurteilung kannst du das Gericht bitten, sie nicht im Registerauszug für Arbeitgeber zu führen (bulletin Nr. 2)."
+
+msgid "Pour tes proches"
+msgstr "Für deine Nächsten"
+
+msgid "Un·e proche est interpellé·e"
+msgstr "Eine nahestehende Person wurde festgenommen"
+
+msgid "Préviens la legal team. Si tu ne sais pas où la personne est retenue, appelle ou passe dans les commissariats proches."
+msgstr "Benachrichtige die Legal Team. Weißt du nicht, wo die Person festgehalten wird, ruf die Kommissariate in der Nähe an oder geh hin."
+
+msgid "Si la police t’appelle pour te prévenir, tu peux <b>choisir un·e avocat·e</b> pour la personne : elle devra confirmer ce choix."
+msgstr "Ruft dich die Polizei an, um dich zu benachrichtigen, kannst du für die Person <b>einen Anwalt wählen</b>: sie muss diese Wahl bestätigen."
+
+msgid "Un membre de la famille peut demander qu’elle voie un médecin : c’est un droit."
+msgstr "Ein Familienmitglied kann verlangen, dass sie einen Arzt sieht: das ist ein Recht."
+
+msgid "Si elle risque une <b>comparution immédiate</b>, rassemble vite des justificatifs : domicile, contrat de travail ou de stage, certificat de scolarité ou carte étudiante. Donne-les à son avocat·e avant l’audience : ils montrent qu’elle se présentera à son procès et peuvent éviter la détention provisoire."
+msgstr "Droht ein <b>Schnellverfahren</b>, sammle schnell Nachweise: Wohnsitz, Arbeits- oder Praktikumsvertrag, Schulbescheinigung oder Studierendenausweis. Gib sie vor der Verhandlung ihrem Anwalt: sie zeigen, dass sie zum Prozess erscheinen wird, und können Untersuchungshaft vermeiden."
+
+msgid "Si le tribunal ne peut pas la juger le jour même, elle peut être placée en détention jusqu’au 3e jour ouvrable au plus."
+msgstr "Kann das Gericht sie nicht am selben Tag verurteilen, kann sie höchstens bis zum 3. Werktag in Haft bleiben."
+
+msgid "Après coup : les fichiers de police"
+msgstr "Danach: die Polizeidateien"
+
+msgid "Le <b>TAJ</b> (antécédents judiciaires) garde la trace des personnes mises en cause, de 5 à 40 ans selon les faits. Après une relaxe, un non-lieu ou un classement sans suite, tu peux demander tout de suite au procureur d’effacer ou de corriger ta fiche. Il a 2 mois pour répondre."
+msgstr "Das <b>TAJ</b> (Ermittlungsakten-Datei) speichert beschuldigte Personen 5 bis 40 Jahre, je nach Tat. Nach Freispruch, Einstellung oder Verfahrensabschluss ohne Folgen kannst du sofort bei der Staatsanwaltschaft Löschung oder Berichtigung verlangen. Sie hat 2 Monate Zeit zu antworten."
+
+msgid "Pour l’<b>ADN</b>, la demande d’effacement se fait aussi auprès du procureur (3 mois pour répondre), puis, sans réponse ou en cas de refus, devant le président de la chambre de l’instruction dans les 10 jours."
+msgstr "Für die <b>DNA</b> wird die Löschung ebenfalls bei der Staatsanwaltschaft beantragt (3 Monate Antwortfrist), dann, ohne Antwort oder bei Ablehnung, innerhalb von 10 Tagen beim Präsidenten der Untersuchungskammer."
+
+msgid "Pour savoir si tu es fiché·e au TAJ, écris d’abord au ministère de l’Intérieur ; sans réponse ou en cas de refus, saisis la <a class=\"inline-link\" href=\"https://www.cnil.fr/fr/demander-une-verification-sur-un-fichier-de-police-ou-de-renseignement\" target=\"_blank\" rel=\"noopener noreferrer\">CNIL</a>."
+msgstr "Um zu erfahren, ob du im TAJ stehst, schreib zuerst an das Innenministerium; ohne Antwort oder bei Ablehnung wende dich an die <a class=\"inline-link\" href=\"https://www.cnil.fr/fr/demander-une-verification-sur-un-fichier-de-police-ou-de-renseignement\" target=\"_blank\" rel=\"noopener noreferrer\">CNIL</a>."
+
+msgid "Vérifié le 10 novembre 2026 sur Légifrance et service-public.fr (Code de procédure pénale, Code de la justice pénale des mineurs, Code pénal)."
+msgstr "Geprüft am 10. November 2026 auf Légifrance und service-public.fr (Strafprozessordnung, Jugendstrafgesetzbuch, Strafgesetzbuch)."
+
+msgid "🖨 Imprimer la fiche"
+msgstr "🖨 Blatt drucken"
+
+msgid "Le point est placé au <b>milieu de la carte</b> : c’est là que les gens se retrouveront en cas de dispersion. Il s’affiche sur la carte avec ton nom, et disparaît à l’heure choisie."
+msgstr "Der Punkt liegt in der <b>Mitte der Karte</b>: dort treffen sich die Leute bei einer Auflösung wieder. Er erscheint mit deinem Namen auf der Karte und verschwindet zur gewählten Zeit."
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Environ {n} personnes"
+msgstr "Etwa {n} Personen"
+
+#: client/app/05-marqueurs.js
+msgid "Combien, environ ?"
+msgstr "Wie viele, ungefähr?"
+
+#: client/app/05-marqueurs.js
+msgid "Nombre noté"
+msgstr "Anzahl notiert"
+
+#: client/app/05-marqueurs.js
+msgid "Indiquer le nombre"
+msgstr "Anzahl angeben"
+
+#: client/app/12-lieux-calques.js
+msgid "Arrêt cardiaque : appelle le 15 ou le 112, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir."
+msgstr "Herzstillstand: Ruf die 15 oder 112, beginne mit der Herzdruckmassage und schick jemanden, den Defibrillator zu holen. Er gibt Sprachanweisungen, jede:r kann ihn benutzen."
+
+#: client/app/15-installation-annonces.js
+msgid "Jusqu’à {h}"
+msgstr "Bis {h}"
+
+#: client/app/15-installation-annonces.js
+msgid "Voir sur la carte"
+msgstr "Auf der Karte zeigen"
+
+#: client/app/17-orga.js
+msgid "Où et comment se retrouver"
+msgstr "Wo und wie man sich wiederfindet"
+
+#: client/app/17-orga.js
+msgid "ex. : si dispersion, rendez-vous devant la fac de lettres, entrée côté parc"
+msgstr "z. B.: bei Auflösung Treffpunkt vor der geisteswissenschaftlichen Fakultät, Eingang auf der Parkseite"
+
+#: client/app/17-orga.js
+msgid "ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail"
+msgstr "z. B.: Auflösung am Place de la Comédie angekündigt, Rückzug über den Boulevard Sarrail"
+
+#: client/app/19-agenda.js
+msgid "Arrêté d’interdiction de manifester en vigueur ici"
+msgstr "Demonstrationsverbot hier in Kraft"
+
+#: client/app/19-agenda.js
+msgid "Arrêté avec un périmètre interdit en vigueur ici"
+msgstr "Verfügung mit Sperrzone hier in Kraft"
+
+#: client/app/19-agenda.js
+msgid "Lis-le pour savoir exactement ce qu’il couvre."
+msgstr "Lies sie, um genau zu wissen, was sie umfasst."
+
+#: client/app/19-agenda.js
+msgid "Lire l’arrêté"
+msgstr "Verfügung lesen"
+
+#: client/app/19-agenda.js
+msgid "Arrêté en vigueur dans la zone"
+msgstr "Verfügung in diesem Gebiet in Kraft"
+
+#: src/announcements/create.js
+msgid "Décris le point de ralliement (lieu, consigne)."
+msgstr "Beschreib den Treffpunkt (Ort, Hinweis)."
+
+#: src/veille.js
+msgid "Adresse invalide (elle doit commencer par https://)."
+msgstr "Ungültige Adresse (sie muss mit https:// beginnen)."
+
+#: src/veille.js
+msgid "Département invalide."
+msgstr "Ungültiges Département."
+
+#: src/veille.js
+msgid "Cette page est déjà surveillée."
+msgstr "Diese Seite wird bereits beobachtet."
+
+#: src/veille.js
+msgid "400 pages surveillées au plus."
+msgstr "Höchstens 400 beobachtete Seiten."
+
+#: src/veille.js
+msgid "Source introuvable."
+msgstr "Quelle nicht gefunden."
+
+#: src/veille.js
+msgid "État invalide."
+msgstr "Ungültiger Status."
+
+msgid "Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir."
+msgstr "Herzstillstand: Ruf die {n}, beginne mit der Herzdruckmassage und schick jemanden, den Defibrillator zu holen. Er gibt Sprachanweisungen, jede:r kann ihn benutzen."
+
+msgid "1 à 5"
+msgstr "1 bis 5"
+
+msgid "5 à 15"
+msgstr "5 bis 15"
+
+msgid "15 à 30"
+msgstr "15 bis 30"
+
+msgid "plus de 30"
+msgstr "über 30"
+
+msgid "Nombre invalide."
+msgstr "Ungültige Anzahl."
+
+msgid "Pas de nombre pour ce type."
+msgstr "Keine Anzahl für diesen Typ."
+
+msgid "Défibrillateur"
+msgstr "Defibrillator"
+
+msgid "🫀 Défibrillateurs"
+msgstr "🫀 Defibrillatoren"
+
+msgid "Point de ralliement publié"
+msgstr "Treffpunkt veröffentlicht"

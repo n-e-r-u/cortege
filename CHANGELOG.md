@@ -2,6 +2,24 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.17.0
+
+**Droits** (onglet Droits, profil France), chaque point vérifié le 10 novembre 2026 sur Légifrance et service-public.fr :
+- nouvelles rubriques : audition libre, palpation et fouille, empreintes, photos et ADN, moins de 18 ans (Code de la justice pénale des mineurs), ce qu'on peut te proposer à la place d'un procès (avertissement pénal probatoire, composition pénale, reconnaissance préalable de culpabilité) ;
+- « Pour tes proches » : un·e proche est interpellé·e (choisir son avocat·e, demander un médecin, justificatifs à rassembler avant une comparution immédiate), et les fichiers de police après coup (TAJ, ADN, accès et effacement) ;
+- corrections et précisions : renvoi en comparution immédiate de 4 à 10 semaines (depuis le 30 septembre 2024), délai d'appel de 10 jours, demande d'exclusion du bulletin n° 2, peines des délits d'attroupement et de visage dissimulé, appel au proche dans les 3 heures, conditions de poursuite pour le refus de donner le code du téléphone (Cour de cassation 2022 et 2026) ;
+- **fiche imprimable** : « Imprimer la fiche » ouvre toutes les rubriques et imprime l'onglet seul, sur deux colonnes.
+
+**Secours et terrain** (idées de la boîte à idées) :
+- **Défibrillateurs** sur la carte (OpenStreetMap), au zoom rue, avec leur emplacement exact et quoi faire en cas d'arrêt cardiaque. Calque « 🫀 Défibrillateurs ». Ils arrivent avec le prochain import des lieux.
+- **Nombre approximatif** pour les groupes fascistes, la police, les CRS, la BAC, les militaires et les unités d'intervention : juste après le signalement ou dans la fiche du point (1 à 5, 5 à 15, 15 à 30, plus de 30).
+- **Point de ralliement** : nouveau type d'annonce des orgas certifiées. Un drapeau 🚩 sur la carte, à l'endroit choisi, avec l'orga, le texte et l'heure de fin ; un bandeau « Voir sur la carte ».
+- **Agenda** : un événement situé dans la zone d'un arrêté d'interdiction de manifester (ou de périmètre interdit) en vigueur à son heure porte « Arrêté en vigueur dans la zone », avec le lien vers le texte.
+
+**Admin** :
+- **Veille des préfectures** (Admin › Arrêtés) : pages à surveiller (accueil ou actualités d'une préfecture, recueil des actes administratifs, flux RSS ou Atom), relues toutes les 20 minutes. Les nouveaux liens qui parlent de manifestation, de périmètre, de couvre-feu, de drones… sont proposés ; « Préparer » remplit le formulaire d'arrêté avec le département et la source. Rien n'est publié tout seul. Compté dans la pastille Arrêtés.
+- README : comment Cortège résiste aux faux signalements.
+
 ## 2.16.0
 
 Deux idées venues de la boîte à idées.

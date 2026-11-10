@@ -3682,3 +3682,275 @@ msgstr ""
 #: src/social.js
 msgid "Nouveautés de Cortège {v}"
 msgstr ""
+
+msgid "Rester volontairement dans un attroupement <b>après les sommations</b> est un délit : jusqu’à 1 an de prison et 15 000 € d’amende, 3 ans et 45 000 € avec le visage dissimulé pour ne pas être reconnu·e."
+msgstr ""
+
+msgid "Sans justificatif, tu peux être retenu·e pour vérification <b>4 heures maximum</b>, avec le droit de faire prévenir un proche et le procureur."
+msgstr ""
+
+msgid "Pendant cette vérification, empreintes et photos ne sont possibles qu’avec l’autorisation du procureur."
+msgstr ""
+
+msgid "Droit de faire prévenir un proche et ton employeur (l’appel doit être passé dans les 3 heures après ta demande, sauf report décidé par le procureur), de voir un médecin, d’avoir un·e interprète."
+msgstr ""
+
+msgid "Audition libre (convocation au commissariat)"
+msgstr ""
+
+msgid "Tu n’es pas en garde à vue : tu peux <b>partir à tout moment</b>."
+msgstr ""
+
+msgid "Tu as le droit de te taire, d’avoir un·e interprète et, si l’infraction est punie de prison, d’être assisté·e par un·e avocat·e (gratuit·e selon tes revenus, avec l’aide juridictionnelle)."
+msgstr ""
+
+msgid "On doit te dire avant de t’entendre ce qu’on te reproche, où et quand."
+msgstr ""
+
+msgid "Palpation et fouille"
+msgstr ""
+
+msgid "La palpation de sécurité sert seulement à vérifier que tu ne portes rien de dangereux. Elle n’est pas systématique et se fait si possible à l’abri des regards."
+msgstr ""
+
+msgid "Aux abords d’une manif, si le procureur l’a autorisé par écrit, la police peut fouiller les sacs et les véhicules pour chercher des armes."
+msgstr ""
+
+msgid "Être déshabillé·e entièrement n’est possible qu’en garde à vue, dans le cadre prévu par la loi."
+msgstr ""
+
+msgid "Empreintes, photos, ADN"
+msgstr ""
+
+msgid "Si on te soupçonne d’une infraction, la police peut prendre tes <b>empreintes et ta photo</b>. Refuser est un délit (1 an de prison et 15 000 € d’amende). Dans certains cas précis (seul moyen de t’identifier, infraction punie d’au moins 3 ans, autorisation écrite du procureur), elles peuvent être prises de force."
+msgstr ""
+
+msgid "Le <b>prélèvement ADN</b> n’est possible que pour une liste d’infractions, dont les violences, les dégradations et le port d’arme en manif. L’outrage et la rébellion seuls n’y sont pas. La décision doit être écrite et motivée."
+msgstr ""
+
+msgid "Refuser le prélèvement ADN est un délit distinct (1 an de prison et 15 000 € d’amende). Si tu es seulement suspect·e et pas mis·e en examen, ton profil ADN est supprimé."
+msgstr ""
+
+msgid "Ce sont des sujets à voir avec ton avocat·e, avant de décider."
+msgstr ""
+
+msgid "Moins de 18 ans"
+msgstr ""
+
+msgid "Avant 10 ans : ni retenue ni garde à vue."
+msgstr ""
+
+msgid "De 10 à 13 ans : seulement une <b>retenue</b>, si on te soupçonne d’une infraction punie d’au moins 5 ans de prison. 12 heures maximum, prolongeables une fois. Avocat·e et médecin obligatoires."
+msgstr ""
+
+msgid "Dès 13 ans : garde à vue possible, 24 heures, prolongeable de 24 heures (avant 16 ans, pas de prolongation pour un délit puni de moins de 5 ans)."
+msgstr ""
+
+msgid "En garde à vue, <b>un·e avocat·e est obligatoire dès le début</b>. Si personne n’en choisit, un·e avocat·e commis·e d’office vient, gratuitement."
+msgstr ""
+
+msgid "Tes parents sont prévenus, en principe dans les 3 heures. S’ils sont injoignables, un autre adulte, que tu peux choisir, les remplace."
+msgstr ""
+
+msgid "Avant 16 ans, un examen médical est obligatoire. Dès 16 ans, toi, tes parents ou ton avocat·e pouvez le demander."
+msgstr ""
+
+msgid "Les interrogatoires en garde à vue sont filmés."
+msgstr ""
+
+msgid "Pas de comparution immédiate avant 18 ans. En général, le juge décide d’abord si tu es coupable, puis de la sanction plusieurs mois après."
+msgstr ""
+
+msgid "Ce qui est décidé avant tes 18 ans n’apparaît pas sur les extraits de casier que voient les employeurs."
+msgstr ""
+
+msgid "Ce qu’on peut te proposer à la place d’un procès"
+msgstr ""
+
+msgid "<b>Avertissement pénal probatoire</b> (il remplace le rappel à la loi) : l’affaire est réexaminée si tu commets une nouvelle infraction dans les 2 ans. Impossible pour des violences ou un délit contre un policier ou un gendarme."
+msgstr ""
+
+msgid "<b>Composition pénale</b> : tu reconnais les faits et tu acceptes une mesure (amende, travail non rémunéré, stage…). Elle est inscrite à ton casier."
+msgstr ""
+
+msgid "<b>Reconnaissance préalable de culpabilité</b> (« plaider-coupable ») : tu reconnais les faits et le procureur propose une peine : au plus 3 ans de prison, et jamais plus de la moitié de la peine prévue. Avocat·e obligatoire, et tu peux demander <b>10 jours pour réfléchir</b>. Si tu acceptes, c’est une condamnation."
+msgstr ""
+
+msgid "Rien ne t’oblige à accepter : parles-en d’abord avec ton avocat·e."
+msgstr ""
+
+msgid "Refuser de donner le code de déverrouillage peut être poursuivi, mais seulement si le téléphone chiffre ses données et que le code sert à les déchiffrer : le juge doit le vérifier (Cour de cassation, 2022 et 2026)."
+msgstr ""
+
+msgid "Dissimuler volontairement son visage dans une manifestation où des troubles ont lieu, ou risquent d’avoir lieu, est un délit (1 an de prison et 15 000 € d’amende). La loi prévoit une exception pour <b>motif légitime</b> (raison de santé par exemple), que tu devras pouvoir expliquer."
+msgstr ""
+
+msgid "En <b>comparution immédiate</b>, tu peux demander un délai pour préparer ta défense. Le procès est alors renvoyé de 4 à 10 semaines."
+msgstr ""
+
+msgid "Après un jugement, tu as <b>10 jours pour faire appel</b>."
+msgstr ""
+
+msgid "En cas de condamnation, tu peux demander au tribunal qu’elle ne figure pas sur l’extrait de casier que voient les employeurs (bulletin n° 2)."
+msgstr ""
+
+msgid "Pour tes proches"
+msgstr ""
+
+msgid "Un·e proche est interpellé·e"
+msgstr ""
+
+msgid "Préviens la legal team. Si tu ne sais pas où la personne est retenue, appelle ou passe dans les commissariats proches."
+msgstr ""
+
+msgid "Si la police t’appelle pour te prévenir, tu peux <b>choisir un·e avocat·e</b> pour la personne : elle devra confirmer ce choix."
+msgstr ""
+
+msgid "Un membre de la famille peut demander qu’elle voie un médecin : c’est un droit."
+msgstr ""
+
+msgid "Si elle risque une <b>comparution immédiate</b>, rassemble vite des justificatifs : domicile, contrat de travail ou de stage, certificat de scolarité ou carte étudiante. Donne-les à son avocat·e avant l’audience : ils montrent qu’elle se présentera à son procès et peuvent éviter la détention provisoire."
+msgstr ""
+
+msgid "Si le tribunal ne peut pas la juger le jour même, elle peut être placée en détention jusqu’au 3e jour ouvrable au plus."
+msgstr ""
+
+msgid "Après coup : les fichiers de police"
+msgstr ""
+
+msgid "Le <b>TAJ</b> (antécédents judiciaires) garde la trace des personnes mises en cause, de 5 à 40 ans selon les faits. Après une relaxe, un non-lieu ou un classement sans suite, tu peux demander tout de suite au procureur d’effacer ou de corriger ta fiche. Il a 2 mois pour répondre."
+msgstr ""
+
+msgid "Pour l’<b>ADN</b>, la demande d’effacement se fait aussi auprès du procureur (3 mois pour répondre), puis, sans réponse ou en cas de refus, devant le président de la chambre de l’instruction dans les 10 jours."
+msgstr ""
+
+msgid "Pour savoir si tu es fiché·e au TAJ, écris d’abord au ministère de l’Intérieur ; sans réponse ou en cas de refus, saisis la <a class=\"inline-link\" href=\"https://www.cnil.fr/fr/demander-une-verification-sur-un-fichier-de-police-ou-de-renseignement\" target=\"_blank\" rel=\"noopener noreferrer\">CNIL</a>."
+msgstr ""
+
+msgid "Vérifié le 10 novembre 2026 sur Légifrance et service-public.fr (Code de procédure pénale, Code de la justice pénale des mineurs, Code pénal)."
+msgstr ""
+
+msgid "🖨 Imprimer la fiche"
+msgstr ""
+
+msgid "Le point est placé au <b>milieu de la carte</b> : c’est là que les gens se retrouveront en cas de dispersion. Il s’affiche sur la carte avec ton nom, et disparaît à l’heure choisie."
+msgstr ""
+
+# --- textes à traduire ---
+#: client/app/05-marqueurs.js
+msgid "Environ {n} personnes"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Combien, environ ?"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Nombre noté"
+msgstr ""
+
+#: client/app/05-marqueurs.js
+msgid "Indiquer le nombre"
+msgstr ""
+
+#: client/app/12-lieux-calques.js
+msgid "Arrêt cardiaque : appelle le 15 ou le 112, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir."
+msgstr ""
+
+#: client/app/15-installation-annonces.js
+msgid "Jusqu’à {h}"
+msgstr ""
+
+#: client/app/15-installation-annonces.js
+msgid "Voir sur la carte"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Où et comment se retrouver"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "ex. : si dispersion, rendez-vous devant la fac de lettres, entrée côté parc"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Arrêté d’interdiction de manifester en vigueur ici"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Arrêté avec un périmètre interdit en vigueur ici"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Lis-le pour savoir exactement ce qu’il couvre."
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Lire l’arrêté"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Arrêté en vigueur dans la zone"
+msgstr ""
+
+#: src/announcements/create.js
+msgid "Décris le point de ralliement (lieu, consigne)."
+msgstr ""
+
+#: src/veille.js
+msgid "Adresse invalide (elle doit commencer par https://)."
+msgstr ""
+
+#: src/veille.js
+msgid "Département invalide."
+msgstr ""
+
+#: src/veille.js
+msgid "Cette page est déjà surveillée."
+msgstr ""
+
+#: src/veille.js
+msgid "400 pages surveillées au plus."
+msgstr ""
+
+#: src/veille.js
+msgid "Source introuvable."
+msgstr ""
+
+#: src/veille.js
+msgid "État invalide."
+msgstr ""
+
+msgid "Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir."
+msgstr ""
+
+msgid "1 à 5"
+msgstr ""
+
+msgid "5 à 15"
+msgstr ""
+
+msgid "15 à 30"
+msgstr ""
+
+msgid "plus de 30"
+msgstr ""
+
+msgid "Nombre invalide."
+msgstr ""
+
+msgid "Pas de nombre pour ce type."
+msgstr ""
+
+msgid "Défibrillateur"
+msgstr ""
+
+msgid "🫀 Défibrillateurs"
+msgstr ""
+
+msgid "Point de ralliement publié"
+msgstr ""

@@ -1929,6 +1929,18 @@
   $('#btnNativeShare').onclick = () => navigator.share?.({ title: 'Cortège', text: t('La carte en direct des manifs, par @{h}', { h: cfg.brand?.handle || 'neru' }), url: shareUrl }).catch(() => {});
   $('#btnCopyLink').onclick = async () => { try { await navigator.clipboard.writeText(shareUrl); toast('Lien copié'); } catch { toast(shareUrl); } };
 
+  // ---- Fiche droits imprimable : toutes les rubriques ouvertes, le reste de l'appli masqué à l'impression ----
+  {
+    const btn = $('#btnRightsPrint');
+    if (btn) btn.onclick = () => {
+      const closed = [...document.querySelectorAll('#sheetRights details:not([open])')];
+      closed.forEach(d => { d.open = true; });
+      document.body.classList.add('print-rights');
+      const done = () => { document.body.classList.remove('print-rights'); closed.forEach(d => { d.open = false; }); removeEventListener('afterprint', done); };
+      addEventListener('afterprint', done);
+      try { print(); } catch { done(); }
+    };
+  }
   // ---- Espace orga / legal team ----
   // Le lien orga ressemble à https://cortege.neru.tv/?orga=CLÉ : la clé est gardée sur ce téléphone et retirée de l'adresse.
   const orgaKey = () => { try { return localStorage.getItem('cortege-orga') || ''; } catch { return ''; } };

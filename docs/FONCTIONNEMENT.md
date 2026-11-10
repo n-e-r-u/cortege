@@ -58,6 +58,9 @@ Avec la clé `ADMIN_KEY` :
 - **Mode manif renforcé** (onglet Abus, 1 à 6 h) : limites divisées par deux et téléphones apparus depuis moins de 10 min sans poids, sans couper les signalements.
 - **Effacement d'urgence** (onglet Urgences) : efface d'un coup toutes les traces liées aux personnes et détruit les clés de hachage. Les orgas et l'agenda sont gardés.
 - **Direction des véhicules** (police, CRS, BAC, unités d'intervention, blindés, canons à eau, groupes fascistes, secours) : indiquée d'un appui après le signalement ou dans la fiche du point (rose des vents, n'importe quel téléphone), ou déduite quand le point est revu 40 m plus loin. Flèche autour du point et « Se dirige vers… · il y a … » dans la fiche, pendant 5 minutes.
+- **Nombre approximatif** (groupes fascistes, police, CRS, BAC, militaires, unités d'intervention) : 1 à 5, 5 à 15, 15 à 30 ou plus de 30, indiqué juste après le signalement ou dans la fiche ; le dernier indiqué s'affiche tant que le point vit.
+- **Point de ralliement** : annonce d'une orga certifiée posée au milieu de la carte, affichée comme un drapeau 🚩 avec l'orga, le texte et l'heure de fin (24 h au plus).
+- **Défibrillateurs** : lieux permanents venus d'OpenStreetMap (`emergency=defibrillator`, sauf accès privé), au zoom rue, avec leur emplacement exact quand il est renseigné.
 - **Secours** (pompiers, SAMU) : point qui suit le véhicule, 15 minutes, sans alerte. Les hôpitaux avec service d'urgences (OpenStreetMap) sont visibles dès le zoom ville avec une pastille « URG ».
 - **Tête et queue de cortège** : un seul point chacune, qui suit le cortège (tous les signalements à moins de 2 km le déplacent) avec la trace des 30 dernières minutes, sa direction et sa vitesse. Sur un parcours dessiné dans l'agenda, la partie déjà faite est surlignée, avec l'avancée en pourcentage, une estimation de la fin et, si tu es plus loin sur le parcours, de son arrivée près de toi (calculée sur le téléphone, ta position ne part pas). Avec une tête et une queue, la carte montre le cortège entre les deux et sa longueur : le morceau du parcours annoncé, sinon le chemin réellement suivi par la tête (gardé 60 min), sinon le plus court chemin piéton par les rues de la carte hébergée (calculé par le serveur sur les tuiles PMTiles, sans service extérieur), et à défaut une ligne pointillée « à vol d'oiseau ».
 - **Nom affiché de l'admin** (Réglages) : remplace « Cortège » sur les nouvelles annonces, vérifications et la position en direct ; réservé (aucune orga ne peut le prendre).
@@ -119,6 +122,10 @@ L’interface existe en français, anglais, espagnol, allemand et arabe (afficha
 - Dans le navigateur, `public/i18n.js` charge le fichier de la langue choisie (un seul, gardé pour le hors-ligne), traduit la page, puis l’appli traduit ses messages avec `t('texte français', { valeurs })`. Un texte absent du dictionnaire reste en français.
 - Les notifications suivent la langue de l’appli (envoyée au serveur avec l’abonnement) et utilisent les mêmes fichiers de traduction.
 - Restent en français : les textes écrits par les orgas et l’admin (annonces, titres de journée), le texte des arrêtés, et les pages annexes (mentions légales, bilans, presse, affiche).
+
+## Veille des arrêtés
+
+Admin › Arrêtés › Veille des préfectures. L'admin indique les pages à surveiller : accueil ou actualités d'une préfecture, page du recueil des actes administratifs, flux RSS ou Atom (400 au plus). Le serveur relit chacune toutes les 20 minutes (une à la fois, quelques secondes d'écart, en-têtes de cache respectés) et relève les liens apparus depuis la lecture précédente ; la première lecture d'une page ne signale rien. Un lien est proposé si son titre ou son adresse parle de manifestation, de rassemblement, de périmètre, de couvre-feu, de drones ou d'objets interdits, ou réunit deux thèmes plus larges (interdiction, mesures de police, circulation). « Préparer » remplit le formulaire d'arrêté (département et source) ; « Pas utile » l'écarte. Rien n'est publié automatiquement. Les liens proposés comptent dans la pastille Arrêtés.
 
 ## Partage sur Bluesky et Mastodon
 

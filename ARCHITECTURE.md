@@ -23,6 +23,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/orgas/` | Orgas : clés, parrainage, journal, noms réservés, demandes d'accès |
 | `src/legal.js`, `src/orders.js` | Annuaire des legal teams, arrêtés et restrictions |
 | `src/refuges.js` | Lieux de repli des orgas : enregistrement, créneaux d'ouverture, logos validés par l'admin, publication des lieux ouverts (`live/repli.json`) |
+| `src/veille.js` | Veille des arrêtés : pages de préfecture et flux relus toutes les 20 minutes, nouveaux liens repérés par mots-clés et proposés à l'admin |
 | `src/social.js` | Partage sur Bluesky et Mastodon : messages automatiques (veille et jour J d'une journée, arrêtés regroupés, bilan publié) et écrits par l'admin, relecture facultative, envoi avec nouveaux essais, retrait |
 | `src/ideas.js` | Boîte à idées : propositions, validation par l'admin, statuts, votes anonymes par jeton propre à chaque idée, fusion des doublons |
 | `src/moderation.js`, `src/sweep.js` | File de modération, tableau des abus, ménage toutes les 30 s |
