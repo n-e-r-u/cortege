@@ -14,6 +14,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 - **Défibrillateurs** sur la carte (OpenStreetMap), au zoom rue, avec leur emplacement exact et quoi faire en cas d'arrêt cardiaque. Calque « 🫀 Défibrillateurs ». Ils arrivent avec le prochain import des lieux.
 - **Nombre approximatif** pour les groupes fascistes, la police, les CRS, la BAC, les militaires et les unités d'intervention : juste après le signalement ou dans la fiche du point (1 à 5, 5 à 15, 15 à 30, plus de 30).
 - **Point de ralliement** : nouveau type d'annonce des orgas certifiées. Un drapeau 🚩 sur la carte, à l'endroit choisi, avec l'orga, le texte et l'heure de fin ; un bandeau « Voir sur la carte ».
+- **Masquer un type de lieu depuis sa fiche** : « 🙈 Masquer ce type de lieu » dans la fiche d'un lieu (défibrillateur, pharmacie, caméra…). Le bouton Calques, en bas à droite, porte maintenant une pastille avec le nombre de choses masquées et s'anime un instant après un masquage, pour montrer où les réafficher.
 - **Agenda** : un événement situé dans la zone d'un arrêté d'interdiction de manifester (ou de périmètre interdit) en vigueur à son heure porte « Arrêté en vigueur dans la zone », avec le lien vers le texte.
 
 **Admin** :

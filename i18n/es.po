@@ -3940,3 +3940,18 @@ msgstr "🫀 Desfibriladores"
 
 msgid "Point de ralliement publié"
 msgstr "Punto de encuentro publicado"
+
+# --- textes à traduire ---
+#: client/app/12-lieux-calques.js
+msgid "Ce que montre la carte ({n} masqué)"
+msgid_plural "Ce que montre la carte ({n} masqués)"
+msgstr[0] "Lo que muestra el mapa ({n} oculto)"
+msgstr[1] "Lo que muestra el mapa ({n} ocultos)"
+
+#: client/app/12-lieux-calques.js
+msgid "{what} masqués. Pour les réafficher : bouton Calques, en bas à droite."
+msgstr "{what} ocultos. Para volver a mostrarlos: botón Capas, abajo a la derecha."
+
+#: client/app/12-lieux-calques.js
+msgid "Masquer ce type de lieu"
+msgstr "Ocultar este tipo de lugar"

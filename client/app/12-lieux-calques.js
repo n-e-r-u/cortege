@@ -14,6 +14,26 @@
   let poiHidden = false; try { poiHidden = localStorage.getItem('cortege-poi-hidden') === '1'; } catch {}
   let poiOff = new Set(); try { poiOff = new Set(JSON.parse(localStorage.getItem('cortege-poi-off') || '[]')); } catch {}
   const poiShown = kind => { const f = POI_FILTERS.find(x => x[2].includes(kind)); return !f || !poiOff.has(f[0]); };
+  // Pastille du bouton Calques (en bas à droite) : combien de choses sont masquées, pour qu'on sache où les retrouver
+  function layersBadge(pulse) {
+    const n = hidden.size + (evHidden ? 1 : 0) + (poiHidden ? 1 : poiOff.size), b = $('#layersDot');
+    b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
+    $('#btnLayers').setAttribute('aria-label', n ? tn(n, 'Ce que montre la carte ({n} masqué)', 'Ce que montre la carte ({n} masqués)') : t('Ce que montre la carte'));
+    if (pulse) { const btn = $('#btnLayers'); btn.classList.remove('pulse'); void btn.offsetWidth; btn.classList.add('pulse'); }
+  }
+  // Masquer un type de lieu depuis sa fiche (« je ne veux plus voir les défibrillateurs ») ; on le réaffiche par le bouton Calques
+  function poiHideType(kind) {
+    const f = POI_FILTERS.find(x => x[2].includes(kind)); if (!f) return;
+    poiOff.add(f[0]); try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {}
+    map.closePopup(); renderPois(); layersBadge(true);
+    toast(t('{what} masqués. Pour les réafficher : bouton Calques, en bas à droite.', { what: t(f[1]) }));
+  }
+  const hideBtn = kind => {
+    const f = POI_FILTERS.find(x => x[2].includes(kind)); if (!f) return '';
+    const b = el('button', { type: 'button', class: 'link-btn poi-hide' }, '🙈 ' + t('Masquer ce type de lieu'));
+    b.onclick = () => poiHideType(kind);
+    return b;
+  };
   let poiHash = null, poiSeq = 0;
   const poiFiles = new Map(), poiDrawn = new Map();
   const poiLayer = L.layerGroup().addTo(map);
@@ -49,6 +69,7 @@
     else if (dir >= 0) root.append(el('p', {}, t('Orientée vers {dir}.', { dir: compassFr(dir) })));
     root.append(el('p', { class: 'poi-tip' }, t('Recensement fait par des bénévoles d’OpenStreetMap : il est incomplet. Une rue sans caméra sur la carte n’est pas forcément une rue sans caméra.')));
     root.append(el('p', { class: 'fine' }, t('© contributeurs OpenStreetMap')));
+    root.append(hideBtn('cam'));
     return root;
   }
   const compassFr = d => t(['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'][Math.round(d / 45) % 8]);
@@ -83,6 +104,7 @@
         : t('Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.', { n: em.medical || em.general || '112' })));
     }
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
+    root.append(hideBtn(kind));
     return root;
   }
   function poiIcon(x, labels) {
@@ -135,8 +157,8 @@
       };
       box.append(b);
     }
-    // Point sur le bouton Calques : quelque chose est masqué
-    $('#layersDot').hidden = !(hidden.size || evHidden);
+    // Pastille sur le bouton Calques : combien de choses sont masquées
+    layersBadge();
   }
   renderFilters();
   function layerSwitch(label, sub, on, change, extra) {
@@ -151,7 +173,7 @@
     box.append(layerSwitch('📅 Agenda', 'Manifs, blocus et rassemblements du moment, avec leur parcours', !evHidden, on => {
       evHidden = !on;
       try { localStorage.setItem('cortege-ev-hidden', evHidden ? '1' : '0'); } catch {}
-      renderEvents();
+      renderEvents(); layersBadge();
     }));
     if (cfg.poiKinds) {
       const more = el('button', { type: 'button', class: 'link-btn' }, 'Choisir les types de lieux');
@@ -159,13 +181,13 @@
       box.append(layerSwitch('🏛 Lieux utiles', 'Préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, eau potable. Ils apparaissent en zoomant.', !poiHidden, on => {
         poiHidden = !on;
         try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
-        renderPois(); renderToggles();
+        renderPois(); renderToggles(); layersBadge();
       }, more));
       if (PK.cam) box.append(layerSwitch('📷 Caméras de surveillance', 'Visibles en zoomant au plus près. Recensement bénévole d’OpenStreetMap, il en manque.', !poiHidden && !poiOff.has('cam'), on => {
         if (on && poiHidden) { poiHidden = false; try { localStorage.setItem('cortege-poi-hidden', '0'); } catch {} }
         on ? poiOff.delete('cam') : poiOff.add('cam');
         try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {}
-        renderPois(); renderToggles();
+        renderPois(); renderToggles(); layersBadge();
         if (on && map.getZoom() < POI_CAM_Z) toast('Caméras affichées : zoome au plus près pour les voir');
       }));
     }
@@ -180,7 +202,7 @@
     for (const [key, label, kinds] of POI_FILTERS) {
       const z = Math.min(...kinds.map(k => POI_MINZ[k] || POI_STREET_Z));
       const cb = el('input', { type: 'checkbox' }); cb.checked = !poiOff.has(key); cb.disabled = poiHidden;
-      cb.onchange = () => { cb.checked ? poiOff.delete(key) : poiOff.add(key); try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {} renderPois(); };
+      cb.onchange = () => { cb.checked ? poiOff.delete(key) : poiOff.add(key); try { localStorage.setItem('cortege-poi-off', JSON.stringify([...poiOff])); } catch {} renderPois(); layersBadge(); };
       box.append(el('label', { class: 'switch' }, cb, el('span', { class: 'switch-txt' }, el('b', {}, label), el('span', {}, key === 'cam' ? 'Visible en zoomant au plus près. Rouge : publique. Orange : privée, filme la rue. Le cône montre la direction filmée quand elle est connue. Recensement bénévole et incomplet.' : z >= 16 ? 'Visible au zoom rue' : z >= 15 ? 'Visible au zoom quartier' : 'Visible au zoom ville'))));
     }
     $('#sheetPoi').hidden = false;
@@ -189,7 +211,7 @@
     poiHidden = !e.target.checked;
     try { localStorage.setItem('cortege-poi-hidden', poiHidden ? '1' : '0'); } catch {}
     $('#poiList').querySelectorAll('input').forEach(i => (i.disabled = poiHidden));
-    renderPois();
+    renderPois(); layersBadge();
   });
   $('#poiClose').onclick = () => closeSheets();
 

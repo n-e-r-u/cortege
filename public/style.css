@@ -662,7 +662,13 @@ html.i18n-wait body { visibility: hidden; }
 /* Outils latéraux : au-dessus de la barre d'onglets */
 .tools { bottom: calc(var(--safe-b) + var(--tabh) + 20px); }
 .round.layers-btn { position: relative; color: var(--fg); }
-.layers-dot { position: absolute; top: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); }
+.layers-dot { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px; background: var(--accent); color: var(--accent-fg, #fff);
+  border: 2px solid var(--surface); font: 800 11px/16px var(--font-num, system-ui, sans-serif); text-align: center; box-sizing: border-box; }
+/* Après avoir masqué quelque chose : le bouton Calques s'anime un instant, pour montrer où le réafficher */
+.round.layers-btn.pulse { animation: lyPulse 1.1s ease-out 3; }
+@keyframes lyPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); } 100% { box-shadow: 0 0 0 16px transparent; } }
+@media (prefers-reduced-motion: reduce) { .round.layers-btn.pulse { animation: none; outline: 3px solid var(--accent); } }
+.poi-hide { display: block; margin-top: 6px; font-size: 13px; }
 .calm-nav { bottom: calc(var(--safe-b) + var(--tabh) + 22px); }
 .note-card { bottom: calc(var(--safe-b) + var(--tabh) + 16px); }
 .toast { bottom: calc(var(--safe-b) + var(--tabh) + 90px); }
@@ -795,7 +801,7 @@ html[dir="rtl"] .list .d { text-align: left; }
 html[dir="rtl"] .switch input::after { left: auto; right: 3px; }
 html[dir="rtl"] .switch input:checked::after { transform: translateX(-18px); }
 html[dir="rtl"] .tab-badge { left: auto; right: calc(50% + 6px); }
-html[dir="rtl"] .layers-dot { right: auto; left: 4px; }
+html[dir="rtl"] .layers-dot { right: auto; left: -4px; }
 html[dir="rtl"] .legal-num, html[dir="rtl"] .qr-url, html[dir="rtl"] #onionAddr, html[dir="rtl"] input[type="tel"], html[dir="rtl"] input[type="url"] { direction: ltr; unicode-bidi: isolate; }
 html[dir="rtl"] .legal-num { text-align: right; }
 html[dir="rtl"] .by { margin-left: 0; margin-right: 4px; }

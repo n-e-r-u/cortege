@@ -3954,3 +3954,18 @@ msgstr ""
 
 msgid "Point de ralliement publié"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/12-lieux-calques.js
+msgid "Ce que montre la carte ({n} masqué)"
+msgid_plural "Ce que montre la carte ({n} masqués)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/12-lieux-calques.js
+msgid "{what} masqués. Pour les réafficher : bouton Calques, en bas à droite."
+msgstr ""
+
+#: client/app/12-lieux-calques.js
+msgid "Masquer ce type de lieu"
+msgstr ""
