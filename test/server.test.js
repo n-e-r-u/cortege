@@ -1206,3 +1206,25 @@ test('direction des véhicules : indiquée d’un appui, déduite du déplacemen
   const med = await post('/api/reports', { cat: 'medic', ...place() });
   assert.equal((await post(`/api/reports/${med.j.id}/dir`, { d: 1 })).s, 400);
 });
+
+test('2.17 : nombre approximatif d’un groupe, point de ralliement des orgas certifiées', async () => {
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  assert.ok(cfg.countCats.includes('facho') && !cfg.countCats.includes('lacrymo'));
+  assert.ok(cfg.poiKinds.some(k => k.id === 'dae'), 'défibrillateurs parmi les lieux');
+  const f = await post('/api/reports', { cat: 'facho', ...place() });
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 5 })).s, 400);
+  const c = await post(`/api/reports/${f.j.id}/count`, { c: 2 });
+  assert.equal(c.s, 200); assert.equal(c.j.n, 2);
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 3 })).j.n, 3, 'un autre téléphone corrige');
+  const lac = await post('/api/reports', { cat: 'lacrymo', ...place() });
+  assert.equal((await post(`/api/reports/${lac.j.id}/count`, { c: 1 })).s, 400);
+  // Ralliement : orga certifiée seulement, texte obligatoire, jamais national
+  const T = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Ralliement Essai' })).j.invite);
+  assert.equal((await asOrga(T.key, '/api/announcements', { kind: 'rally', text: 'Devant la fac', ...place(), minutes: 60 })).s, 403);
+  const C = await orgaFrom((await admin('/api/admin/orgas', { label: 'Collectif Ralliement OK' })).j.invite);
+  const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(o => o.label === 'Collectif Ralliement OK').id;
+  await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+  assert.equal((await asOrga(C.key, '/api/announcements', { kind: 'rally', text: '', ...place(), minutes: 60 })).s, 400);
+  const p = place(), r = await asOrga(C.key, '/api/announcements', { kind: 'rally', text: 'Si dispersion : devant la fac de lettres', ...p, minutes: 90, national: true });
+  assert.equal(r.s, 201); assert.equal(r.j.kind, 'rally'); assert.equal(r.j.national, false); assert.ok(Math.abs(r.j.exp - Date.now() - 90 * 60_000) < 10_000);
+});

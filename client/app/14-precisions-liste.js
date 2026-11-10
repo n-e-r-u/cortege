@@ -24,6 +24,9 @@
     // Véhicule ou groupe qui bouge : sa direction se donne d'un appui (facultatif)
     const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat);
     if (!nd.hidden) nd.append(el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), dirPicker(id, null, () => clearTimeout(openNoteCard.t)));
+    // Groupe : combien, environ (facultatif aussi)
+    const nc = $('#noteCount'); nc.textContent = ''; nc.hidden = !COUNT_CAT.has(cat);
+    if (!nc.hidden) nc.append(el('span', { class: 'fine' }, t('Combien, environ ?')), countPicker(id, null, () => clearTimeout(openNoteCard.t)));
     clearTimeout(openNoteCard.t);
     openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);
   }

@@ -81,6 +81,8 @@ const GROUPS = [
 ];
 // Véhicules et groupes qui roulent ou marchent : leur direction s'affiche (flèche), indiquée par un téléphone ou déduite du déplacement du point
 const DIR_CATS = new Set(['crs', 'police', 'bac', 'inter', 'blinde', 'canon', 'facho', 'secours']);
+// Groupes dont on peut indiquer le nombre (environ) : 1 = 1 à 5 personnes, 2 = 5 à 15, 3 = 15 à 30, 4 = plus de 30 (2.17)
+const COUNT_CATS = new Set(['facho', 'crs', 'police', 'bac', 'militaires', 'inter']);
 const BASE_TTL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.ttl]));
 
-module.exports = { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL, DIR_CATS };
+module.exports = { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL, DIR_CATS, COUNT_CATS };

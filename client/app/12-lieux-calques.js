@@ -3,14 +3,14 @@
   const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
   const POI_Z = 13, POI_STREET_Z = 16, POI_MAX = 350;
   // Zoom à partir duquel chaque type apparaît : les grands lieux d'abord, les mairies et commissariats au zoom quartier, le reste au zoom rue
-  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, cam: 17 };
+  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, dae: 16, cam: 17 };
   const POI_CAM_Z = 17;
   // Hôpitaux avec service d'urgences : visibles dès le zoom ville (13), marqués à part ; les autres lieux gardent leur zoom
   const isUrg = x => x[1] === 'hopital' && !!x[7];
   const minZ = x => isUrg(x) ? 13 : POI_MINZ[x[1]] || POI_STREET_Z;
   // Filtres proposés (préfectures et sous-préfectures ensemble, commissariats et gendarmeries ensemble)
   const POI_FILTERS = [['pref', '🏢 Préfectures et sous-préfectures', ['pref', 'spref']], ['mairie', '🏛 Mairies', ['mairie']], ['police', '👮 Commissariats et gendarmeries', ['police', 'gend']],
-    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['cam', '📷 Caméras de surveillance', ['cam']]];
+    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['dae', '🫀 Défibrillateurs', ['dae']], ['cam', '📷 Caméras de surveillance', ['cam']]];
   let poiHidden = false; try { poiHidden = localStorage.getItem('cortege-poi-hidden') === '1'; } catch {}
   let poiOff = new Set(); try { poiOff = new Set(JSON.parse(localStorage.getItem('cortege-poi-off') || '[]')); } catch {}
   const poiShown = kind => { const f = POI_FILTERS.find(x => x[2].includes(kind)); return !f || !poiOff.has(f[0]); };
@@ -76,6 +76,12 @@
     if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences')
       : pf.code === 'fr' ? t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.') : t('Urgences : pas indiqué. En cas d’urgence, appelle le {n}.', { n: em.medical || em.general || '112' })));
     if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
+    // Défibrillateur : emplacement exact, et le rappel utile (appeler les secours, l'appareil guide à la voix)
+    if (kind === 'dae') {
+      if (flag) root.append(el('p', {}, '📍 ' + flag));
+      root.append(el('p', { class: 'poi-tip' }, pf.code === 'fr' ? t('Arrêt cardiaque : appelle le 15 ou le 112, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.')
+        : t('Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.', { n: em.medical || em.general || '112' })));
+    }
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;
   }

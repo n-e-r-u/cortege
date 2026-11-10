@@ -136,6 +136,8 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .rf-map { height: 260px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
 .rf-checks { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .soc-checks { flex-direction: column; align-items: flex-start; }
+.vl-src summary { cursor: pointer; font-weight: 700; margin: 8px 0; }
+.vl-src .bad { color: var(--bad-text, #c0392b); }
 .soc-list li { grid-template-columns: 1fr; }
 .soc-list .soc-text { white-space: pre-wrap; margin: 4px 0; }
 .soc-list textarea { width: 100%; }
@@ -688,6 +690,24 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
   </section>
 
   <section class="panel" id="panelOrders" role="tabpanel" aria-labelledby="tabOrders" hidden>
+    <section class="card">
+      <h2>Veille des préfectures <span id="vlCount"></span></h2>
+      <p class="fine">Les pages ci-dessous sont relues toutes les 20 minutes. Un lien nouveau dont le titre parle de manifestation, de périmètre, de couvre-feu, de drones… apparaît ici. Rien n’est publié tout seul : ouvre le texte, puis « Préparer » remplit le formulaire avec le département et la source. Les préfectures publient parfois tard, ou seulement sur leurs réseaux : la veille aide, elle ne remplace pas la recherche.</p>
+      <ul class="org-list" id="vlHits"></ul>
+      <details class="vl-src">
+        <summary>Pages surveillées (<span id="vlSrcN">0</span>)</summary>
+        <form class="orga-form" id="vlForm">
+          <div class="row2">
+            <label>Département<select id="vlDep"></select></label>
+            <label>Nom (facultatif)<input id="vlLabel" maxlength="60" placeholder="ex. : actualités, recueil des actes"></label>
+          </div>
+          <label>Adresse de la page ou du flux RSS<input id="vlUrl" type="url" maxlength="400" required placeholder="https://www.herault.gouv.fr/…"></label>
+          <div class="controls"><button type="button" class="ghost" id="vlGuess">Proposer le site de la préfecture</button><button type="submit">Surveiller cette page</button></div>
+          <p class="fine" id="vlMsg">Bonnes pages : l’accueil ou les actualités de la préfecture, la page du recueil des actes administratifs (RAA), un flux RSS. Le site d’une préfecture est en général www.nom-du-departement.gouv.fr ; à Paris, la préfecture de police.</p>
+        </form>
+        <ul class="org-list" id="vlSrc"></ul>
+      </details>
+    </section>
     <section class="card">
       <h2>Propositions à valider</h2>
       <ul class="org-list" id="ordPending"></ul>

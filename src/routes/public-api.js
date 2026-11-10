@@ -3,7 +3,7 @@ const { REFUGE_GLYPHS, REFUGE_COLORS, REFUGE_SERVICES } = require('../refuges');
 // Routes publiques de l'API : tracé du cortège, configuration, notifications, santé, signalements autour, version, recherche de lieux.
 const fs = require('fs');
 const { APP_VERSION, versionInfo } = require('../http/version');
-const { CATEGORIES, MERGE, GROUPS, EVENT_TYPES, VIBES, ALERT_CATS, DIR_CATS } = require('../categories');
+const { CATEGORIES, MERGE, GROUPS, EVENT_TYPES, VIBES, ALERT_CATS, DIR_CATS, COUNT_CATS } = require('../categories');
 const { DEPS } = require('../geo/departments');
 const { MIN, CENTER, ZOOM, DATA_DIR, UNDER_PASSENGER, TRUST_PROXY } = require('../config');
 const { NEXT } = require('./next');
@@ -53,7 +53,7 @@ async function publicApiRoutes(req, res, url, pathname) {
     { const S = settings(), banner = bannerNow(), I = instance();
     return send(res, 200, { event: banner || I.event, banner: !!banner, center: S.view ? [S.view.lat, S.view.lng] : CENTER, zoom: S.view ? S.view.zoom : ZOOM,
       alertRadius: S.alertRadius || 300, nearKm: nearKm(), poiKinds: POI_KINDS, orderKinds: ORDER_KINDS, refuge: { glyphs: REFUGE_GLYPHS, colors: REFUGE_COLORS, services: REFUGE_SERVICES }, deps: DEPS.map(d => [d.c, d.n]), cfgh: cfgHash(),
-      brand: I.brand, credit: showCredit(), violenceUrl: I.violenceUrl, contact: I.contact, hostInfo: I.hostInfo, sourceUrl: I.sourceUrl, categories: activeCategories(), profiles: clientProfiles(), merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], dirCats: [...DIR_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
+      brand: I.brand, credit: showCredit(), violenceUrl: I.violenceUrl, contact: I.contact, hostInfo: I.hostInfo, sourceUrl: I.sourceUrl, categories: activeCategories(), profiles: clientProfiles(), merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], dirCats: [...DIR_CATS], countCats: [...COUNT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
   
   // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----
   if (req.method === 'POST' && (pathname === '/api/push/subscribe' || pathname === '/api/push/unsubscribe')) {

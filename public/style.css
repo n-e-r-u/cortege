@@ -213,6 +213,9 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .dir-b span { display: inline-block; transform: rotate(var(--d)); }
 .dir-b.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
 .dir-b.stop { font-size: 14px; color: var(--muted); }
+.count-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.count-b { min-height: 40px; padding: 0 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); font-weight: 700; }
+.count-b.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
 .note-dir { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 8px; }
 .pin.fresh { animation: pulse 1.6s ease-out 2; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent); } 100% { box-shadow: 0 0 0 18px transparent; } }
@@ -270,6 +273,7 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .ann-meta { font-size: 12px; color: var(--muted); }
 .ann-text { font-weight: 600; margin-top: 2px; overflow-wrap: anywhere; }
 .ann-x { position: absolute; top: 4px; right: 4px; width: 36px; height: 36px; border: 0; background: none; color: var(--muted); font-size: 22px; }
+.ann.rally { border-color: var(--info); border-left-width: 4px; }
 .ann-more { font-size: 12px; color: var(--muted); text-align: center; background: var(--surface); border-radius: 99px; padding: 4px 10px; align-self: center; }
 
 /* ---- Popup : badge vérifié + actions orga ---- */
@@ -940,3 +944,4 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
   background: var(--accent); color: var(--accent-fg); font: 800 11px/1 var(--font); border: 2px solid var(--bg); }
 .idea.feat { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .idea-feat { align-self: flex-start; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-fg); }
+.ag-ban { color: var(--bad-text); font-weight: 700; }

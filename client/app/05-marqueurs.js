@@ -10,6 +10,27 @@
       if (d === null) toast('Direction effacée'); else toast('Direction notée'); sync();
     } catch { toast('Pas de réseau.'); }
   }
+  // Nombre approximatif d'un groupe (fascistes, forces de l'ordre) : 4 fourchettes, un appui
+  const COUNT_CAT = new Set(cfg.countCats || []);
+  const COUNT_LBL = [null, '1 à 5', '5 à 15', '15 à 30', 'plus de 30'];
+  const countTxt = n => t('Environ {n} personnes', { n: t(COUNT_LBL[n]) });
+  function countPicker(id, cur, done) {
+    const box = el('div', { class: 'count-pick', role: 'group', 'aria-label': t('Combien, environ ?') });
+    for (const n of [1, 2, 3, 4]) {
+      const b = el('button', { type: 'button', class: 'count-b' + (cur === n ? ' on' : ''), 'aria-pressed': String(cur === n) }, t(COUNT_LBL[n]));
+      b.onclick = async () => {
+        box.querySelectorAll('.count-b').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+        try {
+          const res = await fetch(`/api/reports/${id}/count`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ c: n }) });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) toast(body.error || 'Envoi impossible.'); else { toast('Nombre noté'); sync(); }
+        } catch { toast('Pas de réseau.'); }
+        done && done(n);
+      };
+      box.append(b);
+    }
+    return box;
+  }
   // Rose des vents 3 × 3 (la carte a toujours le nord en haut) ; au centre : « ne bouge pas », qui efface la direction
   function dirPicker(id, cur, done) {
     const box = el('div', { class: 'dir-pick', role: 'group', 'aria-label': t('Il se dirige vers…') });
@@ -46,6 +67,15 @@
       const pick = el('button', { type: 'button', class: 'link-btn' }, d != null ? t('Corriger') : '➚ ' + t('Indiquer sa direction'));
       const wrap = el('div', { hidden: '' });
       pick.onclick = () => { pick.hidden = true; wrap.hidden = false; wrap.append(dirPicker(r.id, d, () => map.closePopup())); };
+      line.append(pick); root.append(line, wrap);
+    }
+    // Nombre : le dernier indiqué, et de quoi le donner ou le corriger
+    if (COUNT_CAT.has(r.cat)) {
+      const line = el('div', { class: 'pop-dir' });
+      if (r.n) line.append('👥 ' + countTxt(r.n));
+      const pick = el('button', { type: 'button', class: 'link-btn' }, r.n ? t('Corriger') : '👥 ' + t('Indiquer le nombre'));
+      const wrap = el('div', { hidden: '' });
+      pick.onclick = () => { pick.hidden = true; wrap.hidden = false; wrap.append(countPicker(r.id, r.n || null, () => map.closePopup())); };
       line.append(pick); root.append(line, wrap);
     }
     if (r.live) root.append(el('div', { class: 'pop-live' }, t('En direct : position partagée par {who}', { who: r.ver || t('une orga') })));

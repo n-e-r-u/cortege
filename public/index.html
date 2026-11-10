@@ -578,10 +578,12 @@
       <fieldset class="seg">
         <legend>Type</legend>
         <label><input type="radio" name="kind" value="info" checked> Annonce</label>
+        <label><input type="radio" name="kind" value="rally"> Point de ralliement</label>
         <label><input type="radio" name="kind" value="legal"> Numéro legal team</label>
       </fieldset>
       <div id="annInfoFields">
-        <label class="note-label" for="annText">Message</label>
+        <p class="hint" id="annRallyHint" hidden>Le point est placé au <b>milieu de la carte</b> : c’est là que les gens se retrouveront en cas de dispersion. Il s’affiche sur la carte avec ton nom, et disparaît à l’heure choisie.</p>
+        <label class="note-label" for="annText" id="annTextLabel">Message</label>
         <textarea id="annText" maxlength="220" rows="3" placeholder="ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail"></textarea>
         <fieldset class="seg">
           <legend>Importance</legend>
@@ -973,6 +975,7 @@
 <form class="note-card" id="noteCard" hidden autocomplete="off">
   <div class="note-head"><b id="noteTitle">Signalé</b><button type="button" class="x small" id="noteClose" aria-label="Fermer">×</button></div>
   <label class="sr-only" for="noteInput">Ajouter une précision</label>
+  <div class="note-dir" id="noteCount" hidden></div>
   <div class="note-dir" id="noteDir" hidden></div>
   <div class="note-row"><input id="noteInput" maxlength="120" placeholder="Ajouter une précision (facultatif)"><button type="submit" id="noteSend">Ajouter</button></div>
   <p class="fine">Pas de nom, pas de description physique, pas de matricule.</p>

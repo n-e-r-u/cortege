@@ -26,9 +26,10 @@
     $('#annNationalWrap').hidden = !(o && o.admin);
     // Annonces : réservées aux orgas certifiées (pas en essai), dans un rayon de 3 km au plus ; l'admin n'a pas de limite
     { const certified = !!(o && !o.trial), admin = !!(o && o.admin);
-      const info = document.querySelector('input[name="kind"][value="info"]'), legal = document.querySelector('input[name="kind"][value="legal"]');
-      info.closest('label').hidden = !certified;
-      if (!certified && info.checked) { legal.checked = true; legal.dispatchEvent(new Event('change')); }
+      const info = document.querySelector('input[name="kind"][value="info"]'), legal = document.querySelector('input[name="kind"][value="legal"]'),
+        rally = document.querySelector('input[name="kind"][value="rally"]');
+      info.closest('label').hidden = rally.closest('label').hidden = !certified;
+      if (!certified && (info.checked || rally.checked)) { legal.checked = true; legal.dispatchEvent(new Event('change')); }
       for (const op of $('#annRadius').options) op.hidden = op.disabled = !admin && +op.value > 3;
       if (!admin && +$('#annRadius').value > 3) $('#annRadius').value = '3'; }
     $('#btnPropose').textContent = t(o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif');
@@ -96,7 +97,7 @@
       del.disabled = !mine;
       del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); loadMine(); } catch (e) { toast(e.message); } };
       ol.append(el('li', { class: 'ann-row' },
-        el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
+        el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.kind === 'rally' ? '🚩 ' : '') + (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
           el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible'
             : `${a.by} · ${a.national ? t('toute la France') : (a.kind === 'legal' ? t('visible partout, rangé par ville') : a.r + ' km')} · ${a.permanent ? t('permanent') : t('expire dans {d}', { d: left(a.exp) })}`)), del));
     }
@@ -201,8 +202,12 @@
   { const q = new URLSearchParams(location.search), city = q.get('rejoindre');
     if (city !== null) { history.replaceState(null, '', location.pathname); setTimeout(() => openJoin(city.slice(0, 60)), 800); } }
   document.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', () => {
-    const legal = document.querySelector('input[name="kind"]:checked').value === 'legal';
+    const kind = document.querySelector('input[name="kind"]:checked').value, legal = kind === 'legal', rally = kind === 'rally';
     $('#annInfoFields').hidden = legal; $('#annLegalFields').hidden = !legal;
+    // Point de ralliement : même formulaire qu'une annonce, sans « nationale », texte d'aide propre
+    $('#annRallyHint').hidden = !rally; $('#annNationalWrap').hidden = rally || !(orga && orga.admin);
+    $('#annTextLabel').textContent = rally ? t('Où et comment se retrouver') : t('Message');
+    $('#annText').placeholder = rally ? t('ex. : si dispersion, rendez-vous devant la fac de lettres, entrée côté parc') : t('ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail');
     $('#annMinutesWrap').hidden = legal; $('#annLegalHint').hidden = !legal;
     annZoneUI();
   }));

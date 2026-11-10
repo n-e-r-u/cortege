@@ -5,7 +5,7 @@ async function loadOrders() {
   ordKinds = Object.fromEntries(d.kinds.map(k => [k.id, k]));
   if (!$('#oaDep').options.length) { $('#oaDep').append(new Option('Choisir…', '')); d.deps.forEach(([c, n]) => $('#oaDep').append(new Option(c + ' · ' + n, c))); }
   const pending = d.orders.filter(o => o.status === 'pending'), ok = d.orders.filter(o => o.status === 'ok');
-  $('#ordBadge').textContent = pending.length || '';
+  loadBadges(); // propositions en attente + liens repérés par la veille
   for (const [ul, list, none] of [[$('#ordPending'), pending, 'Aucune proposition en attente.'], [$('#ordList'), ok, 'Aucun arrêté en cours ou à venir.']]) {
     ul.textContent = '';
     if (!list.length) { empty(ul, none); continue; }

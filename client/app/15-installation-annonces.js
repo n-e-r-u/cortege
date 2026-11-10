@@ -34,18 +34,34 @@
   let dismissed = new Set();
   try { dismissed = new Set(JSON.parse(localStorage.getItem('cortege-dismissed') || '[]')); } catch {}
   const seenAnns = new Set();
+  // Points de ralliement des orgas : un drapeau sur la carte, avec l'orga, le texte et l'heure de fin
+  const rallyLayer = L.layerGroup().addTo(map);
+  function drawRallies(list) {
+    rallyLayer.clearLayers();
+    const now = Date.now();
+    for (const a of list.filter(x => x.kind === 'rally' && !x.pending && x.exp > now)) {
+      const icon = L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18], html: '<div class="pin rally" style="--c:var(--info, #6966c6)">🚩</div>' });
+      const pop = el('div', {}, el('div', { class: 'pop-title' }, '🚩 ' + t('Point de ralliement')), el('div', { class: 'pop-ver' }, '✓ ' + a.by),
+        el('p', {}, a.text), el('div', { class: 'pop-meta' }, t('Jusqu’à {h}', { h: new Date(a.exp).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }) }) + (me ? ' · ' + fmtDist(dist(me, [a.lat, a.lng])) : '')));
+      L.marker([a.lat, a.lng], { icon, title: t('Point de ralliement'), zIndexOffset: 300 }).bindPopup(pop, { maxWidth: 280 }).addTo(rallyLayer);
+    }
+  }
   function renderAnns(list, canAlert) {
     announcements = list;
+    drawRallies(list);
     const box = $('#anns'); box.textContent = '';
-    const shown = list.filter(a => a.kind === 'info' && !dismissed.has(a.id))
+    const shown = list.filter(a => (a.kind === 'info' || a.kind === 'rally') && !dismissed.has(a.id))
       .sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
     const maxBanners = innerHeight < 760 ? 2 : 3; // petits écrans : ne pas masquer les boutons
     for (const a of shown.slice(0, maxBanners)) {
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer cette annonce' }, '×');
       close.onclick = () => { dismissed.add(a.id); try { localStorage.setItem('cortege-dismissed', JSON.stringify([...dismissed].slice(-200))); } catch {} renderAnns(announcements, false); };
-      box.append(el('div', { class: 'ann ' + a.level },
-        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
-        el('div', { class: 'ann-text' }, a.text),
+      const rally = a.kind === 'rally';
+      const go = rally ? el('button', { type: 'button', class: 'ann-link link-btn' }, t('Voir sur la carte') + ' →') : '';
+      if (rally) go.onclick = () => { setFollow(false); map.setView([a.lat, a.lng], Math.max(map.getZoom(), 16)); rallyLayer.eachLayer(m => { const p = m.getLatLng(); if (p.lat === a.lat && p.lng === a.lng) m.openPopup(); }); };
+      box.append(el('div', { class: 'ann ' + a.level + (rally ? ' rally' : '') },
+        el('div', { class: 'ann-meta' }, (rally ? '🚩 ' + t('Point de ralliement') + ' · ' : '📣 ') + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
+        el('div', { class: 'ann-text' }, a.text), go,
         a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '', close));
       if (canAlert && !seenAnns.has(a.id) && a.level === 'urgent') { try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {} }
     }

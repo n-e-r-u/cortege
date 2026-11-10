@@ -137,7 +137,7 @@ async function adminRoutes(req, res, url, pathname) {
       return send(res, 200, { paused: pausedUntil(now),
         reports: activeReports(now).map(publicView),
         announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
-        pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length, ordersPending: q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n,
+        pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length, ordersPending: q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n + require('../veille').veilleCount(),
         pushSubs: pushCount(), moderation: modQueue(now).filter(x => !x.low).length, toPublish: mobsToPublish(now) });
     }
     // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---

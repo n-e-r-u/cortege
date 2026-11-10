@@ -76,7 +76,7 @@ async function placesImportOsm() {
       await download(url, src, (d, tot) => { run.done = d; run.total = tot; save(); });
       run.step = 'extraction'; save(true); console.log('lieux : extraction avec osmium…');
       // Les limites des communes (niveau administratif 8) sortent dans le même passage : elles servent aux bilans par commune
-      await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison,school,university', 'nwr/office=government',
+      await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison,school,university', 'nwr/office=government', 'nwr/emergency=defibrillator',
         'r/admin_level=8', '-o', flt, '--overwrite']);
       fs.unlinkSync(src); // le gros fichier ne sert plus
       await osmium(['export', flt, '-f', 'geojsonseq', '-o', out, '--overwrite', '-a', 'type,id', '-x', 'print_record_separator=false']);
@@ -245,7 +245,7 @@ async function placesImport(resume = false) {
 const poiRow = x => { const d = JSON.parse(x.data || '{}');
   // Caméra : [id, 'cam', lat, lng, opérateur, publique (1/0), direction en degrés (-1 : inconnue), type (d dôme, f fixe, p mobile)]
   if (x.kind === 'cam') return [x.id, x.kind, x.lat, x.lng, d.o || '', d.c ? 1 : 0, d.dir ?? -1, d.ct || ''];
-  const row = [x.id, x.kind, x.lat, x.lng, d.n || '', d.h || '', d.p || '', d.e || d.s || 0];
+  const row = [x.id, x.kind, x.lat, x.lng, d.n || '', d.h || '', d.p || '', d.e || d.s || d.l || 0]; // 8e case : urgences, fontaine saisonnière ou emplacement du défibrillateur
   while (row.length > 4 && !row[row.length - 1]) row.pop(); return row; };
 // Publie les fichiers de lieux (toutes les régions, ou seulement celles indiquées)
 const placesPublish = (regions = null) => placesPublishRun(regions).catch(e => console.error('lieux : publication', e.message));

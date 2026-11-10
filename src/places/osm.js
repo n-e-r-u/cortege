@@ -9,7 +9,7 @@ const { getMeta } = require('../db');
 
 // ---- Lieux permanents : lieux de pouvoir et lieux utiles aux manifestant·es, depuis OpenStreetMap ----
 // Importés une fois par mois (Overpass), corrigeables et masquables dans l'admin. Publiés par région de 1° :
-// l/<région>.json (pouvoir + hôpitaux, visibles dès le zoom 13) et l/<région>-s.json (pharmacies, eau : zoom rue).
+// l/<région>.json (pouvoir + hôpitaux, visibles dès le zoom 13) et l/<région>-s.json (pharmacies, eau, défibrillateurs : zoom rue).
 const POI_KINDS = [
   { id: 'mairie', label: 'Mairie', glyph: '🏛', grp: 'pouvoir' },
   { id: 'pref', label: 'Préfecture', glyph: '🏢', grp: 'pouvoir' },
@@ -23,6 +23,7 @@ const POI_KINDS = [
   { id: 'hopital', label: 'Hôpital', glyph: '🏥', grp: 'aide' },
   { id: 'pharma', label: 'Pharmacie', glyph: '💊', grp: 'aide', street: true },
   { id: 'eau', label: 'Eau potable', glyph: '🚰', grp: 'aide', street: true },
+  { id: 'dae', label: 'Défibrillateur', glyph: '🫀', grp: 'aide', street: true },
   { id: 'cam', label: 'Caméra de surveillance', glyph: '📷', grp: 'surv', cam: true },
 ];
 const POI = Object.fromEntries(POI_KINDS.map(k => [k.id, k]));
@@ -42,6 +43,8 @@ function poiKind(t) {
   const name = t.name || '';
   // Caméras qui filment la rue (publiques, ou privées tournées vers l'extérieur) ; pas les caméras intérieures ni les vigiles
   if (t.man_made === 'surveillance') return t.surveillance === 'indoor' || /^(guard|mobile)$/.test(t['surveillance:type'] || '') ? null : 'cam';
+  // Défibrillateur (DAE) accessible au public : souvent un simple point sans autre étiquette
+  if (t.emergency === 'defibrillator') return /^(private|no)$/.test(t.access || '') ? null : 'dae';
   if (/r[ée]tention administrative/i.test(name)) return 'cra';
   if (t.office === 'government' && t.government === 'prefecture') return /sous[- ]pr[ée]fecture/i.test(name) ? 'spref' : 'pref';
   if (t.amenity === 'townhall') return /^(village_hall|community_centre)$/.test(t['townhall:type'] || '') ? null : 'mairie';
@@ -62,6 +65,8 @@ function poiData(t, kind) {
   const p = poiStr(t['contact:phone'] || t.phone, 30); if (p && /^[+\d][\d .()-]{5,}$/.test(p)) d.p = p;
   if (kind === 'hopital' && t.emergency === 'yes') d.e = 1;
   if (kind === 'eau' && t.seasonal === 'yes') d.s = 1;
+  // Défibrillateur : où il se trouve exactement (« dans le hall », « à côté de l'accueil »…)
+  if (kind === 'dae') { const l = poiStr(t['defibrillator:location:fr'] || t['defibrillator:location'] || (t.indoor === 'yes' ? 'À l’intérieur' : ''), 100); if (l) d.l = l; }
   if (kind === 'cam') {
     delete d.n; delete d.h; delete d.p;
     if (t.surveillance === 'public') d.c = 1; // police, mairie, transports publics
@@ -86,6 +91,7 @@ function overpassQuery(s, w, n, e) {
  nwr["amenity"="school"]["isced:level"~"3"]${b};
  nwr["amenity"="school"]["name"~"lyc[ée]e|gymnasium|high school",i]${b};
  nwr["office"="government"]["government"="prefecture"]${b};
+ nwr["emergency"="defibrillator"]${b};
  nwr["amenity"="prison"]["name"~"tention",i]${b};
  nwr["office"="government"]["name"~"tention",i]${b};);
 out center tags qt;`;

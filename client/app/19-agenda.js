@@ -17,6 +17,11 @@
     root.append(el('div', { class: 'pop-meta' }, `${ty.label} · ${fmtWhen(e.start)}`));
     root.append(el('div', { class: 'pop-meta' }, '📍 ' + e.place + (me ? ' · ' + fmtDist(dist(me, [e.lat, e.lng])) : '')));
     if (e.note) root.append(el('p', { class: 'pop-note' }, e.note));
+    // Arrêté qui interdit la manif ou un périmètre qu'elle traverse : dit clairement, avec le texte officiel
+    const ban = ordBan?.(e);
+    // La zone connue est la commune ou le département entier : le texte dit seulement qu'un arrêté s'applique ici, à lire pour savoir ce qu'il couvre
+    if (ban) root.append(el('div', { class: 'pop-calm-warn' }, (ban.items.some(x => x.k === 'manif') ? '🚫 ' + t('Arrêté d’interdiction de manifester en vigueur ici') : '⛔ ' + t('Arrêté avec un périmètre interdit en vigueur ici')) + ' (' + ban.name + '). ' + t('Lis-le pour savoir exactement ce qu’il couvre.'),
+      ban.src ? el('div', {}, el('a', { href: ban.src, target: '_blank', rel: 'noopener noreferrer' }, t('Lire l’arrêté') + ' →')) : ''));
     root.append(el('div', { class: 'pop-meta' }, t('Publié par {who}', { who: e.by })));
     if (e.link) root.append(el('a', { class: 'ann-link', href: e.link, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la carte d’origine →'));
     if (orga && (orga.admin || (!!e.ob && e.ob === orga.ob))) {
@@ -71,7 +76,8 @@
     const ty = EVT[e.type] || { glyph: '📍' };
     const btn = el('button', { 'aria-label': e.title },
       el('span', { class: 'g', style: '--c:var(--accent)' }, ty.glyph),
-      el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`)),
+      el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`),
+        ordBan?.(e) ? el('div', { class: 's ag-ban' }, '🚫 ' + t('Arrêté en vigueur dans la zone')) : ''),
       el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
     btn.onclick = () => showEvent(e);
     return el('li', {}, btn);

@@ -1,5 +1,5 @@
   // ---- Arrêtés et restrictions : bandeau quand on regarde la zone ou qu'on s'y trouve ----
-  var ordState = null, syncOrd = null;
+  var ordState = null, syncOrd = null, ordBan = null;
   {
     const S = ordState = { h: null, o: [], hidden: new Set(), layer: L.layerGroup().addTo(map), timer: null, later: () => { clearTimeout(S.timer); S.timer = setTimeout(renderOrdBar, 400); } };
     try { S.hidden = new Set(JSON.parse(sessionStorage.getItem('cortege-ord-hidden') || '[]')); } catch {}
@@ -8,6 +8,12 @@
     // Point dans une zone (anneaux GeoJSON [lng, lat], trous compris)
     const inRing = (lng, lat, r) => { let inside = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
     const inZone = (o, lat, lng) => !!o.b && lat >= o.b[0] && lat <= o.b[2] && lng >= o.b[1] && lng <= o.b[3] && o.p.some(poly => inRing(lng, lat, poly[0]) && !poly.slice(1).some(h => inRing(lng, lat, h)));
+    // Événement de l'agenda visé par un arrêté : manifestation interdite ou périmètre interdit, sur son point de départ ou son parcours,
+    // pendant les 3 heures qui suivent son début (l'heure de fin n'est pas connue)
+    ordBan = e => {
+      const from = e.start, to = e.start + 3 * 3600e3, pts = [[e.lat, e.lng], ...(e.route || [])];
+      return S.o.find(o => o.start < to && o.end > from && o.items.some(x => x.k === 'manif' || x.k === 'perimetre') && pts.some(([la, lo]) => inZone(o, la, lo))) || null;
+    };
     const day = x => new Date(x).toLocaleDateString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short' });
     const hour = x => { const d = new Date(x); return I18N.lang === 'fr' ? d.getHours() + ' h' + (d.getMinutes() ? String(d.getMinutes()).padStart(2, '0') : '') : d.toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }); };
     const fmtD = x => t('{day} à {hour}', { day: day(x), hour: hour(x) });
@@ -24,7 +30,7 @@
     };
     syncOrd = async h => {
       if (!h || h === S.h) { if (!h && S.o.length) { S.o = []; S.h = null; renderOrdBar(); } return; }
-      try { S.o = (await getJ('/live/ord.json')).o || []; S.h = h; renderOrdBar(); } catch {}
+      try { S.o = (await getJ('/live/ord.json')).o || []; S.h = h; renderOrdBar(); try { renderEvents(); } catch {} } catch {}
     };
     function renderOrdBar() {
       feedBadge();

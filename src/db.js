@@ -76,6 +76,8 @@ try { db.exec('ALTER TABLE reports ADD COLUMN bklo REAL'); } catch {}
 // Direction d'un véhicule (degrés, par pas de 45) et son heure : affichée 5 minutes, ensuite elle n'est plus sûre
 try { db.exec('ALTER TABLE reports ADD COLUMN dir INTEGER'); } catch {}
 try { db.exec('ALTER TABLE reports ADD COLUMN dirt INTEGER'); } catch {}
+// Nombre approximatif (groupes fascistes, forces de l'ordre) : 1 à 4, voir COUNT_CATS
+try { db.exec('ALTER TABLE reports ADD COLUMN cnt INTEGER'); } catch {}
 // Depuis quand le serveur voit chaque téléphone (empreinte seulement), oublié 26 h après sa dernière action (l’empreinte change de toute façon chaque jour).
 // Sert à ne pas compter les « Plus là » d'un identifiant tout juste créé.
 db.exec('CREATE TABLE IF NOT EXISTS devices(h TEXT PRIMARY KEY, first INTEGER, seen INTEGER)');

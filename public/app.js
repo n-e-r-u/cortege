@@ -292,6 +292,27 @@
       if (d === null) toast('Direction effacée'); else toast('Direction notée'); sync();
     } catch { toast('Pas de réseau.'); }
   }
+  // Nombre approximatif d'un groupe (fascistes, forces de l'ordre) : 4 fourchettes, un appui
+  const COUNT_CAT = new Set(cfg.countCats || []);
+  const COUNT_LBL = [null, '1 à 5', '5 à 15', '15 à 30', 'plus de 30'];
+  const countTxt = n => t('Environ {n} personnes', { n: t(COUNT_LBL[n]) });
+  function countPicker(id, cur, done) {
+    const box = el('div', { class: 'count-pick', role: 'group', 'aria-label': t('Combien, environ ?') });
+    for (const n of [1, 2, 3, 4]) {
+      const b = el('button', { type: 'button', class: 'count-b' + (cur === n ? ' on' : ''), 'aria-pressed': String(cur === n) }, t(COUNT_LBL[n]));
+      b.onclick = async () => {
+        box.querySelectorAll('.count-b').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+        try {
+          const res = await fetch(`/api/reports/${id}/count`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ c: n }) });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) toast(body.error || 'Envoi impossible.'); else { toast('Nombre noté'); sync(); }
+        } catch { toast('Pas de réseau.'); }
+        done && done(n);
+      };
+      box.append(b);
+    }
+    return box;
+  }
   // Rose des vents 3 × 3 (la carte a toujours le nord en haut) ; au centre : « ne bouge pas », qui efface la direction
   function dirPicker(id, cur, done) {
     const box = el('div', { class: 'dir-pick', role: 'group', 'aria-label': t('Il se dirige vers…') });
@@ -328,6 +349,15 @@
       const pick = el('button', { type: 'button', class: 'link-btn' }, d != null ? t('Corriger') : '➚ ' + t('Indiquer sa direction'));
       const wrap = el('div', { hidden: '' });
       pick.onclick = () => { pick.hidden = true; wrap.hidden = false; wrap.append(dirPicker(r.id, d, () => map.closePopup())); };
+      line.append(pick); root.append(line, wrap);
+    }
+    // Nombre : le dernier indiqué, et de quoi le donner ou le corriger
+    if (COUNT_CAT.has(r.cat)) {
+      const line = el('div', { class: 'pop-dir' });
+      if (r.n) line.append('👥 ' + countTxt(r.n));
+      const pick = el('button', { type: 'button', class: 'link-btn' }, r.n ? t('Corriger') : '👥 ' + t('Indiquer le nombre'));
+      const wrap = el('div', { hidden: '' });
+      pick.onclick = () => { pick.hidden = true; wrap.hidden = false; wrap.append(countPicker(r.id, r.n || null, () => map.closePopup())); };
       line.append(pick); root.append(line, wrap);
     }
     if (r.live) root.append(el('div', { class: 'pop-live' }, t('En direct : position partagée par {who}', { who: r.ver || t('une orga') })));
@@ -1185,14 +1215,14 @@
   const PK = Object.fromEntries((cfg.poiKinds || []).map(k => [k.id, k]));
   const POI_Z = 13, POI_STREET_Z = 16, POI_MAX = 350;
   // Zoom à partir duquel chaque type apparaît : les grands lieux d'abord, les mairies et commissariats au zoom quartier, le reste au zoom rue
-  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, cam: 17 };
+  const POI_MINZ = { pref: 14, spref: 14, tribunal: 14, cra: 14, hopital: 14, fac: 14, mairie: 15, lycee: 15, police: 15, gend: 15, pharma: 16, eau: 16, dae: 16, cam: 17 };
   const POI_CAM_Z = 17;
   // Hôpitaux avec service d'urgences : visibles dès le zoom ville (13), marqués à part ; les autres lieux gardent leur zoom
   const isUrg = x => x[1] === 'hopital' && !!x[7];
   const minZ = x => isUrg(x) ? 13 : POI_MINZ[x[1]] || POI_STREET_Z;
   // Filtres proposés (préfectures et sous-préfectures ensemble, commissariats et gendarmeries ensemble)
   const POI_FILTERS = [['pref', '🏢 Préfectures et sous-préfectures', ['pref', 'spref']], ['mairie', '🏛 Mairies', ['mairie']], ['police', '👮 Commissariats et gendarmeries', ['police', 'gend']],
-    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['cam', '📷 Caméras de surveillance', ['cam']]];
+    ['tribunal', '🔨 Tribunaux', ['tribunal']], ['etude', '🎓 Lycées et facs', ['lycee', 'fac']], ['cra', '🔒 Centres de rétention', ['cra']], ['hopital', '🏥 Hôpitaux', ['hopital']], ['pharma', '💊 Pharmacies', ['pharma']], ['eau', '🚰 Eau potable', ['eau']], ['dae', '🫀 Défibrillateurs', ['dae']], ['cam', '📷 Caméras de surveillance', ['cam']]];
   let poiHidden = false; try { poiHidden = localStorage.getItem('cortege-poi-hidden') === '1'; } catch {}
   let poiOff = new Set(); try { poiOff = new Set(JSON.parse(localStorage.getItem('cortege-poi-off') || '[]')); } catch {}
   const poiShown = kind => { const f = POI_FILTERS.find(x => x[2].includes(kind)); return !f || !poiOff.has(f[0]); };
@@ -1258,6 +1288,12 @@
     if (kind === 'hopital') root.append(el('p', { class: 'poi-tip' }, flag ? t('🚑 Service d’urgences')
       : pf.code === 'fr' ? t('Urgences : pas indiqué. En cas d’urgence, appelle le 15 ou le 112.') : t('Urgences : pas indiqué. En cas d’urgence, appelle le {n}.', { n: em.medical || em.general || '112' })));
     if (kind === 'eau' && flag) root.append(el('p', { class: 'poi-tip' }, t('Fontaine saisonnière : peut être coupée en hiver.')));
+    // Défibrillateur : emplacement exact, et le rappel utile (appeler les secours, l'appareil guide à la voix)
+    if (kind === 'dae') {
+      if (flag) root.append(el('p', {}, '📍 ' + flag));
+      root.append(el('p', { class: 'poi-tip' }, pf.code === 'fr' ? t('Arrêt cardiaque : appelle le 15 ou le 112, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.')
+        : t('Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.', { n: em.medical || em.general || '112' })));
+    }
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     return root;
   }
@@ -1646,6 +1682,9 @@
     // Véhicule ou groupe qui bouge : sa direction se donne d'un appui (facultatif)
     const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat);
     if (!nd.hidden) nd.append(el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), dirPicker(id, null, () => clearTimeout(openNoteCard.t)));
+    // Groupe : combien, environ (facultatif aussi)
+    const nc = $('#noteCount'); nc.textContent = ''; nc.hidden = !COUNT_CAT.has(cat);
+    if (!nc.hidden) nc.append(el('span', { class: 'fine' }, t('Combien, environ ?')), countPicker(id, null, () => clearTimeout(openNoteCard.t)));
     clearTimeout(openNoteCard.t);
     openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);
   }
@@ -1756,18 +1795,34 @@
   let dismissed = new Set();
   try { dismissed = new Set(JSON.parse(localStorage.getItem('cortege-dismissed') || '[]')); } catch {}
   const seenAnns = new Set();
+  // Points de ralliement des orgas : un drapeau sur la carte, avec l'orga, le texte et l'heure de fin
+  const rallyLayer = L.layerGroup().addTo(map);
+  function drawRallies(list) {
+    rallyLayer.clearLayers();
+    const now = Date.now();
+    for (const a of list.filter(x => x.kind === 'rally' && !x.pending && x.exp > now)) {
+      const icon = L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18], html: '<div class="pin rally" style="--c:var(--info, #6966c6)">🚩</div>' });
+      const pop = el('div', {}, el('div', { class: 'pop-title' }, '🚩 ' + t('Point de ralliement')), el('div', { class: 'pop-ver' }, '✓ ' + a.by),
+        el('p', {}, a.text), el('div', { class: 'pop-meta' }, t('Jusqu’à {h}', { h: new Date(a.exp).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }) }) + (me ? ' · ' + fmtDist(dist(me, [a.lat, a.lng])) : '')));
+      L.marker([a.lat, a.lng], { icon, title: t('Point de ralliement'), zIndexOffset: 300 }).bindPopup(pop, { maxWidth: 280 }).addTo(rallyLayer);
+    }
+  }
   function renderAnns(list, canAlert) {
     announcements = list;
+    drawRallies(list);
     const box = $('#anns'); box.textContent = '';
-    const shown = list.filter(a => a.kind === 'info' && !dismissed.has(a.id))
+    const shown = list.filter(a => (a.kind === 'info' || a.kind === 'rally') && !dismissed.has(a.id))
       .sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
     const maxBanners = innerHeight < 760 ? 2 : 3; // petits écrans : ne pas masquer les boutons
     for (const a of shown.slice(0, maxBanners)) {
       const close = el('button', { class: 'ann-x', 'aria-label': 'Masquer cette annonce' }, '×');
       close.onclick = () => { dismissed.add(a.id); try { localStorage.setItem('cortege-dismissed', JSON.stringify([...dismissed].slice(-200))); } catch {} renderAnns(announcements, false); };
-      box.append(el('div', { class: 'ann ' + a.level },
-        el('div', { class: 'ann-meta' }, '📣 ' + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
-        el('div', { class: 'ann-text' }, a.text),
+      const rally = a.kind === 'rally';
+      const go = rally ? el('button', { type: 'button', class: 'ann-link link-btn' }, t('Voir sur la carte') + ' →') : '';
+      if (rally) go.onclick = () => { setFollow(false); map.setView([a.lat, a.lng], Math.max(map.getZoom(), 16)); rallyLayer.eachLayer(m => { const p = m.getLatLng(); if (p.lat === a.lat && p.lng === a.lng) m.openPopup(); }); };
+      box.append(el('div', { class: 'ann ' + a.level + (rally ? ' rally' : '') },
+        el('div', { class: 'ann-meta' }, (rally ? '🚩 ' + t('Point de ralliement') + ' · ' : '📣 ') + a.by + (a.national ? ' · ' + t('toute la France') : '') + ' · ' + ago(a.t)),
+        el('div', { class: 'ann-text' }, a.text), go,
         a.link ? el('a', { class: 'ann-link', href: a.link, target: '_blank', rel: 'noopener noreferrer' }, 'En savoir plus →') : '', close));
       if (canAlert && !seenAnns.has(a.id) && a.level === 'urgent') { try { navigator.vibrate?.([300, 100, 300, 100, 300]); } catch {} }
     }
@@ -1902,9 +1957,10 @@
     $('#annNationalWrap').hidden = !(o && o.admin);
     // Annonces : réservées aux orgas certifiées (pas en essai), dans un rayon de 3 km au plus ; l'admin n'a pas de limite
     { const certified = !!(o && !o.trial), admin = !!(o && o.admin);
-      const info = document.querySelector('input[name="kind"][value="info"]'), legal = document.querySelector('input[name="kind"][value="legal"]');
-      info.closest('label').hidden = !certified;
-      if (!certified && info.checked) { legal.checked = true; legal.dispatchEvent(new Event('change')); }
+      const info = document.querySelector('input[name="kind"][value="info"]'), legal = document.querySelector('input[name="kind"][value="legal"]'),
+        rally = document.querySelector('input[name="kind"][value="rally"]');
+      info.closest('label').hidden = rally.closest('label').hidden = !certified;
+      if (!certified && (info.checked || rally.checked)) { legal.checked = true; legal.dispatchEvent(new Event('change')); }
       for (const op of $('#annRadius').options) op.hidden = op.disabled = !admin && +op.value > 3;
       if (!admin && +$('#annRadius').value > 3) $('#annRadius').value = '3'; }
     $('#btnPropose').textContent = t(o ? 'Publier une manif ou un blocus' : 'Proposer un blocus ou une manif');
@@ -1972,7 +2028,7 @@
       del.disabled = !mine;
       del.onclick = async () => { try { await orgaFetch('/api/announcements/' + a.id, { method: 'DELETE' }); toast('Annonce retirée'); etag = null; sync(); loadMine(); } catch (e) { toast(e.message); } };
       ol.append(el('li', { class: 'ann-row' },
-        el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
+        el('div', { class: 't' }, el('div', { class: 'l' }, (a.pending ? '⏳ ' : '') + (a.kind === 'legal' ? '⚖ ' + (a.city ? a.city + ' · ' : '') + a.phone : (a.kind === 'rally' ? '🚩 ' : '') + (a.level === 'urgent' ? '⚠ ' : '') + a.text)),
           el('div', { class: 's' }, a.pending ? 'En attente de validation par l’admin : pas encore visible'
             : `${a.by} · ${a.national ? t('toute la France') : (a.kind === 'legal' ? t('visible partout, rangé par ville') : a.r + ' km')} · ${a.permanent ? t('permanent') : t('expire dans {d}', { d: left(a.exp) })}`)), del));
     }
@@ -2077,8 +2133,12 @@
   { const q = new URLSearchParams(location.search), city = q.get('rejoindre');
     if (city !== null) { history.replaceState(null, '', location.pathname); setTimeout(() => openJoin(city.slice(0, 60)), 800); } }
   document.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', () => {
-    const legal = document.querySelector('input[name="kind"]:checked').value === 'legal';
+    const kind = document.querySelector('input[name="kind"]:checked').value, legal = kind === 'legal', rally = kind === 'rally';
     $('#annInfoFields').hidden = legal; $('#annLegalFields').hidden = !legal;
+    // Point de ralliement : même formulaire qu'une annonce, sans « nationale », texte d'aide propre
+    $('#annRallyHint').hidden = !rally; $('#annNationalWrap').hidden = rally || !(orga && orga.admin);
+    $('#annTextLabel').textContent = rally ? t('Où et comment se retrouver') : t('Message');
+    $('#annText').placeholder = rally ? t('ex. : si dispersion, rendez-vous devant la fac de lettres, entrée côté parc') : t('ex. : Dispersion annoncée place de la Comédie, repli par le boulevard Sarrail');
     $('#annMinutesWrap').hidden = legal; $('#annLegalHint').hidden = !legal;
     annZoneUI();
   }));
@@ -2169,10 +2229,11 @@
     const body = { kind, lat: c.lat, lng: c.lng, radiusKm: +$('#annRadius').value, minutes: +$('#annMinutes').value };
     if (kind === 'legal') Object.assign(body, { phone: $('#annPhone').value, text: $('#annLegalText').value, city: $('#annCity').value });
     else Object.assign(body, { text: $('#annText').value, level: document.querySelector('input[name="level"]:checked').value,
-      national: !!(orga && orga.admin && $('#annNational').checked) });
+      national: kind === 'info' && !!(orga && orga.admin && $('#annNational').checked) });
     try {
       const out = await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
-      toast(out && out.pending ? (out.kind === 'legal' ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce envoyée : elle s’affichera après validation par l’admin') : 'Annonce publiée');
+      if (out && out.pending) toast(out.kind === 'legal' ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce envoyée : elle s’affichera après validation par l’admin');
+      else toast(out && out.kind === 'rally' ? 'Point de ralliement publié' : 'Annonce publiée');
       $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annCity').value = ''; $('#annNational').checked = false; annZoneUI();
       etag = null; sync(); loadMine();
     } catch (err) { toast(err.message); }
@@ -2202,6 +2263,11 @@
     root.append(el('div', { class: 'pop-meta' }, `${ty.label} · ${fmtWhen(e.start)}`));
     root.append(el('div', { class: 'pop-meta' }, '📍 ' + e.place + (me ? ' · ' + fmtDist(dist(me, [e.lat, e.lng])) : '')));
     if (e.note) root.append(el('p', { class: 'pop-note' }, e.note));
+    // Arrêté qui interdit la manif ou un périmètre qu'elle traverse : dit clairement, avec le texte officiel
+    const ban = ordBan?.(e);
+    // La zone connue est la commune ou le département entier : le texte dit seulement qu'un arrêté s'applique ici, à lire pour savoir ce qu'il couvre
+    if (ban) root.append(el('div', { class: 'pop-calm-warn' }, (ban.items.some(x => x.k === 'manif') ? '🚫 ' + t('Arrêté d’interdiction de manifester en vigueur ici') : '⛔ ' + t('Arrêté avec un périmètre interdit en vigueur ici')) + ' (' + ban.name + '). ' + t('Lis-le pour savoir exactement ce qu’il couvre.'),
+      ban.src ? el('div', {}, el('a', { href: ban.src, target: '_blank', rel: 'noopener noreferrer' }, t('Lire l’arrêté') + ' →')) : ''));
     root.append(el('div', { class: 'pop-meta' }, t('Publié par {who}', { who: e.by })));
     if (e.link) root.append(el('a', { class: 'ann-link', href: e.link, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la carte d’origine →'));
     if (orga && (orga.admin || (!!e.ob && e.ob === orga.ob))) {
@@ -2256,7 +2322,8 @@
     const ty = EVT[e.type] || { glyph: '📍' };
     const btn = el('button', { 'aria-label': e.title },
       el('span', { class: 'g', style: '--c:var(--accent)' }, ty.glyph),
-      el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`)),
+      el('span', { class: 't' }, el('div', { class: 'l' }, e.title), el('div', { class: 's' }, `${fmtHour(e.start)} · ${e.place} · ${e.by}`),
+        ordBan?.(e) ? el('div', { class: 's ag-ban' }, '🚫 ' + t('Arrêté en vigueur dans la zone')) : ''),
       el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
     btn.onclick = () => showEvent(e);
     return el('li', {}, btn);
@@ -2278,7 +2345,7 @@
   }
 
   // ---- Arrêtés et restrictions : bandeau quand on regarde la zone ou qu'on s'y trouve ----
-  var ordState = null, syncOrd = null;
+  var ordState = null, syncOrd = null, ordBan = null;
   {
     const S = ordState = { h: null, o: [], hidden: new Set(), layer: L.layerGroup().addTo(map), timer: null, later: () => { clearTimeout(S.timer); S.timer = setTimeout(renderOrdBar, 400); } };
     try { S.hidden = new Set(JSON.parse(sessionStorage.getItem('cortege-ord-hidden') || '[]')); } catch {}
@@ -2287,6 +2354,12 @@
     // Point dans une zone (anneaux GeoJSON [lng, lat], trous compris)
     const inRing = (lng, lat, r) => { let inside = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
     const inZone = (o, lat, lng) => !!o.b && lat >= o.b[0] && lat <= o.b[2] && lng >= o.b[1] && lng <= o.b[3] && o.p.some(poly => inRing(lng, lat, poly[0]) && !poly.slice(1).some(h => inRing(lng, lat, h)));
+    // Événement de l'agenda visé par un arrêté : manifestation interdite ou périmètre interdit, sur son point de départ ou son parcours,
+    // pendant les 3 heures qui suivent son début (l'heure de fin n'est pas connue)
+    ordBan = e => {
+      const from = e.start, to = e.start + 3 * 3600e3, pts = [[e.lat, e.lng], ...(e.route || [])];
+      return S.o.find(o => o.start < to && o.end > from && o.items.some(x => x.k === 'manif' || x.k === 'perimetre') && pts.some(([la, lo]) => inZone(o, la, lo))) || null;
+    };
     const day = x => new Date(x).toLocaleDateString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short' });
     const hour = x => { const d = new Date(x); return I18N.lang === 'fr' ? d.getHours() + ' h' + (d.getMinutes() ? String(d.getMinutes()).padStart(2, '0') : '') : d.toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }); };
     const fmtD = x => t('{day} à {hour}', { day: day(x), hour: hour(x) });
@@ -2303,7 +2376,7 @@
     };
     syncOrd = async h => {
       if (!h || h === S.h) { if (!h && S.o.length) { S.o = []; S.h = null; renderOrdBar(); } return; }
-      try { S.o = (await getJ('/live/ord.json')).o || []; S.h = h; renderOrdBar(); } catch {}
+      try { S.o = (await getJ('/live/ord.json')).o || []; S.h = h; renderOrdBar(); try { renderEvents(); } catch {} } catch {}
     };
     function renderOrdBar() {
       feedBadge();

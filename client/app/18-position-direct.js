@@ -82,10 +82,11 @@
     const body = { kind, lat: c.lat, lng: c.lng, radiusKm: +$('#annRadius').value, minutes: +$('#annMinutes').value };
     if (kind === 'legal') Object.assign(body, { phone: $('#annPhone').value, text: $('#annLegalText').value, city: $('#annCity').value });
     else Object.assign(body, { text: $('#annText').value, level: document.querySelector('input[name="level"]:checked').value,
-      national: !!(orga && orga.admin && $('#annNational').checked) });
+      national: kind === 'info' && !!(orga && orga.admin && $('#annNational').checked) });
     try {
       const out = await orgaFetch('/api/announcements', { method: 'POST', body: JSON.stringify(body) });
-      toast(out && out.pending ? (out.kind === 'legal' ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce envoyée : elle s’affichera après validation par l’admin') : 'Annonce publiée');
+      if (out && out.pending) toast(out.kind === 'legal' ? 'Numéro envoyé : il s’affichera après validation par l’admin' : 'Annonce envoyée : elle s’affichera après validation par l’admin');
+      else toast(out && out.kind === 'rally' ? 'Point de ralliement publié' : 'Annonce publiée');
       $('#annText').value = ''; $('#annPhone').value = ''; $('#annLegalText').value = ''; $('#annCity').value = ''; $('#annNational').checked = false; annZoneUI();
       etag = null; sync(); loadMine();
     } catch (err) { toast(err.message); }

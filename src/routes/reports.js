@@ -3,7 +3,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const { ADMIN_KEY, NOTE_MAX, MIN, RATE, MAX_PER_NET_ZONE, MAX_PER_ZONE, MAX_REPORTS } = require('../config');
-const { CATEGORIES, GROUPS, CAT, isDanger, CALM_KILL_M, MERGE, ALERT_CATS, DIR_CATS } = require('../categories');
+const { CATEGORIES, GROUPS, CAT, isDanger, CALM_KILL_M, MERGE, ALERT_CATS, DIR_CATS, COUNT_CATS } = require('../categories');
 const { NEXT } = require('./next');
 const { catAllowed } = require('../profiles');
 const { abuseOnce, abuseLog, calmSeries, SERIES, snapshotContested } = require('../moderation');
@@ -165,18 +165,20 @@ async function reportsRoutes(req, res, url, pathname) {
   }
   
   // Direction d'un véhicule (pompiers, police, blindé…) : 0 à 7 (nord, nord-est… nord-ouest), ou null pour l'effacer.
-  // N'importe quel téléphone peut l'indiquer ou la corriger ; elle s'affiche 5 minutes.
-  const dirRoute = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/dir$/);
-  if (req.method === 'POST' && dirRoute) {
-    const b = await readJson(req), d = b.d === null ? null : Number(b.d);
-    if (d !== null && !(Number.isInteger(d) && d >= 0 && d <= 7)) return send(res, 400, { error: 'Direction invalide.' });
+  // Nombre d'un groupe (fascistes, forces de l'ordre) : 1 à 4 (environ 1-5, 5-15, 15-30, plus de 30), ou null.
+  // N'importe quel téléphone peut les indiquer ou les corriger ; la direction s'affiche 5 minutes, le nombre tant que le point vit.
+  const setRoute = pathname.match(/^\/api\/reports\/([\w-]{1,16})\/(dir|count)$/);
+  if (req.method === 'POST' && setRoute) {
+    const isDir = setRoute[2] === 'dir', b = await readJson(req), raw = isDir ? b.d : b.c, v = raw === null ? null : Number(raw);
+    if (v !== null && !(Number.isInteger(v) && (isDir ? v >= 0 && v <= 7 : v >= 1 && v <= 4))) return send(res, 400, { error: isDir ? 'Direction invalide.' : 'Nombre invalide.' });
     const ipH = clientHash(req), dev = deviceHash(req);
     const result = tx(() => {
-      const now = Date.now(), r = getReport(dirRoute[1], now);
+      const now = Date.now(), r = getReport(setRoute[1], now);
       if (!r) return [404, { error: 'Signalement expiré.' }];
-      if (!DIR_CATS.has(r.cat)) return [400, { error: 'Pas de direction pour ce type.' }];
+      if (!(isDir ? DIR_CATS : COUNT_CATS).has(r.cat)) return [400, { error: isDir ? 'Pas de direction pour ce type.' : 'Pas de nombre pour ce type.' }];
       if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop d’envois, patiente un peu.' }];
-      if (d === null) { r.dir = null; r.dirt = null; } else { r.dir = d * 45; r.dirt = now; }
+      if (isDir) { if (v === null) { r.dir = null; r.dirt = null; } else { r.dir = v * 45; r.dirt = now; } }
+      else r.cnt = v;
       saveReport(r);
       return [200, publicView(r)];
     });

@@ -35,6 +35,7 @@ const ROUTES = [
   require('./src/routes/public-api').publicApiRoutes, // configuration, notifications, santé, recherche de lieux
   require('./src/routes/ideas').ideasRoutes,         // boîte à idées (avant l'admin : /api/admin/ideas est traité ici)
   require('./src/routes/social').socialRoutes,       // partage sur Bluesky et Mastodon (/api/admin/social…)
+  require('./src/routes/veille').veilleRoutes,       // veille des arrêtés (/api/admin/veille…)
   require('./src/routes/admin').adminRoutes,          // /api/admin/…
   require('./src/routes/reports').reportsRoutes,      // signalements, votes, précisions, propositions
   require('./src/routes/orga').orgaRoutes,            // invitations et espace orga
