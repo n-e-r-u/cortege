@@ -1638,6 +1638,10 @@ const vlSite = (code, name) => code === '75' ? 'https://www.prefecturedepolice.i
 async function loadVeille() {
   let d; try { d = await api('/api/admin/veille'); } catch (e) { alertMsg(e.message); return; }
   $('#vlCount').textContent = d.hits.length ? `(${d.hits.length})` : '';
+  const prefs = d.sources.filter(s => s.kind === 'pref'), read = prefs.filter(s => s.last).length;
+  $('#vlState').textContent = (prefs.length ? `${prefs.length} sites de préfecture surveillés${read < prefs.length ? `, ${read} déjà lus (première lecture en cours)` : ''}. ` : '')
+    + (d.pdf ? `Recueils PDF lus par le serveur${d.pdfQueue ? ` (${d.pdfQueue} en attente)` : ''}.` : 'Recueils PDF non lus : installe pdftotext sur le serveur (sudo apt install poppler-utils, puis redémarre Cortège) pour repérer les arrêtés publiés dans les recueils.');
+  $('#vlAll').hidden = d.sources.filter(s => s.kind === 'pref' || /prefecturedepolice/.test(s.url)).length >= d.prefTotal;
   const ul = $('#vlHits'); ul.textContent = '';
   if (!d.hits.length) empty(ul, d.sources.length ? 'Rien de nouveau dans les pages surveillées.' : 'Aucune page surveillée : ajoute celles des préfectures ci-dessous.');
   const depName = c => (vlDeps.find(x => x[0] === c) || [c, ''])[1];
@@ -1661,7 +1665,7 @@ async function loadVeille() {
     test.onclick = async () => { test.disabled = true; try { const r = await api(`/api/admin/veille/sources/${s.id}/test`, { method: 'POST', body: '{}' }); alertMsg(r.error ? 'Page injoignable : ' + r.error : `${r.n} liens lus, ${r.hits} nouveau(x) à vérifier.`); loadVeille(); } catch (e) { alertMsg(e.message); } finally { test.disabled = false; } };
     const del = btn('Retirer', 'danger');
     confirmBtn(del, 'Confirmer', async () => { await api('/api/admin/veille/sources/' + s.id, { method: 'DELETE' }); loadVeille(); });
-    const state = !s.last ? 'pas encore lue' : s.ok ? `${s.n} liens · lue le ${dayFr(s.last)} à ${hhmm(s.last)}` : `⚠ injoignable (${s.err}) · ${dayFr(s.last)} à ${hhmm(s.last)}`;
+    const state = !s.last ? 'pas encore lue' : s.ok ? `${s.kind === 'pref' ? s.pages + ' pages, ' : ''}${s.n} liens · lu le ${dayFr(s.last)} à ${hhmm(s.last)}` : `⚠ injoignable (${s.err}) · ${dayFr(s.last)} à ${hhmm(s.last)}`;
     const row = li(`${s.dep ? s.dep + ' ' + depName(s.dep) : '—'}${s.label ? ' · ' + s.label : ''}`, `${s.url} · ${state}`, test, del);
     if (s.last && !s.ok) row.classList.add('bad');
     sl.append(row);
@@ -1678,6 +1682,11 @@ $('#vlGuess').onclick = () => {
   if (!d) { $('#vlMsg').textContent = 'Choisis d’abord le département.'; return; }
   $('#vlUrl').value = vlSite(d[0], d[1]); if (!$('#vlLabel').value) $('#vlLabel').value = 'accueil';
   $('#vlMsg').textContent = 'Adresse proposée : vérifie qu’elle ouvre bien le site de la préfecture avant de l’ajouter.';
+};
+$('#vlAll').onclick = async () => {
+  $('#vlAll').disabled = true;
+  try { const r = await api('/api/admin/veille/prefectures', { method: 'POST', body: '{}' }); alertMsg(`${r.added} site(s) ajouté(s). La première lecture se fait en arrière-plan, sans alerte.`); loadVeille(); }
+  catch (e) { alertMsg(e.message); } finally { $('#vlAll').disabled = false; }
 };
 $('#vlForm').addEventListener('submit', async e => {
   e.preventDefault(); $('#vlMsg').textContent = 'Première lecture…';

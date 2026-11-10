@@ -693,9 +693,12 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <section class="card">
       <h2>Veille des préfectures <span id="vlCount"></span></h2>
       <p class="fine">Les pages ci-dessous sont relues toutes les 20 minutes. Un lien nouveau dont le titre parle de manifestation, de périmètre, de couvre-feu, de drones… apparaît ici. Rien n’est publié tout seul : ouvre le texte, puis « Préparer » remplit le formulaire avec le département et la source. Les préfectures publient parfois tard, ou seulement sur leurs réseaux : la veille aide, elle ne remplace pas la recherche.</p>
+      <p class="fine" id="vlState"></p>
       <ul class="org-list" id="vlHits"></ul>
       <details class="vl-src">
         <summary>Pages surveillées (<span id="vlSrcN">0</span>)</summary>
+        <div class="controls"><button type="button" id="vlAll">Ajouter toutes les préfectures</button></div>
+        <p class="fine">Les sites des 101 préfectures (et les arrêtés de la préfecture de police à Paris). Pour chaque site, les pages utiles sont repérées toutes seules et mises à jour chaque jour : accueil, actualités, communiqués de presse et recueil des actes administratifs du mois. La première lecture de tous les sites prend environ une heure ; ensuite chaque site est relu toutes les 30 minutes.</p>
         <form class="orga-form" id="vlForm">
           <div class="row2">
             <label>Département<select id="vlDep"></select></label>

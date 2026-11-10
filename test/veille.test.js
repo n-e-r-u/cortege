@@ -9,7 +9,23 @@ const path = require('node:path');
 const http = require('node:http');
 
 const ADMIN = 'admin-key-for-tests-123';
-let srv, B, F, DIR, fake, page = 1;
+let srv, B, F, DIR, fake, page = 1, pref = 1;
+const Y = new Date().getFullYear(), MOIS = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'][new Date().getMonth()];
+const PDF = fs.readFileSync(path.join(__dirname, 'fixture-raa.pdf'));
+// Faux site de préfecture : accueil, actualités, communiqués par année, recueil des actes par année puis par mois
+const P = '/pref';
+const menu = `<nav><a href="${P}/Actualites/Infos">Infos</a><a href="${P}/Publications/Espace-presse/Communiques-de-presse">Communiqués de presse</a>
+<a href="${P}/Publications/Recueil-des-actes-administratifs">Recueil des actes administratifs</a><a href="${P}/Demarches/Manifestations-sportives">Manifestations sportives</a></nav>`;
+const PREF = {
+  [P + '/']: () => menu + '<a href="' + P + '/Actualites/Infos/Vigilance-pluie">Vigilance pluie</a>',
+  [P + '/Actualites/Infos']: () => menu + (pref >= 2 ? `<a href="${P}/Actualites/Infos/Arrete-portant-mesures-de-police">Arrêté portant mesures de police pour la manifestation de samedi</a>` : ''),
+  [P + '/Publications/Espace-presse/Communiques-de-presse']: () => menu + `<a href="${P}/Publications/Espace-presse/Communiques-de-presse/Annee-${Y}">Année ${Y}</a><a href="${P}/Publications/Espace-presse/Communiques-de-presse/Annee-${Y - 1}">Année ${Y - 1}</a>`,
+  [`${P}/Publications/Espace-presse/Communiques-de-presse/Annee-${Y}`]: () => menu + '<a href="' + P + '/contenu/telechargement/1/1/file/cp-foire.pdf">Foire aux vins</a>',
+  [P + '/Publications/Recueil-des-actes-administratifs']: () => menu + `<a href="${P}/Publications/Recueil-des-actes-administratifs/RAA-${Y}">Recueils de ${Y}</a>`,
+  [`${P}/Publications/Recueil-des-actes-administratifs/RAA-${Y}`]: () => menu + `<a href="${P}/Publications/Recueil-des-actes-administratifs/RAA-${Y}/${MOIS}">Recueils de ${MOIS}</a>`,
+  [`${P}/Publications/Recueil-des-actes-administratifs/RAA-${Y}/${MOIS}`]: () => menu + '<a href="' + P + '/contenu/telechargement/9/9/file/raa-1.pdf">Recueil spécial n° 1</a>'
+    + (pref >= 2 ? '<a href="' + P + '/contenu/telechargement/9/10/file/raa-2.pdf">Télécharger Recueil spécial n° 2 PDF - 0,1 Mb</a>' : ''),
+};
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const PAGE = n => `<!doctype html><html><head><meta charset="utf-8"><script>var a = '<a href="/piege">manifestation</a>';</script></head><body>
 <a href="/Actualites/Fete-de-la-musique">Fête de la musique : programme</a>
@@ -29,6 +45,9 @@ before(async () => {
   fake = http.createServer((req, res) => {
     if (req.url === '/rss') { res.setHeader('content-type', 'application/rss+xml'); return res.end(RSS(page)); }
     if (req.url === '/') { res.setHeader('content-type', 'text/html; charset=utf-8'); return res.end(PAGE(page)); }
+    const u = decodeURIComponent(req.url);
+    if (PREF[u]) { res.setHeader('content-type', 'text/html; charset=utf-8'); return res.end('<html><body>' + PREF[u]() + '</body></html>'); }
+    if (u.endsWith('raa-2.pdf')) { res.setHeader('content-type', 'application/pdf'); return res.end(PDF); }
     res.statusCode = 404; res.end('non');
   }).listen(0);
   await new Promise(r => fake.on('listening', r));
@@ -82,4 +101,23 @@ test('veille : page injoignable notée, source retirée', async () => {
   assert.equal(a.s, 201); assert.equal(a.j.ok, false); assert.match(a.j.error, /404/);
   assert.equal((await req('DELETE', '/api/admin/veille/sources/' + a.j.id)).s, 200);
   assert.ok(!(await req('GET', '/api/admin/veille')).j.sources.some(s => s.id === a.j.id));
+});
+
+test('veille : site de préfecture entier, pages repérées toutes seules, recueil PDF lu', async () => {
+  const a = await req('POST', '/api/admin/veille/sources', { url: F + P + '/', dep: '34', kind: 'pref' });
+  assert.equal(a.s, 201); assert.equal(a.j.kind, 'pref');
+  assert.equal(a.j.pages, 7, 'accueil, actualités, communiqués, année, recueil, année, mois');
+  assert.equal((await req('GET', '/api/admin/veille')).j.hits.filter(h => h.src === a.j.id).length, 0, 'première lecture : rien');
+  pref = 2;
+  await req('POST', `/api/admin/veille/sources/${a.j.id}/test`, {});
+  let d = (await req('GET', '/api/admin/veille')).j;
+  const mine = d.hits.filter(h => h.src === a.j.id);
+  assert.deepEqual(mine.map(h => h.title), ['Arrêté portant mesures de police pour la manifestation de samedi'], 'titre clair : signalé ; recueil au titre vague : pas par son titre');
+  assert.equal(d.pdf, true, 'pdftotext présent dans l’environnement de test');
+  // Le recueil est lu au tour suivant de la veille : il contient une interdiction de manifester
+  await req('POST', '/api/admin/veille/run', {});
+  d = (await req('GET', '/api/admin/veille')).j;
+  const raa = d.hits.find(h => h.url.endsWith('raa-2.pdf'));
+  assert.ok(raa, 'recueil repéré par son texte');
+  assert.match(raa.title, /^Télécharger Recueil spécial n° 2.*interdiction de manifester le samedi 14 novembre/);
 });

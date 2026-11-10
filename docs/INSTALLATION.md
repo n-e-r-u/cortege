@@ -60,7 +60,7 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` | vide | Compte Bluesky de l'instance (ex. `moncollectif.bsky.social`) et **mot de passe d'application** (Bluesky › Réglages › Confidentialité et sécurité › Mots de passe d'application), jamais le mot de passe du compte. Active le partage automatique (admin › Réseaux) |
 | `BLUESKY_PDS` | `https://bsky.social` | Serveur du compte Bluesky, seulement s'il est hébergé ailleurs |
 | `MASTODON_URL` / `MASTODON_TOKEN` | vide | Adresse de l'instance Mastodon (ex. `https://mastodon.social`) et jeton d'accès d'une application créée dans Préférences › Développement, avec le seul droit `write:statuses` (et `read:accounts` pour « Tester la connexion ») |
-| `VEILLE` | activée | `0` coupe la veille des arrêtés (Admin › Arrêtés) ; `VEILLE_EVERY_MS` change l'intervalle de relecture de chaque page (20 minutes par défaut) |
+| `VEILLE` | activée | `0` coupe la veille des arrêtés (Admin › Arrêtés) ; `VEILLE_EVERY_MS` change l'intervalle de relecture d'une page (20 minutes par défaut), `VEILLE_PREF_EVERY_MS` celui d'un site de préfecture entier (30 minutes). Pour que les recueils PDF soient lus, installe `pdftotext` : `sudo apt install poppler-utils` |
 | `GEO_API` | geo.api.gouv.fr | API Géo de l'État : contour officiel d'une commune, demandé par le serveur à la validation d'un arrêté |
 | `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |
