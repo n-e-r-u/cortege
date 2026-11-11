@@ -17,5 +17,7 @@ jobs:
           node-version: 24
       - name: Vérification de la syntaxe
         run: node --check server.js && node --check public/app.js && node --check public/sw.js && node --check verifier.js
+      - name: Lecteur de PDF (veille des recueils d'actes)
+        run: sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Tests du serveur
         run: node --test test/*.test.js
