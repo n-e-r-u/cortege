@@ -1496,7 +1496,20 @@ async function loadIdeas() {
   ideaData = d.ideas; $('#ideaBadge').textContent = d.pending || '';
   const nf = d.ideas.filter(i => i.featured).length;
   $('#ideaCount').textContent = `(${d.ideas.length}${d.pending ? ', ' + d.pending + ' à valider' : ''}${nf ? ', ' + nf + ' au vote' : ''})`;
+  renderGh(d.github);
   renderIdeas();
+}
+// Tickets GitHub : état de la liaison, lien vers les tickets, synchronisation à la demande
+let ghRepo = null;
+function renderGh(g) {
+  const p = $('#ideaGh'); p.textContent = ''; ghRepo = g && g.ready ? g.repo : null;
+  if (!g || !g.ready) { p.textContent = 'Tickets GitHub : pas configurés (GITHUB_TOKEN et GITHUB_REPO dans /etc/cortege.env, voir INSTALLATION).'; return; }
+  const a = document.createElement('a'); a.href = g.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = g.repo;
+  p.append('Tickets GitHub : chaque idée publiée a son ticket sur ', a, ` (${g.n} ticket${g.n > 1 ? 's' : ''}, votes mis à jour toutes les 10 min${g.hook ? ', fermeture sur GitHub reprise ici' : ''}). `);
+  if (g.err) { const e = document.createElement('strong'); e.textContent = `Dernière erreur (${dayFr(g.err.t)} ${hhmm(g.err.t)}) : ${g.err.msg} `; p.append(e); }
+  const s = btn('Synchroniser', 'ghost');
+  s.onclick = async () => { try { await api('/api/admin/ideas/github-sync', { method: 'POST', body: '{}' }); s.textContent = 'Lancée'; setTimeout(loadIdeas, 4000); } catch (e) { alertMsg(e.message); } };
+  p.append(s);
 }
 function renderIdeas() {
   const f = $('#ideaFilter').value, ul = $('#ideaAdminList'); ul.textContent = '';
@@ -1509,6 +1522,7 @@ function renderIdeas() {
     const title = document.createElement('input'); title.value = i.title; title.maxLength = 80; title.setAttribute('aria-label', 'Titre');
     const body = document.createElement('p'); body.textContent = i.body || '(sans description)';
     const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = `${i.featured ? '🗳 AU VOTE · ' : ''}${IDEA_ST[i.status]} · ${i.lang.toUpperCase()} · reçue le ${dayFr(i.t)} à ${hhmm(i.t)}`;
+    if (i.gh && ghRepo) { const a = document.createElement('a'); a.href = `https://github.com/${ghRepo}/issues/${i.gh}`; a.target = '_blank'; a.rel = 'noopener'; a.textContent = '#' + i.gh; meta.append(' · ', a); }
     const row = document.createElement('div'); row.className = 'controls';
     const st = document.createElement('select'); st.setAttribute('aria-label', 'Statut');
     for (const [k, lab] of Object.entries(IDEA_ST)) st.append(new Option(lab, k));

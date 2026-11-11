@@ -89,7 +89,12 @@ function voteIdea(req, id, v) {
 }
 
 // ---- Admin ----
-const adminList = () => q("SELECT * FROM ideas WHERE status!='merged' ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, votes-down DESC, votes DESC, t DESC").all().map(rowView);
+// Tickets GitHub (src/github.js) : mis à jour peu après chaque changement
+const ghKick = () => { try { require('./github').kick(); } catch (e) { console.error('GitHub', e.message); } };
+function adminList() {
+  const nums = require('./github').ghNums();
+  return q("SELECT * FROM ideas WHERE status!='merged' ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, votes-down DESC, votes DESC, t DESC").all().map(rowView).map(i => ({ ...i, gh: nums[i.id] || null }));
+}
 function adminUpdate(id, b) {
   const i = getIdea(id); if (!i) return [404, { error: 'Idée introuvable.' }];
   const wasFeat = !!i.featured;
@@ -103,6 +108,7 @@ function adminUpdate(id, b) {
   saveIdea(i); ideasPublish();
   // Mise au vote : message sur Bluesky et Mastodon (une seule fois par idée, même si elle est retirée puis remise au vote)
   if (!wasFeat && i.featured) try { require('./social').onIdea(i); } catch (e) { console.error('réseaux (idée)', e.message); }
+  ghKick();
   return [200, i];
 }
 // Fusion d'un doublon : ses votes rejoignent l'idée gardée (un téléphone qui a voté pour les deux ne compte qu'une fois)
@@ -115,10 +121,10 @@ function adminMerge(id, into) {
     q('DELETE FROM idea_votes WHERE iid=?').run(id);
     a.status = 'merged'; a.mergedInto = into; a.votes = 0; a.down = 0; a.featured = false; saveIdea(a);
   });
-  ideasPublish();
+  ideasPublish(); ghKick();
   return [200, { ok: true }];
 }
-function adminDelete(id) { const n = q('DELETE FROM ideas WHERE id=?').run(id).changes; q('DELETE FROM idea_votes WHERE iid=?').run(id); ideasPublish(); return n > 0; }
+function adminDelete(id) { const n = q('DELETE FROM ideas WHERE id=?').run(id).changes; q('DELETE FROM idea_votes WHERE iid=?').run(id); ideasPublish(); ghKick(); return n > 0; }
 const pendingCount = () => q("SELECT COUNT(*) n FROM ideas WHERE status='pending'").get().n;
 
 module.exports = { ideasPublish, featuredIds, listIdeas, proposeIdea, voteIdea, adminList, adminUpdate, adminMerge, adminDelete, pendingCount, getIdea, STATUSES };
