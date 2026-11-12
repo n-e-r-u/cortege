@@ -40,6 +40,8 @@ const RSS = n => `<?xml version="1.0"?><rss version="2.0"><channel><title>Préfe
 ${n >= 2 ? '<item><title><![CDATA[Périmètre de protection autour du sommet]]></title><link>https://pref.example/perimetre</link><description>Zone interdite.</description></item>' : ''}
 </channel></rss>`;
 
+// Arrêt propre du serveur : on attend sa fin avant d'effacer son dossier
+const stop = p => new Promise(r => { if (p.exitCode !== null) return r(); p.once('exit', r); p.kill(); });
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-veille-'));
   fake = http.createServer((req, res) => {
@@ -55,12 +57,12 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', VEILLE_TICK_MS: '3600000' },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, PLACES_IMPORT: '0', VEILLE_TICK_MS: '3600000', FETCH_ALLOW_PRIVATE: '1' },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await wait(100); }
 });
-after(() => { srv.kill(); fake.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
+after(async () => { await stop(srv); fake.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
 const req = (m, p, body, key = ADMIN) => fetch(B + p, { method: m, headers: { 'content-type': 'application/json', 'x-admin-key': key }, body: body && JSON.stringify(body) })
   .then(async r => ({ s: r.status, j: await r.json().catch(() => ({})) }));
 

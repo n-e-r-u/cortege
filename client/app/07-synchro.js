@@ -39,7 +39,7 @@
   const CELL = 0.05;
   const cellOf = r => `${Math.floor(r.lat / CELL)}_${Math.floor(r.lng / CELL)}`;
   const cellCache = new Map();          // case -> { h, r }
-  let allCache = { h: null, r: [] }, annCache = { h: null, a: [] };
+  let annCache = { h: null, a: [] };
   let mode = null, knownCells = new Set(), useApi = false, failures = 0;
   // ---- Réseau faible ----
   // L'appli mesure ses propres requêtes (et ce qu'annonce Chrome sur Android) : si ça rame, elle passe en mode léger.
@@ -105,7 +105,7 @@
   })();
   // Format actuel : g.json (annonces, agenda, pause) + un index par région de 1° autour de la zone affichée.
   // Ces petits fichiers changent rarement : le téléphone reçoit presque toujours un « rien de neuf » (304).
-  let lastActivity = 0, legacy = false;
+  let lastActivity = 0;
   const regionOf = id => { const [i, j] = id.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
   const getOpt = (url, empty) => getJ(url).catch(e => { if (e.status === 404) return empty; throw e; });
   // Charge les cases demandées (index de région, puis seulement les cases modifiées)
@@ -177,27 +177,17 @@
   }
   async function syncLive() {
     if (net.lite) return syncLite();
-    if (legacy) return syncLegacy();
-    let g;
-    try { g = await getJ('/live/g.json'); }
-    catch (e) { if (e.status === 404) { legacy = true; return syncLegacy(); } throw e; }
+    const g = await getJ('/live/g.json');
     const need = neededCells(), now = Date.now();
     let list, isFresh;
     // Vue nationale : des compteurs par région (n.json, quelques Ko) au lieu de tous les points,
     // plus les vrais points autour de toi pour que les alertes de proximité continuent de marcher.
-    const nat = need === null ? await getOpt('/live/n.json', null) : null;
-    if (need === null && nat && Array.isArray(nat.r)) {
-      natCache = nat;
+    if (need === null) {
+      const nat = await getOpt('/live/n.json', null);
+      if (nat && Array.isArray(nat.r)) natCache = nat;
       const wasNat = mode === 'nat';
       const out = await loadCells(meCells(), now);
       list = out.list; isFresh = r => wasNat && out.prev.has(cellOf(r)); mode = 'nat';
-    } else if (need === null) {
-      // ancien serveur : tous les points
-      const all = (await getJ('/live/all.json')).r || [];
-      const sig = all.length + ':' + all.reduce((m, r) => Math.max(m, r.t), 0);
-      if (allCache.h !== sig) { if (allCache.h) lastActivity = now; allCache = { h: sig, r: all }; }
-      const wasAll = mode === 'all';
-      list = allCache.r; isFresh = () => wasAll; mode = 'all';
     } else {
       const wasCells = mode === 'cells';
       const out = await loadCells(need, now);
@@ -210,35 +200,6 @@
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
     await syncLegal(g);
-    apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
-  }
-
-  // Ancien format (serveur pas encore mis à jour)
-  async function syncLegacy() {
-    const idx = await getJ('/live/index.json');
-    if (!idx || !idx.cells) throw Object.assign(new Error('index'), { status: 404 });
-    const need = neededCells(), now = Date.now();
-    let list, isFresh;
-    if (need === null) {
-      if (allCache.h !== idx.all) allCache = { h: idx.all, r: (await getJ('/live/all.json')).r };
-      const wasAll = mode === 'all';
-      list = allCache.r; isFresh = () => wasAll; mode = 'all';
-    } else {
-      const prev = knownCells; knownCells = new Set(need);
-      await Promise.all(need.map(async id => {
-        const h = idx.cells[id];
-        if (!h) { cellCache.delete(id); return; }
-        const c = cellCache.get(id);
-        if (!c || c.h !== h) cellCache.set(id, { h, r: (await getJ('/live/c/' + id + '.json')).r });
-      }));
-      for (const id of [...cellCache.keys()]) if (!knownCells.has(id)) cellCache.delete(id);
-      list = need.flatMap(id => cellCache.get(id)?.r || []);
-      isFresh = r => mode === 'cells' && prev.has(cellOf(r)); mode = 'cells';
-    }
-    setPaused(idx.paused); checkBuild(idx.build);
-    if (idx.events && evCache.h !== idx.events) { evCache = { h: idx.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
-    const annChanged = annCache.h !== idx.ann;
-    if (annChanged) annCache = { h: idx.ann, a: (await getJ('/live/ann.json')).a };
     apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
   }
 

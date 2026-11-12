@@ -20,7 +20,7 @@ chown "$APP_USER" "$T/data"
 runuser -u "$APP_USER" -- env OUT="$T/data/cortege.db" SRC="$DATA/cortege.db" \
   node -e 'const {DatabaseSync}=require("node:sqlite");new DatabaseSync(process.env.SRC).exec(`VACUUM INTO \x27${process.env.OUT}\x27`)'
 
-for f in orgas.json vapid.json import-17oct.stamp; do [ -e "$DATA/$f" ] && cp -a "$DATA/$f" "$T/data/"; done
+for f in orgas.json vapid.json; do [ -e "$DATA/$f" ] && cp -a "$DATA/$f" "$T/data/"; done
 for d in archive lang i18n; do [ -d "$DATA/$d" ] && cp -a "$DATA/$d" "$T/data/"; done
 [ -d /var/lib/tor/cortege ] && cp -a /var/lib/tor/cortege "$T/tor-cortege"
 for f in /etc/cortege.env /etc/caddy/Caddyfile /etc/tor/torrc /etc/systemd/system/cortege.service; do

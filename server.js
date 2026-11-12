@@ -9,11 +9,11 @@ const path = require('path');
 const { PORT, EVENT_NAME, DATA_DIR, MIN } = require('./src/config');
 // Profils pays chargés en premier : ils complètent la liste des types de signalement (types propres à un pays)
 require('./src/profiles');
-const { q, isBusy, setMeta } = require('./src/db');
+const { q, db, isBusy, setMeta } = require('./src/db');
 const { send } = require('./src/http/respond');
 const { gate } = require('./src/http/saturation');
 const { serveStatic } = require('./src/http/static');
-const { streamOpen } = require('./src/live/stream');
+const { streamOpen, sseClients } = require('./src/live/stream');
 const { LIVE_DIR } = require('./src/live/files');
 const { rebuildAll } = require('./src/live/publish');
 const { settings } = require('./src/settings');
@@ -24,8 +24,7 @@ const { seedLegal, legalWatch } = require('./src/legal');
 const { placesPublish } = require('./src/places/geofabrik');
 const { NEXT } = require('./src/routes/next');
 
-// Tâches de fond lancées au chargement de leur module : import du 17 octobre, journées de mobilisation, archive du digest
-require('./src/events/import-17oct');
+// Tâches de fond lancées au chargement de leur module : journées de mobilisation, archive du digest
 require('./src/mobs');
 require('./src/digest/archive');
 
@@ -80,6 +79,13 @@ const server = http.createServer(async (req, res) => {
     if (!/^application\/json\b/i.test(String(req.headers['content-type'] || ''))) return send(res, 415, { error: 'Format refusé.' });
   }
 
+  // HEAD (outils de surveillance, aperçus de liens) : comme GET, sans le corps. Jamais pour l'API.
+  if (req.method === 'HEAD' && !pathname.startsWith('/api/')) {
+    req.method = 'GET';
+    const end = res.end.bind(res);
+    res.write = () => true; res.end = () => end();
+  }
+
   try {
     if (req.method === 'GET' && pathname === '/api/stream') return streamOpen(req, res, url);
     for (const route of ROUTES) { const r = await route(req, res, url, pathname); if (r !== NEXT) return r; }
@@ -97,3 +103,18 @@ server.headersTimeout = 20_000;
 server.requestTimeout = 30_000;
 try { migrateOwners(); } catch (e) { console.error('auteurs', e.message); }
 server.listen(PORT, process.env.HOST || undefined, () => console.log(`Cortège en écoute — ${EVENT_NAME} — données : ${DATA_DIR}`));
+
+// Arrêt propre (systemctl restart, mise à jour) : plus de nouvelle connexion, les requêtes en cours se terminent, les flux
+// temps réel sont fermés (les téléphones se reconnectent seuls), la publication en attente part, la base est refermée.
+let stopping = false;
+function shutdown(sig) {
+  if (stopping) return; stopping = true;
+  console.log(`arrêt (${sig})`);
+  const bye = code => { try { require('./src/live/files').flushNow(); } catch {} try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.close(); } catch {} process.exit(code); };
+  setTimeout(() => bye(0), 4000).unref(); // filet : jamais plus de 4 s
+  for (const res of sseClients.keys()) try { res.end(); } catch {}
+  server.close(() => bye(0));
+  server.closeIdleConnections?.();
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

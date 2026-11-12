@@ -14,6 +14,8 @@ const ROOT = path.join(__dirname, '..');
 let srv, B, DIR, fake, calls = [], issues = {}, next = 1;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
+// Arrêt propre du serveur : on attend sa fin avant d'effacer son dossier
+const stop = p => new Promise(r => { if (p.exitCode !== null) return r(); p.once('exit', r); p.kill(); });
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-gh-'));
   fake = http.createServer((req, res) => {
@@ -40,22 +42,22 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0',
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', PLACES_IMPORT: '0',
       SOCIAL: '0', PUBLIC_URL: 'https://cortege.example', GITHUB_TOKEN: 'gh-tok', GITHUB_REPO: 'compte/depot', GITHUB_API: 'http://127.0.0.1:' + fake.address().port,
-      GITHUB_WEBHOOK_SECRET: SECRET, GITHUB_GAP_MS: '10', GITHUB_FIRST_MS: '200', GITHUB_TICK_MS: '400' },
+      GITHUB_WEBHOOK_SECRET: SECRET, GITHUB_GAP_MS: '10', GITHUB_FIRST_MS: '200', GITHUB_TICK_MS: '400', STREAM_NET_MAX: '2' },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await wait(100); }
 });
-after(() => { srv.kill(); fake.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
+after(async () => { await stop(srv); fake.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
 
 const req = (m, p, body, h = {}) => fetch(B + p, { method: m, headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN, 'x-forwarded-for': '81.2.2.2', 'x-device': 'dev-github-test-xxxxxxxx', ...h }, body: body && JSON.stringify(body) })
   .then(async r => ({ s: r.status, j: await r.json().catch(() => ({})) }));
 async function until(fn, ms = 6000) { for (let t = 0; t < ms; t += 100) { const v = await fn(); if (v) return v; await wait(100); } return null; }
 const ideas = () => req('GET', '/api/admin/ideas').then(r => r.j);
 const byTitle = async t => (await ideas()).ideas.find(i => i.title === t);
-const hook = (ev, p, sig) => { const raw = JSON.stringify(p);
-  return fetch(B + '/api/github/webhook', { method: 'POST', headers: { 'content-type': 'application/json', 'x-github-event': ev,
+const hook = (ev, p, sig, id) => { const raw = JSON.stringify(p);
+  return fetch(B + '/api/github/webhook', { method: 'POST', headers: { 'content-type': 'application/json', 'x-github-event': ev, 'x-github-delivery': id || crypto.randomUUID(),
     'x-hub-signature-256': sig || 'sha256=' + crypto.createHmac('sha256', SECRET).update(raw).digest('hex') }, body: raw }).then(async r => ({ s: r.status, j: await r.json().catch(() => ({})) })); };
 
 test('GitHub : une idée à valider n\'a pas de ticket, publiée elle en a un, tenu à jour et fermé', async () => {
@@ -115,6 +117,12 @@ test('GitHub : webhook signé, ticket fermé ou rouvert sur GitHub repris dans C
   assert.equal((await hook('issues', p('reopened'))).j.status, 'study');
   assert.equal((await byTitle(c.title)).status, 'study');
   assert.equal((await hook('issues', { ...p('closed'), repository: { full_name: 'autre/depot' } })).j.ignored, true, 'autre dépôt ignoré');
+  // Rejeu : le même envoi signé, renvoyé plus tard, ne change plus rien
+  ic.state = 'closed';
+  assert.equal((await hook('issues', p('closed'), null, 'livraison-rejouee-1')).j.status, 'no');
+  await req('POST', '/api/admin/ideas/' + c.id, { status: 'study' });
+  assert.equal((await hook('issues', p('closed'), null, 'livraison-rejouee-1')).j.duplicate, true);
+  assert.equal((await byTitle(c.title)).status, 'study', 'rejeu sans effet');
 });
 
 test('GitHub : idée supprimée, ticket fermé et vidé', async () => {
@@ -124,3 +132,21 @@ test('GitHub : idée supprimée, ticket fermé et vidé', async () => {
   assert.ok(await until(() => ic.title === 'Idée retirée' && ic.state === 'closed'));
   assert.ok(!ic.body.includes('contrasté'));
 });
+
+test('temps réel : un même réseau ne peut pas occuper toutes les connexions', async () => {
+  const open = () => { const c = new AbortController(); return fetch(B + '/api/stream?r=43_3', { signal: c.signal, headers: { 'x-forwarded-for': '81.9.9.9' } }).then(r => ({ s: r.status, c })); };
+  const a = await open(), b = await open(), c = await open();
+  assert.deepEqual([a.s, b.s, c.s], [200, 200, 503]);
+  a.c.abort(); await wait(200);
+  const d = await open();
+  assert.equal(d.s, 200, 'place libérée à la fermeture');
+  b.c.abort(); d.c.abort();
+});
+
+test('veille des préfectures : jamais le réseau interne (adresse locale, IP privée)', async () => {
+  for (const url of [B + '/api/health', 'http://127.0.0.1/', 'http://169.254.169.254/latest/meta-data/', 'http://[::1]/']) {
+    const r = await req('POST', '/api/admin/veille/sources', { url, dep: '34' });
+    assert.match(r.j.error || '', /refusée/, url);
+  }
+});
+

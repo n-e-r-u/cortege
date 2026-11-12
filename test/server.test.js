@@ -14,6 +14,8 @@ const ROOT = path.join(__dirname, '..');
 let srv, B, DIR, db, n = 0, geo;
 const B_URL = p => B + p;
 
+// Arrêt propre du serveur : on attend sa fin avant d'effacer son dossier
+const stop = p => new Promise(r => { if (p.exitCode !== null) return r(); p.once('exit', r); p.kill(); });
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-'));
   fs.writeFileSync(DIR + '/carte.pmtiles', require('./pmtiles-fixture').writePmtiles([
@@ -29,14 +31,14 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0', ORDER_PUSH_WAIT_MS: '200', FETCH_ALLOW_PRIVATE: '1', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', PLACES_IMPORT: '0', ORDER_PUSH_WAIT_MS: '200', FETCH_ALLOW_PRIVATE: '1', TILE_PMTILES: DIR + '/carte.pmtiles', GEO_API: 'http://127.0.0.1:' + geo.address().port },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
   await new Promise(r => setTimeout(r, 400));
   db = new DatabaseSync(DIR + '/d/cortege.db'); db.exec('PRAGMA busy_timeout=5000');
 });
-after(() => { try { db.close(); } catch {} srv.kill(); geo.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
+after(async () => { try { db.close(); } catch {} await stop(srv); geo.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
 
 // Un « téléphone » = un identifiant + un réseau
 const phone = (net = '81.0.' + (n % 250) + '.' + (++n % 250)) => ({ dev: ('dev' + n + 'x').padEnd(24, 'x'), ip: net });
@@ -349,9 +351,18 @@ test('milice / groupe fasciste : danger avec alerte, le point suit le groupe', a
   assert.equal(b.id, a.id, 'fusion à ~110 m'); assert.ok(Math.abs(b.lat - (p.lat + 0.001)) < 1e-6, 'le point suit le groupe');
 });
 
-test('santé : disque et mémoire exposés pour la surveillance', async () => {
-  const h = await fetch(B + '/api/health').then(r => r.json());
-  assert.equal(h.ok, true);
+test('HEAD : accepté pour les pages et les fichiers, sans corps', async () => {
+  for (const u of ['/', '/app.js', '/agenda', '/nouveautes-historique.json']) {
+    const r = await fetch(B + u, { method: 'HEAD' });
+    assert.equal(r.status, 200, u); assert.equal((await r.text()).length, 0);
+  }
+  assert.equal(JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'nouveautes.json'), 'utf8')).history, undefined, 'nouveautés du démarrage sans historique');
+});
+
+test('santé : « ok » pour tout le monde, le détail (disque, mémoire, proxy) avec la clé admin', async () => {
+  assert.deepEqual(await fetch(B + '/api/health').then(r => r.json()), { ok: true });
+  const h = await fetch(B + '/api/health', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
+  assert.equal(h.ok, true); assert.equal(h.storageWritable, true);
   assert.ok(h.diskFreePct === null || (h.diskFreePct >= 0 && h.diskFreePct <= 100));
   assert.equal(typeof h.streams, 'number');
 });
@@ -512,7 +523,7 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
   // Le serveur de test tourne déjà : on lance un second serveur pointé sur le faux Overpass
   const port = 20000 + Math.floor(Math.random() * 20000), B2 = 'http://127.0.0.1:' + port, D2 = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-l-'));
   const s2 = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore', env: { ...process.env, PORT: String(port), DATA_DIR: D2 + '/d', LIVE_DIR: D2 + '/l',
-    ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', PLACES_SOURCE: 'overpass', OVERPASS_URL: 'http://127.0.0.1:' + fake.address().port + '/api/interpreter', OVERPASS_GAP: '0' } });
+    ADMIN_KEY: ADMIN, PLACES_IMPORT: '0', PLACES_SOURCE: 'overpass', OVERPASS_URL: 'http://127.0.0.1:' + fake.address().port + '/api/interpreter', OVERPASS_GAP: '0' } });
   try {
     for (let i = 0; i < 100; i++) { try { if ((await fetch(B2 + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
     const A = (p, body, method = 'POST') => fetch(B2 + p, { method, headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }).then(async r => ({ s: r.status, j: await r.json() }));
@@ -538,7 +549,7 @@ test('lieux permanents : import OpenStreetMap, fichiers par région, correction 
     const main3 = JSON.parse(fs.readFileSync(D2 + '/l/l/45_4.json', 'utf8')).p;
     assert.deepEqual(main3.map(x => x[1]).sort(), ['cra', 'mairie']);
     assert.ok(JSON.parse(fs.readFileSync(D2 + '/l/g.json', 'utf8')).pois);
-  } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
+  } finally { await stop(s2); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
 });
 
 test('arrêtés : proposition avec source, validation par l’admin, zone officielle, import', async () => {
@@ -608,7 +619,7 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
   await new Promise(r => fake.on('listening', r));
   const port = 20000 + Math.floor(Math.random() * 20000), B2 = 'http://127.0.0.1:' + port;
   const s2 = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore', env: { ...process.env, PORT: String(port), DATA_DIR: D2 + '/d', LIVE_DIR: D2 + '/l',
-    ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0', PLACES_SOURCE: 'osm', OSM_MIN_FREE_GB: '0', GEOFABRIK_URLS: 'http://127.0.0.1:' + fake.address().port + '/redir' } });
+    ADMIN_KEY: ADMIN, PLACES_IMPORT: '0', PLACES_SOURCE: 'osm', OSM_MIN_FREE_GB: '0', GEOFABRIK_URLS: 'http://127.0.0.1:' + fake.address().port + '/redir' } });
   try {
     for (let i = 0; i < 100; i++) { try { if ((await fetch(B2 + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
     const A = (p, body, method = 'POST') => fetch(B2 + p, { method, headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }).then(async r => ({ s: r.status, j: await r.json() }));
@@ -637,7 +648,7 @@ test('lieux et caméras : copie Geofabrik triée par osmium', { skip: require('c
     const main = JSON.parse(fs.readFileSync(D2 + '/l/l/48_2.json', 'utf8')).p;
     assert.equal(main.length, 1); assert.equal(main[0][0], 'w100'); assert.ok(Math.abs(main[0][2] - 48.8648) < 1e-3, 'centre de la surface');
     assert.deepEqual(fs.readdirSync(D2 + '/d/osm'), [], 'fichiers téléchargés effacés');
-  } finally { s2.kill(); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
+  } finally { await stop(s2); fake.close(); fs.rmSync(D2, { recursive: true, force: true }); }
 });
 
 test('sécurité : une orga ne peut pas prendre le nom d’une autre, ni retirer ce qui n’est pas à elle', async () => {
@@ -1194,7 +1205,7 @@ test('direction des véhicules : indiquée d’un appui, déduite du déplacemen
   const p = place(), a = await post('/api/reports', { cat: 'police', ...p });
   assert.equal(a.s, 201); assert.equal(a.j.dir, undefined);
   assert.equal((await post(`/api/reports/${a.j.id}/dir`, { d: 9 })).s, 400);
-  const d = await post(`/api/reports/${a.j.id}/dir`, { d: 2 });
+  const who = phone(), d = await post(`/api/reports/${a.j.id}/dir`, { d: 2 }, who);
   assert.equal(d.s, 200); assert.equal(d.j.dir, 90); assert.ok(Math.abs(d.j.dt * 1000 - Date.now()) < 5000);
   // Revu 55 m plus au nord par un autre téléphone : le point glisse, direction nord
   const m = await post('/api/reports', { cat: 'police', lat: p.lat + 0.0005, lng: p.lng });
@@ -1202,7 +1213,7 @@ test('direction des véhicules : indiquée d’un appui, déduite du déplacemen
   // Direction trop ancienne : plus publiée
   db.prepare('UPDATE reports SET dirt=? WHERE id=?').run(Date.now() - 6 * 60_000, a.j.id);
   assert.equal((await post(`/api/reports/${a.j.id}/note`, { note: 'deux fourgons' })).j.dir, undefined);
-  assert.equal((await post(`/api/reports/${a.j.id}/dir`, { d: null })).j.dir, undefined);
+  assert.equal((await post(`/api/reports/${a.j.id}/dir`, { d: null }, who)).s, 200, 'le même téléphone efface sa direction');
   const med = await post('/api/reports', { cat: 'medic', ...place() });
   assert.equal((await post(`/api/reports/${med.j.id}/dir`, { d: 1 })).s, 400);
 });
@@ -1215,7 +1226,15 @@ test('2.17 : nombre approximatif d’un groupe, point de ralliement des orgas ce
   assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 5 })).s, 400);
   const c = await post(`/api/reports/${f.j.id}/count`, { c: 2 });
   assert.equal(c.s, 200); assert.equal(c.j.n, 2);
-  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 3 })).j.n, 3, 'un autre téléphone corrige');
+  // Anti-vandalisme : la valeur d'un autre téléphone tient 30 s ; le même téléphone corrige une fois, pas plus
+  const who = phone(), other = phone();
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 4 }, other)).s, 429, 'un autre téléphone attend 30 s');
+  db.prepare("UPDATE quota SET t=t-31000 WHERE k=?").run('cntl:' + f.j.id);
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 3 }, who)).j.n, 3, 'un autre téléphone corrige ensuite');
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 3 }, who)).s, 200, 'même valeur : rien à faire');
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 2 }, who)).j.n, 2, 'il se corrige une fois');
+  assert.equal((await post(`/api/reports/${f.j.id}/count`, { c: 4 }, who)).s, 429, 'pas une troisième');
+  assert.equal(db.prepare('SELECT cnt FROM reports WHERE id=?').get(f.j.id).cnt, 2);
   const lac = await post('/api/reports', { cat: 'lacrymo', ...place() });
   assert.equal((await post(`/api/reports/${lac.j.id}/count`, { c: 1 })).s, 400);
   // Ralliement : orga certifiée seulement, texte obligatoire, jamais national

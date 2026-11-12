@@ -11,7 +11,8 @@
       cur = name; try { localStorage.setItem(KEY, name); } catch {}
       for (const b of tabs) { const on = b.dataset.pane === name; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); }
       for (const [k, p] of Object.entries(panes)) p.hidden = k !== name;
-      $('#sheetOrga').scrollTop = 0;
+      // Seulement si la page est ouverte : au démarrage, lire scrollTop forcerait le calcul de toute la mise en page
+      const sh = $('#sheetOrga'); if (!sh.hidden) sh.scrollTop = 0;
     }
     tabs.forEach((b, i) => {
       b.onclick = () => show(b.dataset.pane);

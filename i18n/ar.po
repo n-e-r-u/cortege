@@ -4015,3 +4015,36 @@ msgstr "تم إخفاء {what}. لإظهارها من جديد: زر الطبق�
 #: client/app/12-lieux-calques.js
 msgid "Masquer ce type de lieu"
 msgstr "إخفاء هذا النوع من الأماكن"
+
+# --- textes à traduire ---
+#: src/routes/github.js
+msgid "POST seulement."
+msgstr "POST فقط."
+
+#: src/routes/github.js
+msgid "Trop gros."
+msgstr "الحجم كبير جداً."
+
+#: src/routes/github.js
+msgid "Signature incorrecte."
+msgstr "توقيع غير صحيح."
+
+#: src/routes/github.js
+msgid "Livraison sans identifiant."
+msgstr "إرسال بدون معرّف."
+
+#: src/routes/github.js
+msgid "JSON invalide."
+msgstr "JSON غير صالح."
+
+#: src/routes/ideas.js
+msgid "GitHub n’est pas configuré."
+msgstr "لم يتم إعداد GitHub."
+
+#: src/routes/reports.js
+msgid "Quelqu’un vient de l’indiquer : réessaie dans un instant si ce n’est plus exact."
+msgstr "شخص ما حدّد ذلك للتو: أعد المحاولة بعد لحظة إن لم يعد صحيحاً."
+
+#: src/routes/reports.js
+msgid "Tu l’as déjà indiqué pour ce point."
+msgstr "لقد حدّدت ذلك لهذه النقطة من قبل."

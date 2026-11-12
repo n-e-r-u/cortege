@@ -3955,3 +3955,36 @@ msgstr "{what} ocultos. Para volver a mostrarlos: botón Capas, abajo a la derec
 #: client/app/12-lieux-calques.js
 msgid "Masquer ce type de lieu"
 msgstr "Ocultar este tipo de lugar"
+
+# --- textes à traduire ---
+#: src/routes/github.js
+msgid "POST seulement."
+msgstr "Solo POST."
+
+#: src/routes/github.js
+msgid "Trop gros."
+msgstr "Demasiado grande."
+
+#: src/routes/github.js
+msgid "Signature incorrecte."
+msgstr "Firma incorrecta."
+
+#: src/routes/github.js
+msgid "Livraison sans identifiant."
+msgstr "Entrega sin identificador."
+
+#: src/routes/github.js
+msgid "JSON invalide."
+msgstr "JSON no válido."
+
+#: src/routes/ideas.js
+msgid "GitHub n’est pas configuré."
+msgstr "GitHub no está configurado."
+
+#: src/routes/reports.js
+msgid "Quelqu’un vient de l’indiquer : réessaie dans un instant si ce n’est plus exact."
+msgstr "Alguien acaba de indicarlo: vuelve a intentarlo en un momento si ya no es exacto."
+
+#: src/routes/reports.js
+msgid "Tu l’as déjà indiqué pour ce point."
+msgstr "Ya lo has indicado para este punto."

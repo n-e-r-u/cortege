@@ -3955,3 +3955,36 @@ msgstr "{what} hidden. To show them again: Layers button, bottom right."
 #: client/app/12-lieux-calques.js
 msgid "Masquer ce type de lieu"
 msgstr "Hide this type of place"
+
+# --- textes à traduire ---
+#: src/routes/github.js
+msgid "POST seulement."
+msgstr "POST only."
+
+#: src/routes/github.js
+msgid "Trop gros."
+msgstr "Too large."
+
+#: src/routes/github.js
+msgid "Signature incorrecte."
+msgstr "Invalid signature."
+
+#: src/routes/github.js
+msgid "Livraison sans identifiant."
+msgstr "Delivery without an ID."
+
+#: src/routes/github.js
+msgid "JSON invalide."
+msgstr "Invalid JSON."
+
+#: src/routes/ideas.js
+msgid "GitHub n’est pas configuré."
+msgstr "GitHub is not set up."
+
+#: src/routes/reports.js
+msgid "Quelqu’un vient de l’indiquer : réessaie dans un instant si ce n’est plus exact."
+msgstr "Someone just set this: try again in a moment if it is no longer right."
+
+#: src/routes/reports.js
+msgid "Tu l’as déjà indiqué pour ce point."
+msgstr "You have already set this for this point."

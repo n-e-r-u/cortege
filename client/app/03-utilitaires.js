@@ -6,6 +6,10 @@
   const fmtDist = m => profile.units === 'imperial'
     ? (m < 160 ? `${Math.round(m * 3.28084 / 10) * 10} ft` : `${(m / 1609.34).toFixed(1)} mi`)
     : m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
+  // QR codes : la bibliothèque (57 Ko) n'est chargée qu'au premier QR code affiché ; elle est dans le cache hors ligne
+  const qrSvg = (url, cellSize) => (window.qrcode ? Promise.resolve() : (qrSvg.p ||= new Promise((ok, ko) => {
+    const sc = document.createElement('script'); sc.src = '/vendor/qrcode.js'; sc.onload = ok; sc.onerror = () => { qrSvg.p = null; ko(new Error('qrcode')); }; document.head.append(sc);
+  }))).then(() => { const q = qrcode(0, 'M'); q.addData(url); q.make(); return q.createSvgTag({ cellSize, margin: 3, scalable: true }); });
   function toast(msg) {
     const el = $('#toast'); el.textContent = t(msg); el.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);

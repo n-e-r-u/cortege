@@ -80,11 +80,7 @@
   const shareUrl = location.origin + '/';
   function openShare() {
     closeReport(); closeSheets();
-    if (!openShare.done && window.qrcode) {
-      const q = qrcode(0, 'M'); q.addData(shareUrl); q.make();
-      $('#qr').innerHTML = q.createSvgTag({ cellSize: 8, margin: 3, scalable: true });
-      openShare.done = true;
-    }
+    if (!openShare.done) qrSvg(shareUrl, 8).then(svg => { $('#qr').innerHTML = svg; openShare.done = true; }).catch(() => {});
     $('#qrUrl').textContent = shareUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
     $('#btnNativeShare').hidden = !navigator.share;
     $('#sheetShare').hidden = false;

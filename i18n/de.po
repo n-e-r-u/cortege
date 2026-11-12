@@ -3952,3 +3952,36 @@ msgstr "{what} ausgeblendet. Zum Wiedereinblenden: Ebenen-Schaltfläche unten re
 #: client/app/12-lieux-calques.js
 msgid "Masquer ce type de lieu"
 msgstr "Diese Art von Ort ausblenden"
+
+# --- textes à traduire ---
+#: src/routes/github.js
+msgid "POST seulement."
+msgstr "Nur POST."
+
+#: src/routes/github.js
+msgid "Trop gros."
+msgstr "Zu groß."
+
+#: src/routes/github.js
+msgid "Signature incorrecte."
+msgstr "Ungültige Signatur."
+
+#: src/routes/github.js
+msgid "Livraison sans identifiant."
+msgstr "Zustellung ohne Kennung."
+
+#: src/routes/github.js
+msgid "JSON invalide."
+msgstr "Ungültiges JSON."
+
+#: src/routes/ideas.js
+msgid "GitHub n’est pas configuré."
+msgstr "GitHub ist nicht eingerichtet."
+
+#: src/routes/reports.js
+msgid "Quelqu’un vient de l’indiquer : réessaie dans un instant si ce n’est plus exact."
+msgstr "Jemand hat das gerade angegeben: Versuch es gleich noch einmal, falls es nicht mehr stimmt."
+
+#: src/routes/reports.js
+msgid "Tu l’as déjà indiqué pour ce point."
+msgstr "Du hast das für diesen Punkt schon angegeben."

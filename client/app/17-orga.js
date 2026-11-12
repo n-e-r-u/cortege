@@ -109,7 +109,7 @@
     const url = location.origin + '/?invite=' + token;
     $('#inviteTitle').textContent = t(title) + ' ' + t('(valable jusqu’au {date}, une seule fois)', { date: fmtExp(exp) });
     $('#inviteUrl').textContent = url; $('#inviteQr').textContent = '';
-    if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#inviteQr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
+    qrSvg(url, 6).then(svg => { if ($('#inviteUrl').textContent === url) $('#inviteQr').innerHTML = svg; }).catch(() => {});
     $('#inviteFine').textContent = t(fine);
     $('#inviteShare').hidden = !navigator.share;
     $('#inviteOut').hidden = false; $('#inviteOut').scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -5,10 +5,9 @@
 //   live/g.json         → empreintes des annonces, de l'agenda et état de pause (presque toujours en 304)
 //   live/r/<région>.json → empreinte de chaque case active d'une région de 1° (≈ 100 km)
 //   live/c/<case>.json  → signalements d'une case de 0,05° (≈ 5 km)
-//   live/all.json       → tous les signalements (vue nationale, réécrit au plus toutes les 10 s)
+//   live/n.json         → vue nationale : compteurs par région (réécrit au plus toutes les 10 s)
 //   live/ann.json, live/events.json → annonces et agenda
 //   live/repli.json     → lieux de repli des orgas ouverts en ce moment
-//   live/index.json     → ancien format (toutes les cases), pour les téléphones qui n'ont pas rechargé l'appli
 // Ce module garde ce qui est à republier (dirty) et le minuteur ; la publication elle-même (flush) est branchée par setFlusher.
 const fs = require('fs');
 const path = require('path');
@@ -54,6 +53,8 @@ function scheduleFlush(ms = FLUSH_MS) {
   if (pub.timer && due >= pub.due) return;
   clearTimeout(pub.timer); pub.due = due; pub.timer = setTimeout(() => flusher(), ms);
 }
+// Publication immédiate de ce qui attend (arrêt du serveur)
+function flushNow() { if (pub.timer) { clearTimeout(pub.timer); pub.timer = null; flusher(); } }
 function dirtyCell(c) { dirty.cells.add(c); dirty.all = true; scheduleFlush(); }
 
-module.exports = { LIVE_DIR, CELL, cellId, regionOfCell, writeAtomic, writeIfChanged, FLUSH_MS, ALL_EVERY, LIVE_LOCK, dirty, pub, setFlusher, scheduleFlush, dirtyCell };
+module.exports = { LIVE_DIR, CELL, cellId, regionOfCell, writeAtomic, writeIfChanged, FLUSH_MS, ALL_EVERY, LIVE_LOCK, dirty, pub, setFlusher, scheduleFlush, flushNow, dirtyCell };

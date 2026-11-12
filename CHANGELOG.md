@@ -2,6 +2,33 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.17.5
+
+Version issue d'une relecture complète du code : sécurité, vitesse, solidité. Rien ne change dans l'usage.
+
+**Sécurité** :
+- Veille des préfectures : les pages, les sites et les recueils PDF sont lus avec la même garde que la veille des legal teams. Jamais le serveur lui-même ni le réseau interne (même après une redirection), taille bornée pendant le téléchargement, durée totale bornée. `pdftotext` ne reçoit plus les variables du serveur.
+- Direction d'un véhicule et nombre d'un groupe : 2 saisies au plus par téléphone et par point en 10 minutes ; la valeur posée par un téléphone tient 30 secondes avant qu'un autre puisse la changer.
+- Temps réel : 500 connexions au plus pour un même réseau (`STREAM_NET_MAX`), pour qu'un seul réseau ne prenne pas toutes les places.
+- `/api/health` ne répond plus que `{"ok":true}` sans la clé admin ; le détail (disque, mémoire, proxy) demande la clé.
+- Webhook GitHub : un même envoi n'est pris en compte qu'une fois.
+- Lieux (Geofabrik) : plus de retour à http, taille maximale (`GEOFABRIK_MAX_GB`), somme de contrôle vérifiée.
+- Installation VPS : le serveur n'a plus le droit d'écrire dans son propre code (`TILE_DIR` dans le dossier des données, voir [INSTALLATION.md](docs/INSTALLATION.md)). Actions GitHub épinglées par empreinte.
+
+**Vitesse** :
+- Nouveautés : seules celles de la version en cours sont lues au démarrage (3 Ko au lieu de 41) ; l'historique est lu à l'ouverture de la liste.
+- QR code : sa bibliothèque (57 Ko) n'est chargée qu'au premier QR code affiché.
+- Logo allégé (21 Ko au lieu de 63), sans différence visible.
+- Démarrage : un calcul de mise en page inutile retiré (la plus longue tâche du démarrage est à peu près divisée par deux). Premier chargement : 16 % de données en moins.
+- Serveur : les anciens fichiers `live/index.json` et `live/all.json` (formats d'avant la 2.0) ne sont plus écrits toutes les 5 et 10 secondes.
+
+**Solidité** :
+- Arrêt propre : au redémarrage, les requêtes en cours se terminent, la publication en attente part et la base est refermée.
+- Les requêtes HEAD (outils de surveillance, aperçus de liens) reçoivent une réponse.
+- Import du 17 octobre retiré (terminé depuis le 1er novembre).
+- Accessibilité : le champ du code à intégrer a une étiquette.
+- Intégration continue : vérification ESLint du serveur, et un test dans un vrai navigateur (ouvrir, signaler, confirmer, partager).
+
 ## 2.17.0
 
 **Droits** (onglet Droits, profil France), chaque point vérifié le 10 novembre 2026 sur Légifrance et service-public.fr :

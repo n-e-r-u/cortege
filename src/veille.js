@@ -18,6 +18,7 @@ const { execFile } = require('child_process');
 const { db, q } = require('./db');
 const { MIN } = require('./config');
 const { discoverPref } = require('./veille-pref');
+const { fetchPublicFull } = require('./legal');
 const { PREFECTURES } = require('./geo/prefectures');
 
 db.exec(`CREATE TABLE IF NOT EXISTS veille_src(id TEXT PRIMARY KEY, dep TEXT, url TEXT UNIQUE, label TEXT, t INTEGER, last INTEGER, ok INTEGER, err TEXT, n INTEGER, etag TEXT, lastmod TEXT, seen TEXT);
@@ -80,25 +81,30 @@ function extractLinks(body, base) {
   }
   return out;
 }
+// Toutes les lectures passent par la garde de la veille des legal teams (src/legal.js) : jamais le réseau interne, y compris
+// après une redirection, taille bornée pendant le téléchargement, durée totale bornée.
+const UA = 'Cortege-veille (carte des manifestations ; relit cette page toutes les 20 minutes)';
+const textOf = (buf, ctype) => {
+  let text = buf.toString('utf8');
+  if (/charset=(iso-8859-1|latin1|windows-1252)/i.test(ctype || '') || /<meta[^>]+charset=["']?(iso-8859-1|windows-1252)/i.test(text.slice(0, 3000))) text = buf.toString('latin1');
+  return text;
+};
 async function fetchPage(s) {
-  const headers = { 'User-Agent': 'Cortege-veille (carte des manifestations ; relit cette page toutes les 20 minutes)', Accept: 'text/html,application/xhtml+xml,application/rss+xml,application/atom+xml,*/*;q=0.5' };
+  const headers = { Accept: 'text/html,application/xhtml+xml,application/rss+xml,application/atom+xml,*/*;q=0.5' };
   if (s.etag) headers['If-None-Match'] = s.etag;
   if (s.lastmod) headers['If-Modified-Since'] = s.lastmod;
-  const r = await fetch(s.url, { headers, redirect: 'follow', signal: AbortSignal.timeout(25_000) });
+  let r;
+  try { r = await fetchPublicFull(s.url, { headers, ua: UA, max: 5e6, strict: true, timeout: 25_000, hops: 5 }); }
+  catch (e) { throw new Error(e.message === 'trop lourd' ? 'page trop lourde' : e.message); }
   if (r.status === 304) return { same: true };
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const len = +(r.headers.get('content-length') || 0); if (len > 5e6) throw new Error('page trop lourde');
-  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > 5e6) throw new Error('page trop lourde');
-  let text = buf.toString('utf8');
-  if (/charset=(iso-8859-1|latin1|windows-1252)/i.test(r.headers.get('content-type') || '') || /<meta[^>]+charset=["']?(iso-8859-1|windows-1252)/i.test(text.slice(0, 3000))) text = buf.toString('latin1');
-  return { text, etag: r.headers.get('etag') || '', lastmod: r.headers.get('last-modified') || '', final: r.url || s.url };
+  return { text: textOf(r.buf, r.headers['content-type']), etag: r.headers.etag || '', lastmod: r.headers['last-modified'] || '', final: r.url };
 }
 // Page entière (sans cache conditionnel), pour les sites de préfecture
 async function getText(url) {
-  const r = await fetch(url, { headers: { 'User-Agent': 'Cortege-veille (carte des manifestations)', Accept: 'text/html,*/*;q=0.5' }, redirect: 'follow', signal: AbortSignal.timeout(25_000) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > 5e6) throw new Error('page trop lourde');
-  return buf.toString('utf8');
+  let r;
+  try { r = await fetchPublicFull(url, { headers: { Accept: 'text/html,*/*;q=0.5' }, ua: UA, max: 5e6, strict: true, timeout: 25_000, hops: 5 }); }
+  catch (e) { throw new Error(e.message === 'trop lourd' ? 'page trop lourde' : e.message); }
+  return r.buf.toString('utf8');
 }
 const isPdfUrl = u => /\/telechargement\/|\.pdf($|\?)/i.test(u);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -140,12 +146,11 @@ async function readPdfs(max = 4) {
   for (const p of q("SELECT * FROM veille_pdf WHERE status='todo' ORDER BY t LIMIT ?").all(max)) {
     const file = path.join(os.tmpdir(), 'cortege-raa-' + crypto.randomBytes(6).toString('hex') + '.pdf');
     try {
-      const r = await fetch(p.url, { headers: { 'User-Agent': 'Cortege-veille (carte des manifestations)' }, signal: AbortSignal.timeout(90_000) });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      if (+(r.headers.get('content-length') || 0) > PDF_MAX) throw new Error('PDF trop lourd');
-      const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > PDF_MAX) throw new Error('PDF trop lourd');
-      fs.writeFileSync(file, buf);
-      const text = await new Promise((ok, ko) => execFile('pdftotext', ['-l', '80', '-enc', 'UTF-8', file, '-'], { timeout: 90_000, maxBuffer: 40e6 }, (e, out) => e ? ko(e) : ok(out)));
+      let buf;
+      try { buf = (await fetchPublicFull(p.url, { ua: UA, max: PDF_MAX, strict: true, timeout: 45_000, hops: 5 })).buf; }
+      catch (e) { throw new Error(e.message === 'trop lourd' ? 'PDF trop lourd' : e.message); }
+      fs.writeFileSync(file, buf, { mode: 0o600 });
+      const text = await new Promise((ok, ko) => execFile('pdftotext', ['-l', '80', '-enc', 'UTF-8', file, '-'], { timeout: 90_000, maxBuffer: 40e6, env: { PATH: process.env.PATH || '/usr/bin:/bin' }, cwd: os.tmpdir() }, (e, out) => e ? ko(e) : ok(out)));
       const flat = norm(text), m = PDF_RE.exec(flat);
       if (m) {
         const raw = text.replace(/\s+/g, ' '), i = Math.max(0, norm(raw).indexOf(m[0]));

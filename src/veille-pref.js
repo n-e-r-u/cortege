@@ -22,7 +22,6 @@ function siteLinks(html, base) {
   return out;
 }
 function decodeURIComponentSafe(s) { try { return decodeURIComponent(s); } catch { return s; } }
-const isPdf = l => /\/telechargement\/|\.pdf($|\?)/i.test(l.u);
 // Enfants d'une page (adresse plus longue qui la prolonge), qui parlent de l'année ou du mois voulus
 const under = (links, parent) => { const p = new URL(parent).pathname.replace(/\/$/, ''); return links.filter(l => l.p !== p && l.p.toLowerCase().startsWith(p.toLowerCase() + '/')); };
 function periods(now) {

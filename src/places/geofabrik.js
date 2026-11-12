@@ -21,22 +21,39 @@ const { validLatLng, sha, wait, h8 } = require('../util');
 const GEOFABRIK = (process.env.GEOFABRIK_URLS || 'https://download.geofabrik.de/europe/france-latest.osm.pbf').split(',').map(x => x.trim()).filter(Boolean);
 const hasOsmium = (() => { try { return require('child_process').spawnSync('osmium', ['--version'], { timeout: 5000 }).status === 0; } catch { return false; } })();
 const placesSource = () => process.env.PLACES_SOURCE || (hasOsmium ? 'osm' : pmPrimary() && fs.existsSync(pmPrimary()) ? 'carte' : 'overpass');
-function download(url, file, onProgress, hops = 0) {
+// Téléchargement vérifié : jamais de retour à http depuis une adresse https (même par redirection), taille bornée
+// (GEOFABRIK_MAX_GB, 12 Go par défaut), et somme de contrôle comparée à celle publiée à côté du fichier (« .md5 ») quand elle existe.
+const DL_MAX = (Number(process.env.GEOFABRIK_MAX_GB) || 12) * 1e9;
+function download(url, file, onProgress, hops = 0, secure = false) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
+    if (!/^https?:$/.test(u.protocol)) return reject(new Error('adresse refusée'));
+    if (secure && u.protocol !== 'https:') return reject(new Error(`${u.hostname} : redirection vers http refusée`));
+    const safe = secure || u.protocol === 'https:';
     const req = (u.protocol === 'http:' ? http : https).get(u, { headers: { 'User-Agent': TILE_UA }, timeout: 60_000 }, res => {
-      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && hops < 5) { res.resume(); return resolve(download(new URL(res.headers.location, url).href, file, onProgress, hops + 1)); }
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && hops < 5) { res.resume(); return resolve(download(new URL(res.headers.location, url).href, file, onProgress, hops + 1, safe)); }
       if (res.statusCode !== 200) { res.resume(); return reject(new Error(`${u.hostname} ${res.statusCode}`)); }
-      const total = +res.headers['content-length'] || 0, out = fs.createWriteStream(file + '.part');
+      const total = +res.headers['content-length'] || 0, out = fs.createWriteStream(file + '.part'), md5 = require('crypto').createHash('md5');
+      if (total > DL_MAX) { res.destroy(); out.destroy(); try { fs.unlinkSync(file + '.part'); } catch {} return reject(new Error(`${u.hostname} : fichier trop lourd`)); }
       let done = 0;
-      res.on('data', c => { done += c.length; onProgress(done, total); });
+      res.on('data', c => { done += c.length; md5.update(c); onProgress(done, total);
+        if (done > DL_MAX) { res.destroy(); out.destroy(); try { fs.unlinkSync(file + '.part'); } catch {} reject(new Error(`${u.hostname} : fichier trop lourd`)); } });
       res.pipe(out);
-      out.on('finish', () => { fs.renameSync(file + '.part', file); resolve(); });
+      out.on('finish', () => { fs.renameSync(file + '.part', file); resolve(md5.digest('hex')); });
       out.on('error', reject); res.on('error', reject);
     });
     req.on('timeout', () => req.destroy(new Error('délai dépassé')));
     req.on('error', reject);
   });
+}
+// Somme publiée par la source (fichier « .md5 » à côté) : null si elle n'en publie pas
+async function publishedMd5(url) {
+  try {
+    const r = await fetch(url + '.md5', { headers: { 'User-Agent': TILE_UA }, signal: AbortSignal.timeout(20_000) });
+    if (!r.ok) return null;
+    const m = (await r.text()).slice(0, 200).match(/\b[0-9a-f]{32}\b/i);
+    return m ? m[0].toLowerCase() : null;
+  } catch { return null; }
 }
 // Lance osmium avec une priorité basse (l'appli reste fluide pendant l'extraction)
 function osmium(args) {
@@ -73,7 +90,9 @@ async function placesImportOsm() {
       try { const st = fs.statfsSync(dir), free = st.bavail * st.bsize; const need = +(process.env.OSM_MIN_FREE_GB || 6); if (free < need * 1e9) throw new Error(`pas assez de place sur le disque (${(free / 1e9).toFixed(1)} Go libres, il en faut environ ${need})`); } catch (e) { if (/place/.test(e.message)) throw e; }
       console.log(`lieux : téléchargement de ${url}`);
       const src = path.join(dir, 'source.osm.pbf'), flt = path.join(dir, 'lieux.osm.pbf'), out = path.join(dir, 'lieux.geojsonseq');
-      await download(url, src, (d, tot) => { run.done = d; run.total = tot; save(); });
+      const want = await publishedMd5(url);
+      const got = await download(url, src, (d, tot) => { run.done = d; run.total = tot; save(); });
+      if (want && got !== want) { try { fs.unlinkSync(src); } catch {} throw new Error(new URL(url).hostname + ' : fichier incomplet ou modifié (somme de contrôle différente)'); }
       run.step = 'extraction'; save(true); console.log('lieux : extraction avec osmium…');
       // Les limites des communes (niveau administratif 8) sortent dans le même passage : elles servent aux bilans par commune
       await osmium(['tags-filter', src, 'n/man_made=surveillance', 'nwr/amenity=townhall,police,courthouse,hospital,pharmacy,drinking_water,prison,school,university', 'nwr/office=government', 'nwr/emergency=defibrillator',

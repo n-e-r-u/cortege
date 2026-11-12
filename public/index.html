@@ -414,7 +414,7 @@
   <label class="embed-theme" for="embedTheme">Apparence de la carte
     <select id="embedTheme"><option value="">Selon l’appareil de qui regarde</option><option value="clair">Claire</option><option value="sombre">Sombre</option></select>
   </label>
-  <textarea id="embedCode" rows="4" readonly></textarea>
+  <textarea id="embedCode" rows="4" readonly aria-labelledby="emTitle"></textarea>
   <div class="row2"><button class="secondary" id="embedCopy">Copier le code</button><a class="secondary" id="embedOpen" href="/embed.html" target="_blank" rel="noopener">Aperçu</a></div>
 </section>
 
@@ -1055,7 +1055,6 @@
 
 <script src="/vendor/leaflet.js"></script>
 <script src="/vendor/leaflet.markercluster.js"></script>
-<script src="/vendor/qrcode.js"></script>
 <script src="/map-style.js"></script>
 <script src="/app.js"></script>
 </body>

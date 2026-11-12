@@ -3969,3 +3969,36 @@ msgstr ""
 #: client/app/12-lieux-calques.js
 msgid "Masquer ce type de lieu"
 msgstr ""
+
+# --- textes à traduire ---
+#: src/routes/github.js
+msgid "POST seulement."
+msgstr ""
+
+#: src/routes/github.js
+msgid "Trop gros."
+msgstr ""
+
+#: src/routes/github.js
+msgid "Signature incorrecte."
+msgstr ""
+
+#: src/routes/github.js
+msgid "Livraison sans identifiant."
+msgstr ""
+
+#: src/routes/github.js
+msgid "JSON invalide."
+msgstr ""
+
+#: src/routes/ideas.js
+msgid "GitHub n’est pas configuré."
+msgstr ""
+
+#: src/routes/reports.js
+msgid "Quelqu’un vient de l’indiquer : réessaie dans un instant si ce n’est plus exact."
+msgstr ""
+
+#: src/routes/reports.js
+msgid "Tu l’as déjà indiqué pour ce point."
+msgstr ""

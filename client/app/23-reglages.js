@@ -33,16 +33,23 @@
   // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
   let news = null;
   async function loadNews() { try { news = await (await fetch('/nouveautes.json', { cache: 'no-cache' })).json(); } catch { news = null; } return news; }
+  // Les versions précédentes sont dans un fichier à part, lu seulement à l'ouverture de la liste (pas à chaque démarrage)
+  let newsOld = null;
   function openNews() {
     if (!news) return;
     closeReport(); closeSheets();
     $('#nwTitle').textContent = t('Nouveautés');
-    const box = $('#newsList'); box.textContent = '';
-    // Les dernières versions, la plus récente en premier
-    for (const [i, v] of (news.history || [{ version: news.version, items: news.items }]).entries()) {
-      box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, t('Version {v}', { v: v.version })));
-      for (const [ti, d] of v['items_' + I18N.lang] || v.items) box.append(el('li', {}, el('b', {}, ti), el('span', {}, d)));
-    }
+    const draw = () => {
+      const box = $('#newsList'); box.textContent = '';
+      // Les dernières versions, la plus récente en premier
+      const cur = { ...news, history: undefined }, older = (newsOld || []).filter(v => v.version !== news.version);
+      for (const [i, v] of [cur, ...older].entries()) {
+        box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, t('Version {v}', { v: v.version })));
+        for (const [ti, d] of v['items_' + I18N.lang] || v.items) box.append(el('li', {}, el('b', {}, ti), el('span', {}, d)));
+      }
+    };
+    draw();
+    if (!newsOld) fetch('/nouveautes-historique.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { newsOld = j.history || []; if (!$('#sheetNews').hidden) draw(); }).catch(() => {});
     $('#sheetNews').hidden = false;
     try { localStorage.setItem('cortege-news', news.version); } catch {}
   }

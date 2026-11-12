@@ -30,6 +30,9 @@ const { sweep } = require('../sweep');
 const { toReport, addTrail, addNote, publicView, authorOf, bearing45 } = require('../reports/model');
 const { parisDay } = require('../time');
 
+// Empreinte courte (entier) du téléphone qui a posé une direction ou un nombre, gardée 30 s avec le verrou
+const setBy = dev => crypto.createHash('sha256').update(dev).digest().readUInt32BE(0);
+
 async function reportsRoutes(req, res, url, pathname) {
   if (req.method === 'GET' && pathname === '/api/digest') {
     if (!ADMIN_KEY) return send(res, 404, { error: 'Digest désactivé : ajoute ADMIN_KEY dans les variables du serveur.' });
@@ -177,6 +180,14 @@ async function reportsRoutes(req, res, url, pathname) {
       if (!r) return [404, { error: 'Signalement expiré.' }];
       if (!(isDir ? DIR_CATS : COUNT_CATS).has(r.cat)) return [400, { error: isDir ? 'Pas de direction pour ce type.' : 'Pas de nombre pour ce type.' }];
       if (!allow(dev, ipH, 'vote', now)) return [429, { error: 'Trop d’envois, patiente un peu.' }];
+      // Un même téléphone : 2 saisies par point en 10 minutes (une erreur se corrige, pas plus). Entre deux téléphones : la valeur
+      // posée par un autre tient 30 s avant de pouvoir être changée, pour qu'un seul appareil ne la fasse pas clignoter.
+      const kind = isDir ? 'dir' : 'cnt', cur = isDir ? (r.dir == null ? null : r.dir / 45) : (r.cnt ?? null);
+      if (cur === v) return [200, publicView(r)];
+      const lock = q('SELECT t, n FROM quota WHERE k=?').get(`${kind}l:${r.id}`);
+      if (lock && now - lock.t < 30_000 && lock.n !== setBy(dev)) return [429, { error: 'Quelqu’un vient de l’indiquer : réessaie dans un instant si ce n’est plus exact.' }];
+      if (!quota(`${kind}:${r.id}:${dev}`, 2, 10 * MIN, now)) return [429, { error: 'Tu l’as déjà indiqué pour ce point.' }];
+      q('INSERT OR REPLACE INTO quota(k,t,n) VALUES(?,?,?)').run(`${kind}l:${r.id}`, now, setBy(dev));
       if (isDir) { if (v === null) { r.dir = null; r.dirt = null; } else { r.dir = v * 45; r.dirt = now; } }
       else r.cnt = v;
       saveReport(r);

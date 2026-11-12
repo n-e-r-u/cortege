@@ -65,7 +65,10 @@ function blockedIp(addr) {
 // Page web d'une source (veille des legal teams) : HTTP(S) sur les ports habituels, adresse vérifiée au moment même de la connexion
 // (une redirection ou un nom de domaine qui change d'adresse ne peut pas mener au réseau interne), 3 redirections au plus.
 // Une adresse IP écrite directement dans le lien ne passe pas par la résolution DNS : elle est vérifiée ici avant toute connexion.
-function fetchPublic(url, { max = 3_000_000, timeout = 15000, hops = 3 } = {}) {
+function fetchPublic(url, opts = {}) { return fetchPublicFull(url, opts).then(r => r.buf.toString('utf8')); }
+// Même garde, réponse complète (octets, en-têtes, adresse finale) : sert aussi à la veille des préfectures et à ses recueils PDF.
+// strict : une réponse plus lourde que max est refusée au lieu d'être coupée ; headers : en-têtes ajoutés (cache conditionnel).
+function fetchPublicFull(url, { max = 3_000_000, timeout = 15000, hops = 3, headers = {}, strict = false, ua = 'Cortege-veille/1 (verification annuaire legal teams)' } = {}) {
   return new Promise((resolve, reject) => {
     let u; try { u = new URL(url); } catch { return reject(new Error('adresse invalide')); }
     const open = process.env.FETCH_ALLOW_PRIVATE === '1';
@@ -74,27 +77,34 @@ function fetchPublic(url, { max = 3_000_000, timeout = 15000, hops = 3 } = {}) {
     if (net.isIP(bare) && blockedIp(bare) && !open) return reject(new Error('adresse interne refusée'));
     const lib = u.protocol === 'https:' ? require('https') : require('http');
     // Respecte opts.all (Node 20+ appelle lookup avec all:true pour essayer plusieurs adresses) : toutes les adresses sont vérifiées
-    const lookup = (host, opts, cb) => require('dns').lookup(host, { ...opts, all: true }, (err, list) => {
+    const lookup = (host, o, cb) => require('dns').lookup(host, { ...o, all: true }, (err, list) => {
       if (err) return cb(err);
       if (!list.length) return cb(new Error('site injoignable'));
       if (!open && list.some(x => blockedIp(x.address))) return cb(new Error('adresse interne refusée'));
-      if (opts && opts.all) return cb(null, list);
+      if (o && o.all) return cb(null, list);
       cb(null, list[0].address, list[0].family);
     });
-    const req = lib.get(u, { lookup, timeout, headers: { 'user-agent': 'Cortege-veille/1 (verification annuaire legal teams)' } }, res => {
+    // Durée totale bornée (pas seulement l'inactivité) : un site qui envoie au compte-gouttes ne retient pas la veille
+    const kill = setTimeout(() => req.destroy(new Error('délai dépassé')), timeout * 4);
+    const done = (fn, v) => { clearTimeout(kill); fn(v); };
+    const req = lib.get(u, { lookup, timeout, headers: { 'user-agent': ua, ...headers } }, res => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
         res.resume();
-        if (hops <= 0) return reject(new Error('trop de redirections'));
-        return resolve(fetchPublic(new URL(res.headers.location, u).href, { max, timeout, hops: hops - 1 }));
+        if (hops <= 0) return done(reject, new Error('trop de redirections'));
+        clearTimeout(kill);
+        return resolve(fetchPublicFull(new URL(res.headers.location, u).href, { max, timeout, hops: hops - 1, headers, strict, ua }));
       }
-      if (res.statusCode < 200 || res.statusCode >= 300) { res.resume(); return reject(new Error('HTTP ' + res.statusCode)); }
+      if (res.statusCode === 304) { res.resume(); return done(resolve, { status: 304, headers: res.headers, buf: Buffer.alloc(0), url: u.href }); }
+      if (res.statusCode < 200 || res.statusCode >= 300) { res.resume(); return done(reject, new Error('HTTP ' + res.statusCode)); }
+      if (strict && +(res.headers['content-length'] || 0) > max) { res.destroy(); return done(reject, new Error('trop lourd')); }
       let size = 0; const parts = [];
-      res.on('data', c => { size += c.length; if (size > max) { res.destroy(); resolve(Buffer.concat(parts).toString('utf8')); } else parts.push(c); });
-      res.on('end', () => resolve(Buffer.concat(parts).toString('utf8')));
-      res.on('error', () => reject(new Error('lecture interrompue')));
+      const out = () => ({ status: res.statusCode, headers: res.headers, buf: Buffer.concat(parts), url: u.href });
+      res.on('data', c => { size += c.length; if (size > max) { res.destroy(); strict ? done(reject, new Error('trop lourd')) : done(resolve, out()); } else parts.push(c); });
+      res.on('end', () => done(resolve, out()));
+      res.on('error', () => done(reject, new Error('lecture interrompue')));
     });
     req.on('timeout', () => req.destroy(new Error('délai dépassé')));
-    req.on('error', e2 => reject(new Error(/interne|refusée|délai/.test(e2.message) ? e2.message : 'site injoignable')));
+    req.on('error', e2 => done(reject, new Error(/interne|refusée|délai/.test(e2.message) ? e2.message : 'site injoignable')));
   });
 }
 async function watchOne(e) {
@@ -130,4 +140,4 @@ async function legalWatch(force = false) {
 }
 const legalAlerts = () => legalAll().filter(e => ['missing', 'changed', 'error'].includes(watchStatus(e)) || !e.ok).length;
 
-module.exports = { fetchPublic, blockedIp, legalAll, getLegal, saveLegal, legalView, phoneDigits, cleanLegal, seedLegal, watchStatus, legalWatch, legalAlerts };
+module.exports = { fetchPublic, fetchPublicFull, blockedIp, legalAll, getLegal, saveLegal, legalView, phoneDigits, cleanLegal, seedLegal, watchStatus, legalWatch, legalAlerts };

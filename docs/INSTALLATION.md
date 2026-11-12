@@ -31,7 +31,6 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `ONION_SECRET` | vide | Valeur secrète que le bloc .onion de Caddy met dans `X-Cortege-Onion` (au lieu de `1`). Sans `ONION_SECRET` ni `ONION_HOST`, l'en-tête est ignoré : personne ne peut se faire passer pour Tor, même si le site public ne supprime pas l'en-tête |
 | `ONION_KEY_TRIES` | `30` | Essais de clé orga ratés acceptés en 5 min pour tout le trafic Tor réuni (Tor ne donne pas d'adresse IP : sans ce compteur commun, un robot changerait d'identifiant à chaque essai) |
 | `PUSH_ONION_MAX` | `2000` | Abonnements aux notifications créés par Tor (toutes connexions Tor réunies) |
-| `IMPORT_17OCT_MAX` | `400` | Nombre maximal d'événements repris de la carte du 17 octobre (les plus proches dans le temps sont gardés) |
 | `BRAND_HANDLE` | `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») (admin) |
 | `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » (admin) |
 | `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) (admin) |
@@ -50,12 +49,14 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `SECRET_STORE` | fichier | Clés de hachage : une par période (6 h pour les IP, un jour pour les téléphones), détruites à la fin de la période suivante, dans `DATA_DIR/keys`. `memory` : seulement en mémoire, jamais sur le disque (un seul processus) |
 | `STREAM` | auto | Temps réel (`/api/stream`). Actif par défaut hors Passenger (un seul processus), `0` pour le couper |
 | `STREAM_MAX` | `20000` | Nombre maximal de téléphones connectés en temps réel (au-delà : interrogation régulière) |
+| `STREAM_NET_MAX` | `500` | Connexions en temps réel au plus pour un même réseau (large : des centaines de téléphones partagent parfois l'adresse d'un opérateur) |
 | `ACCESS_LOGS` | vide | `none` quand le serveur web ne garde aucun journal d'accès (Caddy par défaut) : les mentions légales le disent |
 | `ONION_HOST` | vide | Adresse .onion de l'instance (affichée dans le menu) |
 | `PUSH_PARALLEL` | `48` | Notifications envoyées en même temps |
 | `PLACES_IMPORT` | `1` | `0` coupe l'import automatique des lieux permanents (le bouton de l'admin reste disponible) |
 | `PLACES_SOURCE` | auto | `osm` (copie Geofabrik triée par osmium, par défaut si `osmium` est installé), `carte` (lus dans le fichier PMTiles, sans caméras), `overpass` |
 | `GEOFABRIK_URLS` | France entière | Fichier(s) `.osm.pbf` de Geofabrik à télécharger chaque mois, séparés par des virgules (ex. une seule région pour un petit serveur). Les contours des communes (bilans par commune) sortent du même fichier |
+| `GEOFABRIK_MAX_GB` | `12` | Taille maximale, en Go, d'un fichier téléchargé chez Geofabrik (au-delà, le téléchargement est abandonné). La somme de contrôle publiée à côté du fichier (`.md5`) est vérifiée |
 | `GOOGLE_SITE_VERIFICATION` | vide | Nom du fichier de validation Google Search Console (ex. `google0123456789abcdef.html`) : le serveur le sert à la racine |
 | `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` | vide | Compte Bluesky de l'instance (ex. `moncollectif.bsky.social`) et **mot de passe d'application** (Bluesky › Réglages › Confidentialité et sécurité › Mots de passe d'application), jamais le mot de passe du compte. Active le partage automatique (admin › Réseaux) |
 | `BLUESKY_PDS` | `https://bsky.social` | Serveur du compte Bluesky, seulement s'il est hébergé ailleurs |
@@ -80,7 +81,7 @@ Dépose ton logo en `public/brand/logo.png` (carré, 512×512 conseillé). Il s'
 2. Envoie le contenu du zip dans `~/cortege` (Gestionnaire de fichiers › Upload › Extraire).
 3. Variables d'environnement dans le même écran (voir tableau), puis **Restart**.
 4. Domaines › active **Forcer la redirection HTTPS** pour le sous-domaine.
-5. Vérifie `https://carte.exemple.org/api/health` : `storageWritable` et `ipHeaderSeen` doivent valoir `true`.
+5. Vérifie l'installation avec ta clé admin : `curl -H "x-admin-key: TA_CLE" https://carte.exemple.org/api/health`. `storageWritable` et `ipHeaderSeen` doivent valoir `true`. Sans la clé, l'adresse ne répond que `{"ok":true}` (ou `false` si le disque ou la mémoire saturent) : c'est ce qu'il faut à un outil de surveillance.
 
 Aucun `npm install` n'est nécessaire (zéro dépendance). Après une mise à jour des fichiers : bouton **Restart**. Les téléphones qui ont l'appli ouverte détectent la nouvelle version dans les secondes qui suivent et se rechargent tout seuls, au même endroit de la carte. Si quelqu'un est en train de signaler ou d'écrire, un bandeau s'affiche et la mise à jour attend qu'il ait fini.
 
@@ -98,7 +99,7 @@ install -d -o cortege -g cortege -m 700 /var/lib/cortege
 install -d -o cortege -g caddy -m 2750 /srv/cortege-live
 ```
 
-`/etc/cortege.env` (droits 600) : `PORT=8080`, `HOST=127.0.0.1`, `TRUST_PROXY=1`, `DATA_DIR=/var/lib/cortege`, `LIVE_DIR=/srv/cortege-live`, `SECRET_STORE=memory`, `ACCESS_LOGS=none`, puis tes autres variables.
+`/etc/cortege.env` (droits 600) : `PORT=8080`, `HOST=127.0.0.1`, `TRUST_PROXY=1`, `DATA_DIR=/var/lib/cortege`, `LIVE_DIR=/srv/cortege-live`, `TILE_DIR=/var/lib/cortege/tiles`, `SECRET_STORE=memory`, `ACCESS_LOGS=none`, puis tes autres variables.
 
 Service systemd (`/etc/systemd/system/cortege.service`) :
 
@@ -115,9 +116,11 @@ Restart=always
 RestartSec=2
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/var/lib/cortege /srv/cortege-live /opt/cortege/app
+ReadWritePaths=/var/lib/cortege /srv/cortege-live
 UMask=0027
 ```
+
+Le dossier du code (`/opt/cortege/app`) n'est pas dans `ReadWritePaths` : le serveur ne peut pas modifier son propre code, même si une faille était un jour trouvée dans un outil qu'il lance (lecteur de PDF, osmium). C'est pour ça que `TILE_DIR` pointe vers le dossier des données. Installation d'avant la 2.17.5 : ajoute `TILE_DIR=/var/lib/cortege/tiles` à `/etc/cortege.env`, déplace le cache (`sudo mv /opt/cortege/app/tiles /var/lib/cortege/tiles`, s'il existe), retire `/opt/cortege/app` de `ReadWritePaths`, puis `sudo systemctl daemon-reload && sudo systemctl restart cortege`.
 
 Cloisonnement supplémentaire (Node ne voit plus que ses dossiers, sans aucun privilège) : `sudo mkdir -p /etc/systemd/system/cortege.service.d && sudo cp tools/systemd/durcissement.conf /etc/systemd/system/cortege.service.d/`, puis `daemon-reload` et redémarrage. La note de `systemd-analyze security cortege` baisse nettement (8,7 sans ce fichier).
 

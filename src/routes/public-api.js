@@ -3,10 +3,11 @@ const { REFUGE_GLYPHS, REFUGE_COLORS, REFUGE_SERVICES } = require('../refuges');
 // Routes publiques de l'API : tracé du cortège, configuration, notifications, santé, signalements autour, version, recherche de lieux.
 const fs = require('fs');
 const { APP_VERSION, versionInfo } = require('../http/version');
-const { CATEGORIES, MERGE, GROUPS, EVENT_TYPES, VIBES, ALERT_CATS, DIR_CATS, COUNT_CATS } = require('../categories');
+const { MERGE, GROUPS, EVENT_TYPES, VIBES, ALERT_CATS, DIR_CATS, COUNT_CATS } = require('../categories');
 const { DEPS } = require('../geo/departments');
 const { MIN, CENTER, ZOOM, DATA_DIR, UNDER_PASSENGER, TRUST_PROXY } = require('../config');
 const { NEXT } = require('./next');
+const { isAdmin } = require('../orgas/auth');
 const { clientProfiles, activeCategories } = require('../profiles');
 const { instance, showCredit } = require('../instance');
 const { ORDER_KINDS } = require('../orders');
@@ -118,6 +119,8 @@ async function publicApiRoutes(req, res, url, pathname) {
     try { const m = fs.readFileSync('/proc/meminfo', 'utf8'), g = k => +(m.match(new RegExp('^' + k + ':\\s+(\\d+)', 'm')) || [])[1];
       memFree = Math.round(g('MemAvailable') / g('MemTotal') * 100); } catch {}
     const healthy = writable && (diskFree == null || diskFree >= 5) && (memFree == null || !Number.isFinite(memFree) || memFree >= 5);
+    // Tout le monde : seulement « ok » (surveillance). Le détail (disque, mémoire, proxy, flux) : avec la clé admin.
+    if (!isAdmin(req)) return send(res, 200, { ok: healthy });
     return send(res, 200, { ok: healthy, diskFreePct: diskFree, memFreePct: Number.isFinite(memFree) ? memFree : null, streams: sseClients.size, nodeOk: !!DatabaseSync, passenger: UNDER_PASSENGER, trustProxy: TRUST_PROXY,
       ipHeaderSeen: !!(req.headers['x-forwarded-for'] || req.headers['x-real-ip']),
       cdn: !!req.headers['cf-connecting-ip'], ipIsPublic: !PRIVATE_IP.test(clientIp(req)), storageWritable: writable,

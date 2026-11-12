@@ -14,6 +14,8 @@ let srv, B, DIR, fake, calls = [], failMasto = 0;
 const day = (d = 0) => new Date(Date.now() + d * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
+// Arrêt propre du serveur : on attend sa fin avant d'effacer son dossier
+const stop = p => new Promise(r => { if (p.exitCode !== null) return r(); p.once('exit', r); p.kill(); });
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-soc-'));
   // Faux Bluesky (PDS) et faux Mastodon sur le même port
@@ -38,7 +40,7 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', IMPORT_17OCT: '0', PLACES_IMPORT: '0',
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', PLACES_IMPORT: '0',
       ORDER_PUSH_WAIT_MS: '200', SOCIAL_ORDER_WAIT_MS: '300', SOCIAL_TICK_MS: '250', PUBLIC_URL: 'https://cortege.example',
       BLUESKY_HANDLE: '@cortege.test', BLUESKY_APP_PASSWORD: 'app-pass', BLUESKY_PDS: F, MASTODON_URL: F, MASTODON_TOKEN: 'tok' },
     stdio: 'ignore',
@@ -46,7 +48,7 @@ before(async () => {
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await wait(100); }
   await wait(300);
 });
-after(() => { srv.kill(); fake.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
+after(async () => { await stop(srv); fake.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
 
 const req = (m, p, body) => fetch(B + p, { method: m, headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN, 'x-forwarded-for': '81.1.1.1', 'x-device': 'dev-social-test-xxxxxxxx' }, body: body && JSON.stringify(body) })
   .then(async r => ({ s: r.status, j: await r.json().catch(() => ({})) }));

@@ -203,6 +203,10 @@
   const fmtDist = m => profile.units === 'imperial'
     ? (m < 160 ? `${Math.round(m * 3.28084 / 10) * 10} ft` : `${(m / 1609.34).toFixed(1)} mi`)
     : m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
+  // QR codes : la bibliothèque (57 Ko) n'est chargée qu'au premier QR code affiché ; elle est dans le cache hors ligne
+  const qrSvg = (url, cellSize) => (window.qrcode ? Promise.resolve() : (qrSvg.p ||= new Promise((ok, ko) => {
+    const sc = document.createElement('script'); sc.src = '/vendor/qrcode.js'; sc.onload = ok; sc.onerror = () => { qrSvg.p = null; ko(new Error('qrcode')); }; document.head.append(sc);
+  }))).then(() => { const q = qrcode(0, 'M'); q.addData(url); q.make(); return q.createSvgTag({ cellSize, margin: 3, scalable: true }); });
   function toast(msg) {
     const el = $('#toast'); el.textContent = t(msg); el.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);
@@ -687,7 +691,7 @@
   const CELL = 0.05;
   const cellOf = r => `${Math.floor(r.lat / CELL)}_${Math.floor(r.lng / CELL)}`;
   const cellCache = new Map();          // case -> { h, r }
-  let allCache = { h: null, r: [] }, annCache = { h: null, a: [] };
+  let annCache = { h: null, a: [] };
   let mode = null, knownCells = new Set(), useApi = false, failures = 0;
   // ---- Réseau faible ----
   // L'appli mesure ses propres requêtes (et ce qu'annonce Chrome sur Android) : si ça rame, elle passe en mode léger.
@@ -753,7 +757,7 @@
   })();
   // Format actuel : g.json (annonces, agenda, pause) + un index par région de 1° autour de la zone affichée.
   // Ces petits fichiers changent rarement : le téléphone reçoit presque toujours un « rien de neuf » (304).
-  let lastActivity = 0, legacy = false;
+  let lastActivity = 0;
   const regionOf = id => { const [i, j] = id.split('_').map(Number); return `${Math.floor(i / 20)}_${Math.floor(j / 20)}`; };
   const getOpt = (url, empty) => getJ(url).catch(e => { if (e.status === 404) return empty; throw e; });
   // Charge les cases demandées (index de région, puis seulement les cases modifiées)
@@ -825,27 +829,17 @@
   }
   async function syncLive() {
     if (net.lite) return syncLite();
-    if (legacy) return syncLegacy();
-    let g;
-    try { g = await getJ('/live/g.json'); }
-    catch (e) { if (e.status === 404) { legacy = true; return syncLegacy(); } throw e; }
+    const g = await getJ('/live/g.json');
     const need = neededCells(), now = Date.now();
     let list, isFresh;
     // Vue nationale : des compteurs par région (n.json, quelques Ko) au lieu de tous les points,
     // plus les vrais points autour de toi pour que les alertes de proximité continuent de marcher.
-    const nat = need === null ? await getOpt('/live/n.json', null) : null;
-    if (need === null && nat && Array.isArray(nat.r)) {
-      natCache = nat;
+    if (need === null) {
+      const nat = await getOpt('/live/n.json', null);
+      if (nat && Array.isArray(nat.r)) natCache = nat;
       const wasNat = mode === 'nat';
       const out = await loadCells(meCells(), now);
       list = out.list; isFresh = r => wasNat && out.prev.has(cellOf(r)); mode = 'nat';
-    } else if (need === null) {
-      // ancien serveur : tous les points
-      const all = (await getJ('/live/all.json')).r || [];
-      const sig = all.length + ':' + all.reduce((m, r) => Math.max(m, r.t), 0);
-      if (allCache.h !== sig) { if (allCache.h) lastActivity = now; allCache = { h: sig, r: all }; }
-      const wasAll = mode === 'all';
-      list = allCache.r; isFresh = () => wasAll; mode = 'all';
     } else {
       const wasCells = mode === 'cells';
       const out = await loadCells(need, now);
@@ -858,35 +852,6 @@
     const annChanged = annCache.h !== g.ann;
     if (annChanged) { if (annCache.h) lastActivity = now; annCache = { h: g.ann, a: g.ann ? (await getJ('/live/ann.json')).a : [] }; }
     await syncLegal(g);
-    apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
-  }
-
-  // Ancien format (serveur pas encore mis à jour)
-  async function syncLegacy() {
-    const idx = await getJ('/live/index.json');
-    if (!idx || !idx.cells) throw Object.assign(new Error('index'), { status: 404 });
-    const need = neededCells(), now = Date.now();
-    let list, isFresh;
-    if (need === null) {
-      if (allCache.h !== idx.all) allCache = { h: idx.all, r: (await getJ('/live/all.json')).r };
-      const wasAll = mode === 'all';
-      list = allCache.r; isFresh = () => wasAll; mode = 'all';
-    } else {
-      const prev = knownCells; knownCells = new Set(need);
-      await Promise.all(need.map(async id => {
-        const h = idx.cells[id];
-        if (!h) { cellCache.delete(id); return; }
-        const c = cellCache.get(id);
-        if (!c || c.h !== h) cellCache.set(id, { h, r: (await getJ('/live/c/' + id + '.json')).r });
-      }));
-      for (const id of [...cellCache.keys()]) if (!knownCells.has(id)) cellCache.delete(id);
-      list = need.flatMap(id => cellCache.get(id)?.r || []);
-      isFresh = r => mode === 'cells' && prev.has(cellOf(r)); mode = 'cells';
-    }
-    setPaused(idx.paused); checkBuild(idx.build);
-    if (idx.events && evCache.h !== idx.events) { evCache = { h: idx.events, e: (await getJ('/live/events.json')).e || [] }; renderEvents(); }
-    const annChanged = annCache.h !== idx.ann;
-    if (annChanged) annCache = { h: idx.ann, a: (await getJ('/live/ann.json')).a };
     apply(list.filter(r => r.exp > now), annsFor(), isFresh, annChanged && !firstSync);
   }
 
@@ -1936,11 +1901,7 @@
   const shareUrl = location.origin + '/';
   function openShare() {
     closeReport(); closeSheets();
-    if (!openShare.done && window.qrcode) {
-      const q = qrcode(0, 'M'); q.addData(shareUrl); q.make();
-      $('#qr').innerHTML = q.createSvgTag({ cellSize: 8, margin: 3, scalable: true });
-      openShare.done = true;
-    }
+    if (!openShare.done) qrSvg(shareUrl, 8).then(svg => { $('#qr').innerHTML = svg; openShare.done = true; }).catch(() => {});
     $('#qrUrl').textContent = shareUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
     $('#btnNativeShare').hidden = !navigator.share;
     $('#sheetShare').hidden = false;
@@ -2074,7 +2035,7 @@
     const url = location.origin + '/?invite=' + token;
     $('#inviteTitle').textContent = t(title) + ' ' + t('(valable jusqu’au {date}, une seule fois)', { date: fmtExp(exp) });
     $('#inviteUrl').textContent = url; $('#inviteQr').textContent = '';
-    if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#inviteQr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
+    qrSvg(url, 6).then(svg => { if ($('#inviteUrl').textContent === url) $('#inviteQr').innerHTML = svg; }).catch(() => {});
     $('#inviteFine').textContent = t(fine);
     $('#inviteShare').hidden = !navigator.share;
     $('#inviteOut').hidden = false; $('#inviteOut').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2652,16 +2613,23 @@
   // ---- Nouveautés : affichées une fois après chaque nouvelle version ----
   let news = null;
   async function loadNews() { try { news = await (await fetch('/nouveautes.json', { cache: 'no-cache' })).json(); } catch { news = null; } return news; }
+  // Les versions précédentes sont dans un fichier à part, lu seulement à l'ouverture de la liste (pas à chaque démarrage)
+  let newsOld = null;
   function openNews() {
     if (!news) return;
     closeReport(); closeSheets();
     $('#nwTitle').textContent = t('Nouveautés');
-    const box = $('#newsList'); box.textContent = '';
-    // Les dernières versions, la plus récente en premier
-    for (const [i, v] of (news.history || [{ version: news.version, items: news.items }]).entries()) {
-      box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, t('Version {v}', { v: v.version })));
-      for (const [ti, d] of v['items_' + I18N.lang] || v.items) box.append(el('li', {}, el('b', {}, ti), el('span', {}, d)));
-    }
+    const draw = () => {
+      const box = $('#newsList'); box.textContent = '';
+      // Les dernières versions, la plus récente en premier
+      const cur = { ...news, history: undefined }, older = (newsOld || []).filter(v => v.version !== news.version);
+      for (const [i, v] of [cur, ...older].entries()) {
+        box.append(el('li', { class: 'news-v' + (i ? ' old' : '') }, t('Version {v}', { v: v.version })));
+        for (const [ti, d] of v['items_' + I18N.lang] || v.items) box.append(el('li', {}, el('b', {}, ti), el('span', {}, d)));
+      }
+    };
+    draw();
+    if (!newsOld) fetch('/nouveautes-historique.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { newsOld = j.history || []; if (!$('#sheetNews').hidden) draw(); }).catch(() => {});
     $('#sheetNews').hidden = false;
     try { localStorage.setItem('cortege-news', news.version); } catch {}
   }
@@ -3235,7 +3203,8 @@
       cur = name; try { localStorage.setItem(KEY, name); } catch {}
       for (const b of tabs) { const on = b.dataset.pane === name; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); }
       for (const [k, p] of Object.entries(panes)) p.hidden = k !== name;
-      $('#sheetOrga').scrollTop = 0;
+      // Seulement si la page est ouverte : au démarrage, lire scrollTop forcerait le calcul de toute la mise en page
+      const sh = $('#sheetOrga'); if (!sh.hidden) sh.scrollTop = 0;
     }
     tabs.forEach((b, i) => {
       b.onclick = () => show(b.dataset.pane);

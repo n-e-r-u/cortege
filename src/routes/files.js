@@ -22,7 +22,7 @@ async function filesRoutes(req, res, url, pathname) {
   const live = pathname.match(/^\/live\/((?:[crpl]\/)?[\w-]{1,40}\.json)$/);
   if (req.method === 'GET' && live) {
     const f = path.join(LIVE_DIR, live[1]);
-    if ((live[1] === 'index.json' || live[1] === 'g.json') && !fs.existsSync(f)) try { rebuildAll(); } catch {}
+    if (live[1] === 'g.json' && !fs.existsSync(f)) try { rebuildAll(); } catch {}
     fs.readFile(f, (err, buf) => {
       if (err) return send(res, 200, live[1].startsWith('l/') ? { p: [] } : live[1].startsWith('c/') || live[1].startsWith('p/') ? { r: [] } : live[1].startsWith('r/') ? { c: {} } : {}, { 'Cache-Control': 'no-cache' });
       const etag = '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"';

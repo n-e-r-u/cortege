@@ -6,7 +6,6 @@ const { CAT } = require('../categories');
 const { EVENT_KEEP, evView } = require('../events/store');
 const { LIVE_DIR, writeIfChanged, dirty, scheduleFlush, writeAtomic, pub, ALL_EVERY, regionOfCell, LIVE_LOCK, FLUSH_MS, setFlusher } = require('./files');
 const { TILE_ZONES } = require('../geo/tiles');
-const { activeReports } = require('../reports/store');
 const { annActive, annView } = require('../announcements/store');
 const { h8, withLock } = require('../util');
 const { legalAll, legalView } = require('../legal');
@@ -49,12 +48,6 @@ const buildId = () => BUILD || (BUILD = h8(JSON.stringify(versionInfo().files)))
 function writeGlobal(now) {
   const g = { ann: getMeta('annh') || null, events: getMeta('evh') || null, legal: getMeta('legalh') || null, ord: getMeta('ordh') || null, repli: getMeta('replih') || null, ideas: getMeta('ideash') || null, paused: pausedUntil(now), build: buildId(), cfg: cfgHash(), pois: getMeta('poish') || null };
   writeIfChanged(path.join(LIVE_DIR, 'g.json'), JSON.stringify(g));
-  // Ancien format, pour les téléphones pas encore mis à jour : réécrit au plus toutes les 5 s (il liste toutes les cases)
-  if (now - (writeGlobal.last || 0) < 5000 && fs.existsSync(path.join(LIVE_DIR, 'index.json'))) { dirty.global = true; return scheduleFlush(5000 - (now - writeGlobal.last)); }
-  writeGlobal.last = now;
-  const cells = q('SELECT cell, h FROM cells').all();
-  writeAtomic(path.join(LIVE_DIR, 'index.json'), JSON.stringify({ v: now, t: now, cells: Object.fromEntries(cells.map(x => [x.cell, x.h])),
-    ann: g.ann, events: g.events, all: getMeta('allh') || null, paused: g.paused, build: g.build }));
 }
 function flush() {
   pub.timer = null;
@@ -86,7 +79,7 @@ function flush() {
           .map(x => JSON.parse(x.data)).sort((a, b) => a.start - b.start).map(evView) }); // imports en dernier : jamais d'éviction des événements orga ou admin
         writeIfChanged(path.join(LIVE_DIR, 'events.json'), str); setMeta('evh', h8(str));
       }
-      if (doAll) { pub.lastAll = now; const str = JSON.stringify({ r: activeReports(now).map(publicView) }); writeIfChanged(path.join(LIVE_DIR, 'all.json'), str); setMeta('allh', h8(str)); writeNational(now); }
+      if (doAll) { pub.lastAll = now; writeNational(now); }
       writeGlobal(now);
     }, LIVE_LOCK);
   } catch (e) {
@@ -108,6 +101,8 @@ function rebuildAll() {
   try { fs.readdirSync(path.join(LIVE_DIR, 'c')).forEach(f => f.endsWith('.json') && all.add(f.slice(0, -5))); } catch {}
   all.forEach(c => dirty.cells.add(c));
   dirty.ann = dirty.events = dirty.legal = dirty.ord = dirty.repli = dirty.global = dirty.all = true; pub.lastAll = 0;
+  // Anciens formats (liste de toutes les cases, tous les points en un fichier) : plus publiés depuis la 2.17.5
+  for (const f of ['index.json', 'all.json']) try { fs.unlinkSync(path.join(LIVE_DIR, f)); } catch {}
   clearTimeout(pub.timer); pub.timer = null;
   flush();
   ensureRegions();

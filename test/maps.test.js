@@ -13,6 +13,8 @@ let srv, B, DIR, meta;
 const api = (p, opt = {}) => fetch(B + p, { ...opt, headers: { 'x-admin-key': ADMIN, 'content-type': 'application/json', ...(opt.headers || {}) } })
   .then(async r => ({ s: r.status, j: await r.json().catch(() => ({})) }));
 
+// Arrêt propre du serveur : on attend sa fin avant d'effacer son dossier
+const stop = p => new Promise(r => { if (p.exitCode !== null) return r(); p.once('exit', r); p.kill(); });
 before(async () => {
   DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-maps-'));
   fs.writeFileSync(DIR + '/france.pmtiles', writePmtiles([{ z: 13, x: 4182, y: 2994, data: Buffer.from('montpellier') }]));
@@ -26,14 +28,14 @@ before(async () => {
   const port = 20000 + Math.floor(Math.random() * 20000);
   B = 'http://127.0.0.1:' + port;
   srv = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, IMPORT_17OCT: '0', PLACES_IMPORT: '0',
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, PLACES_IMPORT: '0',
       TILE_PMTILES: DIR + '/france.pmtiles', PMTILES_BIN: path.join(__dirname, 'fake-pmtiles.js'), FAKE_PM_SRC: DIR + '/source-de.pmtiles', FAKE_PM_LOG: DIR + '/pm.log',
       MAP_BUILDS_URL: 'http://127.0.0.1:' + meta.address().port + '/builds.json', MAP_BUILD_BASE: 'https://build.example/', LEGAL_WATCH: '0' },
     stdio: 'ignore',
   });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
 });
-after(() => { srv.kill(); meta.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
+after(async () => { await stop(srv); meta.close(); fs.rmSync(DIR, { recursive: true, force: true }); });
 
 const tile = async (z, x, y) => { const r = await fetch(`${B}/vt/${z}/${x}/${y}.mvt`); return r.status === 200 ? Buffer.from(await r.arrayBuffer()).toString() : r.status; };
 
