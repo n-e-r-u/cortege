@@ -30,16 +30,26 @@ function isAdmin(req) {
 }
 function orgaOf(req) {
   const k = String(req.headers['x-orga-key'] || '');
-  if (!k || keyLocked(req)) return null;
-  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { id: 'admin', label: adminLabel(), admin: true, trial: false };
-  const env = ORGAS.find(o => keyEq(k, o.key));
-  if (env) return { id: 'env:' + env.label, label: env.label, admin: false, trial: false };
+  if (!k) return null;
+  // Clés tirées au hasard par le serveur (144 bits, impossibles à deviner) : reconnues même quand le réseau est verrouillé.
+  // En manif, des centaines de téléphones partagent l'adresse d'un opérateur : dix mauvais essais d'un inconnu ne doivent
+  // pas bloquer toutes les orgas autour de lui.
   const h = sha(k);
   // Une orga peut avoir plusieurs appareils : une clé principale (hash) et des clés d'appareils supplémentaires (keys)
   const o = readOrgas().find(o => keyEq(h, o.hash) || (o.keys || []).some(x => keyEq(h, x)));
   // Période d'essai : trial ; « parrainée » = invitée par une autre orga, surveillance renforcée jusqu'à sa confirmation
   if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true, sponsored: o.sponsored === true && o.trial === true, by: o.by || null };
+  // Clé admin et clés écrites dans les réglages du serveur (choisies par une personne) : le verrou s'applique
+  if (keyLocked(req)) return null;
+  if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { id: 'admin', label: adminLabel(), admin: true, trial: false };
+  const env = ORGAS.find(o => keyEq(k, o.key));
+  if (env) return { id: 'env:' + env.label, label: env.label, admin: false, trial: false };
   keyFailed(req); return null;
 }
+// Réponse à une clé refusée : « trop d'essais » (429, la clé reste sur le téléphone) ou « clé inconnue ou retirée »
+// (403 avec gone : seul cas où le téléphone l'oublie). Une action interdite répond 403 sans gone.
+const keyRefusal = (req, medic = false) => keyLocked(req)
+  ? [429, { error: 'Trop d’essais depuis ce réseau, réessaie dans quelques minutes.' }]
+  : medic ? [403, { error: 'Accès medic invalide ou retiré.', gone: true }] : [403, { error: 'Lien orga invalide ou expiré.', gone: true }];
 
-module.exports = { KEY_TRIES, keyLocked, keyFailed, isAdmin, orgaOf };
+module.exports = { KEY_TRIES, keyLocked, keyFailed, isAdmin, orgaOf, keyRefusal };

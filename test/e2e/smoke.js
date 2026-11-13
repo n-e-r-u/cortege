@@ -9,7 +9,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const ROOT = path.join(__dirname, '..', '..');
+const ROOT = path.join(__dirname, '..', '..'), ADMIN = 'admin-key-for-e2e-tests-1';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
@@ -17,22 +17,22 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-e2e-'));
   const port = 20000 + Math.floor(Math.random() * 20000), B = 'http://127.0.0.1:' + port;
   const srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore',
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', PLACES_IMPORT: '0', SOCIAL: '0', VEILLE: '0', GITHUB_SYNC: '0', FLUSH_MS: '200' } });
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, PLACES_IMPORT: '0', SOCIAL: '0', VEILLE: '0', GITHUB_SYNC: '0', FLUSH_MS: '200', MEDIC_PUSH: '0' } });
   let browser, failed = null;
   try {
     for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await wait(100); }
     browser = await pw.chromium.launch();
     const errors = [];
-    const phone = async () => {
+    const phone = async (url = '/') => {
       const ctx = await browser.newContext({ ...pw.devices['Pixel 5'], geolocation: { latitude: 43.6108, longitude: 3.8767 }, permissions: ['geolocation'], locale: 'fr-FR' });
       // Hors de la machine (fonds de carte) : rien ne sort pendant le test
       await ctx.route(u => !u.href.startsWith(B), r => r.abort());
       const page = await ctx.newPage();
       page.on('pageerror', e => errors.push(e.message));
-      await page.goto(B + '/', { waitUntil: 'load' });
+      await page.goto(B + url, { waitUntil: 'load' });
       await page.waitForFunction(() => window.L && document.querySelector('.leaflet-container'));
-      // Première visite : la page « Plus » s'ouvre, on la referme
-      await page.evaluate(() => document.querySelectorAll('.sheet:not([hidden]) .x').forEach(b => b.click()));
+      // Première visite : la page « Plus » s'ouvre, on la referme (pas après une invitation : le code de secours doit rester affiché)
+      if (url === '/') await page.evaluate(() => document.querySelectorAll('.sheet:not([hidden]) .x').forEach(b => b.click()));
       return page;
     };
     const a = await phone();
@@ -59,6 +59,47 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     for (const p of ['/agenda', '/droits', '/arretes', '/legal-teams', '/manif', '/admin.html', '/presse'])
       assert.equal((await fetch(B + p)).status, 200, p);
     assert.equal((await fetch(B + '/', { method: 'HEAD' })).status, 200, 'HEAD accepté');
+    // ---- Mode medic : deux équipes, un renfort, « j'y vais », « réglé », puis un accès perdu et retrouvé ----
+    const adm = body => fetch(B + '/api/admin/medics', { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN }, body: JSON.stringify(body) }).then(r => r.json());
+    const t1 = await adm({ label: 'Équipe Une', city: 'Montpellier' }), t2 = await adm({ label: 'Équipe Deux', city: 'Montpellier' });
+    const join = async t => {
+      const p = await phone('/?invite=' + t.invite);
+      await p.waitForSelector('#sheetRec:not([hidden]) #recCode');
+      const code = (await p.textContent('#recCode')).trim();
+      await p.click('#rcBody .install');
+      await p.waitForFunction(() => document.body.classList.contains('medic'));
+      return { p, code };
+    };
+    const m1 = await join(t1), m2 = await join(t2);
+    assert.match(m1.code, /^(\w{4}-){4}\w{4}$/, 'code de secours affiché à l’activation');
+    assert.equal(await m1.p.isVisible('#tabbar'), false, 'écran medic : pas de barre d’onglets');
+    assert.equal(await m1.p.evaluate(() => document.querySelectorAll('.leaflet-marker-icon.pin, .marker-cluster').length), 0, 'signalements publics masqués');
+    await m1.p.click('#mdHot');
+    await m2.p.waitForSelector('.mpin.k-hot');
+    await m2.p.click('#mdHelp'); await m2.p.click('.mh-btn.l-vital');
+    await m1.p.waitForSelector('.mpin.k-help.l-vital');
+    await m1.p.evaluate(() => document.querySelector('.mpin.k-help').click());
+    await m1.p.click('#mcActs .install');
+    await m2.p.waitForSelector('.mpin.k-help em');
+    await m2.p.evaluate(() => document.querySelector('.mpin.k-help').click());
+    assert.match(await m2.p.textContent('#mcSub'), /Équipe Une/, 'l’équipe en route est nommée');
+    await m2.p.click('#mcActs button');
+    await m1.p.waitForFunction(() => !document.querySelector('.mpin.k-help'));
+    // Rien de tout ça sur la carte publique
+    assert.ok(!JSON.stringify(await a.evaluate(() => fetch('/api/reports?bbox=43,3,44,4').then(r => r.json()))).includes('Équipe'), 'carte publique sans équipe medic');
+    // Téléphone perdu : le code de secours redonne l'accès sur un autre, et coupe le premier
+    const lost = await phone();
+    await lost.evaluate(() => document.querySelector('#btnRecover').click());
+    await lost.fill('#rvCode', m1.code.replace(/-/g, '').toLowerCase());
+    assert.equal(await lost.inputValue('#rvCode'), m1.code, 'saisie remise en forme');
+    await lost.click('#rvGo');
+    await lost.waitForSelector('#sheetRec:not([hidden]) #recCode');
+    assert.notEqual((await lost.textContent('#recCode')).trim(), m1.code, 'nouveau code donné');
+    await Promise.all([lost.waitForNavigation(), lost.click('#rcBody .install')]);
+    await lost.waitForFunction(() => document.body.classList.contains('medic'));
+    // L'ancien téléphone perd l'écran medic tout seul : à sa prochaine lecture de la carte (30 s au plus), sa clé est refusée
+    await m1.p.waitForFunction(() => !document.body.classList.contains('medic'), null, { timeout: 40000 });
+    assert.equal(await m1.p.evaluate(() => localStorage.getItem('cortege-medic')), null, 'ancien téléphone coupé');
     assert.deepEqual(errors, [], 'aucune erreur de script');
     console.log('Test de fumée : ok');
   } catch (e) { failed = e; }

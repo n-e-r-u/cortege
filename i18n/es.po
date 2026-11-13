@@ -3988,3 +3988,482 @@ msgstr "Alguien acaba de indicarlo: vuelve a intentarlo en un momento si ya no e
 #: src/routes/reports.js
 msgid "Tu l’as déjà indiqué pour ce point."
 msgstr "Ya lo has indicado para este punto."
+
+# --- textes à traduire ---
+#: client/app/17-acces.js
+msgid "Sur iPhone, ajoute Cortège à l’écran d’accueil et ouvre ton accès depuis l’appli installée : sinon Safari peut effacer ton accès après 7 jours sans ouvrir le site."
+msgstr "En iPhone, añade Cortège a la pantalla de inicio y abre tu acceso desde la app instalada: si no, Safari puede borrar tu acceso tras 7 días sin abrir el sitio."
+
+#: client/app/17-acces.js
+msgid "Ton code de secours"
+msgstr "Tu código de emergencia"
+
+#: client/app/17-acces.js
+msgid "Si ce téléphone est perdu, saisi ou vidé, ce code redonne l’accès medic de ton équipe sur un autre téléphone, et coupe celui-ci."
+msgstr "Si este teléfono se pierde, es incautado o se borra, este código devuelve el acceso medic de tu equipo en otro teléfono y corta este."
+
+#: client/app/17-acces.js
+msgid "Si ce téléphone est perdu, saisi ou vidé, ce code redonne ton accès orga sur un autre téléphone, et coupe celui-ci."
+msgstr "Si este teléfono se pierde, es incautado o se borra, este código devuelve tu acceso de organización en otro teléfono y corta este."
+
+#: client/app/17-acces.js
+msgid "Il ne sera plus jamais affiché."
+msgstr "No volverá a mostrarse nunca."
+
+#: client/app/17-acces.js
+msgid "Note-le maintenant, ailleurs que sur ce téléphone et que dans ton sac de manif : gestionnaire de mots de passe, papier chez toi, ou chez une personne de confiance. Ce code vaut ta clé : ne le donne à personne d’autre."
+msgstr "Apúntalo ahora, en otro sitio que no sea este teléfono ni tu mochila de la mani: gestor de contraseñas, papel en casa o una persona de confianza. Este código vale como tu clave: no se lo des a nadie más."
+
+#: client/app/17-acces.js
+msgid "Pour t’en servir : Plus › « J’ai perdu mon accès », sur n’importe quel téléphone. Il ne sert qu’une fois : un nouveau code te sera donné à ce moment-là."
+msgstr "Para usarlo: Más › «He perdido mi acceso», en cualquier teléfono. Solo sirve una vez: recibirás un código nuevo en ese momento."
+
+#: client/app/17-acces.js
+msgid "Copie impossible : note-le à la main"
+msgstr "No se pudo copiar: apúntalo a mano"
+
+#: client/app/17-acces.js
+msgid "Imprimer"
+msgstr "Imprimir"
+
+#: client/app/17-acces.js
+msgid "C’est noté"
+msgstr "Ya lo apunté"
+
+#: client/app/17-acces.js
+msgid "Retrouver mon accès"
+msgstr "Recuperar mi acceso"
+
+#: client/app/17-acces.js
+msgid "Saisis le code de secours reçu à l’activation de ton accès orga ou medic. Tu recevras un nouveau code juste après : celui-ci ne servira plus."
+msgstr "Introduce el código de emergencia que recibiste al activar tu acceso de organización o medic. Recibirás un código nuevo justo después: este dejará de servir."
+
+#: client/app/17-acces.js
+msgid "Code de secours"
+msgstr "Código de emergencia"
+
+#: client/app/17-acces.js
+msgid "Couper tous mes autres appareils (conseillé : téléphone perdu, volé ou saisi)"
+msgstr "Cortar todos mis otros dispositivos (recomendado: teléfono perdido, robado o incautado)"
+
+#: client/app/17-acces.js
+msgid "Pas de code ? Demande une nouvelle invitation à la personne qui t’a fait entrer (orga marraine, référent·e medic) ou à l’admin."
+msgstr "¿No tienes código? Pide una nueva invitación a quien te dio acceso (organización madrina, referente medic) o al admin."
+
+#: client/app/17-acces.js
+msgid "Accès retrouvé : {who}"
+msgstr "Acceso recuperado: {who}"
+
+#: client/app/17-orga.js
+msgid "Appareil ajouté à l’équipe medic {who}"
+msgstr "Dispositivo añadido al equipo medic {who}"
+
+#: client/app/17-orga.js
+msgid "Bienvenue {who} : ton accès medic est activé sur ce téléphone"
+msgstr "Bienvenido/a {who}: tu acceso medic está activado en este teléfono"
+
+#: client/app/17-orga.js
+msgid "Créer un nouveau code de secours"
+msgstr "Crear un nuevo código de emergencia"
+
+#: client/app/17-orga.js
+msgid "Créer mon code de secours"
+msgstr "Crear mi código de emergencia"
+
+#: client/app/17-orga.js
+msgid "Ton accès est défini dans les réglages du serveur : pas de code de secours."
+msgstr "Tu acceso está definido en los ajustes del servidor: no hay código de emergencia."
+
+#: client/app/17-orga.js
+msgid "Tu as un code de secours. Si tu l’as égaré, crées-en un nouveau : l’ancien ne servira plus."
+msgstr "Tienes un código de emergencia. Si lo has perdido, crea uno nuevo: el anterior dejará de servir."
+
+#: client/app/17-orga.js
+msgid "Pas encore de code de secours. Il te redonne ton accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, sans dépendre de personne."
+msgstr "Aún no hay código de emergencia. Te devuelve el acceso en otro teléfono si este se pierde, es incautado o se borra, sin depender de nadie."
+
+#: client/app/17-orga.js
+msgid "⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas toi, crée un nouveau code tout de suite et préviens l’admin."
+msgstr "⚠ Acceso recuperado con el código de emergencia el {date}. Si no fuiste tú, crea un código nuevo ahora mismo y avisa al admin."
+
+#: client/app/17-orga.js
+msgid "Journée de mobilisation toute proche : ton accès n’a ni code de secours ni deuxième appareil. Crée ton code maintenant."
+msgstr "Se acerca una jornada de movilización: tu acceso no tiene código de emergencia ni segundo dispositivo. Crea tu código ahora."
+
+#: client/app/32-medic.js
+msgid "Équipe medic"
+msgstr "Equipo medic"
+
+#: client/app/32-medic.js
+msgid "Barrage filtrant"
+msgstr "Control filtrante"
+
+#: client/app/32-medic.js
+msgid "Renfort demandé"
+msgstr "Refuerzo solicitado"
+
+#: client/app/32-medic.js
+msgid "Besoin d’un binôme"
+msgstr "Hace falta otro equipo"
+
+#: client/app/32-medic.js
+msgid "Urgence vitale / évacuation"
+msgstr "Urgencia vital / evacuación"
+
+#: client/app/32-medic.js
+msgid "Besoin de matériel"
+msgstr "Hace falta material"
+
+#: client/app/32-medic.js
+msgid "🆘 Renfort demandé par {team}"
+msgstr "🆘 Refuerzo solicitado por {team}"
+
+#: client/app/32-medic.js
+msgid "Position partagée, visible aussi du public"
+msgstr "Posición compartida, visible también para el público"
+
+#: client/app/32-medic.js
+msgid "Position partagée entre équipes"
+msgstr "Posición compartida entre equipos"
+
+#: client/app/32-medic.js
+msgid "Posé par {team}"
+msgstr "Puesto por {team}"
+
+#: client/app/32-medic.js
+msgid "En route : {teams}"
+msgstr "En camino: {teams}"
+
+#: client/app/32-medic.js
+msgid "Personne en route pour l’instant"
+msgstr "Nadie en camino por ahora"
+
+#: client/app/32-medic.js
+msgid "Je n’y vais plus"
+msgstr "Ya no voy"
+
+#: client/app/32-medic.js
+msgid "J’y vais"
+msgstr "Voy yo"
+
+#: client/app/32-medic.js
+msgid "Réglé"
+msgstr "Resuelto"
+
+#: client/app/32-medic.js
+msgid "Appel retiré"
+msgstr "Llamada retirada"
+
+#: client/app/32-medic.js
+msgid "Retiré"
+msgstr "Retirado"
+
+#: client/app/32-medic.js
+msgid "Renfort demandé : les autres équipes sont prévenues"
+msgstr "Refuerzo solicitado: los demás equipos están avisados"
+
+#: client/app/32-medic.js
+msgid "Point chaud ajouté"
+msgstr "Punto caliente añadido"
+
+#: client/app/32-medic.js
+msgid "Barrage filtrant ajouté"
+msgstr "Control filtrante añadido"
+
+#: client/app/32-medic.js
+msgid "Demander du renfort"
+msgstr "Pedir refuerzo"
+
+#: client/app/32-medic.js
+msgid "L’appel part de ta position."
+msgstr "La llamada sale desde tu posición."
+
+#: client/app/32-medic.js
+msgid "Position du téléphone inconnue : l’appel part de l’endroit du viseur, au milieu de la carte."
+msgstr "Posición del teléfono desconocida: la llamada sale desde el punto de mira, en el centro del mapa."
+
+#: client/app/32-medic.js
+msgid "Seuls le lieu et le niveau sont envoyés aux autres équipes. Rien sur la personne. « Urgence vitale » envoie aussi une notification aux équipes proches. En cas d’urgence vitale, appelle d’abord le 15 ou le 112."
+msgstr "Solo se envían el lugar y el nivel a los demás equipos. Nada sobre la persona. «Urgencia vital» envía también una notificación a los equipos cercanos. En caso de urgencia vital, llama primero a emergencias (112)."
+
+#: client/app/32-medic.js
+msgid "Position partagée"
+msgstr "Posición compartida"
+
+#: client/app/32-medic.js
+msgid "Nous sommes ici"
+msgstr "Estamos aquí"
+
+#: client/app/32-medic.js
+msgid "Position du téléphone inconnue : autorise la localisation, puis réessaie."
+msgstr "Posición del teléfono desconocida: permite la localización y vuelve a intentarlo."
+
+#: client/app/32-medic.js
+msgid "Durée du partage"
+msgstr "Duración"
+
+#: client/app/32-medic.js
+msgid "Visible aussi du public"
+msgstr "Visible también para el público"
+
+#: client/app/32-medic.js
+msgid "Un ⛑️ au nom de l’équipe sur la carte de tout le monde, pour que les personnes blessées vous trouvent."
+msgstr "Un ⛑️ con el nombre del equipo en el mapa de todo el mundo, para que las personas heridas os encuentren."
+
+#: client/app/32-medic.js
+msgid "Partager notre position"
+msgstr "Compartir nuestra posición"
+
+#: client/app/32-medic.js
+msgid "Notre position"
+msgstr "Nuestra posición"
+
+#: client/app/32-medic.js
+msgid "Position partagée en ce moment. Elle s’arrête seule à la fin de la durée, après 3 minutes sans réseau, ou si tu t’éloignes de plus de 2 km."
+msgstr "Posición compartida ahora mismo. Se detiene sola al acabar la duración, tras 3 minutos sin red o si te alejas más de 2 km."
+
+#: client/app/32-medic.js
+msgid "Les autres équipes voient où vous êtes. Le partage s’arrête seul, et rien n’est gardé ensuite."
+msgstr "Los demás equipos ven dónde estáis. Se detiene solo y después no se guarda nada."
+
+#: client/app/32-medic.js
+msgid "Afficher aussi les signalements publics"
+msgstr "Mostrar también los avisos públicos"
+
+#: client/app/32-medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège."
+msgstr "Antidisturbios, gases, cargas… avisados por todo el mundo en Cortège."
+
+#: client/app/32-medic.js
+msgid "Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée."
+msgstr "Recibes una notificación por cada urgencia vital a menos de {km} km, incluso con la app cerrada."
+
+#: client/app/32-medic.js
+msgid "Notifications pas encore activées sur ce téléphone : sans elles, tu ne vois les appels de renfort que si l’appli est ouverte."
+msgstr "Las notificaciones aún no están activadas en este teléfono: sin ellas, solo ves las llamadas de refuerzo con la app abierta."
+
+#: client/app/32-medic.js
+msgid "Activer les alertes"
+msgstr "Activar las alertas"
+
+#: client/app/32-medic.js
+msgid "Scanne ce QR code avec l’autre téléphone de l’équipe (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à la carte medic."
+msgstr "Escanea este código QR con el otro teléfono del equipo (o abre el enlace en él). No lo envíes a nadie más: da acceso al mapa medic."
+
+#: client/app/32-medic.js
+msgid "Appareils de l’équipe"
+msgstr "Dispositivos del equipo"
+
+#: client/app/32-medic.js
+msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus)."
+msgstr "{n} dispositivo(s) tienen el acceso de este equipo (5 como máximo)."
+
+#: client/app/32-medic.js
+msgid "L’équipe a un code de secours. S’il est égaré, crées-en un nouveau : l’ancien ne servira plus."
+msgstr "El equipo tiene un código de emergencia. Si se ha perdido, crea uno nuevo: el anterior dejará de servir."
+
+#: client/app/32-medic.js
+msgid "Pas encore de code de secours. Il redonne l’accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, et coupe le téléphone perdu."
+msgstr "Aún no hay código de emergencia. Devuelve el acceso en otro teléfono si este se pierde, es incautado o se borra, y corta el teléfono perdido."
+
+#: client/app/32-medic.js
+msgid "⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas ton équipe, crée un nouveau code tout de suite et préviens ton ou ta référent·e."
+msgstr "⚠ Acceso recuperado con el código de emergencia el {date}. Si no fue tu equipo, crea un código nuevo ahora mismo y avisa a tu referente."
+
+#: client/app/32-medic.js
+msgid "ex. : Medics Sud, binôme 3"
+msgstr "ej.: Medics Sur, pareja 3"
+
+#: client/app/32-medic.js
+msgid "Nom de l’équipe"
+msgstr "Nombre del equipo"
+
+#: client/app/32-medic.js
+msgid "Inviter une équipe"
+msgstr "Invitar a un equipo"
+
+#: client/app/32-medic.js
+msgid "Réinviter"
+msgstr "Volver a invitar"
+
+#: client/app/32-medic.js
+msgid "Nouvelle invitation pour {who}"
+msgstr "Nueva invitación para {who}"
+
+#: client/app/32-medic.js
+msgid "L’ancien accès de cette équipe est coupé. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr "El acceso anterior de este equipo queda cortado. Envía el enlace por mensajería cifrada (Signal), nunca en público."
+
+#: client/app/32-medic.js
+msgid "Active · {n} appareil(s)"
+msgstr "Activo · {n} dispositivo(s)"
+
+#: client/app/32-medic.js
+msgid "Invitation en attente"
+msgstr "Invitación pendiente"
+
+#: client/app/32-medic.js
+msgid "Invitation expirée"
+msgstr "Invitación caducada"
+
+#: client/app/32-medic.js
+msgid "L’équipe scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr "El equipo escanea este código QR o abre el enlace en su teléfono. Envía el enlace por mensajería cifrada (Signal), nunca en público."
+
+#: client/app/32-medic.js
+msgid "Référent·e : les équipes que tu as fait entrer"
+msgstr "Referente: los equipos que has hecho entrar"
+
+#: client/app/32-medic.js
+msgid "Tu peux inviter des équipes, leur renvoyer une invitation si elles ont perdu leur accès, et les retirer."
+msgstr "Puedes invitar equipos, enviarles otra invitación si han perdido su acceso y retirarlos."
+
+#: client/app/32-medic.js
+msgid "Vue complète de Cortège"
+msgstr "Vista completa de Cortège"
+
+#: client/app/32-medic.js
+msgid "Quitter le mode medic sur ce téléphone"
+msgstr "Salir del modo medic en este teléfono"
+
+#: client/app/32-medic.js
+msgid "Confirmer : l’accès medic sera retiré de ce téléphone"
+msgstr "Confirmar: el acceso medic se quitará de este teléfono"
+
+#: client/app/32-medic.js
+msgid "Mode medic désactivé sur ce téléphone"
+msgstr "Modo medic desactivado en este teléfono"
+
+#: client/app/32-medic.js
+msgid "Signalements publics affichés"
+msgstr "Avisos públicos visibles"
+
+#: client/app/32-medic.js
+msgid "Signalements publics masqués"
+msgstr "Avisos públicos ocultos"
+
+#: client/app/32-medic.js
+msgid "Vue complète"
+msgstr "Vista completa"
+
+#: client/app/32-medic.js
+msgid "Écran medic"
+msgstr "Pantalla medic"
+
+#: client/app/32-medic.js
+msgid "Afficher ou masquer les signalements publics"
+msgstr "Mostrar u ocultar los avisos públicos"
+
+#: client/app/32-medic.js
+msgid "Notre équipe : position, alertes, appareils"
+msgstr "Nuestro equipo: posición, alertas, dispositivos"
+
+#: client/app/32-medic.js
+msgid "Renfort"
+msgstr "Refuerzo"
+
+#: src/medic.js
+msgid "Renfort medic : urgence vitale"
+msgstr "Refuerzo medic: urgencia vital"
+
+#: src/medic.js
+msgid "Demandé par {team}"
+msgstr "Solicitado por {team}"
+
+#: src/medic.js
+msgid "Donne un nom à l’équipe."
+msgstr "Ponle un nombre al equipo."
+
+#: src/medic.js
+msgid "Trop d’équipes enregistrées sur ce serveur."
+msgstr "Demasiados equipos registrados en este servidor."
+
+#: src/medic.js
+msgid "Une équipe porte déjà ce nom."
+msgstr "Ya hay un equipo con ese nombre."
+
+#: src/medic.js
+msgid "Équipe introuvable."
+msgstr "Equipo no encontrado."
+
+#: src/medic.js
+msgid "Partage de position arrêté. Relance-le si besoin."
+msgstr "Posición compartida detenida. Vuelve a activarla si hace falta."
+
+#: src/medic.js
+msgid "Carte medic saturée, réessaie plus tard."
+msgstr "Mapa medic saturado, inténtalo más tarde."
+
+#: src/medic.js
+msgid "Niveau inconnu."
+msgstr "Nivel desconocido."
+
+#: src/medic.js
+msgid "Trop d’ajouts d’un coup, patiente un peu."
+msgstr "Demasiados añadidos de golpe, espera un poco."
+
+#: src/medic.js
+msgid "Trop d’infos en cours : retire celles qui ne sont plus vraies."
+msgstr "Demasiada información activa: retira la que ya no sea cierta."
+
+#: src/medic.js
+msgid "Déjà retiré."
+msgstr "Ya retirado."
+
+#: src/medic.js
+msgid "Appel déjà réglé ou retiré."
+msgstr "Llamada ya resuelta o retirada."
+
+#: src/orgas/auth.js
+msgid "Trop d’essais depuis ce réseau, réessaie dans quelques minutes."
+msgstr "Demasiados intentos desde esta red, inténtalo en unos minutos."
+
+#: src/routes/medic.js
+msgid "Rayon entre 0,5 et 30 km."
+msgstr "Radio entre 0,5 y 30 km."
+
+#: src/routes/medic.js
+msgid "Trop de codes demandés, réessaie plus tard."
+msgstr "Demasiados códigos solicitados, inténtalo más tarde."
+
+#: src/routes/medic.js
+msgid "Réservé aux référent·es medic."
+msgstr "Reservado a referentes medic."
+
+#: src/routes/medic.js
+msgid "Équipe introuvable parmi celles que tu as invitées."
+msgstr "Equipo no encontrado entre los que has invitado."
+
+#: src/routes/orga.js
+msgid "Code de secours invalide : 20 caractères, par groupes de 4."
+msgstr "Código de emergencia no válido: 20 caracteres, en grupos de 4."
+
+#: src/routes/orga.js
+msgid "Code de secours inconnu ou déjà utilisé."
+msgstr "Código de emergencia desconocido o ya utilizado."
+
+# --- textes à traduire ---
+#: src/medic.js
+msgid "40 équipes au plus par référent·e."
+msgstr "40 equipos como máximo por referente."
+
+#: src/medic.js
+msgid "Tu t’es éloigné·e de plus de 2 km : partage de position arrêté."
+msgstr "Te has alejado más de 2 km: posición compartida detenida."
+
+#: src/medic.js
+msgid "Partage de position terminé. Relance-le si besoin."
+msgstr "Posición compartida finalizada. Vuelve a activarla si hace falta."
+
+#: src/orgas/auth.js
+msgid "Accès medic invalide ou retiré."
+msgstr "Acceso medic no válido o retirado."
+
+msgid "à {d}"
+msgstr "a {d}"
+
+msgid "Contrôle / barrage filtrant"
+msgstr "Control / registro filtrante"
+
+msgid "J’ai perdu mon accès orga ou medic"
+msgstr "He perdido mi acceso de organización o medic"

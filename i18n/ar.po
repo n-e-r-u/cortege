@@ -4048,3 +4048,482 @@ msgstr "شخص ما حدّد ذلك للتو: أعد المحاولة بعد ل�
 #: src/routes/reports.js
 msgid "Tu l’as déjà indiqué pour ce point."
 msgstr "لقد حدّدت ذلك لهذه النقطة من قبل."
+
+# --- textes à traduire ---
+#: client/app/17-acces.js
+msgid "Sur iPhone, ajoute Cortège à l’écran d’accueil et ouvre ton accès depuis l’appli installée : sinon Safari peut effacer ton accès après 7 jours sans ouvrir le site."
+msgstr "على iPhone، أضف Cortège إلى الشاشة الرئيسية وافتح وصولك من التطبيق المثبّت: وإلا فقد يمسح Safari وصولك بعد 7 أيام دون فتح الموقع."
+
+#: client/app/17-acces.js
+msgid "Ton code de secours"
+msgstr "رمز الاسترداد الخاص بك"
+
+#: client/app/17-acces.js
+msgid "Si ce téléphone est perdu, saisi ou vidé, ce code redonne l’accès medic de ton équipe sur un autre téléphone, et coupe celui-ci."
+msgstr "إذا ضاع هذا الهاتف أو صودر أو مُسح، يعيد هذا الرمز وصول فريقك الطبي على هاتف آخر ويقطع هذا الهاتف."
+
+#: client/app/17-acces.js
+msgid "Si ce téléphone est perdu, saisi ou vidé, ce code redonne ton accès orga sur un autre téléphone, et coupe celui-ci."
+msgstr "إذا ضاع هذا الهاتف أو صودر أو مُسح، يعيد هذا الرمز وصولك كمنظِّم على هاتف آخر ويقطع هذا الهاتف."
+
+#: client/app/17-acces.js
+msgid "Il ne sera plus jamais affiché."
+msgstr "لن يُعرض مرة أخرى أبداً."
+
+#: client/app/17-acces.js
+msgid "Note-le maintenant, ailleurs que sur ce téléphone et que dans ton sac de manif : gestionnaire de mots de passe, papier chez toi, ou chez une personne de confiance. Ce code vaut ta clé : ne le donne à personne d’autre."
+msgstr "دوّنه الآن في مكان غير هذا الهاتف وغير حقيبة المظاهرة: مدير كلمات المرور، ورقة في بيتك، أو عند شخص تثق به. هذا الرمز يساوي مفتاحك: لا تعطه لأي شخص آخر."
+
+#: client/app/17-acces.js
+msgid "Pour t’en servir : Plus › « J’ai perdu mon accès », sur n’importe quel téléphone. Il ne sert qu’une fois : un nouveau code te sera donné à ce moment-là."
+msgstr "لاستخدامه: المزيد › «فقدت وصولي»، على أي هاتف. يصلح لمرة واحدة فقط: ستحصل على رمز جديد حينها."
+
+#: client/app/17-acces.js
+msgid "Copie impossible : note-le à la main"
+msgstr "تعذّر النسخ: دوّنه بيدك"
+
+#: client/app/17-acces.js
+msgid "Imprimer"
+msgstr "طباعة"
+
+#: client/app/17-acces.js
+msgid "C’est noté"
+msgstr "دوّنته"
+
+#: client/app/17-acces.js
+msgid "Retrouver mon accès"
+msgstr "استرداد وصولي"
+
+#: client/app/17-acces.js
+msgid "Saisis le code de secours reçu à l’activation de ton accès orga ou medic. Tu recevras un nouveau code juste après : celui-ci ne servira plus."
+msgstr "أدخل رمز الاسترداد الذي تلقيته عند تفعيل وصولك كمنظِّم أو كمسعف. ستحصل على رمز جديد مباشرة بعد ذلك: هذا الرمز لن يصلح بعدها."
+
+#: client/app/17-acces.js
+msgid "Code de secours"
+msgstr "رمز الاسترداد"
+
+#: client/app/17-acces.js
+msgid "Couper tous mes autres appareils (conseillé : téléphone perdu, volé ou saisi)"
+msgstr "قطع جميع أجهزتي الأخرى (موصى به: هاتف مفقود أو مسروق أو مصادَر)"
+
+#: client/app/17-acces.js
+msgid "Pas de code ? Demande une nouvelle invitation à la personne qui t’a fait entrer (orga marraine, référent·e medic) ou à l’admin."
+msgstr "لا يوجد رمز؟ اطلب دعوة جديدة ممن أدخلك (المنظمة الكفيلة، منسّق المسعفين) أو من المشرف."
+
+#: client/app/17-acces.js
+msgid "Accès retrouvé : {who}"
+msgstr "تم استرداد الوصول: {who}"
+
+#: client/app/17-orga.js
+msgid "Appareil ajouté à l’équipe medic {who}"
+msgstr "أُضيف الجهاز إلى فريق المسعفين {who}"
+
+#: client/app/17-orga.js
+msgid "Bienvenue {who} : ton accès medic est activé sur ce téléphone"
+msgstr "مرحباً {who}: تم تفعيل وصولك كمسعف على هذا الهاتف"
+
+#: client/app/17-orga.js
+msgid "Créer un nouveau code de secours"
+msgstr "إنشاء رمز استرداد جديد"
+
+#: client/app/17-orga.js
+msgid "Créer mon code de secours"
+msgstr "إنشاء رمز الاسترداد"
+
+#: client/app/17-orga.js
+msgid "Ton accès est défini dans les réglages du serveur : pas de code de secours."
+msgstr "وصولك محدد في إعدادات الخادم: لا يوجد رمز استرداد."
+
+#: client/app/17-orga.js
+msgid "Tu as un code de secours. Si tu l’as égaré, crées-en un nouveau : l’ancien ne servira plus."
+msgstr "لديك رمز استرداد. إذا أضعته فأنشئ رمزاً جديداً: القديم لن يصلح بعدها."
+
+#: client/app/17-orga.js
+msgid "Pas encore de code de secours. Il te redonne ton accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, sans dépendre de personne."
+msgstr "لا يوجد رمز استرداد بعد. يعيد لك وصولك على هاتف آخر إذا ضاع هذا الهاتف أو صودر أو مُسح، دون الاعتماد على أحد."
+
+#: client/app/17-orga.js
+msgid "⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas toi, crée un nouveau code tout de suite et préviens l’admin."
+msgstr "⚠ تم استرداد الوصول برمز الاسترداد في {date}. إن لم تكن أنت، أنشئ رمزاً جديداً فوراً وأبلغ المشرف."
+
+#: client/app/17-orga.js
+msgid "Journée de mobilisation toute proche : ton accès n’a ni code de secours ni deuxième appareil. Crée ton code maintenant."
+msgstr "يوم تعبئة قريب جداً: وصولك بلا رمز استرداد ولا جهاز ثانٍ. أنشئ رمزك الآن."
+
+#: client/app/32-medic.js
+msgid "Équipe medic"
+msgstr "فريق مسعفين"
+
+#: client/app/32-medic.js
+msgid "Barrage filtrant"
+msgstr "حاجز تفتيش"
+
+#: client/app/32-medic.js
+msgid "Renfort demandé"
+msgstr "طلب دعم"
+
+#: client/app/32-medic.js
+msgid "Besoin d’un binôme"
+msgstr "حاجة إلى فريق ثانٍ"
+
+#: client/app/32-medic.js
+msgid "Urgence vitale / évacuation"
+msgstr "خطر على الحياة / إخلاء"
+
+#: client/app/32-medic.js
+msgid "Besoin de matériel"
+msgstr "حاجة إلى مستلزمات"
+
+#: client/app/32-medic.js
+msgid "🆘 Renfort demandé par {team}"
+msgstr "🆘 طلب دعم من {team}"
+
+#: client/app/32-medic.js
+msgid "Position partagée, visible aussi du public"
+msgstr "الموقع مُشارَك ومرئي للعموم أيضاً"
+
+#: client/app/32-medic.js
+msgid "Position partagée entre équipes"
+msgstr "الموقع مُشارَك بين الفرق"
+
+#: client/app/32-medic.js
+msgid "Posé par {team}"
+msgstr "أضافه {team}"
+
+#: client/app/32-medic.js
+msgid "En route : {teams}"
+msgstr "في الطريق: {teams}"
+
+#: client/app/32-medic.js
+msgid "Personne en route pour l’instant"
+msgstr "لا أحد في الطريق حالياً"
+
+#: client/app/32-medic.js
+msgid "Je n’y vais plus"
+msgstr "لم أعد ذاهباً"
+
+#: client/app/32-medic.js
+msgid "J’y vais"
+msgstr "أنا ذاهب"
+
+#: client/app/32-medic.js
+msgid "Réglé"
+msgstr "تمت المعالجة"
+
+#: client/app/32-medic.js
+msgid "Appel retiré"
+msgstr "أُزيل الطلب"
+
+#: client/app/32-medic.js
+msgid "Retiré"
+msgstr "أُزيل"
+
+#: client/app/32-medic.js
+msgid "Renfort demandé : les autres équipes sont prévenues"
+msgstr "طُلب الدعم: تم إبلاغ الفرق الأخرى"
+
+#: client/app/32-medic.js
+msgid "Point chaud ajouté"
+msgstr "أُضيفت نقطة ساخنة"
+
+#: client/app/32-medic.js
+msgid "Barrage filtrant ajouté"
+msgstr "أُضيف حاجز تفتيش"
+
+#: client/app/32-medic.js
+msgid "Demander du renfort"
+msgstr "طلب دعم"
+
+#: client/app/32-medic.js
+msgid "L’appel part de ta position."
+msgstr "يُرسَل الطلب من موقعك."
+
+#: client/app/32-medic.js
+msgid "Position du téléphone inconnue : l’appel part de l’endroit du viseur, au milieu de la carte."
+msgstr "موقع الهاتف غير معروف: يُرسَل الطلب من موضع المؤشر في وسط الخريطة."
+
+#: client/app/32-medic.js
+msgid "Seuls le lieu et le niveau sont envoyés aux autres équipes. Rien sur la personne. « Urgence vitale » envoie aussi une notification aux équipes proches. En cas d’urgence vitale, appelle d’abord le 15 ou le 112."
+msgstr "يُرسَل المكان والمستوى فقط إلى الفرق الأخرى. لا شيء عن الشخص. «خطر على الحياة» يرسل أيضاً إشعاراً إلى الفرق القريبة. في حالة خطر على الحياة، اتصل أولاً بالطوارئ (112)."
+
+#: client/app/32-medic.js
+msgid "Position partagée"
+msgstr "الموقع مُشارَك"
+
+#: client/app/32-medic.js
+msgid "Nous sommes ici"
+msgstr "نحن هنا"
+
+#: client/app/32-medic.js
+msgid "Position du téléphone inconnue : autorise la localisation, puis réessaie."
+msgstr "موقع الهاتف غير معروف: اسمح بتحديد الموقع ثم أعد المحاولة."
+
+#: client/app/32-medic.js
+msgid "Durée du partage"
+msgstr "مدة المشاركة"
+
+#: client/app/32-medic.js
+msgid "Visible aussi du public"
+msgstr "مرئي للعموم أيضاً"
+
+#: client/app/32-medic.js
+msgid "Un ⛑️ au nom de l’équipe sur la carte de tout le monde, pour que les personnes blessées vous trouvent."
+msgstr "علامة ⛑️ باسم الفريق على خريطة الجميع، ليجدكم المصابون."
+
+#: client/app/32-medic.js
+msgid "Partager notre position"
+msgstr "مشاركة موقعنا"
+
+#: client/app/32-medic.js
+msgid "Notre position"
+msgstr "موقعنا"
+
+#: client/app/32-medic.js
+msgid "Position partagée en ce moment. Elle s’arrête seule à la fin de la durée, après 3 minutes sans réseau, ou si tu t’éloignes de plus de 2 km."
+msgstr "الموقع مُشارَك الآن. تتوقف المشاركة تلقائياً عند انتهاء المدة، أو بعد 3 دقائق دون شبكة، أو إذا ابتعدت أكثر من 2 كم."
+
+#: client/app/32-medic.js
+msgid "Les autres équipes voient où vous êtes. Le partage s’arrête seul, et rien n’est gardé ensuite."
+msgstr "ترى الفرق الأخرى مكانكم. تتوقف المشاركة تلقائياً ولا يُحتفَظ بشيء بعدها."
+
+#: client/app/32-medic.js
+msgid "Afficher aussi les signalements publics"
+msgstr "عرض البلاغات العامة أيضاً"
+
+#: client/app/32-medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège."
+msgstr "شرطة مكافحة الشغب، غاز مسيل للدموع، هجمات… يبلّغ عنها الجميع على Cortège."
+
+#: client/app/32-medic.js
+msgid "Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée."
+msgstr "تصلك إشعارات عن كل حالة خطر على الحياة ضمن {km} كم، حتى والتطبيق مغلق."
+
+#: client/app/32-medic.js
+msgid "Notifications pas encore activées sur ce téléphone : sans elles, tu ne vois les appels de renfort que si l’appli est ouverte."
+msgstr "الإشعارات غير مفعّلة بعد على هذا الهاتف: بدونها لا ترى طلبات الدعم إلا والتطبيق مفتوح."
+
+#: client/app/32-medic.js
+msgid "Activer les alertes"
+msgstr "تفعيل التنبيهات"
+
+#: client/app/32-medic.js
+msgid "Scanne ce QR code avec l’autre téléphone de l’équipe (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à la carte medic."
+msgstr "امسح رمز QR هذا بهاتف الفريق الآخر (أو افتح الرابط عليه). لا ترسله إلى أي شخص آخر: فهو يمنح الوصول إلى خريطة المسعفين."
+
+#: client/app/32-medic.js
+msgid "Appareils de l’équipe"
+msgstr "أجهزة الفريق"
+
+#: client/app/32-medic.js
+msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus)."
+msgstr "{n} جهاز/أجهزة تملك وصول هذا الفريق (5 كحد أقصى)."
+
+#: client/app/32-medic.js
+msgid "L’équipe a un code de secours. S’il est égaré, crées-en un nouveau : l’ancien ne servira plus."
+msgstr "للفريق رمز استرداد. إذا ضاع فأنشئ رمزاً جديداً: القديم لن يصلح بعدها."
+
+#: client/app/32-medic.js
+msgid "Pas encore de code de secours. Il redonne l’accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, et coupe le téléphone perdu."
+msgstr "لا يوجد رمز استرداد بعد. يعيد الوصول على هاتف آخر إذا ضاع هذا الهاتف أو صودر أو مُسح، ويقطع الهاتف المفقود."
+
+#: client/app/32-medic.js
+msgid "⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas ton équipe, crée un nouveau code tout de suite et préviens ton ou ta référent·e."
+msgstr "⚠ تم استرداد الوصول برمز الاسترداد في {date}. إن لم يكن فريقك، أنشئ رمزاً جديداً فوراً وأبلغ منسّقك."
+
+#: client/app/32-medic.js
+msgid "ex. : Medics Sud, binôme 3"
+msgstr "مثال: مسعفو الجنوب، الثنائي 3"
+
+#: client/app/32-medic.js
+msgid "Nom de l’équipe"
+msgstr "اسم الفريق"
+
+#: client/app/32-medic.js
+msgid "Inviter une équipe"
+msgstr "دعوة فريق"
+
+#: client/app/32-medic.js
+msgid "Réinviter"
+msgstr "إعادة الدعوة"
+
+#: client/app/32-medic.js
+msgid "Nouvelle invitation pour {who}"
+msgstr "دعوة جديدة لـ {who}"
+
+#: client/app/32-medic.js
+msgid "L’ancien accès de cette équipe est coupé. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr "قُطع الوصول القديم لهذا الفريق. أرسل الرابط عبر تطبيق مراسلة مشفّر (Signal)، وليس علناً أبداً."
+
+#: client/app/32-medic.js
+msgid "Active · {n} appareil(s)"
+msgstr "نشط · {n} جهاز/أجهزة"
+
+#: client/app/32-medic.js
+msgid "Invitation en attente"
+msgstr "دعوة قيد الانتظار"
+
+#: client/app/32-medic.js
+msgid "Invitation expirée"
+msgstr "انتهت صلاحية الدعوة"
+
+#: client/app/32-medic.js
+msgid "L’équipe scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement."
+msgstr "يمسح الفريق رمز QR هذا أو يفتح الرابط على هاتفه. أرسل الرابط عبر تطبيق مراسلة مشفّر (Signal)، وليس علناً أبداً."
+
+#: client/app/32-medic.js
+msgid "Référent·e : les équipes que tu as fait entrer"
+msgstr "المنسّق: الفرق التي أدخلتها"
+
+#: client/app/32-medic.js
+msgid "Tu peux inviter des équipes, leur renvoyer une invitation si elles ont perdu leur accès, et les retirer."
+msgstr "يمكنك دعوة الفرق، وإعادة إرسال دعوة إليها إن فقدت وصولها، وإزالتها."
+
+#: client/app/32-medic.js
+msgid "Vue complète de Cortège"
+msgstr "العرض الكامل لـ Cortège"
+
+#: client/app/32-medic.js
+msgid "Quitter le mode medic sur ce téléphone"
+msgstr "الخروج من وضع المسعفين على هذا الهاتف"
+
+#: client/app/32-medic.js
+msgid "Confirmer : l’accès medic sera retiré de ce téléphone"
+msgstr "تأكيد: سيُزال وصول المسعفين من هذا الهاتف"
+
+#: client/app/32-medic.js
+msgid "Mode medic désactivé sur ce téléphone"
+msgstr "تم إيقاف وضع المسعفين على هذا الهاتف"
+
+#: client/app/32-medic.js
+msgid "Signalements publics affichés"
+msgstr "البلاغات العامة ظاهرة"
+
+#: client/app/32-medic.js
+msgid "Signalements publics masqués"
+msgstr "البلاغات العامة مخفية"
+
+#: client/app/32-medic.js
+msgid "Vue complète"
+msgstr "العرض الكامل"
+
+#: client/app/32-medic.js
+msgid "Écran medic"
+msgstr "شاشة المسعفين"
+
+#: client/app/32-medic.js
+msgid "Afficher ou masquer les signalements publics"
+msgstr "إظهار أو إخفاء البلاغات العامة"
+
+#: client/app/32-medic.js
+msgid "Notre équipe : position, alertes, appareils"
+msgstr "فريقنا: الموقع، التنبيهات، الأجهزة"
+
+#: client/app/32-medic.js
+msgid "Renfort"
+msgstr "دعم"
+
+#: src/medic.js
+msgid "Renfort medic : urgence vitale"
+msgstr "دعم المسعفين: خطر على الحياة"
+
+#: src/medic.js
+msgid "Demandé par {team}"
+msgstr "بطلب من {team}"
+
+#: src/medic.js
+msgid "Donne un nom à l’équipe."
+msgstr "أعطِ الفريق اسماً."
+
+#: src/medic.js
+msgid "Trop d’équipes enregistrées sur ce serveur."
+msgstr "عدد الفرق المسجّلة على هذا الخادم كبير جداً."
+
+#: src/medic.js
+msgid "Une équipe porte déjà ce nom."
+msgstr "يوجد فريق بهذا الاسم."
+
+#: src/medic.js
+msgid "Équipe introuvable."
+msgstr "الفريق غير موجود."
+
+#: src/medic.js
+msgid "Partage de position arrêté. Relance-le si besoin."
+msgstr "توقفت مشاركة الموقع. أعد تشغيلها عند الحاجة."
+
+#: src/medic.js
+msgid "Carte medic saturée, réessaie plus tard."
+msgstr "خريطة المسعفين ممتلئة، أعد المحاولة لاحقاً."
+
+#: src/medic.js
+msgid "Niveau inconnu."
+msgstr "مستوى غير معروف."
+
+#: src/medic.js
+msgid "Trop d’ajouts d’un coup, patiente un peu."
+msgstr "إضافات كثيرة دفعة واحدة، انتظر قليلاً."
+
+#: src/medic.js
+msgid "Trop d’infos en cours : retire celles qui ne sont plus vraies."
+msgstr "معلومات نشطة كثيرة: أزل ما لم يعد صحيحاً."
+
+#: src/medic.js
+msgid "Déjà retiré."
+msgstr "أُزيل مسبقاً."
+
+#: src/medic.js
+msgid "Appel déjà réglé ou retiré."
+msgstr "الطلب عولج أو أُزيل مسبقاً."
+
+#: src/orgas/auth.js
+msgid "Trop d’essais depuis ce réseau, réessaie dans quelques minutes."
+msgstr "محاولات كثيرة من هذه الشبكة، أعد المحاولة بعد دقائق."
+
+#: src/routes/medic.js
+msgid "Rayon entre 0,5 et 30 km."
+msgstr "نصف القطر بين 0.5 و30 كم."
+
+#: src/routes/medic.js
+msgid "Trop de codes demandés, réessaie plus tard."
+msgstr "طُلبت رموز كثيرة، أعد المحاولة لاحقاً."
+
+#: src/routes/medic.js
+msgid "Réservé aux référent·es medic."
+msgstr "خاص بمنسّقي المسعفين."
+
+#: src/routes/medic.js
+msgid "Équipe introuvable parmi celles que tu as invitées."
+msgstr "الفريق غير موجود ضمن الفرق التي دعوتها."
+
+#: src/routes/orga.js
+msgid "Code de secours invalide : 20 caractères, par groupes de 4."
+msgstr "رمز استرداد غير صالح: 20 حرفاً في مجموعات من 4."
+
+#: src/routes/orga.js
+msgid "Code de secours inconnu ou déjà utilisé."
+msgstr "رمز استرداد غير معروف أو مستخدَم مسبقاً."
+
+# --- textes à traduire ---
+#: src/medic.js
+msgid "40 équipes au plus par référent·e."
+msgstr "40 فريقاً كحد أقصى لكل منسّق."
+
+#: src/medic.js
+msgid "Tu t’es éloigné·e de plus de 2 km : partage de position arrêté."
+msgstr "ابتعدت أكثر من 2 كم: توقفت مشاركة الموقع."
+
+#: src/medic.js
+msgid "Partage de position terminé. Relance-le si besoin."
+msgstr "انتهت مشاركة الموقع. أعد تشغيلها عند الحاجة."
+
+#: src/orgas/auth.js
+msgid "Accès medic invalide ou retiré."
+msgstr "وصول المسعفين غير صالح أو أُزيل."
+
+msgid "à {d}"
+msgstr "على بعد {d}"
+
+msgid "Contrôle / barrage filtrant"
+msgstr "حاجز تفتيش / مراقبة"
+
+msgid "J’ai perdu mon accès orga ou medic"
+msgstr "فقدت وصولي كمنظِّم أو كمسعف"

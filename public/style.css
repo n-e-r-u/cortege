@@ -785,6 +785,76 @@ body.manif .sheet.page { bottom: 0; }
 body.manif .ann.ord { }
 body.manif #map { filter: saturate(.85); }
 
+/* ======================= 2.18 : mode medic ======================= */
+/* Écran des équipes medic : la carte et quatre gros boutons. Sombre ou clair selon l'appareil, comme le reste. */
+.medic-top, .medic-bar, .medic-aim, .medic-back { display: none; }
+body.medic .topbar, body.medic .tabbar, body.medic .tools-left, body.medic #btnSearch, body.medic #btnInstallTool, body.medic .manif-top, body.medic .manif-bar { display: none !important; }
+body.medic .medic-top { display: flex; position: fixed; z-index: 1000; left: 12px; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 10px); gap: 8px; align-items: center; }
+.medic-pill { flex: 1; min-width: 0; height: 46px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 99px; font-weight: 800; font-size: 14px; color: var(--fg);
+  background: color-mix(in srgb, var(--soutien) 22%, var(--surface)); border: 1px solid color-mix(in srgb, var(--soutien) 55%, var(--line)); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.medic-pill span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.medic-pill .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--danger); }
+.medic-top[data-state="live"] .dot { background: var(--ok); }
+.medic-top[data-state="offline"] .dot { background: var(--fdo); }
+.medic-pub { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 18px; box-shadow: 0 4px 14px rgba(0,0,0,.35); opacity: .6; }
+.medic-pub[aria-pressed="true"] { opacity: 1; border-color: var(--accent); }
+body.medic .medic-aim { display: block; position: fixed; z-index: 900; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; pointer-events: none;
+  background: linear-gradient(var(--fg), var(--fg)) center / 2px 100% no-repeat, linear-gradient(var(--fg), var(--fg)) center / 100% 2px no-repeat; border-radius: 50%; opacity: .75;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg) 70%, transparent) inset; }
+body.medic .medic-bar { display: grid; position: fixed; z-index: 1080; left: 0; right: 0; bottom: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
+  padding: 14px 10px calc(var(--safe-b) + 12px); background: linear-gradient(transparent, var(--bg) 30%); }
+.mdb { position: relative; height: 84px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.4); padding: 4px; }
+.mdb span { font-size: 26px; line-height: 1; }
+.mdb b { font-size: 12px; line-height: 1.15; text-align: center; font-weight: 800; }
+.mdb:active { transform: scale(.97); }
+.mdb-pos.on { background: color-mix(in srgb, var(--soutien) 30%, var(--surface)); border-color: var(--soutien); }
+.mdb-help { background: var(--fdo-strong); border-color: transparent; color: #fff; }
+.mdb-help[data-n]:not([data-n=""])::after { content: attr(data-n); position: absolute; top: -6px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: #fff; color: #b3261e; font-weight: 800; font-size: 13px; line-height: 22px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+.medic-back { position: fixed; z-index: 1001; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 62px); height: 38px; padding: 0 16px; border-radius: 99px; border: 1px solid var(--soutien);
+  background: color-mix(in srgb, var(--soutien) 25%, var(--surface)); color: var(--fg); font-weight: 800; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.medic-back:not([hidden]) { display: block; }
+body.medic .tools { bottom: calc(var(--safe-b) + 122px); }
+body.medic .toast { bottom: calc(var(--safe-b) + 200px); }
+body.medic .leaflet-bottom { bottom: calc(var(--safe-b) + 112px); }
+body.medic .sheet.page { bottom: 0; }
+/* Fiche d'une info medic */
+.medic-card { position: fixed; z-index: 1085; left: 10px; right: 10px; bottom: calc(var(--safe-b) + 122px); padding: 12px 14px 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+body:not(.medic) .medic-card { bottom: calc(var(--safe-b) + 84px); }
+.mc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mc-head b { font-size: 17px; }
+.mc-sub { margin: 4px 0 10px; color: var(--muted); font-size: 14px; line-height: 1.35; }
+.mc-acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.mc-acts button { height: 52px; margin: 0; }
+/* Marqueurs medic */
+.mpin-wrap { background: none; border: 0; }
+.mpin { position: relative; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; background: var(--surface); border: 3px solid var(--soutien); box-shadow: 0 3px 10px rgba(0,0,0,.45); }
+.mpin.k-hot { border-color: var(--danger); }
+.mpin.k-block { border-color: var(--fdo); border-radius: 12px; }
+.mpin.k-help { border-color: #fff; background: var(--fdo-strong); }
+.mpin.k-help.l-vital { animation: mpulse 1.2s ease-in-out infinite; }
+.mpin.mine { outline: 2px dashed var(--fg); outline-offset: 2px; }
+.mpin i { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 3px; padding: 1px 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--fg); font: 700 11px/1.4 var(--font, inherit); white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+.mpin em { position: absolute; top: -8px; right: -10px; padding: 0 6px; border-radius: 99px; background: var(--ok); color: #fff; font: 800 11px/18px var(--font, inherit); white-space: nowrap; }
+@keyframes mpulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(229,72,77,.7), 0 3px 10px rgba(0,0,0,.45); } 50% { box-shadow: 0 0 0 12px rgba(229,72,77,0), 0 3px 10px rgba(0,0,0,.45); } }
+@media (prefers-reduced-motion: reduce) { .mpin.k-help.l-vital { animation: none; } }
+/* Renfort : trois gros choix */
+.mh-btn { display: block; width: 100%; min-height: 64px; margin: 0 0 10px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font-weight: 800; font-size: 17px; text-align: start; }
+.mh-btn.l-vital { background: var(--fdo-strong); border-color: transparent; color: #fff; }
+#mdBody .switch input { width: 46px; height: 28px; margin: 2px 0 0; padding: 0; border-radius: 99px; }
+#rcBody .install, #mdBody .install { width: 100%; }
+/* Code de secours */
+.rec-code { margin: 14px 0; padding: 16px 10px; border-radius: 14px; border: 2px dashed var(--accent); background: var(--surface-2); text-align: center; font: 800 20px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .06em; user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; direction: ltr; }
+#rvCode { font: 700 18px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .05em; text-transform: uppercase; direction: ltr; }
+@media print {
+  body.print-rec { background: #fff !important; }
+  body.print-rec * { visibility: hidden; }
+  body.print-rec #sheetRec, body.print-rec #sheetRec * { visibility: visible; color: #000 !important; background: transparent !important; box-shadow: none !important; }
+  body.print-rec #sheetRec { position: absolute !important; inset: 0 auto auto 0; width: 100%; max-height: none !important; height: auto !important; overflow: visible !important; padding: 24px !important; }
+  body.print-rec #sheetRec button { display: none !important; }
+  body.print-rec .rec-code { border-color: #000 !important; }
+}
+
 /* ======================= 2.5 : langues de droite à gauche (arabe) ======================= */
 html[dir="rtl"] #map, html[dir="rtl"] .leaflet-container { direction: ltr; }
 html[dir="rtl"] .leaflet-popup-content { direction: rtl; text-align: right; }

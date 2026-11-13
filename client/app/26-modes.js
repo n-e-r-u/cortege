@@ -49,6 +49,7 @@
     try { sessionStorage.clear(); } catch {}
     // Attend la fin de la suppression (bloquée tant qu'une connexion reste ouverte : 1,5 s au plus avant de quitter la page)
     try { await Promise.race([new Promise(r => { const d = indexedDB.deleteDatabase('cortege'); d.onsuccess = d.onerror = d.onblocked = r; }), new Promise(r => setTimeout(r, 1500))]); } catch {}
+    try { await Promise.race([new Promise(r => { const d = indexedDB.deleteDatabase('cortege-cles'); d.onsuccess = d.onerror = d.onblocked = r; }), new Promise(r => setTimeout(r, 800))]); } catch {}
     try { for (const k of await caches.keys()) await caches.delete(k); } catch {}
     try { for (const r of (await navigator.serviceWorker?.getRegistrations?.()) || []) await r.unregister(); } catch {}
     location.replace('about:blank');

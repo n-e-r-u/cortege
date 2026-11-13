@@ -38,7 +38,7 @@
   };
   if (pushOK) navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
     if (sub && Notification.permission === 'granted') {
-      pushSub = sub; syncSwitches();
+      pushSub = sub; syncSwitches(); mdPush();
       // Réinscription au plus deux fois par jour (le serveur a pu tout effacer entre-temps)
       let at = 0; try { at = +localStorage.getItem('cortege-push-at') || 0; } catch {}
       pushSend(sub, Date.now() - at > 12 * 3600e3).then(() => { try { localStorage.setItem('cortege-push-at', String(Date.now())); } catch {} }).catch(() => {});
@@ -49,7 +49,7 @@
     if (await Notification.requestPermission() !== 'granted') throw new Error(t('Notifications refusées : autorise-les dans les réglages du téléphone.'));
     const reg = await navigator.serviceWorker.ready;
     pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
-    await pushSend(pushSub, true);
+    await pushSend(pushSub, true); mdPush();
   }
   async function pushDisable() {
     const sub = pushSub; pushSub = null; pushZone = null;

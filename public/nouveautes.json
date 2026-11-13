@@ -1,73 +1,73 @@
 {
-  "version": "2.17.5",
+  "version": "2.18",
   "items": [
     [
-      "⚡ Ouverture plus rapide",
-      "L’appli charge moins de choses au démarrage, surtout sur un vieux téléphone ou un réseau faible."
+      "⛑️ Mode medic",
+      "Un écran à part pour les équipes de street medics : une carte privée entre équipes, avec positions, points chauds, barrages et appels de renfort."
     ],
     [
-      "🧭 Direction et nombre plus fiables",
-      "La direction d’un véhicule ou le nombre d’un groupe ne peut plus être changé en boucle par un seul téléphone."
+      "🛂 Contrôle / barrage filtrant",
+      "Nouveau type de signalement pour les fouilles et contrôles à l’entrée d’une manif."
     ],
     [
-      "🛡️ Sécurité",
-      "Plusieurs renforcements du serveur après une relecture complète du code."
+      "🔑 Code de secours",
+      "Orgas : un code pour retrouver ton accès si ton téléphone est perdu, saisi ou vidé. Crée-le dans « Mon orga »."
     ]
   ],
   "items_en": [
     [
-      "⚡ Faster start",
-      "The app loads less at startup, especially on an older phone or a weak network."
+      "⛑️ Medic mode",
+      "A separate screen for street medic teams: a private map between teams, with locations, hot spots, checkpoints and backup requests."
     ],
     [
-      "🧭 More reliable direction and count",
-      "A vehicle's direction or a group's size can no longer be changed over and over by a single phone."
+      "🛂 Checkpoint / searches",
+      "A new report type for searches and checks at the entrance of a protest."
     ],
     [
-      "🛡️ Security",
-      "Several server hardening fixes after a full code review."
+      "🔑 Recovery code",
+      "Organisers: a code to get your access back if your phone is lost, seized or wiped. Create it in “My organisation”."
     ]
   ],
   "items_es": [
     [
-      "⚡ Apertura más rápida",
-      "La app carga menos cosas al iniciar, sobre todo en un teléfono antiguo o con mala red."
+      "⛑️ Modo medic",
+      "Una pantalla aparte para los equipos de street medics: un mapa privado entre equipos, con posiciones, puntos calientes, controles y llamadas de refuerzo."
     ],
     [
-      "🧭 Dirección y número más fiables",
-      "La dirección de un vehículo o el tamaño de un grupo ya no puede cambiarse una y otra vez desde un solo teléfono."
+      "🛂 Control / registro filtrante",
+      "Nuevo tipo de aviso para los registros y controles a la entrada de una mani."
     ],
     [
-      "🛡️ Seguridad",
-      "Varios refuerzos del servidor tras una revisión completa del código."
+      "🔑 Código de emergencia",
+      "Organizaciones: un código para recuperar tu acceso si pierdes el teléfono, te lo incautan o se borra. Créalo en «Mi organización»."
     ]
   ],
   "items_ar": [
     [
-      "⚡ فتح أسرع",
-      "يحمّل التطبيق أشياء أقل عند البدء، خاصة على هاتف قديم أو شبكة ضعيفة."
+      "⛑️ وضع المسعفين",
+      "شاشة خاصة لفرق المسعفين الميدانيين: خريطة خاصة بين الفرق، مع المواقع والنقاط الساخنة والحواجز وطلبات الدعم."
     ],
     [
-      "🧭 اتجاه وعدد أكثر موثوقية",
-      "لم يعد ممكناً لهاتف واحد أن يغيّر اتجاه مركبة أو عدد مجموعة مراراً."
+      "🛂 حاجز تفتيش / مراقبة",
+      "نوع بلاغ جديد لعمليات التفتيش والمراقبة عند مدخل المظاهرة."
     ],
     [
-      "🛡️ الأمان",
-      "عدة تحسينات لحماية الخادم بعد مراجعة كاملة للشيفرة."
+      "🔑 رمز الاسترداد",
+      "للمنظِّمين: رمز لاستعادة وصولك إذا ضاع هاتفك أو صودر أو مُسح. أنشئه من «منظمتي»."
     ]
   ],
   "items_de": [
     [
-      "⚡ Schnellerer Start",
-      "Die App lädt beim Start weniger, vor allem auf einem älteren Handy oder bei schwachem Netz."
+      "⛑️ Medic-Modus",
+      "Eine eigene Ansicht für Demo-Sanitäter-Teams: eine private Karte unter Teams, mit Standorten, Brennpunkten, Kontrollstellen und Anfragen nach Verstärkung."
     ],
     [
-      "🧭 Richtung und Anzahl verlässlicher",
-      "Die Richtung eines Fahrzeugs oder die Größe einer Gruppe kann nicht mehr von einem einzigen Handy immer wieder geändert werden."
+      "🛂 Kontrollstelle / Durchsuchungen",
+      "Neue Meldungsart für Durchsuchungen und Kontrollen am Zugang zu einer Demo."
     ],
     [
-      "🛡️ Sicherheit",
-      "Mehrere Härtungen des Servers nach einer vollständigen Durchsicht des Codes."
+      "🔑 Notfallcode",
+      "Orgas: ein Code, mit dem du deinen Zugang zurückbekommst, wenn dein Handy verloren geht, beschlagnahmt oder geleert wird. Erstelle ihn unter „Meine Organisation“."
     ]
   ]
 }

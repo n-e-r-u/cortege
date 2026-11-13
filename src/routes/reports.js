@@ -15,7 +15,7 @@ const { createOrder } = require('../orders');
 const { dayRows, dayCountFr } = require('../digest/day');
 const { deviceAge, firstConfirm, repAdd, devRep, TRUST, CONTEST, contestNeed, VOTES } = require('../reports/votes');
 const { getPub } = require('../digest/pub');
-const { isAdmin, orgaOf } = require('../orgas/auth');
+const { isAdmin, orgaOf, keyRefusal } = require('../orgas/auth');
 const { listEvents } = require('../events/store');
 const { nearby, saveReport, dropReport, discardReport, getReport } = require('../reports/store');
 const { orgaLog } = require('../orgas/log');
@@ -161,7 +161,7 @@ async function reportsRoutes(req, res, url, pathname) {
   if (req.method === 'POST' && pathname === '/api/events') {
     const b = await readJson(req, 16384);
     const orga = req.headers['x-orga-key'] ? orgaOf(req) : null;
-    if (req.headers['x-orga-key'] && !orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
+    if (req.headers['x-orga-key'] && !orga) return send(res, ...keyRefusal(req));
     const out = createEvent(b, orga, deviceHash(req), clientHash(req), netHash(req));
     if (orga && out[0] < 300) orgaLog(orga, out[1].status === 'pending' ? 'événement (en attente)' : 'événement', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id, detail: out[1].title });
     return send(res, ...out);

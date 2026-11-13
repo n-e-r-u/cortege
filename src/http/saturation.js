@@ -22,7 +22,7 @@ const LAG_SHED = Number(process.env.LAG_SHED) || 500, BOOT = Date.now();
 setInterval(() => { lagMs = LAG.percentile(99) / 1e6; LAG.reset(); lagHigh = lagMs > LAG_SHED && Date.now() - BOOT > 20_000 ? lagHigh + 1 : 0; }, 1000).unref();
 const shedding = () => lagHigh >= 3;
 // Jamais délestés : la page et ses fichiers (peu coûteux, et sans eux l'appli ne s'ouvre pas), les fichiers live, et les actions vitales
-const essential = (req, pathname) => pathname === '/api/health' || pathname === '/api/stream'
+const essential = (req, pathname) => pathname === '/api/health' || pathname === '/api/stream' || pathname.startsWith('/api/medic/') || pathname === '/api/recover'
   || (req.method === 'GET' && !pathname.startsWith('/api/') && !pathname.startsWith('/vt/') && !pathname.startsWith('/tiles/'))
   || (req.method === 'POST' && (pathname === '/api/reports' || /^\/api\/reports\/[\w-]{1,16}\/(vote|note)$/.test(pathname)));
 let shedCount = 0, floodCount = 0;

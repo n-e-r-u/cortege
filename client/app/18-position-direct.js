@@ -94,6 +94,6 @@
   $('#btnOrgaLogout').onclick = () => {
     const b = $('#btnOrgaLogout');
     if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = t('Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)'); setTimeout(() => { delete b.dataset.armed; b.textContent = t('Quitter le mode orga sur ce téléphone'); }, 6000); return; }
-    try { localStorage.removeItem('cortege-orga'); } catch {} setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone');
+    keySet('orga', null); setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone');
   };
 

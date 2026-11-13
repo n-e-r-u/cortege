@@ -1,6 +1,79 @@
 {
  "history": [
   {
+   "version": "2.18",
+   "items": [
+    [
+     "⛑️ Mode medic",
+     "Un écran à part pour les équipes de street medics : une carte privée entre équipes, avec positions, points chauds, barrages et appels de renfort."
+    ],
+    [
+     "🛂 Contrôle / barrage filtrant",
+     "Nouveau type de signalement pour les fouilles et contrôles à l’entrée d’une manif."
+    ],
+    [
+     "🔑 Code de secours",
+     "Orgas : un code pour retrouver ton accès si ton téléphone est perdu, saisi ou vidé. Crée-le dans « Mon orga »."
+    ]
+   ],
+   "items_en": [
+    [
+     "⛑️ Medic mode",
+     "A separate screen for street medic teams: a private map between teams, with locations, hot spots, checkpoints and backup requests."
+    ],
+    [
+     "🛂 Checkpoint / searches",
+     "A new report type for searches and checks at the entrance of a protest."
+    ],
+    [
+     "🔑 Recovery code",
+     "Organisers: a code to get your access back if your phone is lost, seized or wiped. Create it in “My organisation”."
+    ]
+   ],
+   "items_es": [
+    [
+     "⛑️ Modo medic",
+     "Una pantalla aparte para los equipos de street medics: un mapa privado entre equipos, con posiciones, puntos calientes, controles y llamadas de refuerzo."
+    ],
+    [
+     "🛂 Control / registro filtrante",
+     "Nuevo tipo de aviso para los registros y controles a la entrada de una mani."
+    ],
+    [
+     "🔑 Código de emergencia",
+     "Organizaciones: un código para recuperar tu acceso si pierdes el teléfono, te lo incautan o se borra. Créalo en «Mi organización»."
+    ]
+   ],
+   "items_ar": [
+    [
+     "⛑️ وضع المسعفين",
+     "شاشة خاصة لفرق المسعفين الميدانيين: خريطة خاصة بين الفرق، مع المواقع والنقاط الساخنة والحواجز وطلبات الدعم."
+    ],
+    [
+     "🛂 حاجز تفتيش / مراقبة",
+     "نوع بلاغ جديد لعمليات التفتيش والمراقبة عند مدخل المظاهرة."
+    ],
+    [
+     "🔑 رمز الاسترداد",
+     "للمنظِّمين: رمز لاستعادة وصولك إذا ضاع هاتفك أو صودر أو مُسح. أنشئه من «منظمتي»."
+    ]
+   ],
+   "items_de": [
+    [
+     "⛑️ Medic-Modus",
+     "Eine eigene Ansicht für Demo-Sanitäter-Teams: eine private Karte unter Teams, mit Standorten, Brennpunkten, Kontrollstellen und Anfragen nach Verstärkung."
+    ],
+    [
+     "🛂 Kontrollstelle / Durchsuchungen",
+     "Neue Meldungsart für Durchsuchungen und Kontrollen am Zugang zu einer Demo."
+    ],
+    [
+     "🔑 Notfallcode",
+     "Orgas: ein Code, mit dem du deinen Zugang zurückbekommst, wenn dein Handy verloren geht, beschlagnahmt oder geleert wird. Erstelle ihn unter „Meine Organisation“."
+    ]
+   ]
+  },
+  {
    "version": "2.17.5",
    "items": [
     [

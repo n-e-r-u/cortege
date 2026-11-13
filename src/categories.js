@@ -33,6 +33,8 @@ const CATEGORIES = [
   // Point de l'admin en direct (« viens me voir pour un accès orga ») : jamais signalé par d'autres, seulement partagé par l'admin
   { id: 'contact',        group: 'info',    label: 'Point de rencontre orga', glyph: '★', ttl: 3, beaconOnly: true },
   { id: 'bloque',         group: 'info',    label: 'Rue bloquée',             glyph: '⛔', ttl: 30 },
+  // Contrôles et fouilles à l'entrée d'une manif : une information, pas un danger (ne suspend pas les zones calmes, pas d'alerte)
+  { id: 'filtrage',       group: 'info',    label: 'Contrôle / barrage filtrant', glyph: '🛂', ttl: 45 },
   { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
 ];
 // Agenda : types d'événements publiés par les orgas (ou proposés puis validés par l'admin)
@@ -51,7 +53,7 @@ const MERGE = {
   inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 }, facho: { r: 150, move: true },
   nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
   medic: { r: 40 }, secours: { r: 100, move: true }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
-  cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 },
+  cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 }, filtrage: { r: 60 },
 };
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;

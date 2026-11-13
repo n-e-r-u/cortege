@@ -2,6 +2,25 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.18.0
+
+**Mode medic** (demandé par des street medics de Montpellier ; guide des équipes : [docs/MEDICS.md](docs/MEDICS.md)) :
+- Un **écran à part** pour les équipes de street medics : la carte et quatre gros boutons. 📍 « Nous sommes ici » (position de l'équipe), 🔥 « Point chaud », 🚧 « Barrage filtrant », 🆘 « Renfort » (binôme, urgence vitale ou évacuation, matériel).
+- Une **carte privée**, vue seulement avec la clé d'une équipe. Les infos sont ajoutées et retirées à la main par les équipes : pas de votes, rien ne vient de la foule. Sur un renfort, « J'y vais » montre qui est en route, « Réglé » le retire.
+- **Rien n'est gardé** : la couche medic vit en mémoire seulement, jamais dans la base, les fichiers publics, les bilans ni les sauvegardes. Aucun texte libre, rien sur les personnes blessées. L'admin ne voit que des totaux.
+- Position d'une équipe : privée par défaut, visible du public en ⛑️ au choix de l'équipe ; elle s'arrête seule (durée, 3 minutes sans réseau, plus de 2 km du départ).
+- « Urgence vitale » envoie une notification aux équipes proches (rayon réglé dans l'admin, 2 km par défaut).
+- Comptes « équipe medic » : une clé par équipe, 5 appareils, aucun droit d'orga. Un·e **référent·e** par ville peut inviter des équipes, les réinviter et les retirer. Admin : nouvel onglet Medics.
+- Pour tout le monde : nouveau type public **« Contrôle / barrage filtrant »** 🛂 (fouilles et contrôles à l'entrée d'une manif).
+
+**Ne plus perdre son accès** (orgas et équipes medic) :
+- **Code de secours** : donné une seule fois à l'activation (ou créé depuis « Mon orga »). Plus › « J'ai perdu mon accès », sur n'importe quel téléphone : l'accès revient, un nouveau code est donné, et les autres appareils sont coupés (téléphone perdu ou saisi).
+- Corrigé : l'appli effaçait la clé orga dès que le serveur refusait une action, même avec une clé valable (une orga en essai qui tentait une annonce perdait son accès). La clé n'est plus oubliée que si le serveur dit qu'elle n'existe plus.
+- Corrigé : dix mauvaises clés tapées depuis un réseau bloquaient toutes les orgas de ce réseau (en manif, des centaines de téléphones partagent l'adresse d'un opérateur). Les clés d'orga et d'équipe, impossibles à deviner, ne sont plus soumises à ce verrou.
+- La clé est gardée en double sur le téléphone et le stockage est demandé persistant. Rappel sur iPhone : sans l'appli sur l'écran d'accueil, Safari efface l'accès après 7 jours sans visite.
+- La veille d'une journée de mobilisation, un accès sans code de secours ni deuxième appareil voit un rappel.
+- Admin › Orgas : chaque orga indique si elle a un code de secours. La sauvegarde chiffrée inclut `medics.json` (réinstaller le script : `sudo install -m 700 tools/cortege-backup.sh /usr/local/sbin/cortege-backup`).
+
 ## 2.17.5
 
 Version issue d'une relecture complète du code : sécurité, vitesse, solidité. Rien ne change dans l'usage.

@@ -56,7 +56,7 @@ async function adminRoutes(req, res, url, pathname) {
     if (req.method === 'GET' && pathname === '/api/admin/orgas') {
       return send(res, 200, {
         orgas: (() => { const list = readOrgas(); return list.map(o => ({ id: o.id, label: o.label, created: o.created, trial: o.trial === true, source: 'page',
-          active: !!o.hash, invite: o.invite && o.invite.exp > Date.now() ? o.invite.exp : null, devices: o.hash ? 1 + (o.keys || []).length : 0,
+          active: !!o.hash, invite: o.invite && o.invite.exp > Date.now() ? o.invite.exp : null, devices: o.hash ? 1 + (o.keys || []).length : 0, rec: !!o.rec,
           by: o.by || null, byLabel: o.by ? (list.find(x => x.id === o.by)?.label || o.byLabel || 'orga supprimée') : null, sponsored: o.sponsored === true,
           children: list.filter(x => x.by === o.id).length, ban: banUntil(o.id), clash: !!labelClash(o.label, { except: o.id }), ...(o.sponsored && o.trial ? { readiness: orgaReady(o) } : {}), ...orgaStats(o.id) })); })()
           .concat(ORGAS.map(o => ({ id: null, label: o.label, created: null, trial: false, source: 'variable', ...orgaStats('env:' + o.label) }))),
@@ -125,7 +125,7 @@ async function adminRoutes(req, res, url, pathname) {
       const o = withLock(() => {
         const list = readOrgas().slice(), i = list.findIndex(x => x.id === reinv[1]);
         if (i < 0) return null;
-        list[i] = { ...list[i], hash: null, keys: [], devInv: undefined, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; writeOrgas(list); return list[i];
+        list[i] = { ...list[i], hash: null, keys: [], devInv: undefined, rec: undefined, recAt: undefined, invite: { h: sha(token), exp: Date.now() + INVITE_MS } }; writeOrgas(list); return list[i];
       });
       if (!o) return send(res, 404, { error: 'Orga introuvable.' });
       orgaLog({ id: 'admin', label: adminLabel() }, 'nouvelle invitation (ancienne clé révoquée)', { ref: o.id, detail: o.label });
@@ -448,6 +448,7 @@ async function adminRoutes(req, res, url, pathname) {
       const rotated = (() => { try { return rotateSecret(); } catch { return false; } })();
       try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.exec('VACUUM'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
       rebuildAll();
+      try { require('../medic').wipe(); } catch {} // couche medic (en mémoire) : oubliée aussi
       console.log('effacement d’urgence effectué' + (left.length ? ` (${left.length} fichier(s) d’archive non effacé(s))` : ''));
       return send(res, left.length ? 500 : 200, { removed: n, rotated, pub: b.pub === true, left: left.length, ...(left.length ? { error: `${left.length} fichier(s) de l’archive n’ont pas pu être effacés : vérifie les droits du dossier.` } : {}) });
     }

@@ -1,13 +1,14 @@
   // ---- Espace orga / legal team ----
   // Le lien orga ressemble à https://cortege.neru.tv/?orga=CLÉ : la clé est gardée sur ce téléphone et retirée de l'adresse.
-  const orgaKey = () => { try { return localStorage.getItem('cortege-orga') || ''; } catch { return ''; } };
+  const orgaKey = () => keyGet('orga');
   // Signalements faits par cette orga depuis ce téléphone : elle peut les prolonger ou les corriger
   const mine = new Set((() => { try { return JSON.parse(localStorage.getItem('cortege-mine') || '[]'); } catch { return []; } })());
   function mineAdd(id) { mine.add(id); try { localStorage.setItem('cortege-mine', JSON.stringify([...mine].slice(-200))); } catch {} }
   async function orgaFetch(url, opts = {}) {
     const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Orga-Key': orgaKey(), ...(opts.headers || {}) } });
     const body = await res.json().catch(() => ({}));
-    if (res.status === 403) { setOrga(null); try { localStorage.removeItem('cortege-orga'); } catch {} }
+    // La clé n'est oubliée que si le serveur dit qu'elle n'existe plus : une action interdite ou « trop d'essais » la laisse en place
+    if (res.status === 403 && body.gone) { setOrga(null); keySet('orga', null); }
     if (!res.ok) throw new Error(body.error || t('Action impossible.'));
     return body;
   }
@@ -36,15 +37,16 @@
     $('#agFine').hidden = !!o;
   }
   (async () => {
+    await keysReady;
     const params = new URLSearchParams(location.search);
     if (params.has('orga')) {
       // Un lien reçu ne remplace pas en silence la clé déjà enregistrée (sinon un lien piégé ferait publier sous un autre compte)
       const nk = params.get('orga'); let ok = true;
       try { const cur = localStorage.getItem('cortege-orga'); if (cur && cur !== nk) ok = confirm(t('Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?')); } catch {}
-      if (ok) try { localStorage.setItem('cortege-orga', nk); } catch {}
+      if (ok) keySet('orga', nk);
       history.replaceState(null, '', location.pathname);
     }
-    var justJoined = false;
+    var justJoined = false, joinRec = null;
     // Invitation par QR code : échangée une seule fois contre une clé, créée et gardée sur ce téléphone
     if (params.has('invite')) {
       const token = params.get('invite');
@@ -53,7 +55,8 @@
         const res = await fetch('/api/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) { toast(body.error || 'Invitation impossible.'); }
-        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast(body.device ? t('Appareil ajouté à l’espace orga {who}', { who: body.label }) : t('Bienvenue {who} : ton accès orga est activé sur ce téléphone', { who: body.label })); justJoined = !body.device; }
+        else if (body.medic) { keySet('medic', body.key); if (body.rec) showRec(body.rec, 'medic'); else toast(body.device ? t('Appareil ajouté à l’équipe medic {who}', { who: body.label }) : t('Bienvenue {who} : ton accès medic est activé sur ce téléphone', { who: body.label })); medicInit(); }
+        else { keySet('orga', body.key); toast(body.device ? t('Appareil ajouté à l’espace orga {who}', { who: body.label }) : t('Bienvenue {who} : ton accès orga est activé sur ce téléphone', { who: body.label })); justJoined = !body.device; if (body.rec) joinRec = body.rec; }
       } catch { toast('Pas de réseau : rouvre l’invitation quand ça capte.'); }
     }
     if (!orgaKey()) return;
@@ -61,7 +64,11 @@
       const who = await orgaFetch('/api/orga/me'); setOrga(who);
       // Premier accès : on ouvre l'espace orga pour que l'avertissement sur la perte d'accès soit lu
       // Première ouverture : onglet « Mon orga », pour voir tout de suite comment ne pas perdre l'accès
-      if (justJoined) { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} setTimeout(() => $('#btnOrga').click(), 600); } else toast(t('Mode orga : {who}', { who: who.label }));
+      // Le code de secours est montré tout de suite, une seule fois ; l'espace orga s'ouvre quand il est noté
+      const openSpace = () => { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} setTimeout(() => $('#btnOrga').click(), 300); };
+      if (justJoined && joinRec) showRec(joinRec, 'orga', openSpace);
+      else if (justJoined) openSpace();
+      else toast(t('Mode orga : {who}', { who: who.label }));
     }
     catch (e) { toast(e.message); }
   })();
@@ -123,7 +130,18 @@
     $('#orgaRecover').textContent = me.sponsor
       ? t('Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien.', { who: me.sponsor })
       : t('Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.');
-    $('#orgaAccessWarn').hidden = !!me.admin;
+    // Avertissement « un seul appareil » : tant qu'il n'y a ni deuxième appareil ni code de secours
+    $('#orgaAccessWarn').hidden = !!me.admin || !me.canAddDevice || me.rec || (me.devices || 1) > 1;
+    // Code de secours
+    $('#btnOrgaRec').hidden = !me.canAddDevice; $('#btnOrgaRec').textContent = me.rec ? t('Créer un nouveau code de secours') : t('Créer mon code de secours');
+    $('#orgaRecState').textContent = !me.canAddDevice ? t('Ton accès est défini dans les réglages du serveur : pas de code de secours.')
+      : me.rec ? t('Tu as un code de secours. Si tu l’as égaré, crées-en un nouveau : l’ancien ne servira plus.')
+        : t('Pas encore de code de secours. Il te redonne ton accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, sans dépendre de personne.');
+    $('#orgaRecAt').hidden = !me.recAt;
+    if (me.recAt) $('#orgaRecAt').textContent = t('⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas toi, crée un nouveau code tout de suite et préviens l’admin.', { date: fmtExp(me.recAt) });
+    $('#orgaEveWarn').hidden = !me.warn;
+    if (me.warn) $('#orgaEveWarn').textContent = t('Journée de mobilisation toute proche : ton accès n’a ni code de secours ni deuxième appareil. Crée ton code maintenant.');
+    $('#orgaIosWarn').hidden = !iosEvict(); $('#orgaIosWarn').textContent = IOS_WARN;
     $('#orgaSponsored').hidden = !me.sponsored;
     if (me.sponsored) $('#orgaSponsored').textContent = `Orga parrainée par ${me.sponsor || 'une autre orga'} : surveillance renforcée jusqu’à ta confirmation. « Vérifier » compte comme une confirmation forte (le point reste contestable), 5 retraits par 5 minutes et 3 annonces par jour au maximum. Après 7 jours et 10 actions sans incident, ${me.sponsor || 'ta marraine'} ou l’admin pourra te confirmer.`;
     // Appareils
@@ -177,6 +195,10 @@
   });
   $('#btnAddDevice').onclick = async () => {
     try { const r = await orgaFetch('/api/orga/device', { method: 'POST', body: '{}' }); showInviteOut('Ajouter un appareil', r.invite, r.exp, 'Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga.'); }
+    catch (e) { toast(e.message); }
+  };
+  $('#btnOrgaRec').onclick = async () => {
+    try { const r = await orgaFetch('/api/orga/recovery', { method: 'POST', body: '{}' }); showRec(r.rec, 'orga', () => $('#btnOrga').click()); }
     catch (e) { toast(e.message); }
   };
   $('#orClose').onclick = () => closeSheets();

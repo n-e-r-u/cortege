@@ -28,6 +28,8 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/veille.js` | Veille des arrêtés : pages de préfecture et flux relus toutes les 20 minutes, nouveaux liens repérés par mots-clés et proposés à l'admin |
 | `src/social.js` | Partage sur Bluesky et Mastodon : messages automatiques (veille et jour J d'une journée, arrêtés regroupés, bilan publié) et écrits par l'admin, relecture facultative, envoi avec nouveaux essais, retrait |
 | `src/ideas.js` | Boîte à idées : propositions, validation par l'admin, statuts, votes anonymes par jeton propre à chaque idée, fusion des doublons |
+| `src/medic.js`, `src/routes/medic.js` | Mode medic : comptes des équipes (`medics.json`), couche privée en mémoire (positions, points chauds, barrages, renforts), attente longue, notifications des urgences vitales, référent·es |
+| `src/orgas/recovery.js` | Code de secours des orgas et des équipes medic (création, saisie tolérante, empreinte) |
 | `src/moderation.js`, `src/sweep.js` | File de modération, tableau des abus, ménage toutes les 30 s |
 | `src/i18n.js`, `src/i18n-po.js`, `i18n/` | Traductions : un fichier PO par langue dans `i18n/` (voir `i18n/LISEZMOI.md`), construites dans `public/lang/` ; langues déposées dans l'admin (dossier de données), langues proposées et langue par défaut |
 | `src/push.js` | Notifications Web Push (chiffrement et VAPID faits à la main) et traductions côté serveur |

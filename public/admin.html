@@ -199,6 +199,7 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <button class="tab" role="tab" id="tabAgenda" aria-selected="false" aria-controls="panelAgenda"><span class="ni" aria-hidden="true">📅</span>Agenda <span id="pendingBadge"></span></button>
     <button class="tab" role="tab" id="tabOrgas" aria-selected="true" aria-controls="panelOrgas"><span class="ni" aria-hidden="true">👥</span>Orgas <span id="reqBadge"></span></button>
     <button class="tab" role="tab" id="tabLegal" aria-selected="false" aria-controls="panelLegal"><span class="ni" aria-hidden="true">⚖</span>Legal teams <span id="legalBadge"></span></button>
+    <button class="tab" role="tab" id="tabMedics" aria-selected="false" aria-controls="panelMedics"><span class="ni" aria-hidden="true">⛑</span>Medics</button>
     <button class="tab" role="tab" id="tabIdeas" aria-selected="false" aria-controls="panelIdeas"><span class="ni" aria-hidden="true">💡</span>Idées <span id="ideaBadge"></span></button>
     <button class="tab" role="tab" id="tabPlaces" aria-selected="false" aria-controls="panelPlaces"><span class="ni" aria-hidden="true">🏛</span>Lieux</button>
     <div class="nav-group" role="presentation">Bilans et contrôle</div>
@@ -636,6 +637,35 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <section class="card">
       <h2>Messages <span id="socCountAll"></span></h2>
       <ul class="org-list soc-list" id="socList"></ul>
+    </section>
+  </section>
+  <section class="panel" id="panelMedics" role="tabpanel" aria-labelledby="tabMedics" hidden>
+    <section class="card">
+      <h2>Équipes medic <span id="mdCount"></span></h2>
+      <p class="fine">Le mode medic donne aux équipes de street medics une carte privée : leurs positions, des points chauds, des barrages filtrants et des appels de renfort, vus seulement avec la clé d’une équipe. Rien n’est écrit sur le disque, et tu ne vois ici que des totaux, jamais les positions. Un·e <b>référent·e</b> peut inviter les équipes de sa ville, leur renvoyer une invitation si elles perdent leur accès, et les retirer.</p>
+      <p class="fine" id="mdStats"></p>
+      <form id="mdForm" class="row">
+        <label>Nom de l’équipe
+          <input id="mdLabel" maxlength="40" placeholder="ex. : Street medics Montpellier" required>
+        </label>
+        <label>Ville
+          <input id="mdCity" maxlength="40" placeholder="ex. : Montpellier">
+        </label>
+        <label class="check"><input type="checkbox" id="mdRef"> Référent·e de sa ville</label>
+        <button type="submit">Créer l’invitation</button>
+      </form>
+      <div class="newlink" id="mdLink" hidden>
+        <div><b id="mdLinkLabel"></b> : invitation à usage unique, valable jusqu’au <span id="mdLinkExp"></span>. À envoyer par une messagerie chiffrée (Signal), jamais publiquement.</div>
+        <div class="qr-invite" id="mdLinkQr"></div>
+        <code id="mdLinkUrl"></code>
+        <div class="row"><button type="button" id="mdLinkCopy">Copier le lien</button></div>
+      </div>
+      <ul class="org-list" id="mdList"></ul>
+    </section>
+    <section class="card">
+      <h2>Urgences vitales</h2>
+      <p class="fine">Un appel « urgence vitale » envoie une notification aux équipes dans ce rayon (les équipes dont le serveur ne connaît pas la zone sont prévenues aussi).</p>
+      <div class="controls"><label>Rayon (km)<input id="mdRadius" type="number" min="0.5" max="30" step="0.5" style="width:90px"></label><button type="button" id="mdRadiusSave">Enregistrer</button></div>
     </section>
   </section>
   <section class="panel" id="panelIdeas" role="tabpanel" aria-labelledby="tabIdeas" hidden>

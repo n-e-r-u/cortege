@@ -1,5 +1,5 @@
   // ---- Signaler ----
-  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew'];
+  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');

@@ -1393,7 +1393,7 @@
   $('#poiClose').onclick = () => closeSheets();
 
   // ---- Signaler ----
-  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew'];
+  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover'];
   const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
@@ -1924,16 +1924,118 @@
       try { print(); } catch { done(); }
     };
   }
+  // ---- Accès orga et medic : clés gardées sur ce téléphone, code de secours ----
+  // La clé est dans le stockage du navigateur, avec une copie dans sa base locale (un nettoyage partiel ne suffit pas à la perdre),
+  // et le stockage est demandé « persistant » (le navigateur ne l'efface pas quand la place manque).
+  // Elle n'est oubliée que si le serveur répond qu'elle n'existe plus (gone) ou si la personne quitte le mode elle-même.
+  const KEYS = { orga: 'cortege-orga', medic: 'cortege-medic' };
+  let medic = null, medicFull = false; // équipe medic de ce téléphone (voir 32-medic.js)
+  const keyGet = kind => { try { return localStorage.getItem(KEYS[kind]) || ''; } catch { return ''; } };
+  const keyDb = () => new Promise((res, rej) => {
+    const o = indexedDB.open('cortege-cles', 1);
+    o.onupgradeneeded = () => o.result.createObjectStore('k');
+    o.onsuccess = () => res(o.result); o.onerror = () => rej(o.error);
+  });
+  async function keyBackup(kind, val) {
+    try {
+      const db = await keyDb();
+      await new Promise((res, rej) => { const tx = db.transaction('k', 'readwrite'); if (val) tx.objectStore('k').put(val, kind); else tx.objectStore('k').delete(kind); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+      db.close();
+    } catch {}
+  }
+  function keySet(kind, val) {
+    try { if (val) localStorage.setItem(KEYS[kind], val); else localStorage.removeItem(KEYS[kind]); } catch {}
+    keyBackup(kind, val);
+    if (val) try { navigator.storage?.persist?.().catch(() => {}); } catch {}
+  }
+  // Au démarrage : une clé disparue du stockage mais encore dans la copie est remise ; une clé sans copie est copiée
+  const keysReady = (async () => {
+    try {
+      const db = await keyDb();
+      for (const kind of Object.keys(KEYS)) {
+        const v = await new Promise(res => { const r = db.transaction('k').objectStore('k').get(kind); r.onsuccess = () => res(r.result || ''); r.onerror = () => res(''); });
+        const cur = keyGet(kind);
+        if (!cur && v) try { localStorage.setItem(KEYS[kind], v); } catch {}
+        if (cur && cur !== v) keyBackup(kind, cur);
+      }
+      db.close();
+    } catch {}
+    if (keyGet('orga') || keyGet('medic')) try { navigator.storage?.persist?.().catch(() => {}); } catch {}
+  })();
+  // iPhone hors de l'appli installée : Safari efface les données d'un site resté 7 jours sans visite
+  const iosEvict = () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !(matchMedia('(display-mode: standalone)').matches || navigator.standalone === true);
+  const IOS_WARN = t('Sur iPhone, ajoute Cortège à l’écran d’accueil et ouvre ton accès depuis l’appli installée : sinon Safari peut effacer ton accès après 7 jours sans ouvrir le site.');
+
+  // Code de secours : montré une seule fois (à l'activation, à la demande, après une récupération)
+  let recAfter = null;
+  function showRec(code, kind, after) {
+    closeReport(); closeSheets(); recAfter = after || null;
+    $('#rcTitle').textContent = t('Ton code de secours');
+    const box = $('#rcBody'); box.textContent = '';
+    box.append(
+      el('p', { class: 'hint' }, kind === 'medic'
+        ? t('Si ce téléphone est perdu, saisi ou vidé, ce code redonne l’accès medic de ton équipe sur un autre téléphone, et coupe celui-ci.')
+        : t('Si ce téléphone est perdu, saisi ou vidé, ce code redonne ton accès orga sur un autre téléphone, et coupe celui-ci.')),
+      el('p', { class: 'rec-code', id: 'recCode' }, document.createTextNode(code)),
+      el('p', { class: 'access-warn' }, el('b', {}, t('Il ne sera plus jamais affiché.')), ' ',
+        t('Note-le maintenant, ailleurs que sur ce téléphone et que dans ton sac de manif : gestionnaire de mots de passe, papier chez toi, ou chez une personne de confiance. Ce code vaut ta clé : ne le donne à personne d’autre.')),
+      el('p', { class: 'fine' }, t('Pour t’en servir : Plus › « J’ai perdu mon accès », sur n’importe quel téléphone. Il ne sert qu’une fois : un nouveau code te sera donné à ce moment-là.')));
+    const copy = el('button', { class: 'secondary', type: 'button' }, t('Copier le code'));
+    copy.onclick = async () => { try { await navigator.clipboard.writeText(code); toast('Code copié'); } catch { toast('Copie impossible : note-le à la main'); } };
+    const print = el('button', { class: 'secondary', type: 'button' }, t('Imprimer'));
+    print.onclick = () => { document.body.classList.add('print-rec'); const done = () => { document.body.classList.remove('print-rec'); removeEventListener('afterprint', done); }; addEventListener('afterprint', done); print.blur(); window.print(); };
+    const ok = el('button', { class: 'install', type: 'button' }, t('C’est noté'));
+    ok.onclick = () => recClose();
+    box.append(el('div', { class: 'row2' }, copy, print), ok);
+    $('#sheetRec').hidden = false;
+  }
+  function recClose() { $('#sheetRec').hidden = true; $('#rcBody').textContent = ''; const f = recAfter; recAfter = null; if (f) f(); }
+  $('#rcClose').onclick = recClose;
+
+  // Accès perdu : le code de secours donne une nouvelle clé sur ce téléphone
+  function openRecover() {
+    closeReport(); closeSheets();
+    $('#rvTitle').textContent = t('Retrouver mon accès');
+    $('#rvHint').textContent = t('Saisis le code de secours reçu à l’activation de ton accès orga ou medic. Tu recevras un nouveau code juste après : celui-ci ne servira plus.');
+    $('#rvCodeLbl').textContent = t('Code de secours');
+    $('#rvCutLbl').textContent = t('Couper tous mes autres appareils (conseillé : téléphone perdu, volé ou saisi)');
+    $('#rvFine').textContent = t('Pas de code ? Demande une nouvelle invitation à la personne qui t’a fait entrer (orga marraine, référent·e medic) ou à l’admin.');
+    $('#rvGo').textContent = t('Retrouver mon accès');
+    $('#rvCode').value = ''; $('#rvCut').checked = true;
+    $('#sheetRecover').hidden = false;
+  }
+  $('#btnRecover').onclick = openRecover;
+  $('#rvClose').onclick = () => closeSheets();
+  $('#rvCode').addEventListener('input', e => {
+    const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+    e.target.value = (v.match(/.{1,4}/g) || []).join('-');
+  });
+  $('#rvForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const b = $('#rvGo'); b.disabled = true;
+    try {
+      const res = await fetch('/api/recover', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: $('#rvCode').value, cut: $('#rvCut').checked }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || t('Action impossible.'));
+      const kind = body.medic ? 'medic' : 'orga';
+      keySet(kind, body.key);
+      // La page est rechargée une fois le nouveau code noté : l'appli repart avec l'accès retrouvé
+      showRec(body.rec, kind, () => location.reload());
+      toast(t('Accès retrouvé : {who}', { who: body.label }));
+    } catch (err) { toast(err.message); }
+    b.disabled = false;
+  });
   // ---- Espace orga / legal team ----
   // Le lien orga ressemble à https://cortege.neru.tv/?orga=CLÉ : la clé est gardée sur ce téléphone et retirée de l'adresse.
-  const orgaKey = () => { try { return localStorage.getItem('cortege-orga') || ''; } catch { return ''; } };
+  const orgaKey = () => keyGet('orga');
   // Signalements faits par cette orga depuis ce téléphone : elle peut les prolonger ou les corriger
   const mine = new Set((() => { try { return JSON.parse(localStorage.getItem('cortege-mine') || '[]'); } catch { return []; } })());
   function mineAdd(id) { mine.add(id); try { localStorage.setItem('cortege-mine', JSON.stringify([...mine].slice(-200))); } catch {} }
   async function orgaFetch(url, opts = {}) {
     const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Orga-Key': orgaKey(), ...(opts.headers || {}) } });
     const body = await res.json().catch(() => ({}));
-    if (res.status === 403) { setOrga(null); try { localStorage.removeItem('cortege-orga'); } catch {} }
+    // La clé n'est oubliée que si le serveur dit qu'elle n'existe plus : une action interdite ou « trop d'essais » la laisse en place
+    if (res.status === 403 && body.gone) { setOrga(null); keySet('orga', null); }
     if (!res.ok) throw new Error(body.error || t('Action impossible.'));
     return body;
   }
@@ -1962,15 +2064,16 @@
     $('#agFine').hidden = !!o;
   }
   (async () => {
+    await keysReady;
     const params = new URLSearchParams(location.search);
     if (params.has('orga')) {
       // Un lien reçu ne remplace pas en silence la clé déjà enregistrée (sinon un lien piégé ferait publier sous un autre compte)
       const nk = params.get('orga'); let ok = true;
       try { const cur = localStorage.getItem('cortege-orga'); if (cur && cur !== nk) ok = confirm(t('Ce lien remplace la clé orga enregistrée sur ce téléphone par une autre. Continuer ?')); } catch {}
-      if (ok) try { localStorage.setItem('cortege-orga', nk); } catch {}
+      if (ok) keySet('orga', nk);
       history.replaceState(null, '', location.pathname);
     }
-    var justJoined = false;
+    var justJoined = false, joinRec = null;
     // Invitation par QR code : échangée une seule fois contre une clé, créée et gardée sur ce téléphone
     if (params.has('invite')) {
       const token = params.get('invite');
@@ -1979,7 +2082,8 @@
         const res = await fetch('/api/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) { toast(body.error || 'Invitation impossible.'); }
-        else { try { localStorage.setItem('cortege-orga', body.key); } catch {} toast(body.device ? t('Appareil ajouté à l’espace orga {who}', { who: body.label }) : t('Bienvenue {who} : ton accès orga est activé sur ce téléphone', { who: body.label })); justJoined = !body.device; }
+        else if (body.medic) { keySet('medic', body.key); if (body.rec) showRec(body.rec, 'medic'); else toast(body.device ? t('Appareil ajouté à l’équipe medic {who}', { who: body.label }) : t('Bienvenue {who} : ton accès medic est activé sur ce téléphone', { who: body.label })); medicInit(); }
+        else { keySet('orga', body.key); toast(body.device ? t('Appareil ajouté à l’espace orga {who}', { who: body.label }) : t('Bienvenue {who} : ton accès orga est activé sur ce téléphone', { who: body.label })); justJoined = !body.device; if (body.rec) joinRec = body.rec; }
       } catch { toast('Pas de réseau : rouvre l’invitation quand ça capte.'); }
     }
     if (!orgaKey()) return;
@@ -1987,7 +2091,11 @@
       const who = await orgaFetch('/api/orga/me'); setOrga(who);
       // Premier accès : on ouvre l'espace orga pour que l'avertissement sur la perte d'accès soit lu
       // Première ouverture : onglet « Mon orga », pour voir tout de suite comment ne pas perdre l'accès
-      if (justJoined) { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} setTimeout(() => $('#btnOrga').click(), 600); } else toast(t('Mode orga : {who}', { who: who.label }));
+      // Le code de secours est montré tout de suite, une seule fois ; l'espace orga s'ouvre quand il est noté
+      const openSpace = () => { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} setTimeout(() => $('#btnOrga').click(), 300); };
+      if (justJoined && joinRec) showRec(joinRec, 'orga', openSpace);
+      else if (justJoined) openSpace();
+      else toast(t('Mode orga : {who}', { who: who.label }));
     }
     catch (e) { toast(e.message); }
   })();
@@ -2049,7 +2157,18 @@
     $('#orgaRecover').textContent = me.sponsor
       ? t('Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien.', { who: me.sponsor })
       : t('Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.');
-    $('#orgaAccessWarn').hidden = !!me.admin;
+    // Avertissement « un seul appareil » : tant qu'il n'y a ni deuxième appareil ni code de secours
+    $('#orgaAccessWarn').hidden = !!me.admin || !me.canAddDevice || me.rec || (me.devices || 1) > 1;
+    // Code de secours
+    $('#btnOrgaRec').hidden = !me.canAddDevice; $('#btnOrgaRec').textContent = me.rec ? t('Créer un nouveau code de secours') : t('Créer mon code de secours');
+    $('#orgaRecState').textContent = !me.canAddDevice ? t('Ton accès est défini dans les réglages du serveur : pas de code de secours.')
+      : me.rec ? t('Tu as un code de secours. Si tu l’as égaré, crées-en un nouveau : l’ancien ne servira plus.')
+        : t('Pas encore de code de secours. Il te redonne ton accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, sans dépendre de personne.');
+    $('#orgaRecAt').hidden = !me.recAt;
+    if (me.recAt) $('#orgaRecAt').textContent = t('⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas toi, crée un nouveau code tout de suite et préviens l’admin.', { date: fmtExp(me.recAt) });
+    $('#orgaEveWarn').hidden = !me.warn;
+    if (me.warn) $('#orgaEveWarn').textContent = t('Journée de mobilisation toute proche : ton accès n’a ni code de secours ni deuxième appareil. Crée ton code maintenant.');
+    $('#orgaIosWarn').hidden = !iosEvict(); $('#orgaIosWarn').textContent = IOS_WARN;
     $('#orgaSponsored').hidden = !me.sponsored;
     if (me.sponsored) $('#orgaSponsored').textContent = `Orga parrainée par ${me.sponsor || 'une autre orga'} : surveillance renforcée jusqu’à ta confirmation. « Vérifier » compte comme une confirmation forte (le point reste contestable), 5 retraits par 5 minutes et 3 annonces par jour au maximum. Après 7 jours et 10 actions sans incident, ${me.sponsor || 'ta marraine'} ou l’admin pourra te confirmer.`;
     // Appareils
@@ -2103,6 +2222,10 @@
   });
   $('#btnAddDevice').onclick = async () => {
     try { const r = await orgaFetch('/api/orga/device', { method: 'POST', body: '{}' }); showInviteOut('Ajouter un appareil', r.invite, r.exp, 'Scanne ce QR code avec l’autre appareil (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à ton espace orga.'); }
+    catch (e) { toast(e.message); }
+  };
+  $('#btnOrgaRec').onclick = async () => {
+    try { const r = await orgaFetch('/api/orga/recovery', { method: 'POST', body: '{}' }); showRec(r.rec, 'orga', () => $('#btnOrga').click()); }
     catch (e) { toast(e.message); }
   };
   $('#orClose').onclick = () => closeSheets();
@@ -2236,7 +2359,7 @@
   $('#btnOrgaLogout').onclick = () => {
     const b = $('#btnOrgaLogout');
     if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = t('Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)'); setTimeout(() => { delete b.dataset.armed; b.textContent = t('Quitter le mode orga sur ce téléphone'); }, 6000); return; }
-    try { localStorage.removeItem('cortege-orga'); } catch {} setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone');
+    keySet('orga', null); setOrga(null); closeSheets(); toast('Mode orga désactivé sur ce téléphone');
   };
 
   // ---- Agenda : manifs, blocus, rassemblements, AG ----
@@ -2709,7 +2832,7 @@
   };
   if (pushOK) navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
     if (sub && Notification.permission === 'granted') {
-      pushSub = sub; syncSwitches();
+      pushSub = sub; syncSwitches(); mdPush();
       // Réinscription au plus deux fois par jour (le serveur a pu tout effacer entre-temps)
       let at = 0; try { at = +localStorage.getItem('cortege-push-at') || 0; } catch {}
       pushSend(sub, Date.now() - at > 12 * 3600e3).then(() => { try { localStorage.setItem('cortege-push-at', String(Date.now())); } catch {} }).catch(() => {});
@@ -2720,7 +2843,7 @@
     if (await Notification.requestPermission() !== 'granted') throw new Error(t('Notifications refusées : autorise-les dans les réglages du téléphone.'));
     const reg = await navigator.serviceWorker.ready;
     pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(cfg.pushKey) });
-    await pushSend(pushSub, true);
+    await pushSend(pushSub, true); mdPush();
   }
   async function pushDisable() {
     const sub = pushSub; pushSub = null; pushZone = null;
@@ -2918,6 +3041,7 @@
     try { sessionStorage.clear(); } catch {}
     // Attend la fin de la suppression (bloquée tant qu'une connexion reste ouverte : 1,5 s au plus avant de quitter la page)
     try { await Promise.race([new Promise(r => { const d = indexedDB.deleteDatabase('cortege'); d.onsuccess = d.onerror = d.onblocked = r; }), new Promise(r => setTimeout(r, 1500))]); } catch {}
+    try { await Promise.race([new Promise(r => { const d = indexedDB.deleteDatabase('cortege-cles'); d.onsuccess = d.onerror = d.onblocked = r; }), new Promise(r => setTimeout(r, 800))]); } catch {}
     try { for (const k of await caches.keys()) await caches.delete(k); } catch {}
     try { for (const r of (await navigator.serviceWorker?.getRegistrations?.()) || []) await r.unregister(); } catch {}
     location.replace('about:blank');
@@ -3334,4 +3458,281 @@
     };
     $('#idClose').onclick = () => closeSheets();
   }
+  // ---- Mode medic : écran des équipes de street medics ----
+  // Une carte privée, vue seulement avec la clé de l'équipe : positions des équipes, points chauds, barrages filtrants, renforts.
+  // Quatre gros boutons, rien d'autre. Les infos sont ajoutées et retirées à la main par les équipes ; le serveur ne les garde
+  // qu'en mémoire. L'écran se met à jour dès qu'une équipe change quelque chose (attente longue, rien n'est publié).
+  const MD = { pos: ['⛑️', t('Équipe medic')], hot: ['🔥', t('Point chaud')], block: ['🚧', t('Barrage filtrant')], help: ['🆘', t('Renfort demandé')] };
+  const MD_LVL = { duo: t('Besoin d’un binôme'), vital: t('Urgence vitale / évacuation'), gear: t('Besoin de matériel') };
+  const MD_DUR = { 30: '30 min', 60: '1 h', 120: '2 h', 240: '4 h' };
+  const mdLayer = L.layerGroup(), mdSeen = new Set();
+  let mdItems = [], mdVer = 0, mdAbort = null, mdShare = null, mdSel = null, mdFocus = null, mdFirst = true, mdMe = null;
+  let mdShowPub = false, mdOpts = { dur: 120, pub: false };
+  try { mdShowPub = localStorage.getItem('cortege-medic-pub') === '1'; medicFull = localStorage.getItem('cortege-medic-full') === '1'; mdOpts = { ...mdOpts, ...JSON.parse(localStorage.getItem('cortege-medic-opts') || '{}') }; } catch {}
+  { const m = location.search.match(/[?&]medic=([\w-]{1,16})/); if (m) { mdFocus = m[1]; history.replaceState(null, '', location.pathname); } }
+
+  async function mdFetch(url, opts = {}) {
+    const res = await fetch(url, { ...opts, cache: 'no-store', headers: { 'Content-Type': 'application/json', 'X-Medic-Key': keyGet('medic'), ...(opts.headers || {}) } });
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 403 && body.gone) { keySet('medic', null); setMedic(null); }
+    if (!res.ok) throw Object.assign(new Error(body.error || t('Action impossible.')), { status: res.status, body });
+    return body;
+  }
+  // Entrée et sortie de l'écran medic. « Vue complète » : Cortège habituel, avec un bouton pour revenir à l'écran medic.
+  function mdScreen() {
+    const on = !!medic && !medicFull;
+    document.body.classList.toggle('medic', on);
+    $('#medicBack').hidden = !medic || on;
+    if (on && document.body.classList.contains('manif')) setManif(false);
+    if (medic) { if (!map.hasLayer(mdLayer)) mdLayer.addTo(map); } else map.removeLayer(mdLayer);
+    // Signalements publics : masqués sur l'écran medic, sauf demande
+    const pub = !on || mdShowPub;
+    if (pub && !map.hasLayer(layer)) map.addLayer(layer); else if (!pub && map.hasLayer(layer)) map.removeLayer(layer);
+    $('#medicPub').setAttribute('aria-pressed', String(mdShowPub));
+    if (on) { closeReport(); if (watchId == null) locate(); }
+    setTimeout(() => map.invalidateSize(), 50);
+  }
+  function setMedic(o) {
+    medic = o;
+    if (!o) { mdAbort?.abort(); mdItems = []; mdVer = 0; mdDraw(); mdShareStop(false); closeSheets(); }
+    else { $('#medicTitle').textContent = 'MEDIC · ' + o.label; mdLoop(); mdPush(); mdShareResume(); }
+    mdScreen();
+  }
+  function mdFullView(full) { medicFull = full; try { localStorage.setItem('cortege-medic-full', full ? '1' : '0'); } catch {} closeSheets(); mdScreen(); }
+
+  // ---- Carte medic ----
+  async function mdLoop() {
+    if (mdAbort) return;
+    while (medic && !document.hidden) {
+      mdAbort = new AbortController();
+      try {
+        const t0 = Date.now(), s = await mdFetch(`/api/medic/state?v=${mdVer}&wait=1`, { signal: mdAbort.signal });
+        const same = s.v === mdVer;
+        mdVer = s.v; mdItems = s.items; $('#medicTop').dataset.state = 'live'; mdDraw();
+        // Réponse immédiate sans rien de neuf (serveur chargé) : on ne redemande pas en boucle
+        if (same && Date.now() - t0 < 1500) await new Promise(r => setTimeout(r, 3000));
+      } catch (e) {
+        if (e.name === 'AbortError' || !medic) break;
+        $('#medicTop').dataset.state = 'offline';
+        await new Promise(r => setTimeout(r, 4000));
+      }
+    }
+    mdAbort = null;
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) mdAbort?.abort(); else if (medic) setTimeout(mdLoop, 50); });
+  function mdDraw() {
+    mdLayer.clearLayers();
+    for (const x of mdItems) {
+      const pin = el('div', { class: `mpin k-${x.k}${x.lvl ? ' l-' + x.lvl : ''}${x.mine ? ' mine' : ''}` }, el('span', { 'aria-hidden': 'true' }, document.createTextNode(MD[x.k][0])));
+      if (x.k === 'pos') pin.append(el('i', {}, document.createTextNode(x.team)));
+      if (x.k === 'help' && x.go.length) pin.append(el('em', {}, document.createTextNode('→ ' + x.go.length)));
+      const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: 'mpin-wrap', html: pin, iconSize: [44, 44], iconAnchor: [22, 22] }), keyboard: true, title: MD[x.k][1] + ' · ' + x.team, zIndexOffset: x.k === 'help' ? 2000 : 1000 });
+      m.on('click', () => mdCard(x.id));
+      mdLayer.addLayer(m);
+      // Nouvelle urgence vitale d'une autre équipe : vibration et message, même si la notification n'est pas activée
+      if (!mdSeen.has(x.id)) {
+        mdSeen.add(x.id);
+        if (!mdFirst && x.k === 'help' && !x.mine) { try { navigator.vibrate?.(x.lvl === 'vital' ? [400, 100, 400, 100, 400] : [200, 100, 200]); } catch {} toast(t('🆘 Renfort demandé par {team}', { team: x.team })); }
+      }
+    }
+    mdFirst = false;
+    $('#mdHelp').dataset.n = String(mdItems.filter(x => x.k === 'help').length || '');
+    if (mdSel) mdCard(mdSel, true);
+    if (mdFocus) { const x = mdItems.find(i => i.id === mdFocus); mdFocus = null; if (x) { setFollow(false); map.setView([x.lat, x.lng], Math.max(map.getZoom(), 16)); mdCard(x.id); } }
+  }
+  // Fiche d'une info : qui l'a posée, depuis quand, et les gestes possibles
+  function mdCard(id, keep) {
+    const x = mdItems.find(i => i.id === id), card = $('#medicCard');
+    if (!x) { if (mdSel === id) { mdSel = null; card.hidden = true; } return; }
+    mdSel = id;
+    $('#mcTitle').textContent = MD[x.k][0] + ' ' + (x.k === 'help' ? MD_LVL[x.lvl] : x.k === 'pos' ? x.team : MD[x.k][1]);
+    const dist = me ? ' · ' + fmtDist(map.distance(me, [x.lat, x.lng])) : '';
+    $('#mcSub').textContent = (x.k === 'pos' ? (x.pub ? t('Position partagée, visible aussi du public') : t('Position partagée entre équipes')) : t('Posé par {team}', { team: x.team })) + ' · ' + ago(x.t) + dist
+      + (x.k === 'help' ? ' · ' + (x.go.length ? t('En route : {teams}', { teams: x.go.join(', ') }) : t('Personne en route pour l’instant')) : '');
+    const acts = $('#mcActs'); acts.textContent = '';
+    const act = (label, cls, fn) => { const b = el('button', { type: 'button', class: cls }, label); b.onclick = async () => { b.disabled = true; try { await fn(); } catch (e) { toast(e.message); } b.disabled = false; }; acts.append(b); };
+    if (x.k === 'help') {
+      if (!x.mine) act(x.iGo ? t('Je n’y vais plus') : t('J’y vais'), x.iGo ? 'secondary' : 'install', () => mdFetch(`/api/medic/items/${x.id}/go`, { method: 'POST', body: JSON.stringify({ on: !x.iGo }) }));
+      act(t('Réglé'), 'secondary', async () => { await mdFetch('/api/medic/items/' + x.id, { method: 'DELETE' }); mdClose(); toast('Appel retiré'); });
+    } else if (x.k === 'pos') {
+      if (x.mine) act(t('Arrêter le partage'), 'secondary', async () => { await mdShareStop(true); mdClose(); });
+    } else act(t('Retirer'), 'secondary', async () => { await mdFetch('/api/medic/items/' + x.id, { method: 'DELETE' }); mdClose(); toast('Retiré'); });
+    card.hidden = false;
+    if (!keep) acts.querySelector('button')?.focus({ preventScroll: true });
+  }
+  function mdClose() { mdSel = null; $('#medicCard').hidden = true; }
+  $('#mcClose').onclick = mdClose;
+  map.on('click', () => { if (mdSel) mdClose(); });
+
+  // ---- Les quatre boutons ----
+  const mdFresh = () => me && Date.now() - meAt < 2 * MIN;
+  async function mdAdd(k, lvl) {
+    // Point chaud et barrage : à l'endroit du viseur. Renfort : là où est l'équipe (position du téléphone si elle est récente).
+    const c = map.getCenter(), at = k === 'help' && mdFresh() ? me : [c.lat, c.lng];
+    try {
+      const x = await mdFetch('/api/medic/items', { method: 'POST', body: JSON.stringify({ k, lvl, lat: at[0], lng: at[1] }) });
+      mdSeen.add(x.id); closeSheets();
+      toast(k === 'help' ? t('Renfort demandé : les autres équipes sont prévenues') : k === 'hot' ? t('Point chaud ajouté') : t('Barrage filtrant ajouté'));
+    } catch (e) { toast(e.message); }
+  }
+  $('#mdHot').onclick = () => mdAdd('hot');
+  $('#mdBlock').onclick = () => mdAdd('block');
+  $('#mdHelp').onclick = () => {
+    closeSheets(); mdClose();
+    $('#mhTitle').textContent = t('Demander du renfort');
+    const box = $('#mhBody'); box.textContent = '';
+    box.append(el('p', { class: 'hint' }, mdFresh() ? t('L’appel part de ta position.') : t('Position du téléphone inconnue : l’appel part de l’endroit du viseur, au milieu de la carte.')));
+    for (const [lvl, label] of Object.entries(MD_LVL)) { const b = el('button', { type: 'button', class: 'mh-btn l-' + lvl }, label); b.onclick = () => mdAdd('help', lvl); box.append(b); }
+    box.append(el('p', { class: 'fine' }, t('Seuls le lieu et le niveau sont envoyés aux autres équipes. Rien sur la personne. « Urgence vitale » envoie aussi une notification aux équipes proches. En cas d’urgence vitale, appelle d’abord le 15 ou le 112.')));
+    $('#sheetMedicHelp').hidden = false;
+  };
+  $('#mhClose').onclick = () => closeSheets();
+
+  // ---- « Nous sommes ici » : position de l'équipe, envoyée toutes les 20 s tant que l'appli est ouverte ----
+  function mdShareUI() {
+    const on = !!mdShare; $('#mdPos').classList.toggle('on', on);
+    $('#mdPosLbl').textContent = on ? t('Position partagée') : t('Nous sommes ici');
+  }
+  async function mdShareSend(start) {
+    if (!mdShare || !me) return;
+    try { const r = await mdFetch('/api/medic/pos', { method: 'POST', body: JSON.stringify({ lat: me[0], lng: me[1], ...(start ? { start: true, dur: mdOpts.dur, pub: mdOpts.pub } : {}) }) }); mdShare.until = r.until; mdShareSave(); }
+    catch (e) { if (e.status === 410) { mdShareStop(false); toast(e.message); } else if (start) { mdShareStop(false); toast(e.message); } }
+  }
+  const mdShareSave = () => { try { if (mdShare) localStorage.setItem('cortege-medic-pos', JSON.stringify({ until: mdShare.until })); else localStorage.removeItem('cortege-medic-pos'); } catch {} };
+  async function mdShareStart() {
+    if (mdShare) return;
+    if (!me) { if (watchId == null) locate(); toast('Position du téléphone inconnue : autorise la localisation, puis réessaie.'); return; }
+    mdShare = { until: Date.now() + mdOpts.dur * MIN, timer: setInterval(() => { if (mdShare && Date.now() >= mdShare.until) mdShareStop(false); else mdShareSend(false); }, 20_000) };
+    mdShareUI(); await mdShareSend(true);
+    if (mdShare) toast(mdOpts.pub ? t('Position partagée pendant {d}, visible aussi du public', { d: MD_DUR[mdOpts.dur] }) : t('Position partagée pendant {d}, entre équipes medic', { d: MD_DUR[mdOpts.dur] }));
+  }
+  async function mdShareStop(tell) {
+    const had = mdShare; if (had) clearInterval(had.timer);
+    mdShare = null; mdShareSave(); mdShareUI();
+    if (had && tell && medic) { try { await mdFetch('/api/medic/pos', { method: 'DELETE', body: '{}' }); } catch {} }
+  }
+  // Après un rechargement de la page : le partage reprend sans rien redémarrer (le serveur refuse s'il s'est arrêté entre-temps)
+  function mdShareResume() {
+    if (mdShare) return;
+    let s = null; try { s = JSON.parse(localStorage.getItem('cortege-medic-pos') || 'null'); } catch {}
+    if (!s || !(s.until > Date.now())) return mdShareSave();
+    mdShare = { until: s.until, timer: setInterval(() => { if (mdShare && Date.now() >= mdShare.until) mdShareStop(false); else mdShareSend(false); }, 20_000) };
+    mdShareUI(); if (watchId == null) locate(); setTimeout(() => mdShareSend(false), 3000);
+  }
+  $('#mdPos').onclick = () => { if (mdShare) openMedic(); else mdShareStart(); };
+
+  // ---- Notifications : les urgences vitales des autres équipes (abonnement gardé en mémoire par le serveur) ----
+  function mdPush() {
+    if (!medic || !pushSub) return;
+    const c = map.getCenter(), at = me || [c.lat, c.lng];
+    mdFetch('/api/medic/push', { method: 'POST', body: JSON.stringify({ sub: pushSub.toJSON(), lat: at[0], lng: at[1], lang: I18N.lang }) }).catch(() => {});
+  }
+
+  // ---- Feuille de l'équipe : position, carte, alertes, appareils, code de secours, référent·e ----
+  async function openMedic() {
+    closeReport(); closeSheets(); mdClose();
+    $('#mdTitle').textContent = '⛑️ ' + (medic ? medic.label : '');
+    const box = $('#mdBody'); box.textContent = '';
+    $('#sheetMedic').hidden = false;
+    try { mdMe = await mdFetch('/api/medic/me'); } catch (e) { box.append(el('p', { class: 'hint' }, document.createTextNode(e.message))); return; }
+    const h3 = x => el('h3', { class: 'group-title' }, x), hint = x => el('p', { class: 'hint' }, x);
+    const sw = (label, sub, on, fn) => { const i = el('input', { type: 'checkbox' }); i.checked = on; i.onchange = () => fn(i.checked);
+      return el('label', { class: 'switch' }, i, el('span', { class: 'switch-txt' }, el('b', {}, label), el('span', {}, sub))); };
+    const saveOpts = () => { try { localStorage.setItem('cortege-medic-opts', JSON.stringify(mdOpts)); } catch {} };
+    // Position
+    const dur = el('select', { 'aria-label': t('Durée du partage') }); for (const d of mdMe.durs) dur.append(new Option(MD_DUR[d], d)); dur.value = String(mdOpts.dur);
+    dur.onchange = () => { mdOpts.dur = Number(dur.value); saveOpts(); }; dur.disabled = !!mdShare;
+    const pubSw = sw(t('Visible aussi du public'), t('Un ⛑️ au nom de l’équipe sur la carte de tout le monde, pour que les personnes blessées vous trouvent.'), mdOpts.pub, v => { mdOpts.pub = v; saveOpts(); });
+    pubSw.querySelector('input').disabled = !!mdShare;
+    const go = el('button', { type: 'button', class: mdShare ? 'secondary' : 'install' }, mdShare ? t('Arrêter le partage') : t('Partager notre position'));
+    go.onclick = async () => { if (mdShare) await mdShareStop(true); else await mdShareStart(); openMedic(); };
+    box.append(h3(t('Notre position')), hint(mdShare ? t('Position partagée en ce moment. Elle s’arrête seule à la fin de la durée, après 3 minutes sans réseau, ou si tu t’éloignes de plus de 2 km.') : t('Les autres équipes voient où vous êtes. Le partage s’arrête seul, et rien n’est gardé ensuite.')),
+      el('label', { class: 'note-label' }, t('Pendant'), dur), pubSw, go);
+    // Carte
+    box.append(h3(t('Carte')), sw(t('Afficher aussi les signalements publics'), t('CRS, lacrymo, charges… signalés par tout le monde sur Cortège.'), mdShowPub, v => { mdShowPub = v; try { localStorage.setItem('cortege-medic-pub', v ? '1' : '0'); } catch {} mdScreen(); }));
+    // Alertes
+    box.append(h3(t('Alertes')), hint(pushSub ? t('Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée.', { km: String(mdMe.radiusKm).replace('.', ',') })
+      : t('Notifications pas encore activées sur ce téléphone : sans elles, tu ne vois les appels de renfort que si l’appli est ouverte.')));
+    if (!pushSub) { const b = el('button', { type: 'button', class: 'secondary' }, t('Activer les alertes')); b.onclick = () => $('#btnNotif').click(); box.append(b); }
+    // Appareils
+    const out = el('div', { class: 'invite-out', hidden: '' });
+    const showLink = (title, r, fine) => {
+      const url = location.origin + '/?invite=' + r.invite, qr = el('div', { class: 'qr' });
+      out.textContent = ''; out.hidden = false;
+      const copy = el('button', { type: 'button', class: 'secondary' }, t('Copier le lien')); copy.onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Lien copié'); } catch { toast(url); } };
+      out.append(el('p', { class: 'hint' }, el('b', {}, document.createTextNode(title)), ' ', t('(valable jusqu’au {date}, une seule fois)', { date: fmtExp(r.exp) })), qr, el('p', { class: 'invite-url' }, document.createTextNode(url)), copy, el('p', { class: 'fine' }, fine));
+      qrSvg(url, 6).then(svg => { qr.innerHTML = svg; }).catch(() => {});
+      out.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    const addDev = el('button', { type: 'button', class: 'secondary' }, t('Ajouter un appareil'));
+    addDev.onclick = async () => { try { showLink(t('Ajouter un appareil'), await mdFetch('/api/medic/device', { method: 'POST', body: '{}' }), t('Scanne ce QR code avec l’autre téléphone de l’équipe (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à la carte medic.')); } catch (e) { toast(e.message); } };
+    box.append(h3(t('Appareils de l’équipe')), hint(t('{n} appareil(s) ont l’accès de cette équipe (5 au plus).', { n: mdMe.devices })), addDev);
+    // Code de secours
+    const rec = el('button', { type: 'button', class: 'secondary' }, mdMe.rec ? t('Créer un nouveau code de secours') : t('Créer mon code de secours'));
+    rec.onclick = async () => { try { const r = await mdFetch('/api/medic/recovery', { method: 'POST', body: '{}' }); showRec(r.rec, 'medic', openMedic); } catch (e) { toast(e.message); } };
+    box.append(h3(t('Code de secours')), hint(mdMe.rec ? t('L’équipe a un code de secours. S’il est égaré, crées-en un nouveau : l’ancien ne servira plus.') : t('Pas encore de code de secours. Il redonne l’accès sur un autre téléphone si celui-ci est perdu, saisi ou vidé, et coupe le téléphone perdu.')));
+    if (mdMe.recAt) box.append(el('p', { class: 'hint trial-note' }, t('⚠ Accès récupéré avec le code de secours le {date}. Si ce n’est pas ton équipe, crée un nouveau code tout de suite et préviens ton ou ta référent·e.', { date: fmtExp(mdMe.recAt) })));
+    if (mdMe.warn) box.append(el('p', { class: 'hint trial-note' }, t('Journée de mobilisation toute proche : ton accès n’a ni code de secours ni deuxième appareil. Crée ton code maintenant.')));
+    box.append(rec);
+    if (iosEvict()) box.append(hint(IOS_WARN));
+    box.append(out);
+    // Référent·e : les équipes de sa ville
+    if (mdMe.ref) {
+      const list = el('ul', { class: 'org-list' }), name = el('input', { maxlength: '40', placeholder: t('ex. : Medics Sud, binôme 3'), 'aria-label': t('Nom de l’équipe') });
+      const inv = el('button', { type: 'button', class: 'secondary' }, t('Inviter une équipe'));
+      const load = async () => {
+        list.textContent = '';
+        let d; try { d = await mdFetch('/api/medic/teams'); } catch { return; }
+        for (const o of d.teams) {
+          const again = el('button', { type: 'button', class: 'ghost' }, t('Réinviter')), del = el('button', { type: 'button', class: 'ghost danger-link' }, t('Retirer'));
+          again.onclick = async () => { try { showLink(t('Nouvelle invitation pour {who}', { who: o.label }), await mdFetch(`/api/medic/teams/${o.id}/invite`, { method: 'POST', body: '{}' }), t('L’ancien accès de cette équipe est coupé. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.')); load(); } catch (e) { toast(e.message); } };
+          del.onclick = async () => { if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = t('Confirmer le retrait'); setTimeout(() => { delete del.dataset.armed; del.textContent = t('Retirer'); }, 4000); return; }
+            try { await mdFetch('/api/medic/teams/' + o.id, { method: 'DELETE', body: '{}' }); load(); } catch (e) { toast(e.message); } };
+          list.append(el('li', {}, el('div', { class: 't' }, el('div', { class: 'l' }, document.createTextNode(o.label)), el('div', { class: 's' }, o.active ? t('Active · {n} appareil(s)', { n: o.devices }) : o.invite ? t('Invitation en attente') : t('Invitation expirée'))), again, del));
+        }
+      };
+      inv.onclick = async () => {
+        try { const r = await mdFetch('/api/medic/teams', { method: 'POST', body: JSON.stringify({ label: name.value }) }); name.value = '';
+          showLink(t('Invitation pour {who}', { who: r.label }), r, t('L’équipe scanne ce QR code ou ouvre le lien sur son téléphone. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.')); load(); }
+        catch (e) { toast(e.message); }
+      };
+      box.append(h3(t('Référent·e : les équipes que tu as fait entrer')), hint(t('Tu peux inviter des équipes, leur renvoyer une invitation si elles ont perdu leur accès, et les retirer.')), name, inv, list, out);
+      load();
+    }
+    // Vue complète, sortie
+    const full = el('button', { type: 'button', class: 'secondary' }, t('Vue complète de Cortège')); full.onclick = () => mdFullView(true);
+    const quit = el('button', { type: 'button', class: 'ghost danger-link' }, t('Quitter le mode medic sur ce téléphone'));
+    quit.onclick = async () => {
+      if (!quit.dataset.armed) { quit.dataset.armed = '1'; quit.textContent = t('Confirmer : l’accès medic sera retiré de ce téléphone'); setTimeout(() => { delete quit.dataset.armed; quit.textContent = t('Quitter le mode medic sur ce téléphone'); }, 5000); return; }
+      await mdShareStop(true);
+      if (pushSub) { try { await mdFetch('/api/medic/push', { method: 'DELETE', body: JSON.stringify({ endpoint: pushSub.endpoint }) }); } catch {} }
+      keySet('medic', null); setMedic(null); toast('Mode medic désactivé sur ce téléphone');
+    };
+    box.append(h3(t('Cortège')), full, quit);
+  }
+  $('#medicPill').onclick = openMedic;
+  $('#mdClose').onclick = () => closeSheets();
+  $('#medicExit').onclick = () => mdFullView(true);
+  $('#medicBack').onclick = () => mdFullView(false);
+  $('#medicPub').onclick = () => { mdShowPub = !mdShowPub; try { localStorage.setItem('cortege-medic-pub', mdShowPub ? '1' : '0'); } catch {} mdScreen(); toast(mdShowPub ? t('Signalements publics affichés') : t('Signalements publics masqués')); };
+  // Textes fixes de l'écran
+  $('#medicExit').textContent = t('Vue complète'); $('#medicBack').textContent = '⛑️ ' + t('Écran medic');
+  $('#medicPub').textContent = '👁'; $('#medicPub').title = t('Afficher ou masquer les signalements publics'); $('#medicPub').setAttribute('aria-label', t('Afficher ou masquer les signalements publics'));
+  $('#medicPill').title = t('Notre équipe : position, alertes, appareils');
+  $('#mdHotLbl').textContent = t('Point chaud'); $('#mdBlockLbl').textContent = t('Barrage filtrant'); $('#mdHelpLbl').textContent = t('Renfort');
+  mdShareUI();
+  // Notification ouverte pendant que l'appli tourne : on va à l'appel
+  navigator.serviceWorker?.addEventListener('message', e => {
+    const m = e.data && e.data.type === 'goto' && String(e.data.url || '').match(/[?&]medic=([\w-]{1,16})/);
+    if (m && medic) { mdFocus = m[1]; if (medicFull) mdFullView(false); mdDraw(); }
+  });
+  // Démarrage (et juste après une invitation) : la clé medic gardée sur ce téléphone ouvre l'écran.
+  // Sans réseau, l'écran s'ouvre quand même avec le nom gardé : la carte se remplira dès que ça capte.
+  async function medicInit() {
+    if (!keyGet('medic')) return;
+    let label = '…'; try { label = localStorage.getItem('cortege-medic-label') || label; } catch {}
+    try { const who = await mdFetch('/api/medic/me'); mdMe = who; try { localStorage.setItem('cortege-medic-label', who.label); } catch {} setMedic({ label: who.label, ref: who.ref }); }
+    catch (e) { if (keyGet('medic')) setMedic({ label }); }
+  }
+  keysReady.then(medicInit);
 })();

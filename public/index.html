@@ -66,6 +66,26 @@
   <button type="button" class="manif-exit" id="manifExit">Quitter</button>
 </div>
 
+<!-- Mode medic : écran des équipes de street medics (textes posés par le script, client/app/32-medic.js) -->
+<div class="medic-top" id="medicTop" data-state="connecting">
+  <button type="button" class="medic-pill" id="medicPill"><span class="dot" aria-hidden="true"></span><span id="medicTitle">MEDIC</span></button>
+  <button type="button" class="medic-pub" id="medicPub" aria-pressed="false"></button>
+  <button type="button" class="manif-exit" id="medicExit"></button>
+</div>
+<div class="medic-aim" id="medicAim" aria-hidden="true"></div>
+<div class="medic-card" id="medicCard" hidden role="dialog" aria-labelledby="mcTitle">
+  <div class="mc-head"><b id="mcTitle"></b><button class="x" id="mcClose" aria-label="Fermer">×</button></div>
+  <p class="mc-sub" id="mcSub"></p>
+  <div class="mc-acts" id="mcActs"></div>
+</div>
+<div class="medic-bar" id="medicBar">
+  <button type="button" class="mdb mdb-pos" id="mdPos"><span aria-hidden="true">📍</span><b id="mdPosLbl"></b></button>
+  <button type="button" class="mdb mdb-hot" id="mdHot"><span aria-hidden="true">🔥</span><b id="mdHotLbl"></b></button>
+  <button type="button" class="mdb mdb-block" id="mdBlock"><span aria-hidden="true">🚧</span><b id="mdBlockLbl"></b></button>
+  <button type="button" class="mdb mdb-help" id="mdHelp"><span aria-hidden="true">🆘</span><b id="mdHelpLbl"></b></button>
+</div>
+<button type="button" class="medic-back" id="medicBack" hidden></button>
+
 <div class="overlays">
   <div class="alert" id="alert" hidden role="alert"></div>
   <div class="net-bar" id="netBar" hidden role="status"></div>
@@ -141,6 +161,30 @@
     <span>Droits</span>
   </button>
 </div>
+
+<section class="sheet" id="sheetMedic" hidden aria-labelledby="mdTitle">
+  <div class="sheet-head"><h2 id="mdTitle"></h2><button class="x" id="mdClose" aria-label="Fermer">×</button></div>
+  <div id="mdBody" class="orga-form"></div>
+</section>
+<section class="sheet" id="sheetMedicHelp" hidden aria-labelledby="mhTitle">
+  <div class="sheet-head"><h2 id="mhTitle"></h2><button class="x" id="mhClose" aria-label="Fermer">×</button></div>
+  <div id="mhBody"></div>
+</section>
+<section class="sheet" id="sheetRec" hidden aria-labelledby="rcTitle">
+  <div class="sheet-head"><h2 id="rcTitle"></h2><button class="x" id="rcClose" aria-label="Fermer">×</button></div>
+  <div id="rcBody" class="orga-form"></div>
+</section>
+<section class="sheet" id="sheetRecover" hidden aria-labelledby="rvTitle">
+  <div class="sheet-head"><h2 id="rvTitle"></h2><button class="x" id="rvClose" aria-label="Fermer">×</button></div>
+  <form id="rvForm" class="orga-form">
+    <p class="hint" id="rvHint"></p>
+    <label class="note-label" for="rvCode" id="rvCodeLbl"></label>
+    <input id="rvCode" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+    <label class="check"><input type="checkbox" id="rvCut" checked> <span id="rvCutLbl"></span></label>
+    <p class="fine" id="rvFine"></p>
+    <button class="install" type="submit" id="rvGo"></button>
+  </form>
+</section>
 
 <!-- Calques : ce que montre la carte -->
 <section class="sheet" id="sheetLayers" hidden aria-labelledby="lyTitle">
@@ -324,6 +368,7 @@
     <input type="checkbox" id="optContrast">
     <span class="switch-txt"><b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span></span>
   </label>
+  <button type="button" class="secondary" id="btnRecover">J’ai perdu mon accès orga ou medic</button>
   <button type="button" class="wipe-btn" data-wipe><span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span></button>
   <p class="fine">Efface le contact SOS, la checklist, le point de ralliement, les réglages, la carte gardée hors ligne et l’accès orga, puis ferme Cortège. L’historique du navigateur n’est pas effacé : vide-le aussi depuis ses réglages.</p>
   <p class="fine menu-foot"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
@@ -777,6 +822,12 @@
     <h3 class="group-title">Mes appareils</h3>
     <p class="hint" id="deviceState"></p>
     <button class="secondary" id="btnAddDevice">Ajouter un appareil</button>
+    <h3 class="group-title">Code de secours</h3>
+    <p class="hint" id="orgaRecState"></p>
+    <p class="hint trial-note" id="orgaRecAt" hidden></p>
+    <p class="hint trial-note" id="orgaEveWarn" hidden></p>
+    <button class="secondary" id="btnOrgaRec"></button>
+    <p class="hint" id="orgaIosWarn" hidden></p>
     <div class="access-warn" id="orgaAccessWarn">
       <b>⚠ Ton accès orga n’existe que sur cet appareil.</b>
       Il est enregistré dans ce navigateur, nulle part ailleurs : il n’y a ni compte ni mot de passe pour le récupérer. Si tu vides les données du site (cache, «&nbsp;effacer l’historique&nbsp;»), changes de navigateur ou perds ce téléphone, l’accès est perdu pour de bon. Le lien ou le QR code d’invitation ne sert qu’une fois : il ne permet pas de revenir.

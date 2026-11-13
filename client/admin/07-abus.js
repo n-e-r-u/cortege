@@ -44,7 +44,7 @@ function renderOrgas({ orgas }) {
     const meta = document.createElement('div'); meta.className = 'meta';
     meta.textContent = (o.source === 'variable' ? 'Variable ORGA_KEYS (cPanel)' : 'Créée le ' + new Date(o.created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }))
       + (o.trial ? ' · EN PÉRIODE D’ESSAI' : ' · confirmée')
-      + (o.source === 'page' ? (o.active ? ' · activée' + (o.devices > 1 ? ' (' + o.devices + ' appareils)' : '') : o.invite ? ' · invitation en attente' : ' · invitation expirée') : '')
+      + (o.source === 'page' ? (o.active ? ' · activée' + (o.devices > 1 ? ' (' + o.devices + ' appareils)' : '') + (o.rec ? ' · code de secours' : ' · sans code de secours') : o.invite ? ' · invitation en attente' : ' · invitation expirée') : '')
       + (o.clash ? ' · ⚠ NOM RÉSERVÉ OU EN DOUBLE : vérifie que c’est bien une vraie orga' : '')
       + (o.byLabel ? ' · parrainée par ' + o.byLabel : '') + (o.children ? ' · a invité ' + o.children + ' orga(s)' : '')
       + (o.ban ? ' · ⛔ invitations suspendues jusqu’au ' + new Date(o.ban).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : '');

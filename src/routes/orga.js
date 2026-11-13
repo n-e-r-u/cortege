@@ -11,7 +11,11 @@ const { annAll, annView, getAnn, dropAnn } = require('../announcements/store');
 const { createAnnouncement } = require('../announcements/create');
 const { dropReport, saveReport, nearby, getReport } = require('../reports/store');
 const { firstConfirm, repAdd } = require('../reports/votes');
-const { keyLocked, keyFailed, orgaOf } = require('../orgas/auth');
+const { keyLocked, keyFailed, orgaOf, keyRefusal } = require('../orgas/auth');
+const { newCode, validCode, codeHash } = require('../orgas/recovery');
+const M = require('../medic');
+const { clientHash } = require('../privacy');
+const { mobsAll } = require('../settings');
 const { labelClash } = require('../orgas/names');
 const { orgaLog, trashReport, ORGA_REMOVE_MAX } = require('../orgas/log');
 const { ownerTag, canManage } = require('../orgas/owner');
@@ -22,6 +26,15 @@ const { routeDistM, getEvent, EVENT_KEEP, dropEvent } = require('../events/store
 const { send, readJson } = require('../http/respond');
 const R = require('../refuges');
 const { sha, withLock, keyEq, clean, validLatLng, distM, round } = require('../util');
+
+// État de l'accès, pour l'espace orga et l'écran medic : code de secours présent, dernière récupération (14 jours),
+// et rappel la veille et le jour d'une mobilisation tant qu'il n'y a ni code de secours ni deuxième appareil
+function accessState(me, now = Date.now()) {
+  if (!me) return { rec: false, recAt: null, warn: false };
+  const day = d => new Date(now + d * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const soon = mobsAll().some(m => m.date === day(0) || m.date === day(1));
+  return { rec: !!me.rec, recAt: me.recAt && now - me.recAt < 14 * 864e5 ? me.recAt : null, warn: soon && !me.rec && !(me.keys || []).length };
+}
 
 // Journal des partages de position : l'action et le rôle, jamais la position (protège les orgas même face à l'admin)
 const bLog = (orga, action, r) => orgaLog(orga, action, { ref: r.id, r: { id: r.id, cat: r.cat } });
@@ -34,32 +47,67 @@ async function orgaRoutes(req, res, url, pathname) {
     const token = String(b.token || '');
     if (!/^[\w-]{20,40}$/.test(token)) { keyFailed(req); return send(res, 400, { error: 'Invitation invalide.' }); }
     const key = crypto.randomBytes(18).toString('base64url'), h = sha(token);
-    let device = false;
-    const o = withLock(() => {
+    let device = false, rec = null, medic = false;
+    let o = withLock(() => {
       const list = readOrgas().slice(), now = Date.now();
       let i = list.findIndex(x => x.invite && keyEq(x.invite.h, h) && x.invite.exp > now);
-      if (i >= 0) { const { invite, ...rest } = list[i]; list[i] = { ...rest, hash: sha(key), keys: [], activated: rest.activated || now }; writeOrgas(list); return list[i]; }
+      // Première activation : le code de secours est créé et montré une seule fois (le serveur n'en garde que l'empreinte)
+      if (i >= 0) { const { invite, ...rest } = list[i]; rec = newCode(); list[i] = { ...rest, hash: sha(key), keys: [], rec: codeHash(rec), recAt: undefined, activated: rest.activated || now }; writeOrgas(list); return list[i]; }
       // Ajout d'un appareil : la clé principale reste valable, on en ajoute une (5 appareils au plus)
       i = list.findIndex(x => x.devInv && keyEq(x.devInv.h, h) && x.devInv.exp > now);
       if (i >= 0) { const { devInv, ...rest } = list[i]; list[i] = { ...rest, keys: [...(rest.keys || []), sha(key)].slice(-(DEVICE_MAX - 1)) }; writeOrgas(list); device = true; return list[i]; }
       return null;
     });
+    // Invitation d'une équipe medic : même échange, autre liste (une équipe medic n'a aucun droit d'orga)
+    if (!o) { const m = M.redeem(h, key); if (m) { o = m.o; device = m.device; rec = m.rec || null; medic = true; } }
     if (!o) { keyFailed(req); return send(res, 404, { error: 'Lien expiré ou déjà utilisé. Demande-en un nouveau.' }); }
-    orgaLog({ id: o.id, label: o.label }, device ? 'appareil ajouté' : 'invitation utilisée');
-    return send(res, 200, { key, label: o.label, device });
+    orgaLog({ id: (medic ? 'm:' : '') + o.id, label: o.label }, device ? 'appareil ajouté' : 'invitation utilisée');
+    return send(res, 200, { key, label: o.label, device, ...(medic ? { medic: true } : {}), ...(rec ? { rec } : {}) });
+  }
+
+  // ---- Accès perdu : le code de secours donne une nouvelle clé et un nouveau code (l'ancien ne sert plus) ----
+  // cut (par défaut) : tous les autres appareils sont coupés, pour un téléphone perdu ou saisi.
+  if (req.method === 'POST' && pathname === '/api/recover') {
+    // Pas de verrou par réseau ici (un code fait 98 bits, et il doit rester utilisable au milieu d'une foule) : seulement un débit
+    if (!bump('recv:' + clientHash(req), 'vote', 30, Date.now())) return send(res, 429, { error: 'Trop d’essais, réessaie dans quelques minutes.' });
+    const b = await readJson(req);
+    if (!validCode(b.code)) return send(res, 400, { error: 'Code de secours invalide : 20 caractères, par groupes de 4.' });
+    const h = codeHash(b.code), key = crypto.randomBytes(18).toString('base64url'), rec = newCode(), cut = b.cut !== false, now = Date.now();
+    const renew = t => ({ ...t, ...(cut || !t.hash ? { hash: sha(key), keys: [] } : { keys: [...(t.keys || []), sha(key)].slice(-(DEVICE_MAX - 1)) }), devInv: undefined, rec: codeHash(rec), recAt: now });
+    let medic = false;
+    let o = withLock(() => {
+      const list = readOrgas().slice(), i = list.findIndex(x => x.rec && x.hash && keyEq(x.rec, h));
+      if (i < 0) return null;
+      list[i] = renew(list[i]); writeOrgas(list); return list[i];
+    });
+    if (!o) { const t = M.readMedics().find(x => x.rec && x.hash && keyEq(x.rec, h)); if (t) { o = M.editTeam(t.id, cur => cur.rec && keyEq(cur.rec, h) ? renew(cur) : null); medic = !!o; if (o && cut) M.forgetTeam(o.id); } }
+    if (!o) { keyFailed(req); return send(res, 404, { error: 'Code de secours inconnu ou déjà utilisé.' }); }
+    orgaLog({ id: (medic ? 'm:' : '') + o.id, label: o.label }, 'accès récupéré (code de secours)', { detail: cut ? 'autres appareils coupés' : 'appareil ajouté' });
+    return send(res, 200, { key, label: o.label, rec, cut, ...(medic ? { medic: true } : {}) });
   }
   
   // ---- Espace orga / legal team ----
   if (pathname.startsWith('/api/orga') || pathname.startsWith('/api/announcements') || /^\/api\/events\/[\w-]{1,16}$/.test(pathname)
     || /^\/api\/reports\/[\w-]{1,16}\/(verify|remove|extend|edit)$/.test(pathname)) {
     const orga = orgaOf(req);
-    if (!orga) return send(res, 403, { error: 'Lien orga invalide ou expiré.' });
+    if (!orga) return send(res, ...keyRefusal(req));
   
     if (req.method === 'GET' && pathname === '/api/orga/me') {
       const me = readOrgas().find(x => x.id === orga.id);
       return send(res, 200, { label: orga.label, ob: ownerTag(orga.admin ? 'admin' : orga.id), admin: orga.admin, trial: orga.trial, sponsored: !!orga.sponsored,
         sponsor: me && me.by ? (readOrgas().find(x => x.id === me.by)?.label || me.byLabel || null) : null,
-        canInvite: !orga.trial && !banUntil(orga.id), ban: banUntil(orga.id), canAddDevice: !!me, devices: me && me.hash ? 1 + (me.keys || []).length : 0 });
+        canInvite: !orga.trial && !banUntil(orga.id), ban: banUntil(orga.id), canAddDevice: !!me, devices: me && me.hash ? 1 + (me.keys || []).length : 0,
+        ...accessState(me) });
+    }
+    // Nouveau code de secours (le précédent ne sert plus) : montré une seule fois
+    if (req.method === 'POST' && pathname === '/api/orga/recovery') {
+      const me = readOrgas().find(x => x.id === orga.id);
+      if (!me) return send(res, 400, { error: 'Pas possible pour un accès défini par l’admin dans les réglages du serveur.' });
+      if (!quota('rec:' + orga.id, 5, 60 * MIN)) return send(res, 429, { error: 'Trop de codes demandés, réessaie plus tard.' });
+      const rec = newCode();
+      withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === orga.id); if (i >= 0) { l[i] = { ...l[i], rec: codeHash(rec) }; writeOrgas(l); } });
+      orgaLog(orga, 'code de secours créé');
+      return send(res, 200, { rec });
     }
   
     // Ses propres annonces, y compris les numéros en attente de validation
@@ -109,7 +157,7 @@ async function orgaRoutes(req, res, url, pathname) {
       }
       // Nouvelle invitation (la filleule a perdu son accès) : l'ancien accès est coupé
       const { token, invite } = newInvite();
-      withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], hash: null, keys: [], devInv: null, invite }; writeOrgas(l); } });
+      withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === target.id); if (i >= 0) { l[i] = { ...l[i], hash: null, keys: [], devInv: null, rec: undefined, recAt: undefined, invite }; writeOrgas(l); } });
       orgaLog(orga, 'nouvelle invitation (parrainage)', { ref: target.id, detail: target.label });
       return send(res, 200, { id: target.id, label: target.label, invite: token, exp: invite.exp });
     }
@@ -328,4 +376,4 @@ async function orgaRoutes(req, res, url, pathname) {
   return NEXT;
 }
 
-module.exports = { orgaRoutes };
+module.exports = { orgaRoutes, accessState };
