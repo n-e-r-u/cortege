@@ -108,7 +108,7 @@
   }
 
   // Logo absent : on le masque (fait ici et pas dans le HTML, que la politique de sécurité interdit)
-  document.querySelectorAll('img[src="/brand/logo.png"]').forEach(img => {
+  document.querySelectorAll('img[src="/brand/logo.png"], img[src="/brand/pin.png"]').forEach(img => {
     const fail = () => { img.hidden = true; if (img.classList.contains('logo-img') && img.nextElementSibling) img.nextElementSibling.hidden = false; };
     if (img.complete && !img.naturalWidth) fail(); else img.addEventListener('error', fail);
   });

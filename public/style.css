@@ -98,6 +98,9 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .brand { color: inherit; text-decoration: none; }
 .brand-txt { min-width: 0; }
 .logo-img { width: 38px; height: 38px; object-fit: contain; flex: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+.neru-sig { display: inline-flex; flex: none; }
+.neru-sig img { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+[data-theme="light"] .neru-sig img { filter: none; }
 .by { font-weight: 500; font-size: 12px; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
 .by b { color: var(--accent); font-weight: 700; }
 .ig-card { display: flex; flex-direction: column; gap: 12px; margin: 10px 0 16px; padding: 14px; border-radius: var(--radius); color: var(--fg);
