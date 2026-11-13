@@ -25,6 +25,7 @@ const { readOrgas, writeOrgas } = require('../orgas/store');
 const { routeDistM, getEvent, EVENT_KEEP, dropEvent } = require('../events/store');
 const { send, readJson } = require('../http/respond');
 const R = require('../refuges');
+const { orgaBoard, remindSet, remindDrop } = require('../orgas/board');
 const { sha, withLock, keyEq, clean, validLatLng, distM, round } = require('../util');
 
 // État de l'accès, pour l'espace orga et l'écran medic : code de secours présent, dernière récupération (14 jours),
@@ -110,6 +111,15 @@ async function orgaRoutes(req, res, url, pathname) {
       return send(res, 200, { rec });
     }
   
+    // Tableau de bord (« Mon orga ») : chiffres tirés du journal, prochains rendez-vous
+    if (req.method === 'GET' && pathname === '/api/orga/board') return send(res, 200, orgaBoard(orga));
+    // Rappels avant ses rendez-vous de l'agenda : l'adresse de notification de ce téléphone, gardée seulement si l'orga le demande
+    if (pathname === '/api/orga/remind' && (req.method === 'POST' || req.method === 'DELETE')) {
+      const b = await readJson(req);
+      if (req.method === 'DELETE') { remindDrop(orga.id, String(b.endpoint || '')); return send(res, 200, { ok: true, on: false }); }
+      return send(res, ...remindSet(orga, b));
+    }
+
     // Ses propres annonces, y compris les numéros en attente de validation
     if (req.method === 'GET' && pathname === '/api/orga/mine') {
       return send(res, 200, { a: annAll(Date.now()).filter(a => orga.admin ? true : a.oid === orga.id).sort((a, b) => b.t - a.t).map(annView) });

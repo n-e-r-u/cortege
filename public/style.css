@@ -1037,3 +1037,20 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
   body.print-rights #sheetRights summary { font-weight: 800; list-style: none; }
   @page { margin: 10mm; }
 }
+
+/* ---- 2.19 : tableau de bord de l'orga ---- */
+.ob-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.ob-tile { padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.ob-tile b { font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ob-tile span { font-size: 12px; color: var(--muted); }
+.ob-tile small { font-size: 11px; color: var(--muted); }
+#obEvents .s a { color: var(--accent); }
+.ob-link { display: block; text-align: center; text-decoration: none; }
+.ob-more { display: inline-block; margin: 10px 0 2px; font-size: 13px; }
+/* Listes simples (rendez-vous de l'orga, équipes d'un·e référent·e medic) : un titre, une ligne de détail, des boutons à droite */
+.org-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.org-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.org-list .t { flex: 1; min-width: 0; }
+.org-list .l { font-weight: 600; }
+.org-list .s { color: var(--muted); font-size: 12px; }
+.org-list .empty { color: var(--muted); font-size: 13px; }

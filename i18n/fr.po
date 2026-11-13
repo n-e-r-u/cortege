@@ -4482,3 +4482,120 @@ msgstr ""
 
 msgid "J’ai perdu mon accès orga ou medic"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Signalements vérifiés"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Faux retirés"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Annonces et numéros"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Rendez-vous publiés"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "{n} depuis le début"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Première action le {date}. Ces chiffres viennent du journal de ton orga, que l’admin voit aussi."
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Rien pour l’instant : vérifie un signalement ou publie un rendez-vous, il apparaîtra ici."
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Aucun rendez-vous à venir. Publie une manif ou un blocus depuis l’onglet Annonces."
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Affiche"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "en attente de validation"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "environ {n} téléphones recevraient une annonce urgente ici"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "peu de téléphones abonnés aux alertes ici pour l’instant"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Rappels coupés : l’adresse de notification est retirée du serveur"
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Active d’abord les alertes sur ce téléphone (menu, Alertes), puis reviens cocher le rappel."
+msgstr ""
+
+#: client/app/17-orga.js
+msgid "Rappels activés : la veille et deux heures avant chaque rendez-vous"
+msgstr ""
+
+#: src/orgas/board.js
+msgid "Ton rendez-vous commence à {h}"
+msgstr ""
+
+#: src/orgas/board.js
+msgid "Ton rendez-vous : {day} à {h}"
+msgstr ""
+
+#: src/orgas/board.js
+msgid "Annonces, position en direct et point de ralliement sont dans l’espace orga."
+msgstr ""
+
+#: src/orgas/board.js
+msgid "Vérifie l’heure, le lieu et le parcours dans l’agenda. L’affiche à imprimer est dans « Mon orga »."
+msgstr ""
+
+#: src/orgas/board.js
+msgid "Pas de rappel pour un accès défini dans les réglages du serveur."
+msgstr ""
+
+#: public/index.html
+msgid "Tableau de bord · 30 derniers jours"
+msgstr ""
+
+#: public/index.html
+msgid "Tes prochains rendez-vous"
+msgstr ""
+
+#: public/index.html
+msgid "Me rappeler mes rendez-vous"
+msgstr ""
+
+#: public/index.html
+msgid "Une notification la veille et deux heures avant chaque rendez-vous publié. Le serveur garde alors l’adresse de notification de ce téléphone avec ton orga, jusqu’à ce que tu décoches."
+msgstr ""
+
+#: public/index.html
+msgid "Faire connaître la carte"
+msgstr ""
+
+#: public/index.html
+msgid "Une affiche A4 ou quatre flyers par page, au nom de ton orga, avec le QR code de la carte et le numéro de ta legal team."
+msgstr ""
+
+#: public/index.html
+msgid "Affiche et flyers à imprimer"
+msgstr ""
+
+#: public/index.html
+msgid "Tout ce qu’un accès orga permet"
+msgstr ""
+
+#: public/index.html
+msgid "Ce qu’un accès orga permet"
+msgstr ""

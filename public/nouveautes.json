@@ -1,73 +1,73 @@
 {
-  "version": "2.18",
+  "version": "2.19",
   "items": [
     [
-      "⛑️ Mode medic",
-      "Un écran à part pour les équipes de street medics : une carte privée entre équipes, avec positions, points chauds, barrages et appels de renfort."
+      "📊 Tableau de bord des orgas",
+      "Dans « Mon orga » : tes vérifications, tes annonces et tes prochains rendez-vous, avec un rappel la veille si tu le demandes."
     ],
     [
-      "🛂 Contrôle / barrage filtrant",
-      "Nouveau type de signalement pour les fouilles et contrôles à l’entrée d’une manif."
+      "🖨️ Affiche et flyers",
+      "Une affiche A4 ou quatre flyers par page, au nom de ton orga, avec le QR code de la carte et le rendez-vous."
     ],
     [
-      "🔑 Code de secours",
-      "Orgas : un code pour retrouver ton accès si ton téléphone est perdu, saisi ou vidé. Crée-le dans « Mon orga »."
+      "🤝 Page « Pour les orgas »",
+      "Tout ce qu’un accès orga permet et comment l’obtenir, à envoyer à ton collectif ou ton syndicat."
     ]
   ],
   "items_en": [
     [
-      "⛑️ Medic mode",
-      "A separate screen for street medic teams: a private map between teams, with locations, hot spots, checkpoints and backup requests."
+      "📊 Org dashboard",
+      "In “My org”: your verifications, announcements and upcoming events, with a reminder the day before if you ask for it."
     ],
     [
-      "🛂 Checkpoint / searches",
-      "A new report type for searches and checks at the entrance of a protest."
+      "🖨️ Poster and flyers",
+      "An A4 poster or four flyers per page, in your org’s name, with the map’s QR code and the event."
     ],
     [
-      "🔑 Recovery code",
-      "Organisers: a code to get your access back if your phone is lost, seized or wiped. Create it in “My organisation”."
+      "🤝 “For orgs” page",
+      "Everything an org access lets you do and how to get one, to send to your collective or union."
     ]
   ],
   "items_es": [
     [
-      "⛑️ Modo medic",
-      "Una pantalla aparte para los equipos de street medics: un mapa privado entre equipos, con posiciones, puntos calientes, controles y llamadas de refuerzo."
+      "📊 Panel de las organizaciones",
+      "En «Mi organización»: tus verificaciones, tus anuncios y tus próximas citas, con un recordatorio la víspera si lo pides."
     ],
     [
-      "🛂 Control / registro filtrante",
-      "Nuevo tipo de aviso para los registros y controles a la entrada de una mani."
+      "🖨️ Cartel y octavillas",
+      "Un cartel A4 o cuatro octavillas por página, a nombre de tu organización, con el código QR del mapa y la cita."
     ],
     [
-      "🔑 Código de emergencia",
-      "Organizaciones: un código para recuperar tu acceso si pierdes el teléfono, te lo incautan o se borra. Créalo en «Mi organización»."
+      "🤝 Página «Para las organizaciones»",
+      "Todo lo que permite un acceso de organización y cómo conseguirlo, para enviar a tu colectivo o sindicato."
     ]
   ],
   "items_ar": [
     [
-      "⛑️ وضع المسعفين",
-      "شاشة خاصة لفرق المسعفين الميدانيين: خريطة خاصة بين الفرق، مع المواقع والنقاط الساخنة والحواجز وطلبات الدعم."
+      "📊 لوحة متابعة المنظمات",
+      "في «منظمتي»: تأكيداتك وإعلاناتك ومواعيدك القادمة، مع تذكير في اليوم السابق إن طلبته."
     ],
     [
-      "🛂 حاجز تفتيش / مراقبة",
-      "نوع بلاغ جديد لعمليات التفتيش والمراقبة عند مدخل المظاهرة."
+      "🖨️ ملصق ومنشورات",
+      "ملصق A4 أو أربع منشورات في الصفحة، باسم منظمتك، مع رمز QR للخريطة والموعد."
     ],
     [
-      "🔑 رمز الاسترداد",
-      "للمنظِّمين: رمز لاستعادة وصولك إذا ضاع هاتفك أو صودر أو مُسح. أنشئه من «منظمتي»."
+      "🤝 صفحة «للمنظمات»",
+      "كل ما يتيحه وصول المنظمة وكيفية الحصول عليه، لإرسالها إلى مجموعتك أو نقابتك."
     ]
   ],
   "items_de": [
     [
-      "⛑️ Medic-Modus",
-      "Eine eigene Ansicht für Demo-Sanitäter-Teams: eine private Karte unter Teams, mit Standorten, Brennpunkten, Kontrollstellen und Anfragen nach Verstärkung."
+      "📊 Übersicht für Orgas",
+      "Unter „Meine Orga“: deine Bestätigungen, Ankündigungen und nächsten Termine, auf Wunsch mit Erinnerung am Vortag."
     ],
     [
-      "🛂 Kontrollstelle / Durchsuchungen",
-      "Neue Meldungsart für Durchsuchungen und Kontrollen am Zugang zu einer Demo."
+      "🖨️ Plakat und Flyer",
+      "Ein A4-Plakat oder vier Flyer pro Seite, im Namen deiner Orga, mit dem QR-Code der Karte und dem Termin."
     ],
     [
-      "🔑 Notfallcode",
-      "Orgas: ein Code, mit dem du deinen Zugang zurückbekommst, wenn dein Handy verloren geht, beschlagnahmt oder geleert wird. Erstelle ihn unter „Meine Organisation“."
+      "🤝 Seite „Für Orgas“",
+      "Alles, was ein Orga-Zugang ermöglicht und wie man ihn bekommt, zum Weiterleiten an dein Kollektiv oder deine Gewerkschaft."
     ]
   ]
 }

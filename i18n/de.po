@@ -4464,3 +4464,120 @@ msgstr "Kontrollstelle / Durchsuchungen"
 
 msgid "J’ai perdu mon accès orga ou medic"
 msgstr "Ich habe meinen Orga- oder Medic-Zugang verloren"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Signalements vérifiés"
+msgstr "Bestätigte Meldungen"
+
+#: client/app/17-orga.js
+msgid "Faux retirés"
+msgstr "Entfernte Falschmeldungen"
+
+#: client/app/17-orga.js
+msgid "Annonces et numéros"
+msgstr "Ankündigungen und Nummern"
+
+#: client/app/17-orga.js
+msgid "Rendez-vous publiés"
+msgstr "Veröffentlichte Termine"
+
+#: client/app/17-orga.js
+msgid "{n} depuis le début"
+msgstr "{n} seit Beginn"
+
+#: client/app/17-orga.js
+msgid "Première action le {date}. Ces chiffres viennent du journal de ton orga, que l’admin voit aussi."
+msgstr "Erste Aktion am {date}. Diese Zahlen stammen aus dem Protokoll deiner Orga, das auch der Admin sieht."
+
+#: client/app/17-orga.js
+msgid "Rien pour l’instant : vérifie un signalement ou publie un rendez-vous, il apparaîtra ici."
+msgstr "Noch nichts: Bestätige eine Meldung oder veröffentliche einen Termin, dann erscheint er hier."
+
+#: client/app/17-orga.js
+msgid "Aucun rendez-vous à venir. Publie une manif ou un blocus depuis l’onglet Annonces."
+msgstr "Keine kommenden Termine. Veröffentliche eine Demo oder Blockade im Tab Ankündigungen."
+
+#: client/app/17-orga.js
+msgid "Affiche"
+msgstr "Plakat"
+
+#: client/app/17-orga.js
+msgid "en attente de validation"
+msgstr "wartet auf Freigabe"
+
+#: client/app/17-orga.js
+msgid "environ {n} téléphones recevraient une annonce urgente ici"
+msgstr "etwa {n} Handys würden hier eine dringende Ankündigung erhalten"
+
+#: client/app/17-orga.js
+msgid "peu de téléphones abonnés aux alertes ici pour l’instant"
+msgstr "bisher wenige Handys mit Warnungen hier"
+
+#: client/app/17-orga.js
+msgid "Rappels coupés : l’adresse de notification est retirée du serveur"
+msgstr "Erinnerungen aus: Die Benachrichtigungsadresse wurde vom Server entfernt"
+
+#: client/app/17-orga.js
+msgid "Active d’abord les alertes sur ce téléphone (menu, Alertes), puis reviens cocher le rappel."
+msgstr "Aktiviere zuerst die Warnungen auf diesem Handy (Menü, Warnungen) und setze dann den Haken bei der Erinnerung."
+
+#: client/app/17-orga.js
+msgid "Rappels activés : la veille et deux heures avant chaque rendez-vous"
+msgstr "Erinnerungen an: am Vortag und zwei Stunden vor jedem Termin"
+
+#: src/orgas/board.js
+msgid "Ton rendez-vous commence à {h}"
+msgstr "Dein Termin beginnt um {h}"
+
+#: src/orgas/board.js
+msgid "Ton rendez-vous : {day} à {h}"
+msgstr "Dein Termin: {day} um {h}"
+
+#: src/orgas/board.js
+msgid "Annonces, position en direct et point de ralliement sont dans l’espace orga."
+msgstr "Ankündigungen, Live-Standort und Sammelpunkt findest du im Orga-Bereich."
+
+#: src/orgas/board.js
+msgid "Vérifie l’heure, le lieu et le parcours dans l’agenda. L’affiche à imprimer est dans « Mon orga »."
+msgstr "Prüfe Uhrzeit, Ort und Route in der Agenda. Das Plakat zum Ausdrucken findest du unter „Meine Orga“."
+
+#: src/orgas/board.js
+msgid "Pas de rappel pour un accès défini dans les réglages du serveur."
+msgstr "Keine Erinnerungen für einen in den Servereinstellungen festgelegten Zugang."
+
+#: public/index.html
+msgid "Tableau de bord · 30 derniers jours"
+msgstr "Übersicht · letzte 30 Tage"
+
+#: public/index.html
+msgid "Tes prochains rendez-vous"
+msgstr "Deine nächsten Termine"
+
+#: public/index.html
+msgid "Me rappeler mes rendez-vous"
+msgstr "An meine Termine erinnern"
+
+#: public/index.html
+msgid "Une notification la veille et deux heures avant chaque rendez-vous publié. Le serveur garde alors l’adresse de notification de ce téléphone avec ton orga, jusqu’à ce que tu décoches."
+msgstr "Eine Benachrichtigung am Vortag und zwei Stunden vor jedem veröffentlichten Termin. Der Server speichert dann die Benachrichtigungsadresse dieses Handys zusammen mit deiner Orga, bis du den Haken entfernst."
+
+#: public/index.html
+msgid "Faire connaître la carte"
+msgstr "Die Karte bekannt machen"
+
+#: public/index.html
+msgid "Une affiche A4 ou quatre flyers par page, au nom de ton orga, avec le QR code de la carte et le numéro de ta legal team."
+msgstr "Ein A4-Plakat oder vier Flyer pro Seite, im Namen deiner Orga, mit dem QR-Code der Karte und der Nummer deines Legal Teams."
+
+#: public/index.html
+msgid "Affiche et flyers à imprimer"
+msgstr "Plakat und Flyer zum Ausdrucken"
+
+#: public/index.html
+msgid "Tout ce qu’un accès orga permet"
+msgstr "Alles, was ein Orga-Zugang ermöglicht"
+
+#: public/index.html
+msgid "Ce qu’un accès orga permet"
+msgstr "Was ein Orga-Zugang ermöglicht"

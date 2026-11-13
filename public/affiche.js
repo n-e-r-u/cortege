@@ -3,9 +3,13 @@
 (async () => {
   const $ = s => document.querySelector(s);
   const norm = c => String(c || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
-  const url = location.origin + '/';
-  $('#url').textContent = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  // Paramètres : ?ville=… (legal team), ?orga=… (nom de l'orga), ?rdv=… (ligne du rendez-vous), ?at=lat,lng (le QR code ouvre la carte à cet endroit)
+  const P = new URLSearchParams(location.search);
+  const at = (P.get('at') || '').match(/^(-?\d{1,2}(?:\.\d{1,6})?),(-?\d{1,3}(?:\.\d{1,6})?)$/);
+  const url = location.origin + '/' + (at ? '?at=' + at[1] + ',' + at[2] : '');
+  $('#url').textContent = location.host;
   if (window.qrcode) { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('#qr').innerHTML = q.createSvgTag({ cellSize: 8, margin: 0, scalable: true }); }
+  $('#orga').value = (P.get('orga') || '').slice(0, 50); $('#rdv').value = (P.get('rdv') || '').slice(0, 90);
   const get = u => fetch(u, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
   const [cfg, legal, ann] = await Promise.all([get('/api/config'), get('/live/legal.json'), get('/live/ann.json')]);
   if (cfg && cfg.brand && cfg.brand.handle) { $('#by').textContent = 'La carte en direct des manifs · par @' + cfg.brand.handle; $('#handle').innerHTML = ''; const b = document.createElement('b'); b.textContent = '@' + cfg.brand.handle; $('#handle').append(b); }
@@ -14,7 +18,7 @@
   const cities = new Map(); for (const r of rows) { const k = norm(r.city); if (!cities.has(k)) cities.set(k, { name: r.city, items: [] }); cities.get(k).items.push(r); }
   const sel = $('#city');
   [...cities.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'fr')).forEach(([k, c]) => { const o = document.createElement('option'); o.value = k; o.textContent = c.name; sel.append(o); });
-  const want = norm(new URLSearchParams(location.search).get('ville'));
+  const want = norm(P.get('ville'));
   if (want && cities.has(want)) sel.value = want;
   function render() {
     const c = cities.get(sel.value), extra = $('#extra').value.trim(), list = $('#legalList');
@@ -29,7 +33,21 @@
     $('#legal').hidden = !items.length && !extra;
     $('#legalTitle').textContent = c ? 'Legal team · ' + c.name : 'Legal team';
     document.title = 'Affiche Cortège' + (c ? ' · ' + c.name : '');
+    const orga = $('#orga').value.trim(), rdv = $('#rdv').value.trim();
+    $('#rdvLine').hidden = !rdv; $('#rdvLine').textContent = rdv;
+    const w = $('#with'); w.textContent = '';
+    if (orga) { const b = document.createElement('span'); b.className = 'with'; b.textContent = orga; w.append(' · avec ', b); }
+    // Flyers : quatre copies de l'affiche, réduites de moitié, sur une même page
+    const out = $('#out'), sheet = $('#sheet');
+    out.querySelector('.page4')?.remove();
+    const a6 = $('#format').value === 'a6';
+    sheet.hidden = a6;
+    if (a6) {
+      const page = document.createElement('div'); page.className = 'page4';
+      for (let i = 0; i < 4; i++) { const k = sheet.cloneNode(true); k.hidden = false; k.removeAttribute('id'); k.querySelectorAll('[id]').forEach(n => n.removeAttribute('id')); page.append(k); }
+      out.append(page);
+    }
   }
-  sel.onchange = render; $('#extra').oninput = render; render();
+  sel.onchange = render; for (const id of ['#extra', '#orga', '#rdv']) $(id).oninput = render; $('#format').onchange = render; render();
   $('#print').onclick = () => window.print();
 })();

@@ -36,20 +36,32 @@ h1 { font: 400 18mm/1.02 var(--font-display); text-transform: uppercase; letter-
 .legal .tip { font-size: 4.4mm; color: #2b3068; margin-top: 2mm; }
 .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: end; font-size: 4.4mm; color: #4a4f7a; padding-top: 6mm; }
 .foot b { font-size: 6mm; color: #1c2156; }
-@media print { body { background: #fff; } .ctrl { display: none; } .sheet { margin: 0; box-shadow: none; } }
-@media screen and (max-width: 800px) { .sheet { zoom: .45; } }
+.sheet[hidden] { display: none; }
+.rdv { margin: 0 0 5mm; padding: 4mm 6mm; border-radius: 5mm; background: #1c2156; color: #fff; font-size: 6.4mm; font-weight: 800; line-height: 1.25; }
+.with { font-weight: 800; color: #1c2156; }
+/* Quatre flyers A6 sur une page A4 : la même affiche, réduite de moitié, à découper */
+.page4 { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; position: relative; overflow: hidden; box-shadow: 6px -8px 0 0 rgba(28, 33, 86, .18); }
+.page4 .sheet { position: absolute; margin: 0; box-shadow: none; transform: scale(.5); transform-origin: top left; outline: .4mm dashed #c9c9c9; }
+.page4 .sheet:nth-child(2) { left: 105mm; } .page4 .sheet:nth-child(3) { top: 148.5mm; } .page4 .sheet:nth-child(4) { left: 105mm; top: 148.5mm; }
+@media print { body { background: #fff; } .ctrl { display: none; } .sheet { margin: 0; box-shadow: none; } .page4 { margin: 0; box-shadow: none; } }
+@media screen and (max-width: 800px) { .sheet, .page4 { zoom: .45; } .page4 .sheet { zoom: 1; } }
 </style>
 </head>
 <body>
 <div class="ctrl">
   <label>Ville<select id="city"><option value="">Sans numéro de legal team</option></select></label>
   <label>Ou un autre numéro (facultatif)<input id="extra" maxlength="40" placeholder="ex. : Legal team du cortège 06 00 00 00 00"></label>
+  <label>Nom de ton orga (facultatif)<input id="orga" maxlength="50" placeholder="ex. : Union locale, collectif…"></label>
+  <label>Rendez-vous (facultatif)<input id="rdv" maxlength="90" placeholder="ex. : Samedi 14 h · Place de la Comédie"></label>
+  <label>Format<select id="format"><option value="a4">Affiche A4</option><option value="a6">4 flyers A6 par page</option></select></label>
   <button type="button" id="print">Imprimer</button>
-  <p>Seuls les numéros vérifiés (annuaire) ou publiés par les orgas de la ville apparaissent. Vérifie-les avant d’afficher.</p>
+  <p>Seuls les numéros vérifiés (annuaire) ou publiés par les orgas de la ville apparaissent. Vérifie-les avant d’afficher. Ce que tu écris ici reste sur ton appareil : rien n’est envoyé.</p>
 </div>
-<div class="sheet">
+<div id="out">
+<div class="sheet" id="sheet">
   <div class="brand"><img src="/brand/logo.png" alt=""><div><b>Cortège</b><span id="by">La carte en direct des manifs</span></div></div>
   <h1>Vois en direct ce qui se passe dans la manif</h1>
+  <p class="rdv" id="rdvLine" hidden></p>
   <p class="sub">Police, nasses, lacrymo, zones calmes, street medics : les manifestant·es se préviennent entre elles et eux, en temps réel.</p>
   <div class="mid">
     <div class="qr" id="qr"></div>
@@ -57,7 +69,8 @@ h1 { font: 400 18mm/1.02 var(--font-display); text-transform: uppercase; letter-
       <div class="url" id="url"></div></div>
   </div>
   <div class="legal" id="legal" hidden><h2 id="legalTitle">Legal team</h2><div id="legalList"></div><div class="tip">Note-le au stylo sur ton bras : en garde à vue, ton téléphone te sera retiré.</div></div>
-  <div class="foot"><span>Scanne avec l’appareil photo de ton téléphone</span><span id="handle"></span></div>
+  <div class="foot"><span>Scanne avec l’appareil photo de ton téléphone<span id="with"></span></span><span id="handle"></span></div>
+</div>
 </div>
 <script src="/vendor/qrcode.js"></script>
 <script src="/affiche.js"></script>

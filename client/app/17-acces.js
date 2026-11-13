@@ -3,7 +3,6 @@
   // et le stockage est demandé « persistant » (le navigateur ne l'efface pas quand la place manque).
   // Elle n'est oubliée que si le serveur répond qu'elle n'existe plus (gone) ou si la personne quitte le mode elle-même.
   const KEYS = { orga: 'cortege-orga', medic: 'cortege-medic' };
-  let medic = null, medicFull = false; // équipe medic de ce téléphone (voir 32-medic.js)
   const keyGet = kind => { try { return localStorage.getItem(KEYS[kind]) || ''; } catch { return ''; } };
   const keyDb = () => new Promise((res, rej) => {
     const o = indexedDB.open('cortege-cles', 1);
@@ -99,3 +98,21 @@
     } catch (err) { toast(err.message); }
     b.disabled = false;
   });
+
+  // ---- Écran medic : son script (public/app-medic.js) n'est chargé que sur un téléphone qui a un accès medic ----
+  // Le reste de l'appli s'en passe : la plupart des téléphones ne le téléchargent jamais.
+  let medicPart = null;
+  function medicInit() {
+    if (!keyGet('medic')) return;
+    if (!medicPart) medicPart = new Promise((ok, ko) => {
+      const s = document.createElement('script'); s.src = '/app-medic.js';
+      s.onload = ok; s.onerror = () => { s.remove(); ko(new Error('script')); };
+      document.head.append(s);
+    }).then(() => window.cortegeMedic({ $, el, t, toast, map, layer, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif,
+      get me() { return me; }, get meAt() { return meAt; }, get watchId() { return watchId; }, get pushSub() { return pushSub; } }));
+    // Pas de réseau et script pas encore gardé : nouvel essai un peu plus tard, tant que la clé est là
+    medicPart.then(m => m.medicInit()).catch(() => { medicPart = null; setTimeout(medicInit, 10_000); });
+  }
+  keysReady.then(medicInit);
+  // Abonnement aux notifications créé ou retrouvé : l'écran medic, s'il est chargé, le transmet pour les urgences vitales
+  function mdPush() { if (medicPart) medicPart.then(m => m.mdPush()).catch(() => {}); }

@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const { ROOT } = require('../config');
 const { h8 } = require('../util');
 const { send } = require('./respond');
+const { instance } = require('../instance');
 
 // ---- Statique ----
 const PUBLIC = path.join(ROOT, 'public');
@@ -25,6 +26,26 @@ function cspFor(buf) {
   }
   return cspCache.get(key);
 }
+// Page d'accueil et manifeste : écrits pour l'instance d'origine (adresse et pseudo en dur, lus par les moteurs de recherche
+// et les aperçus de partage, qui n'exécutent pas le script). Une autre instance les sert avec sa propre adresse et son pseudo.
+// La mention d'origine (auteur du logiciel, liens du pied de page) ne change pas.
+const HOME = 'https://cortege.neru.tv', TAILORED = new Set(['/', '/index.html', '/manifest.webmanifest']);
+function tailor(c, pathname, req) {
+  if (!TAILORED.has(pathname)) return c;
+  const base = (process.env.PUBLIC_URL || ('https://' + String(req.headers.host || 'localhost').replace(/[^\w.:-]/g, ''))).replace(/\/$/, '');
+  const handle = String(instance().brand.handle || '').replace(/[^\w.]/g, '');
+  if (base === HOME && handle === 'neru') return c;
+  const key = base + '|' + handle;
+  if (!c.alt) c.alt = new Map();
+  if (!c.alt.has(key)) {
+    const buf = Buffer.from(c.buf.toString('utf8').split('</head>').map((part, i) => i ? part : part.replaceAll(HOME, base)
+      .replaceAll(' Par @neru.', handle ? ` Par @${handle}.` : '').replaceAll(', par @neru', handle ? `, par @${handle}` : '')).join('</head>')
+      .replace('"Cortège par @neru"', handle ? `"Cortège par @${handle}"` : '"Cortège"'));
+    if (c.alt.size >= 8) c.alt.clear();
+    c.alt.set(key, { buf, etag: '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"' });
+  }
+  return c.alt.get(key);
+}
 // Fichiers de l'appli gardés en mémoire avec une empreinte : un téléphone qui a déjà la bonne version
 // reçoit une réponse vide « pas modifié » (304) au lieu de tout retélécharger.
 const staticCache = new Map();
@@ -37,16 +58,17 @@ function serveStatic(req, res, pathname) {
     if (err || !st.isFile()) return send(res, 404, 'Not found');
     let c = staticCache.get(file);
     const reply = () => {
-      const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: c.etag,
+      const v = tailor(c, pathname, req);
+      const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: v.etag,
         'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
       if (NOINDEX.has(pathname)) headers['X-Robots-Tag'] = 'noindex, nofollow';
       if (file.endsWith('.html')) {
         // La carte à intégrer (embed.html) peut s'afficher dans le site d'un média ou d'un collectif ; les autres pages, jamais
-        if (pathname === '/embed.html') headers['Content-Security-Policy'] = cspFor(c.buf).replace("frame-ancestors 'none'", 'frame-ancestors *');
-        else { headers['Content-Security-Policy'] = cspFor(c.buf); headers['X-Frame-Options'] = 'DENY'; }
+        if (pathname === '/embed.html') headers['Content-Security-Policy'] = cspFor(v.buf).replace("frame-ancestors 'none'", 'frame-ancestors *');
+        else { headers['Content-Security-Policy'] = cspFor(v.buf); headers['X-Frame-Options'] = 'DENY'; }
       }
-      if (req.headers['if-none-match'] === c.etag) { res.writeHead(304, headers); return res.end(); }
-      res.writeHead(200, headers); res.end(c.buf);
+      if (req.headers['if-none-match'] === v.etag) { res.writeHead(304, headers); return res.end(); }
+      res.writeHead(200, headers); res.end(v.buf);
     };
     if (c && c.mtime === st.mtimeMs && c.size === st.size) return reply();
     fs.readFile(file, (err2, buf) => {

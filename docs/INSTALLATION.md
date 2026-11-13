@@ -23,6 +23,7 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `LEGAL_WATCH` | `1` | `0` coupe la veille quotidienne des sources de l'annuaire des legal teams |
 | `VIOLENCE_URL` | page LDH | Lien du bouton « Signaler une violence policière » (admin) |
 | `ARCHIVE_DAYS` | `30` | Durée de conservation de l'archive anonyme (jours) |
+| `ORGA_REMIND` | `1` | `0` : pas de rappel envoyé aux orgas avant leurs rendez-vous de l'agenda |
 | `ORGA_LOG_DAYS` | `0` | Durée de conservation du journal des orgas, en jours. `0` : historique complet, gardé sans limite |
 | `REFUGE_MAX` | `1` | Nombre de lieux de repli qu'une orga certifiée peut enregistrer par défaut (1 à 30) ; l'admin peut le régler orga par orga |
 | `TRUST_PROXY` | auto | `1` derrière un proxy (Caddy, Nginx). Activé automatiquement sous Passenger/cPanel. Les en-têtes du proxy ne sont crus que pour les connexions venant de la machine elle-même (ou de `PROXY_IPS`) |

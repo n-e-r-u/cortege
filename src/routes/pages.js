@@ -13,7 +13,7 @@ const { h8 } = require('../util');
 const { orgaRequest } = require('../orgas/requests');
 const { pubFull, getPub, pubWithPts } = require('../digest/pub');
 const { send, readJson } = require('../http/respond');
-const { sendPage, pubIndex, agendaPage, ordersPage, rightsPage, legalTeamsPage, citiesPage, cityPage } = require('../pages/content');
+const { sendPage, pubIndex, agendaPage, ordersPage, rightsPage, legalTeamsPage, citiesPage, cityPage, orgasPage } = require('../pages/content');
 const { serveStatic } = require('../http/static');
 const { tx } = require('../db');
 
@@ -34,7 +34,7 @@ async function pagesRoutes(req, res, url, pathname) {
   if (pubM) { const d = pubFull(pubM[1]); return d ? sendPage(res, pubPage(req, d)) : send(res, 404, 'Bilan non publié'); }
   // Pages de contenu : agenda, arrêtés, villes, droits, legal teams (HTML léger fabriqué par le serveur, sans script)
   if (req.method === 'GET') {
-    const pg = { '/agenda': agendaPage, '/arretes': ordersPage, '/droits': rightsPage, '/legal-teams': legalTeamsPage, '/villes': citiesPage }[pathname.replace(/\/$/, '')];
+    const pg = { '/agenda': agendaPage, '/arretes': ordersPage, '/droits': rightsPage, '/legal-teams': legalTeamsPage, '/villes': citiesPage, '/orgas': orgasPage }[pathname.replace(/\/$/, '')];
     if (pg) return sendPage(res, pg(req));
     const vm = pathname.match(/^\/ville\/([a-z0-9-]{1,60})\/?$/);
     if (vm) { const c = cityIndex().get(vm[1]); return c ? sendPage(res, cityPage(req, c)) : send(res, 404, 'Ville inconnue'); }

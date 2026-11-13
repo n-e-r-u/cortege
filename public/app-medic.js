@@ -1,4 +1,11 @@
-  // ---- Mode medic : écran des équipes de street medics ----
+'use strict';
+// ---- Mode medic : écran des équipes de street medics ----
+// Chargé à la demande (public/app-medic.js), seulement sur les téléphones qui ont un accès medic : voir la fin de
+// client/app/17-acces.js. `core` donne les outils du reste de l'appli ; ce qui y change au fil du temps (position du
+// téléphone, abonnement aux notifications) se lit par core.me, core.meAt, core.watchId, core.pushSub.
+window.cortegeMedic = function (core) {
+  const { $, el, t, toast, map, layer, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif } = core;
+  let medic = null, medicFull = false; // équipe medic de ce téléphone ; « vue complète » de Cortège demandée
   // Une carte privée, vue seulement avec la clé de l'équipe : positions des équipes, points chauds, barrages filtrants, renforts.
   // Quatre gros boutons, rien d'autre. Les infos sont ajoutées et retirées à la main par les équipes ; le serveur ne les garde
   // qu'en mémoire. L'écran se met à jour dès qu'une équipe change quelque chose (attente longue, rien n'est publié).
@@ -29,7 +36,7 @@
     const pub = !on || mdShowPub;
     if (pub && !map.hasLayer(layer)) map.addLayer(layer); else if (!pub && map.hasLayer(layer)) map.removeLayer(layer);
     $('#medicPub').setAttribute('aria-pressed', String(mdShowPub));
-    if (on) { closeReport(); if (watchId == null) locate(); }
+    if (on) { closeReport(); if (core.watchId == null) locate(); }
     setTimeout(() => map.invalidateSize(), 50);
   }
   function setMedic(o) {
@@ -86,7 +93,7 @@
     if (!x) { if (mdSel === id) { mdSel = null; card.hidden = true; } return; }
     mdSel = id;
     $('#mcTitle').textContent = MD[x.k][0] + ' ' + (x.k === 'help' ? MD_LVL[x.lvl] : x.k === 'pos' ? x.team : MD[x.k][1]);
-    const dist = me ? ' · ' + fmtDist(map.distance(me, [x.lat, x.lng])) : '';
+    const dist = core.me ? ' · ' + fmtDist(map.distance(core.me, [x.lat, x.lng])) : '';
     $('#mcSub').textContent = (x.k === 'pos' ? (x.pub ? t('Position partagée, visible aussi du public') : t('Position partagée entre équipes')) : t('Posé par {team}', { team: x.team })) + ' · ' + ago(x.t) + dist
       + (x.k === 'help' ? ' · ' + (x.go.length ? t('En route : {teams}', { teams: x.go.join(', ') }) : t('Personne en route pour l’instant')) : '');
     const acts = $('#mcActs'); acts.textContent = '';
@@ -105,10 +112,10 @@
   map.on('click', () => { if (mdSel) mdClose(); });
 
   // ---- Les quatre boutons ----
-  const mdFresh = () => me && Date.now() - meAt < 2 * MIN;
+  const mdFresh = () => core.me && Date.now() - core.meAt < 2 * MIN;
   async function mdAdd(k, lvl) {
     // Point chaud et barrage : à l'endroit du viseur. Renfort : là où est l'équipe (position du téléphone si elle est récente).
-    const c = map.getCenter(), at = k === 'help' && mdFresh() ? me : [c.lat, c.lng];
+    const c = map.getCenter(), at = k === 'help' && mdFresh() ? core.me : [c.lat, c.lng];
     try {
       const x = await mdFetch('/api/medic/items', { method: 'POST', body: JSON.stringify({ k, lvl, lat: at[0], lng: at[1] }) });
       mdSeen.add(x.id); closeSheets();
@@ -134,14 +141,14 @@
     $('#mdPosLbl').textContent = on ? t('Position partagée') : t('Nous sommes ici');
   }
   async function mdShareSend(start) {
-    if (!mdShare || !me) return;
-    try { const r = await mdFetch('/api/medic/pos', { method: 'POST', body: JSON.stringify({ lat: me[0], lng: me[1], ...(start ? { start: true, dur: mdOpts.dur, pub: mdOpts.pub } : {}) }) }); mdShare.until = r.until; mdShareSave(); }
+    if (!mdShare || !core.me) return;
+    try { const r = await mdFetch('/api/medic/pos', { method: 'POST', body: JSON.stringify({ lat: core.me[0], lng: core.me[1], ...(start ? { start: true, dur: mdOpts.dur, pub: mdOpts.pub } : {}) }) }); mdShare.until = r.until; mdShareSave(); }
     catch (e) { if (e.status === 410) { mdShareStop(false); toast(e.message); } else if (start) { mdShareStop(false); toast(e.message); } }
   }
   const mdShareSave = () => { try { if (mdShare) localStorage.setItem('cortege-medic-pos', JSON.stringify({ until: mdShare.until })); else localStorage.removeItem('cortege-medic-pos'); } catch {} };
   async function mdShareStart() {
     if (mdShare) return;
-    if (!me) { if (watchId == null) locate(); toast('Position du téléphone inconnue : autorise la localisation, puis réessaie.'); return; }
+    if (!core.me) { if (core.watchId == null) locate(); toast('Position du téléphone inconnue : autorise la localisation, puis réessaie.'); return; }
     mdShare = { until: Date.now() + mdOpts.dur * MIN, timer: setInterval(() => { if (mdShare && Date.now() >= mdShare.until) mdShareStop(false); else mdShareSend(false); }, 20_000) };
     mdShareUI(); await mdShareSend(true);
     if (mdShare) toast(mdOpts.pub ? t('Position partagée pendant {d}, visible aussi du public', { d: MD_DUR[mdOpts.dur] }) : t('Position partagée pendant {d}, entre équipes medic', { d: MD_DUR[mdOpts.dur] }));
@@ -157,15 +164,15 @@
     let s = null; try { s = JSON.parse(localStorage.getItem('cortege-medic-pos') || 'null'); } catch {}
     if (!s || !(s.until > Date.now())) return mdShareSave();
     mdShare = { until: s.until, timer: setInterval(() => { if (mdShare && Date.now() >= mdShare.until) mdShareStop(false); else mdShareSend(false); }, 20_000) };
-    mdShareUI(); if (watchId == null) locate(); setTimeout(() => mdShareSend(false), 3000);
+    mdShareUI(); if (core.watchId == null) locate(); setTimeout(() => mdShareSend(false), 3000);
   }
   $('#mdPos').onclick = () => { if (mdShare) openMedic(); else mdShareStart(); };
 
   // ---- Notifications : les urgences vitales des autres équipes (abonnement gardé en mémoire par le serveur) ----
   function mdPush() {
-    if (!medic || !pushSub) return;
-    const c = map.getCenter(), at = me || [c.lat, c.lng];
-    mdFetch('/api/medic/push', { method: 'POST', body: JSON.stringify({ sub: pushSub.toJSON(), lat: at[0], lng: at[1], lang: I18N.lang }) }).catch(() => {});
+    if (!medic || !core.pushSub) return;
+    const c = map.getCenter(), at = core.me || [c.lat, c.lng];
+    mdFetch('/api/medic/push', { method: 'POST', body: JSON.stringify({ sub: core.pushSub.toJSON(), lat: at[0], lng: at[1], lang: I18N.lang }) }).catch(() => {});
   }
 
   // ---- Feuille de l'équipe : position, carte, alertes, appareils, code de secours, référent·e ----
@@ -191,9 +198,9 @@
     // Carte
     box.append(h3(t('Carte')), sw(t('Afficher aussi les signalements publics'), t('CRS, lacrymo, charges… signalés par tout le monde sur Cortège.'), mdShowPub, v => { mdShowPub = v; try { localStorage.setItem('cortege-medic-pub', v ? '1' : '0'); } catch {} mdScreen(); }));
     // Alertes
-    box.append(h3(t('Alertes')), hint(pushSub ? t('Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée.', { km: String(mdMe.radiusKm).replace('.', ',') })
+    box.append(h3(t('Alertes')), hint(core.pushSub ? t('Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée.', { km: String(mdMe.radiusKm).replace('.', ',') })
       : t('Notifications pas encore activées sur ce téléphone : sans elles, tu ne vois les appels de renfort que si l’appli est ouverte.')));
-    if (!pushSub) { const b = el('button', { type: 'button', class: 'secondary' }, t('Activer les alertes')); b.onclick = () => $('#btnNotif').click(); box.append(b); }
+    if (!core.pushSub) { const b = el('button', { type: 'button', class: 'secondary' }, t('Activer les alertes')); b.onclick = () => $('#btnNotif').click(); box.append(b); }
     // Appareils
     const out = el('div', { class: 'invite-out', hidden: '' });
     const showLink = (title, r, fine) => {
@@ -245,7 +252,7 @@
     quit.onclick = async () => {
       if (!quit.dataset.armed) { quit.dataset.armed = '1'; quit.textContent = t('Confirmer : l’accès medic sera retiré de ce téléphone'); setTimeout(() => { delete quit.dataset.armed; quit.textContent = t('Quitter le mode medic sur ce téléphone'); }, 5000); return; }
       await mdShareStop(true);
-      if (pushSub) { try { await mdFetch('/api/medic/push', { method: 'DELETE', body: JSON.stringify({ endpoint: pushSub.endpoint }) }); } catch {} }
+      if (core.pushSub) { try { await mdFetch('/api/medic/push', { method: 'DELETE', body: JSON.stringify({ endpoint: core.pushSub.endpoint }) }); } catch {} }
       keySet('medic', null); setMedic(null); toast('Mode medic désactivé sur ce téléphone');
     };
     box.append(h3(t('Cortège')), full, quit);
@@ -274,4 +281,5 @@
     try { const who = await mdFetch('/api/medic/me'); mdMe = who; try { localStorage.setItem('cortege-medic-label', who.label); } catch {} setMedic({ label: who.label, ref: who.ref }); }
     catch (e) { if (keyGet('medic')) setMedic({ label }); }
   }
-  keysReady.then(medicInit);
+  return { medicInit, mdPush };
+};

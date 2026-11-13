@@ -2,6 +2,21 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.19.0
+
+**Pour les orgas** :
+- **Tableau de bord** dans « Mon orga » : signalements vérifiés, faux retirés, annonces et rendez-vous publiés (30 derniers jours et depuis le début), tirés du journal de l'orga. Rien de nouveau n'est enregistré.
+- **Prochains rendez-vous** de l'orga, avec pour chacun une estimation du nombre de téléphones qui recevraient une annonce urgente à cet endroit (un total ; rien en dessous de 5) et un lien vers son affiche.
+- **Rappels avant un rendez-vous**, seulement si l'orga coche la case : une notification la veille et une autre deux heures avant chaque rendez-vous publié. L'adresse de notification du téléphone est alors gardée avec l'orga (5 appareils au plus) ; elle est retirée dès que l'orga décoche, quitte le mode orga ou que son accès est coupé (nouvelle invitation, code de secours, suppression), et à l'effacement d'urgence. `ORGA_REMIND=0` coupe les rappels.
+- **Affiche et flyers** (`/affiche.html`) : nom de l'orga, ligne du rendez-vous, QR code qui ouvre la carte au lieu du rendez-vous (`?orga=…&rdv=…&at=lat,lng`), et un format « 4 flyers A6 par page ». Ce qui est saisi reste dans le navigateur.
+- **Page « Pour les orgas »** (`/orgas`) : ce qu'un accès orga permet, comment l'obtenir, ce qui est gardé. Dans le plan du site, le menu des pages, et en lien depuis la demande d'accès.
+
+**Plus léger, et prêt pour d'autres instances** :
+- **Écran medic chargé à la demande** : son script (`app-medic.js`, 24 Ko) n'est téléchargé que par les téléphones qui ont un accès medic. Le script de tout le monde passe de 84 à 78 Ko compressés. Sources dans `client/parts/`.
+- **Page d'accueil d'une autre instance** : l'adresse (`PUBLIC_URL`, sinon celle demandée) et le pseudo de l'instance remplacent ceux de l'instance d'origine dans l'en-tête de la page (adresse canonique, aperçus de partage, description) et dans le nom de l'appli installée. La mention d'origine ne change pas.
+- **Icônes** : l'épingle Cortège pour l'onglet du navigateur, l'installation et l'en-tête de l'appli ; le logo de l'instance reste en signature à droite.
+- Intégration continue : ESLint vérifie aussi les scripts du téléphone et de l'admin (un nom inconnu est une erreur), et le test navigateur couvre le tableau de bord et l'affiche.
+
 ## 2.18.0
 
 **Mode medic** (demandé par des street medics de Montpellier ; guide des équipes : [docs/MEDICS.md](docs/MEDICS.md)) :

@@ -34,7 +34,7 @@ function scanCode() {
   const add = (id, plural, ref) => { id = norm(id); if (id && !id.includes('}, ') && /\p{L}{2}/u.test(id) && !found.has(id)) found.set(id, { plural: plural && norm(plural), ref }); };
   const lit = `'((?:[^'\\\\\\n]|\\\\.)*)'`;
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(x => x.isDirectory() ? walk(path.join(d, x.name)) : x.name.endsWith('.js') ? [path.join(d, x.name)] : []);
-  for (const file of [...walk(path.join(ROOT, 'client', 'app')), ...walk(path.join(ROOT, 'src'))]) {
+  for (const file of [...walk(path.join(ROOT, 'client', 'app')), ...walk(path.join(ROOT, 'client', 'parts')), ...walk(path.join(ROOT, 'src'))]) {
     const s = fs.readFileSync(file, 'utf8'), ref = path.relative(ROOT, file);
     const un = x => x.replace(/\\'/g, "'");
     for (const m of s.matchAll(new RegExp(`\\btn\\([^,()]+(?:\\([^()]*\\))?, ${lit}, ${lit}`, 'g'))) add(un(m[1]), un(m[2]), ref);

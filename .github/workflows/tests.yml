@@ -18,7 +18,7 @@ jobs:
       - name: Vérification de la syntaxe
         run: node --check server.js && node --check public/app.js && node --check public/sw.js && node --check verifier.js
       - name: ESLint (serveur)
-        run: npx --yes eslint@9.39.5 -c eslint.config.js --no-config-lookup server.js src tools/*.js verifier.js
+        run: npx --yes eslint@9.39.5 -c eslint.config.js --no-config-lookup server.js src tools/*.js verifier.js client/parts public/app.js public/admin.js
       - name: Lecteur de PDF (veille des recueils d'actes)
         run: sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Tests du serveur

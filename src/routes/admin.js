@@ -430,7 +430,7 @@ async function adminRoutes(req, res, url, pathname) {
       if (b.confirm !== 'EFFACER') return send(res, 400, { error: 'Tape EFFACER pour confirmer.' });
       const n = tx(() => {
         const n = q('DELETE FROM reports').run().changes;
-        for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'quota', 'hidden', 'push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
+        for (const t of ['ann', 'orga_log', 'trash', 'devices', 'rate', 'quota', 'hidden', 'push', 'orga_push', 'abuse', 'orga_req']) q('DELETE FROM ' + t).run();
         for (const e of listEvents()) if (e.dev || e.net) { delete e.dev; delete e.net; saveEvent(e); }
         q("UPDATE events SET dev=NULL").run();
         // Arrêtés proposés par des participant·es : l'empreinte du téléphone disparaît aussi (colonne et données)

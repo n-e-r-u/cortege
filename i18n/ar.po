@@ -4527,3 +4527,120 @@ msgstr "حاجز تفتيش / مراقبة"
 
 msgid "J’ai perdu mon accès orga ou medic"
 msgstr "فقدت وصولي كمنظِّم أو كمسعف"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Signalements vérifiés"
+msgstr "بلاغات مؤكَّدة"
+
+#: client/app/17-orga.js
+msgid "Faux retirés"
+msgstr "بلاغات كاذبة محذوفة"
+
+#: client/app/17-orga.js
+msgid "Annonces et numéros"
+msgstr "إعلانات وأرقام"
+
+#: client/app/17-orga.js
+msgid "Rendez-vous publiés"
+msgstr "مواعيد منشورة"
+
+#: client/app/17-orga.js
+msgid "{n} depuis le début"
+msgstr "{n} منذ البداية"
+
+#: client/app/17-orga.js
+msgid "Première action le {date}. Ces chiffres viennent du journal de ton orga, que l’admin voit aussi."
+msgstr "أول إجراء في {date}. هذه الأرقام مأخوذة من سجل منظمتك، ويراه المشرف أيضًا."
+
+#: client/app/17-orga.js
+msgid "Rien pour l’instant : vérifie un signalement ou publie un rendez-vous, il apparaîtra ici."
+msgstr "لا شيء حتى الآن: أكِّد بلاغًا أو انشر موعدًا وسيظهر هنا."
+
+#: client/app/17-orga.js
+msgid "Aucun rendez-vous à venir. Publie une manif ou un blocus depuis l’onglet Annonces."
+msgstr "لا مواعيد قادمة. انشر مظاهرة أو اعتصامًا من تبويب الإعلانات."
+
+#: client/app/17-orga.js
+msgid "Affiche"
+msgstr "ملصق"
+
+#: client/app/17-orga.js
+msgid "en attente de validation"
+msgstr "بانتظار الموافقة"
+
+#: client/app/17-orga.js
+msgid "environ {n} téléphones recevraient une annonce urgente ici"
+msgstr "نحو {n} هاتفًا سيصله إعلان عاجل هنا"
+
+#: client/app/17-orga.js
+msgid "peu de téléphones abonnés aux alertes ici pour l’instant"
+msgstr "هواتف قليلة مشتركة في التنبيهات هنا حتى الآن"
+
+#: client/app/17-orga.js
+msgid "Rappels coupés : l’adresse de notification est retirée du serveur"
+msgstr "أُوقفت التذكيرات: حُذف عنوان الإشعارات من الخادم"
+
+#: client/app/17-orga.js
+msgid "Active d’abord les alertes sur ce téléphone (menu, Alertes), puis reviens cocher le rappel."
+msgstr "فعِّل التنبيهات على هذا الهاتف أولًا (القائمة، التنبيهات)، ثم عُد وفعِّل التذكير."
+
+#: client/app/17-orga.js
+msgid "Rappels activés : la veille et deux heures avant chaque rendez-vous"
+msgstr "فُعِّلت التذكيرات: في اليوم السابق وقبل ساعتين من كل موعد"
+
+#: src/orgas/board.js
+msgid "Ton rendez-vous commence à {h}"
+msgstr "موعدك يبدأ الساعة {h}"
+
+#: src/orgas/board.js
+msgid "Ton rendez-vous : {day} à {h}"
+msgstr "موعدك: {day} الساعة {h}"
+
+#: src/orgas/board.js
+msgid "Annonces, position en direct et point de ralliement sont dans l’espace orga."
+msgstr "الإعلانات والموقع المباشر ونقطة التجمّع موجودة في مساحة المنظمة."
+
+#: src/orgas/board.js
+msgid "Vérifie l’heure, le lieu et le parcours dans l’agenda. L’affiche à imprimer est dans « Mon orga »."
+msgstr "تحقّق من الوقت والمكان والمسار في الأجندة. الملصق الجاهز للطباعة موجود في «منظمتي»."
+
+#: src/orgas/board.js
+msgid "Pas de rappel pour un accès défini dans les réglages du serveur."
+msgstr "لا تذكيرات لوصول مُعرَّف في إعدادات الخادم."
+
+#: public/index.html
+msgid "Tableau de bord · 30 derniers jours"
+msgstr "لوحة المتابعة · آخر 30 يومًا"
+
+#: public/index.html
+msgid "Tes prochains rendez-vous"
+msgstr "مواعيدك القادمة"
+
+#: public/index.html
+msgid "Me rappeler mes rendez-vous"
+msgstr "ذكِّرني بمواعيدي"
+
+#: public/index.html
+msgid "Une notification la veille et deux heures avant chaque rendez-vous publié. Le serveur garde alors l’adresse de notification de ce téléphone avec ton orga, jusqu’à ce que tu décoches."
+msgstr "إشعار في اليوم السابق وقبل ساعتين من كل موعد منشور. يحتفظ الخادم عندها بعنوان إشعارات هذا الهاتف مع منظمتك إلى أن تلغي التفعيل."
+
+#: public/index.html
+msgid "Faire connaître la carte"
+msgstr "عرِّف الناس بالخريطة"
+
+#: public/index.html
+msgid "Une affiche A4 ou quatre flyers par page, au nom de ton orga, avec le QR code de la carte et le numéro de ta legal team."
+msgstr "ملصق A4 أو أربع منشورات في الصفحة، باسم منظمتك، مع رمز QR للخريطة ورقم فريقك القانوني."
+
+#: public/index.html
+msgid "Affiche et flyers à imprimer"
+msgstr "ملصق ومنشورات للطباعة"
+
+#: public/index.html
+msgid "Tout ce qu’un accès orga permet"
+msgstr "كل ما يتيحه وصول المنظمة"
+
+#: public/index.html
+msgid "Ce qu’un accès orga permet"
+msgstr "ما يتيحه وصول المنظمة"

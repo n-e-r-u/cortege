@@ -29,6 +29,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/social.js` | Partage sur Bluesky et Mastodon : messages automatiques (veille et jour J d'une journée, arrêtés regroupés, bilan publié) et écrits par l'admin, relecture facultative, envoi avec nouveaux essais, retrait |
 | `src/ideas.js` | Boîte à idées : propositions, validation par l'admin, statuts, votes anonymes par jeton propre à chaque idée, fusion des doublons |
 | `src/medic.js`, `src/routes/medic.js` | Mode medic : comptes des équipes (`medics.json`), couche privée en mémoire (positions, points chauds, barrages, renforts), attente longue, notifications des urgences vitales, référent·es |
+| `src/orgas/board.js` | Tableau de bord d'une orga (chiffres du journal, prochains rendez-vous) et rappels avant ses rendez-vous (table `orga_push`) |
 | `src/orgas/recovery.js` | Code de secours des orgas et des équipes medic (création, saisie tolérante, empreinte) |
 | `src/moderation.js`, `src/sweep.js` | File de modération, tableau des abus, ménage toutes les 30 s |
 | `src/i18n.js`, `src/i18n-po.js`, `i18n/` | Traductions : un fichier PO par langue dans `i18n/` (voir `i18n/LISEZMOI.md`), construites dans `public/lang/` ; langues déposées dans l'admin (dossier de données), langues proposées et langue par défaut |
@@ -50,7 +51,9 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 
 Il est écrit dans `client/app/` et `client/admin/`, en morceaux numérotés. `npm run build` (ou `node tools/build-client.js`) les assemble dans `public/app.js` et `public/admin.js`, dans l'ordre des numéros. Les fichiers assemblés restent dans le dépôt : rien à construire au déploiement, et les téléphones gardent un seul fichier à télécharger, important sur un réseau saturé.
 
-Les morceaux de `client/app/` sont placés dans une seule fonction : ils partagent leurs variables (la carte, l'état de l'orga, les caches). Ne modifie jamais `public/app.js` ou `public/admin.js` à la main : un test vérifie qu'ils correspondent à `client/`.
+Les morceaux de `client/app/` sont placés dans une seule fonction : ils partagent leurs variables (la carte, l'état de l'orga, les caches).
+
+`client/parts/` contient les parties chargées à la demande, copiées telles quelles dans `public/app-<nom>.js` : aujourd'hui l'écran medic, que seuls les téléphones qui ont un accès medic téléchargent. Une partie ne partage pas les variables du reste : elle reçoit ce dont elle a besoin dans un objet (`core`, voir la fin de `client/app/17-acces.js`), et lit par `core.x` ce qui change au fil du temps. ESLint vérifie qu'elle n'utilise aucun nom qu'elle n'a pas reçu, et que les scripts assemblés n'en utilisent aucun d'inconnu. Ne modifie jamais `public/app.js` ou `public/admin.js` à la main : un test vérifie qu'ils correspondent à `client/`.
 
 ## Règles de dépendance entre modules
 

@@ -50,7 +50,7 @@ function pubShell(req, { title, desc, body, ld }) {
 <meta property="og:title" content="${htmlEsc(title)}"><meta property="og:description" content="${htmlEsc(desc)}"><meta property="og:type" content="article">
 <meta property="og:image" content="${base}/icon-512.png"><meta name="twitter:card" content="summary"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><script src="/deeplink.js" defer></script><style>${PUB_CSS}</style></head>
 <body><main><a class="top" href="/"><img src="/brand/logo.png" alt=""><span><b>Cortège</b><span>La carte en direct des manifs${BRAND.handle ? ' · par @' + htmlEsc(BRAND.handle) : ''}</span></span></a>
-<nav class="links" aria-label="Pages">${[['/', 'Carte'], ['/agenda', 'Agenda'], ['/arretes', 'Arrêtés'], ['/manif', 'Bilans'], ['/villes', 'Villes'], ['/droits', 'Tes droits'], ['/legal-teams', 'Legal teams']]
+<nav class="links" aria-label="Pages">${[['/', 'Carte'], ['/agenda', 'Agenda'], ['/arretes', 'Arrêtés'], ['/manif', 'Bilans'], ['/villes', 'Villes'], ['/droits', 'Tes droits'], ['/legal-teams', 'Legal teams'], ['/orgas', 'Orgas']]
   .map(([u, l]) => `<a href="${u}"${here.endsWith(u) && u !== '/' ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</nav>${body}
 <div class="cta"><a class="main" href="/">Ouvrir la carte</a><a href="${htmlEsc(BRAND.instagram || '/')}" rel="noopener">${BRAND.handle ? 'Suivre @' + htmlEsc(BRAND.handle) : 'Suivre le projet'}</a></div>
 ${showCredit() ? `<p class="fine">Propulsé par <a href="${CREDIT.repo}" rel="noopener">Cortège</a>, un projet de Neru · <a href="${CREDIT.site}" rel="noopener">neru.tv</a> · <a href="${CREDIT.instagram}" rel="noopener">Instagram @neru</a> · <a href="${CREDIT.kofi}" rel="noopener">Ko-fi</a></p>` : ''}
@@ -62,7 +62,7 @@ function sitemapXml(req) {
   const pubs = q('SELECT date, t FROM pub ORDER BY date DESC').all();
   const urls = [['/', day(Date.now()), 'always', '1.0'], ['/manif', pubs[0] ? day(pubs[0].t) : null, 'daily', '0.8'], ['/presse', null, 'monthly', '0.6'],
     ['/affiche.html', null, 'monthly', '0.4'], ['/legal.html', null, 'yearly', '0.2'], ...pubs.map(x => ['/manif/' + x.date, day(x.t), 'monthly', '0.7']),
-    ['/agenda', day(Date.now()), 'daily', '0.8'], ['/arretes', day(Date.now()), 'daily', '0.7'], ['/droits', null, 'monthly', '0.6'], ['/legal-teams', null, 'weekly', '0.6'], ['/villes', null, 'daily', '0.5'],
+    ['/agenda', day(Date.now()), 'daily', '0.8'], ['/arretes', day(Date.now()), 'daily', '0.7'], ['/droits', null, 'monthly', '0.6'], ['/legal-teams', null, 'weekly', '0.6'], ['/villes', null, 'daily', '0.5'], ['/orgas', null, 'monthly', '0.6'],
     ...[...cityIndex().values()].map(c => ['/ville/' + c.slug, null, 'daily', '0.6']),
     ...pubs.flatMap(x => { try { return (JSON.parse(q('SELECT data FROM pub WHERE date=?').get(x.date).data).cityPages || []).map(c => ['/manif/' + x.date + '/' + c.slug, day(x.t), 'monthly', '0.5']); } catch { return []; } })];
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

@@ -89,6 +89,33 @@ function citiesPage(req) {
   return pubShell(req, { title: 'Les manifs ville par ville · Cortège', desc: 'Agenda des manifs, arrêtés, legal teams et bilans, ville par ville, sur Cortège.', body });
 }
 
+// Page « Pour les orgas » : ce qu'un accès orga permet, comment l'obtenir, ce qui est gardé. À envoyer aux collectifs et syndicats.
+function orgasPage(req) {
+  const li = (b, x) => `<li><b>${b}</b> ${x}</li>`;
+  const body = `<h1>Pour les orgas</h1><p class="lead">Syndicats, collectifs, assemblées, legal teams, street medics : avec un accès orga, c’est toi qui tiens la carte autour de ton cortège. Gratuit, sans pub, sans compte ni mot de passe.</p>
+<section><h2>Ce qu’un accès orga permet</h2><ul>
+${li('Annoncer ta mobilisation.', 'Manif, blocus, rassemblement ou AG dans l’<a href="/agenda">agenda</a>, avec le parcours tracé sur la carte et le point de dispersion.')}
+${li('Prévenir les gens sur place.', 'Une annonce visible autour du cortège (3 km au plus). Une annonce urgente arrive en notification sur les téléphones de la zone, même appli fermée.')}
+${li('Fiabiliser la carte.', 'Tu vérifies un signalement (il porte alors une coche et ne peut plus être contesté) ou tu retires un faux.')}
+${li('Poser un point de ralliement', 'où se retrouver en cas de dispersion.')}
+${li('Publier le numéro de ta legal team,', 'affiché dans « Mes droits » pour toute la ville et dans l’<a href="/legal-teams">annuaire</a>.')}
+${li('Montrer où tu es.', 'Position en direct comme street medic, legal team, presse, tête ou queue de cortège. Elle s’arrête seule.')}
+${li('Ouvrir un lieu de repli,', 'avec l’accord du lieu, le temps d’un créneau.')}
+${li('Suivre ton activité.', 'Un tableau de bord dans « Mon orga » : tes annonces, tes vérifications, tes rendez-vous à venir, et un rappel avant chacun si tu le demandes.')}
+${li('Faire connaître la carte.', 'Une <a href="/affiche.html">affiche et des flyers à imprimer</a>, au nom de ton orga, avec le QR code et le numéro de la legal team.')}
+</ul></section>
+<section><h2>Comment obtenir un accès</h2><ol>
+<li><b>Tu fais la demande</b> depuis l’appli : nom du collectif, ville, un lien public (site, réseau social) et un canal officiel pour te joindre.</li>
+<li><b>La demande est vérifiée</b> par les canaux publics du collectif. C’est ce qui écarte les faux comptes et la police.</li>
+<li><b>Tu reçois une invitation à usage unique</b> (QR code ou lien). Tu l’ouvres sur ton téléphone : la clé d’accès est créée à ce moment-là et reste dessus. Un code de secours te permet de retrouver l’accès si le téléphone est perdu, saisi ou vidé.</li>
+<li><b>Période d’essai, puis certification.</b> En essai, tu vérifies des signalements et tu proposes ton numéro de legal team et tes rendez-vous, publiés après validation. Une fois certifiée, l’orga publie directement et peut inviter d’autres orgas.</li>
+</ol></section>
+<section><h2>Ce qui est gardé</h2><p>Le nom affiché de l’orga et le journal de ses actions (vérifications, retraits, annonces), sans adresse IP. Seule l’empreinte de la clé d’accès est stockée, jamais la clé. La demande d’accès est effacée une fois traitée, au plus tard au bout de 30 jours. Si tu demandes les rappels avant tes rendez-vous, l’adresse de notification de ton téléphone est gardée avec ton orga jusqu’à ce que tu les coupes. Rien sur les personnes qui signalent : voir les <a href="/legal.html">mentions légales</a>.</p></section>
+<section><h2>Street medics</h2><p>Les équipes de street medics ont en plus un écran à part : une carte privée entre équipes, avec leurs positions, les points chauds, les barrages filtrants et les appels de renfort. Rien n’y est gardé. Précise dans ta demande que tu es une équipe medic.</p></section>
+<div class="cta" style="grid-template-columns:1fr"><a class="main" href="/?rejoindre=">Demander un accès orga</a></div>`;
+  return pubShell(req, { title: 'Pour les orgas : annonces, agenda, legal team, signalements vérifiés · Cortège', desc: 'Syndicats, collectifs, legal teams, street medics : ce qu’un accès orga permet sur Cortège, la carte en direct des manifs, et comment l’obtenir.', body });
+}
+
 function pubIndex(req) {
   const list = q('SELECT date, data FROM pub ORDER BY date DESC').all().map(x => { const d = JSON.parse(x.data); return { date: x.date, total: d.total, cities: d.cities.length }; });
   const next = upcoming().length;
@@ -102,4 +129,4 @@ function sendPage(res, html) {
   res.end(html);
 }
 
-module.exports = { agendaPage, ordersPage, legalTeamsPage, rightsPage, cityPage, citiesPage, pubIndex, sendPage };
+module.exports = { agendaPage, ordersPage, legalTeamsPage, rightsPage, cityPage, citiesPage, orgasPage, pubIndex, sendPage };

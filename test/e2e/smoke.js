@@ -59,6 +59,29 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     for (const p of ['/agenda', '/droits', '/arretes', '/legal-teams', '/manif', '/admin.html', '/presse'])
       assert.equal((await fetch(B + p)).status, 200, p);
     assert.equal((await fetch(B + '/', { method: 'HEAD' })).status, 200, 'HEAD accepté');
+    // Écran medic : son script n'est pas chargé sur un téléphone sans accès medic
+    assert.equal(await a.evaluate(() => typeof window.cortegeMedic), 'undefined', 'app-medic.js pas chargé sans accès medic');
+    // ---- Espace orga : tableau de bord dans « Mon orga », lien vers l'affiche au nom de l'orga ----
+    {
+      const h = { 'content-type': 'application/json', 'x-admin-key': ADMIN };
+      const o = await fetch(B + '/api/admin/orgas', { method: 'POST', headers: h, body: JSON.stringify({ label: 'Collectif E2E' }) }).then(r => r.json());
+      const p = await phone('/?invite=' + o.invite);
+      await p.waitForSelector('#sheetRec:not([hidden]) #recCode');
+      await p.click('#rcBody .install');
+      await p.waitForSelector('#sheetOrga:not([hidden]) #orgaBoard:not([hidden]) .ob-tile');
+      assert.equal(await p.locator('#obTiles .ob-tile').count(), 4, 'quatre compteurs');
+      assert.match(await p.getAttribute('#obPoster', 'href'), /^\/affiche\.html\?orga=Collectif%20E2E/);
+      const poster = await p.context().newPage();
+      poster.on('pageerror', e => errors.push('affiche : ' + e.message));
+      await poster.goto(B + '/affiche.html?orga=Collectif%20E2E&rdv=Samedi%2014%20h&at=43.61,3.87', { waitUntil: 'load' });
+      await poster.waitForSelector('#qr svg');
+      assert.match(await poster.textContent('#with'), /avec Collectif E2E/);
+      assert.equal(await poster.isVisible('#rdvLine'), true);
+      await poster.selectOption('#format', 'a6');
+      assert.equal(await poster.locator('.page4 .sheet').count(), 4, 'quatre flyers par page');
+      assert.equal(await poster.isVisible('#sheet'), false);
+      await p.context().close();
+    }
     // ---- Mode medic : deux équipes, un renfort, « j'y vais », « réglé », puis un accès perdu et retrouvé ----
     const adm = body => fetch(B + '/api/admin/medics', { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN }, body: JSON.stringify(body) }).then(r => r.json());
     const t1 = await adm({ label: 'Équipe Une', city: 'Montpellier' }), t2 = await adm({ label: 'Équipe Deux', city: 'Montpellier' });

@@ -68,7 +68,9 @@
       const openSpace = () => { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} setTimeout(() => $('#btnOrga').click(), 300); };
       if (justJoined && joinRec) showRec(joinRec, 'orga', openSpace);
       else if (justJoined) openSpace();
+      else if (params.has('espace')) { history.replaceState(null, '', location.pathname); openSpace(); }
       else toast(t('Mode orga : {who}', { who: who.label }));
+      setTimeout(remindSync, 4000);
     }
     catch (e) { toast(e.message); }
   })();
@@ -127,6 +129,7 @@
     $('#inviteOut').hidden = true;
     let me = orga;
     try { me = await orgaFetch('/api/orga/me'); setOrga({ ...orga, ...me }); } catch { return; }
+    renderBoard();
     $('#orgaRecover').textContent = me.sponsor
       ? t('Pour retrouver un accès, il faudra une nouvelle invitation de {who} ou de l’admin, ce qui coupe l’ancien.', { who: me.sponsor })
       : t('Pour retrouver un accès, il faudra une nouvelle invitation de l’admin, ce qui coupe l’ancien.');
@@ -156,6 +159,52 @@
     $('#orgaInviteForm').hidden = !me.canInvite;
     renderFilleules(me);
   }
+  // ---- Tableau de bord : chiffres du journal de l'orga, prochains rendez-vous, rappels, affiche ----
+  const REMIND_KEY = 'cortege-orga-remind';
+  const remindOn = () => { try { return localStorage.getItem(REMIND_KEY) === '1'; } catch { return false; } };
+  // L'adresse de notification est renvoyée à chaque ouverture tant que le rappel est demandé (le serveur a pu l'oublier)
+  async function remindSync() {
+    if (!orga || !remindOn() || !pushSub) return false;
+    try { await orgaFetch('/api/orga/remind', { method: 'POST', body: JSON.stringify({ sub: pushSub.toJSON(), lang: I18N.lang }) }); return true; } catch { return false; }
+  }
+  async function remindOff() {
+    try { localStorage.removeItem(REMIND_KEY); } catch {}
+    if (orga && pushSub) { try { await orgaFetch('/api/orga/remind', { method: 'DELETE', body: JSON.stringify({ endpoint: pushSub.endpoint }) }); } catch {} }
+  }
+  const posterUrl = e => '/affiche.html?orga=' + encodeURIComponent(orga.label) + (e ? '&rdv=' + encodeURIComponent(fmtExp(e.start) + ' · ' + (e.place || e.title)) + '&at=' + e.lat + ',' + e.lng : '');
+  async function renderBoard() {
+    const box = $('#orgaBoard');
+    let d; try { d = await orgaFetch('/api/orga/board'); } catch { box.hidden = true; return; }
+    box.hidden = false;
+    const tiles = $('#obTiles'); tiles.textContent = '';
+    for (const [k, label] of [['verified', t('Signalements vérifiés')], ['removed', t('Faux retirés')], ['announcements', t('Annonces et numéros')], ['events', t('Rendez-vous publiés')]])
+      tiles.append(el('div', { class: 'ob-tile' }, el('b', {}, String(d.month[k])), el('span', {}, label), el('small', {}, t('{n} depuis le début', { n: d.total[k] }))));
+    $('#obSince').textContent = d.since ? t('Première action le {date}. Ces chiffres viennent du journal de ton orga, que l’admin voit aussi.', { date: new Date(d.since).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'long', year: 'numeric' }) })
+      : t('Rien pour l’instant : vérifie un signalement ou publie un rendez-vous, il apparaîtra ici.');
+    const ul = $('#obEvents'); ul.textContent = '';
+    if (!d.events.length) ul.append(el('li', { class: 'empty' }, t('Aucun rendez-vous à venir. Publie une manif ou un blocus depuis l’onglet Annonces.')));
+    for (const e of d.events) {
+      const poster = el('a', { href: posterUrl(e), target: '_blank', rel: 'noopener' }, t('Affiche'));
+      ul.append(el('li', {}, el('div', { class: 't' }, el('div', { class: 'l' }, document.createTextNode((e.pending ? '⏳ ' : '') + e.title)),
+        el('div', { class: 's' }, document.createTextNode(fmtExp(e.start) + (e.place ? ' · ' + e.place : '') + ' · '
+          + (e.pending ? t('en attente de validation') : e.reach ? t('environ {n} téléphones recevraient une annonce urgente ici', { n: e.reach }) : t('peu de téléphones abonnés aux alertes ici pour l’instant')) + ' · '), poster))));
+    }
+    $('#obPoster').href = posterUrl(null);
+    // Rappels : seulement avec les notifications activées sur ce téléphone
+    $('#obRemindWrap').hidden = !d.remind.can;
+    $('#obRemind').checked = remindOn() && !!pushSub;
+  }
+  // Rappel ouvert pendant que l'appli tourne : on va à « Mon orga »
+  navigator.serviceWorker?.addEventListener('message', e => {
+    if (orga && e.data && e.data.type === 'goto' && /[?&]espace=orga/.test(String(e.data.url || ''))) { try { localStorage.setItem('cortege-orga-tab', 'compte'); } catch {} $('#btnOrga').click(); }
+  });
+  $('#obRemind').onchange = async () => {
+    const box = $('#obRemind');
+    if (!box.checked) { await remindOff(); toast(t('Rappels coupés : l’adresse de notification est retirée du serveur')); return; }
+    if (!pushSub) { box.checked = false; toast(t('Active d’abord les alertes sur ce téléphone (menu, Alertes), puis reviens cocher le rappel.')); return; }
+    try { localStorage.setItem(REMIND_KEY, '1'); } catch {}
+    if (await remindSync()) toast(t('Rappels activés : la veille et deux heures avant chaque rendez-vous')); else { box.checked = false; try { localStorage.removeItem(REMIND_KEY); } catch {} toast(t('Action impossible.')); }
+  };
   async function renderFilleules(me) {
     const ul = $('#filleulList'); ul.textContent = '';
     if (me && me.ban) ul.append(el('li', {}, '⛔ ' + t('Invitations suspendues jusqu’au {date} : une orga que tu as invitée a été révoquée pour abus.', { date: fmtExp(me.ban) })));

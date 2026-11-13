@@ -320,6 +320,7 @@
     <b class="card-title">Legal team, street medics, collectif ?</b>
     <p>Deviens orga certifiée : tu pourras vérifier les signalements, retirer les faux et publier des annonces pour ta zone.</p>
     <button type="button" class="secondary" id="orgaRequest">Demander un accès orga</button>
+    <a class="inline-link ob-more" href="/orgas" target="_blank" rel="noopener">Ce qu’un accès orga permet</a>
     <p class="fine">Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule.</p>
   </div>
 
@@ -815,6 +816,21 @@
     <p class="orga-status"><b id="orgaStatusName">—</b> <span class="orga-status-chip" id="orgaStatusChip"></span></p>
     <p class="hint trial-note" id="orgaSponsored" hidden></p>
     <p class="hint trial-note" id="orgaTrial" hidden>Période d’essai : « Vérifier » compte comme une confirmation forte et « Retirer » comme deux « Plus là ». Tes numéros de legal team et événements s’affichent après validation par l’admin. Les annonces (dans un rayon de 3 km) et la coche « vérifié » viendront une fois l’orga confirmée.</p>
+    <div id="orgaBoard" hidden>
+      <h3 class="group-title">Tableau de bord · 30 derniers jours</h3>
+      <div class="ob-tiles" id="obTiles"></div>
+      <p class="fine" id="obSince"></p>
+      <h3 class="group-title">Tes prochains rendez-vous</h3>
+      <ul class="org-list" id="obEvents"></ul>
+      <label class="switch" id="obRemindWrap" hidden>
+        <input type="checkbox" id="obRemind">
+        <span class="switch-txt"><b>Me rappeler mes rendez-vous</b><span>Une notification la veille et deux heures avant chaque rendez-vous publié. Le serveur garde alors l’adresse de notification de ce téléphone avec ton orga, jusqu’à ce que tu décoches.</span></span>
+      </label>
+      <h3 class="group-title">Faire connaître la carte</h3>
+      <p class="hint">Une affiche A4 ou quatre flyers par page, au nom de ton orga, avec le QR code de la carte et le numéro de ta legal team.</p>
+      <a class="secondary ob-link" id="obPoster" href="/affiche.html" target="_blank" rel="noopener">Affiche et flyers à imprimer</a>
+      <a class="inline-link ob-more" href="/orgas" target="_blank" rel="noopener">Tout ce qu’un accès orga permet</a>
+    </div>
     <div id="orgaLogoBox" hidden>
         <h3 class="group-title">Logo de l’orga</h3>
         <p class="hint" id="rfLogoState">Facultatif. Il s’affiche au centre de tes lieux après validation par l’admin.</p>
