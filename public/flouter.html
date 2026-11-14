@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flouter les visages · Cortège</title>
+<meta name="description" content="Masque les visages de tes photos de manif avant de les publier. Tout se passe sur ton téléphone : rien n’est envoyé.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
+<script src="/lang/langs.js"></script>
+<script src="/i18n.js"></script>
+<style>
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html.i18n-wait body { visibility: hidden; }
+body { margin: 0; background: var(--page-bg); background-attachment: fixed; color: var(--fg); font: 16px/1.5 var(--font); }
+main { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
+a { color: var(--accent); }
+.back { font-size: 14px; text-decoration: none; }
+h1 { margin: 4px 0 0; font: 400 30px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .01em; }
+h2 { margin: 0; font-size: 20px; scroll-margin-top: 16px; }
+.lead { margin: 4px 0 0; color: var(--muted); }
+.flouteur, .editor, .pick, .export { display: flex; flex-direction: column; gap: 12px; }
+.flouteur, .editor { gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; margin: 0; min-width: 0; }
+button, .btn { min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--brand-grad); color: var(--grad-fg); font: 800 15px var(--font); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-align: center; text-decoration: none; }
+button.ghost, .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.ghost:disabled { border-style: dashed; }
+/* Mode actif (« Aperçu final ») : visible sans curseur, sur un téléphone */
+button.ghost[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.photo-input:focus-visible + .btn { outline: 3px solid var(--accent); outline-offset: 3px; }
+.ready { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; color: var(--ok-text); }
+.ready svg { flex: none; }
+.progress { display: flex; flex-direction: column; gap: 6px; }
+.progress label { font-weight: 700; }
+progress { width: 100%; height: 20px; appearance: none; border: 2px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--bg); color: var(--fg); }
+progress::-webkit-progress-bar { background: var(--bg); }
+progress::-webkit-progress-value { background: var(--fg); }
+progress::-moz-progress-bar { background: var(--fg); }
+.status { margin: 0; font-weight: 700; scroll-margin-top: 16px; }
+.status:empty { display: none; }
+.fine { margin: 0; font-size: 13px; color: var(--muted); }
+.count { margin: 0; font-size: 18px; font-weight: 700; }
+/* « Photo 1 sur 2 » au-dessus des deux boutons sur un téléphone, entre eux quand la largeur le permet */
+.batch-nav { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: 'pos pos' 'prev next'; gap: 8px 12px; align-items: center; }
+.batch-pos { grid-area: pos; margin: 0; font-weight: 700; text-align: center; }
+#prev { grid-area: prev; }
+#next { grid-area: next; }
+@media (min-width: 32rem) { .batch-nav { grid-template-columns: auto 1fr auto; grid-template-areas: 'prev pos next'; } }
+/* Deux colonnes : à 360 px, chaque libellé tient sur une ligne */
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tools button { padding: 0 8px; }
+.tools .wide { grid-column: 1 / -1; }
+legend { padding: 0 4px; font-weight: 700; }
+.choice { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.choice input { width: 24px; height: 24px; margin: 0; accent-color: var(--accent); }
+.help { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; }
+.warn { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--warn-bg); color: var(--warn-text); font-weight: 700; }
+/* La promesse de confidentialité, visible avant tout le reste */
+.safe { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: var(--surface); border: 2px solid var(--soutien); }
+.safe svg { flex: none; color: var(--ok-text); }
+.safe p { margin: 0; }
+.safe .safe-title { margin-bottom: 4px; font-weight: 800; font-size: 17px; color: var(--ok-text); }
+
+/* Zone de l'image. overflow: clip (et non hidden) : le focus d'un masque ne fait jamais défiler la zone, dont la vue
+   ne dépend que du zoom. touch-action: none : les gestes servent aux masques, pas à faire défiler la page. */
+.stage { --mask: #f5a524; position: relative; overflow: hidden; overflow: clip; border: 2px solid var(--line); background: var(--surface); touch-action: none; user-select: none; -webkit-user-select: none; }
+.stage-content { position: relative; transform-origin: 0 0; }
+#preview { display: block; width: 100%; height: 100%; }
+.mask-layer { position: absolute; inset: 0; }
+.mask { position: absolute; }
+.mask[data-active] { z-index: 1; }
+.mask:focus-within { z-index: 2; }
+/* Contour ambre entre deux traits sombres : lisible sur une photo claire comme sur une photo sombre */
+.mask-button { position: absolute; inset: 0; display: block; min-height: 0; padding: 0; border-radius: 0; border: 2px solid var(--mask); box-shadow: inset 0 0 0 1px #111, 0 0 0 2px #111; background: transparent; }
+.mask[data-active] .mask-button { border-width: 4px; box-shadow: inset 0 0 0 2px #111, 0 0 0 2px #111; }
+/* Focus en double anneau, ambre et sombre : un anneau d'une seule couleur disparaît sur une partie des photos.
+   Le contour transparent reste visible en mode de contraste forcé, qui ignore box-shadow. */
+.mask .mask-button:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: inset 0 0 0 2px #111, 0 0 0 2px #111, 0 0 0 6px var(--mask), 0 0 0 8px #111; }
+/* Poignée de 44 px hors du masque, dont seul le coin le chevauche (8 px) : sur un petit masque, elle ne cache pas la zone
+   qui le retire. flouter-editor.js choisit le coin selon la place (data-handle-x, data-handle-y). Seul le masque actif montre
+   la sienne : sur une foule, des dizaines de poignées cacheraient l'image. */
+.mask-handle { position: absolute; width: 44px; height: 44px; cursor: nwse-resize; }
+.mask:not([data-active]) .mask-handle { display: none; }
+.mask-handle::after { content: ''; position: absolute; width: 16px; height: 16px; border: 2px solid #111; border-radius: 50%; background: var(--mask); }
+.mask[data-handle-x="end"] .mask-handle { left: calc(100% - 8px); }
+.mask[data-handle-x="start"] .mask-handle { right: calc(100% - 8px); }
+.mask[data-handle-x="inside"] .mask-handle { right: 0; }
+.mask[data-handle-y="end"] .mask-handle { top: calc(100% - 8px); }
+.mask[data-handle-y="start"] .mask-handle { bottom: calc(100% - 8px); }
+.mask[data-handle-y="inside"] .mask-handle { bottom: 0; }
+.mask[data-handle-x="end"] .mask-handle::after { left: 0; }
+.mask:not([data-handle-x="end"]) .mask-handle::after { right: 0; }
+.mask[data-handle-y="end"] .mask-handle::after { top: 0; }
+.mask:not([data-handle-y="end"]) .mask-handle::after { bottom: 0; }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <a class="back" href="/">← Carte</a>
+    <h1>Flouter les visages</h1>
+    <p class="lead">Masque les visages de tes photos avant de les publier.</p>
+  </div>
+  <div class="safe">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>
+    <div>
+      <p class="safe-title">Rien ne sort de ton téléphone</p>
+      <p>La détection des visages se fait dans ton navigateur, sur ton téléphone. Tes photos ne sont envoyées ni à Cortège ni à personne d’autre, et ne sont gardées nulle part. Tu peux le vérifier : une fois le flouteur prêt, il marche en mode avion.</p>
+    </div>
+  </div>
+  <noscript data-no-i18n><p class="card">Le flouteur a besoin de JavaScript.</p></noscript>
+
+  <div class="flouteur" id="flouteur" hidden>
+    <section class="card" aria-label="Préparation">
+      <button type="button" id="prepare">Préparer le flouteur ({mb} Mo, une seule fois)</button>
+      <p class="ready" id="ready" hidden><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m7.5 12.5 3 3 6-7"></path></svg><span id="readyText">Prêt hors ligne</span></p>
+      <div class="progress" id="progress" hidden>
+        <label for="progressBar" id="progressLabel"></label>
+        <progress id="progressBar" max="100" value="0"></progress>
+      </div>
+      <p class="status" id="status" aria-live="polite" tabindex="-1"></p>
+      <p class="fine">Ce téléchargement installe le moteur de détection sur ton téléphone : rien ne part dans l’autre sens. Fais-le avant de partir, il marche ensuite sans réseau.</p>
+    </section>
+
+    <section class="pick" aria-label="Choisir des photos">
+      <input class="photo-input sr-only" id="photosGalerie" type="file" accept="image/*" multiple>
+      <label class="btn" for="photosGalerie">Choisir des photos</label>
+      <input class="photo-input sr-only" id="photoCamera" type="file" accept="image/*" capture="environment">
+      <label class="btn ghost" for="photoCamera">Prendre une photo</label>
+    </section>
+
+    <section class="editor" id="editor" aria-labelledby="editorTitle" hidden>
+      <h2 id="editorTitle" tabindex="-1">Vérifier les masques</h2>
+      <div class="batch-nav" id="batchNav" hidden>
+        <button type="button" class="ghost" id="prev" aria-label="Photo précédente"><span aria-hidden="true">‹</span> Précédente</button>
+        <p class="batch-pos" id="position" aria-live="polite"></p>
+        <button type="button" class="ghost" id="next" aria-label="Photo suivante">Suivante <span aria-hidden="true">›</span></button>
+      </div>
+      <p class="count" id="maskCount" aria-live="polite"></p>
+      <div class="stage" id="stage">
+        <div class="stage-content" id="stageContent">
+          <canvas id="preview" role="img" aria-label="Aperçu de la photo masquée"></canvas>
+          <div class="mask-layer" id="maskLayer" role="group" aria-label="Masques" aria-describedby="keysHelp"></div>
+        </div>
+      </div>
+      <p class="sr-only" id="keysHelp">Flèches : masque précédent ou suivant. Maj et flèches : déplacer le masque. Plus ou moins : changer sa taille. Suppr ou Entrée : le retirer. Échap : revenir aux outils.</p>
+      <p class="sr-only" id="announce" aria-live="polite"></p>
+      <div class="tools" id="tools" role="group" aria-label="Outils d’édition">
+        <button type="button" class="ghost" id="undo"><span aria-hidden="true">↶</span> Annuler</button>
+        <button type="button" class="ghost" id="zoomOut">Zoom −</button>
+        <button type="button" class="ghost" id="zoomIn">Zoom +</button>
+        <button type="button" class="ghost" id="zoomReset">Zoom 100 %</button>
+        <button type="button" class="ghost wide" id="addMask">Ajouter un masque</button>
+        <button type="button" class="ghost" id="growMask">Agrandir</button>
+        <button type="button" class="ghost" id="shrinkMask">Réduire</button>
+        <button type="button" class="ghost wide" id="finalPreview" aria-pressed="false">Aperçu final</button>
+      </div>
+      <fieldset class="card">
+        <legend>Masquage</legend>
+        <label class="choice"><input type="radio" name="masquage" value="aplat" checked><span>Aplat noir (recommandé)</span></label>
+        <label class="choice"><input type="radio" name="masquage" value="pixellisation"><span>Pixellisation forte</span></label>
+        <p class="fine">Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable. L’aplat noir et la pixellisation forte ne laissent rien à retrouver.</p>
+      </fieldset>
+      <ul class="help">
+        <li>Touche une zone vide pour ajouter un masque.</li>
+        <li>Touche un masque pour le retirer. « Annuler » le remet.</li>
+        <li>Glisse un masque pour le déplacer. Ou touche le bon endroit, puis retire l’ancien masque.</li>
+        <li>Le rond orange change la taille du dernier masque ajouté ou déplacé. « Agrandir » et « Réduire » aussi.</li>
+        <li>Pince l’image ou touche « Zoom + » pour voir de près.</li>
+      </ul>
+      <p class="warn">La détection peut rater un visage de profil, flou ou caché. Vérifie chaque photo, et pense aussi aux tatouages, pancartes et signes distinctifs.</p>
+      <div class="export">
+        <button type="button" id="share" hidden>Partager la photo</button>
+        <button type="button" id="save">Enregistrer la photo</button>
+        <button type="button" class="ghost" id="exportAll" hidden>Exporter les photos</button>
+        <p class="fine">La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil.</p>
+      </div>
+    </section>
+  </div>
+</main>
+<script src="/flouter-lib.js"></script>
+<script src="/flouter-editor.js"></script>
+<script src="/flouter.js"></script>
+</body>
+</html>

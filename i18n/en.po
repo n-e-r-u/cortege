@@ -4658,3 +4658,282 @@ msgstr "Show public reports"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "Riot police, tear gas, charges… reported by everyone on Cortège, on top of the teams’ points. The agenda, routes and places are in “Full view”."
+
+# --- textes à traduire ---
+#: public/flouter.js
+msgid "{n} visage masqué. Vérifie avant de partager."
+msgid_plural "{n} visages masqués. Vérifie avant de partager."
+msgstr[0] "{n} face masked. Check before sharing."
+msgstr[1] "{n} faces masked. Check before sharing."
+
+#: public/flouter.js
+msgid "Exporter {n} photo"
+msgid_plural "Exporter les {n} photos"
+msgstr[0] "Export {n} photo"
+msgstr[1] "Export all {n} photos"
+
+#: public/flouter.js
+msgid "{n} photo exportée."
+msgid_plural "{n} photos exportées."
+msgstr[0] "{n} photo exported."
+msgstr[1] "{n} photos exported."
+
+#: public/flouter.js
+msgid "Masque {n} (activer pour le retirer)"
+msgstr "Mask {n} (activate to remove it)"
+
+#: public/flouter.js
+msgid "Masque retiré."
+msgstr "Mask removed."
+
+#: public/flouter.js
+msgid "Téléchargement du flouteur : {pct}"
+msgstr "Downloading the blur tool: {pct}"
+
+#: public/flouter.js
+msgid "Le mode rapide ne marche pas sur cet appareil. Préparation du mode de secours."
+msgstr "Fast mode doesn’t work on this device. Preparing backup mode."
+
+#: public/flouter.js
+msgid "Préparation du flouteur…"
+msgstr "Preparing the blur tool…"
+
+#: public/flouter.js
+msgid "Prêt, mais pas hors ligne : cette adresse n’est pas sécurisée (https)."
+msgstr "Ready, but not offline: this address isn’t secure (https)."
+
+#: public/flouter.js
+msgid "La préparation a échoué. Vérifie ta connexion et réessaie."
+msgstr "Preparation failed. Check your connection and try again."
+
+#: public/flouter.js
+msgid "Le flouteur n’est pas encore prêt et le réseau est indisponible. Reconnecte-toi une fois pour le préparer."
+msgstr "The blur tool isn’t ready yet and there’s no network. Reconnect once to prepare it."
+
+#: public/flouter.js
+msgid "Aucun visage masqué. Touche l’image pour ajouter un masque."
+msgstr "No face masked. Tap the image to add a mask."
+
+#: public/flouter.js
+msgid "Photo {i} sur {n}"
+msgstr "Photo {i} of {n}"
+
+#: public/flouter.js
+msgid "Exporter les photos"
+msgstr "Export photos"
+
+#: public/flouter.js
+msgid "Cette photo n’a pas pu être lue."
+msgstr "This photo couldn’t be read."
+
+#: public/flouter.js
+msgid "Analyse en cours…"
+msgstr "Analysing…"
+
+#: public/flouter.js
+msgid "Analyse de la photo {i} sur {n} : {pct}"
+msgstr "Analysing photo {i} of {n}: {pct}"
+
+#: public/flouter.js
+msgid "Analyse de la photo : {pct}"
+msgstr "Analysing the photo: {pct}"
+
+#: public/flouter.js
+msgid "Photo exportée : {name}."
+msgstr "Photo exported: {name}."
+
+#: public/flouter.js
+msgid "Elle a été réduite à {mp} millions de pixels."
+msgstr "It was reduced to {mp} million pixels."
+
+#: public/flouter.js
+msgid "L’export a échoué. Réessaie."
+msgstr "Export failed. Try again."
+
+#: public/flouter.js
+msgid "Export des photos : {pct}"
+msgstr "Exporting photos: {pct}"
+
+#: public/flouter.js
+msgid "Annulé."
+msgstr "Undone."
+
+#: public/flouter.js
+msgid "La photo partagée n’a pas pu être reçue. Choisis-la ci-dessous."
+msgstr "The shared photo couldn’t be received. Choose it below."
+
+#: public/flouter.js
+msgid "Préparer le flouteur ({mb} Mo, une seule fois)"
+msgstr "Prepare the blur tool ({mb} MB, one time only)"
+
+#: public/flouter.html
+msgid "Flouter les visages · Cortège"
+msgstr "Blur faces · Cortège"
+
+#: public/flouter.html
+msgid "Préparation"
+msgstr "Preparation"
+
+#: public/flouter.html
+msgid "Choisir des photos"
+msgstr "Choose photos"
+
+#: public/flouter.html
+msgid "Photo précédente"
+msgstr "Previous photo"
+
+#: public/flouter.html
+msgid "Photo suivante"
+msgstr "Next photo"
+
+#: public/flouter.html
+msgid "Aperçu de la photo masquée"
+msgstr "Preview of the masked photo"
+
+#: public/flouter.html
+msgid "Masques"
+msgstr "Masks"
+
+#: public/flouter.html
+msgid "Outils d’édition"
+msgstr "Editing tools"
+
+#: public/flouter.html
+msgid "← Carte"
+msgstr "← Map"
+
+#: public/flouter.html
+msgid "Flouter les visages"
+msgstr "Blur faces"
+
+#: public/flouter.html
+msgid "Masque les visages de tes photos avant de les publier."
+msgstr "Mask the faces in your photos before posting them."
+
+#: public/flouter.html
+msgid "Rien ne sort de ton téléphone"
+msgstr "Nothing leaves your phone"
+
+#: public/flouter.html
+msgid "La détection des visages se fait dans ton navigateur, sur ton téléphone. Tes photos ne sont envoyées ni à Cortège ni à personne d’autre, et ne sont gardées nulle part. Tu peux le vérifier : une fois le flouteur prêt, il marche en mode avion."
+msgstr "Faces are detected in your browser, on your phone. Your photos are never sent to Cortège or anyone else, and are not stored anywhere. You can check it yourself: once the blur tool is ready, it works in airplane mode."
+
+#: public/flouter.html
+msgid "Prêt hors ligne"
+msgstr "Ready offline"
+
+#: public/flouter.html
+msgid "Ce téléchargement installe le moteur de détection sur ton téléphone : rien ne part dans l’autre sens. Fais-le avant de partir, il marche ensuite sans réseau."
+msgstr "This download installs the detection engine on your phone: nothing goes the other way. Do it before you leave; it then works without a network."
+
+#: public/flouter.html
+msgid "Prendre une photo"
+msgstr "Take a photo"
+
+#: public/flouter.html
+msgid "Vérifier les masques"
+msgstr "Check the masks"
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">‹</span> Précédente"
+msgstr "<span aria-hidden=\"true\">‹</span> Previous"
+
+#: public/flouter.html
+msgid "Suivante <span aria-hidden=\"true\">›</span>"
+msgstr "Next <span aria-hidden=\"true\">›</span>"
+
+#: public/flouter.html
+msgid "Flèches : masque précédent ou suivant. Maj et flèches : déplacer le masque. Plus ou moins : changer sa taille. Suppr ou Entrée : le retirer. Échap : revenir aux outils."
+msgstr "Arrows: previous or next mask. Shift and arrows: move the mask. Plus or minus: change its size. Delete or Enter: remove it. Escape: back to the tools."
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">↶</span> Annuler"
+msgstr "<span aria-hidden=\"true\">↶</span> Undo"
+
+#: public/flouter.html
+msgid "Zoom −"
+msgstr "Zoom −"
+
+#: public/flouter.html
+msgid "Zoom +"
+msgstr "Zoom +"
+
+#: public/flouter.html
+msgid "Zoom 100 %"
+msgstr "Zoom 100%"
+
+#: public/flouter.html
+msgid "Ajouter un masque"
+msgstr "Add a mask"
+
+#: public/flouter.html
+msgid "Agrandir"
+msgstr "Enlarge"
+
+#: public/flouter.html
+msgid "Réduire"
+msgstr "Shrink"
+
+#: public/flouter.html
+msgid "Aperçu final"
+msgstr "Final preview"
+
+#: public/flouter.html
+msgid "Masquage"
+msgstr "Masking"
+
+#: public/flouter.html
+msgid "Aplat noir (recommandé)"
+msgstr "Solid black (recommended)"
+
+#: public/flouter.html
+msgid "Pixellisation forte"
+msgstr "Heavy pixelation"
+
+#: public/flouter.html
+msgid "Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable. L’aplat noir et la pixellisation forte ne laissent rien à retrouver."
+msgstr "No ordinary blur: it can be reversed and make a face recognisable again. Solid black and heavy pixelation leave nothing to recover."
+
+#: public/flouter.html
+msgid "Touche une zone vide pour ajouter un masque."
+msgstr "Tap an empty area to add a mask."
+
+#: public/flouter.html
+msgid "Touche un masque pour le retirer. « Annuler » le remet."
+msgstr "Tap a mask to remove it. “Undo” puts it back."
+
+#: public/flouter.html
+msgid "Glisse un masque pour le déplacer. Ou touche le bon endroit, puis retire l’ancien masque."
+msgstr "Drag a mask to move it. Or tap the right spot, then remove the old mask."
+
+#: public/flouter.html
+msgid "Le rond orange change la taille du dernier masque ajouté ou déplacé. « Agrandir » et « Réduire » aussi."
+msgstr "The orange dot changes the size of the last mask added or moved. “Enlarge” and “Shrink” do too."
+
+#: public/flouter.html
+msgid "Pince l’image ou touche « Zoom + » pour voir de près."
+msgstr "Pinch the image or tap “Zoom +” to look closer."
+
+#: public/flouter.html
+msgid "La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil."
+msgstr "The exported photo is a new image, with no GPS location or device information."
+
+#: public/flouter.html
+msgid "La détection peut rater un visage de profil, flou ou caché. Vérifie chaque photo, et pense aussi aux tatouages, pancartes et signes distinctifs."
+msgstr "Detection can miss a face in profile, blurred or hidden. Check every photo, and think about tattoos, signs and distinctive features too."
+
+#: public/flouter.html
+msgid "Partager la photo"
+msgstr "Share the photo"
+
+#: public/flouter.html
+msgid "Enregistrer la photo"
+msgstr "Save the photo"
+
+#: public/index.html
+msgid "<b>Flouter les visages</b><small>Prépare-le avant de partir : il marche ensuite sans réseau</small>"
+msgstr "<b>Blur faces</b><small>Prepare it before you leave: it then works without a network</small>"
+
+#: public/index.html
+msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
+msgstr "<a class=\"inline-link\" href=\"/flouter\">Blur the faces in a photo</a>"

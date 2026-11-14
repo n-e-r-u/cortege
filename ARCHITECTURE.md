@@ -45,6 +45,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/mobs.js`, `src/migrate.js` | Journées de mobilisation prévues, reprise des anciennes données |
 | `client/app/`, `client/admin/` | Le code du téléphone et de la page admin, en morceaux numérotés par fonction (carte, synchro, signaler, orga, agenda…) |
 | `public/` | Ce que sert le serveur : la web app, l'admin, les pages statiques, les traductions (`public/lang/`, construites depuis `i18n/`) |
+| `public/flouter*.js`, `public/flouter.html`, `public/vendor/mediapipe/` | Flouteur (`/flouter`) : masque les visages d'une photo sur le téléphone, sans rien envoyer. Page à part écrite directement (pas d'assemblage) ; `flouter-lib.js` contient la logique partagée par la page, l'éditeur de masques (`flouter-editor.js`), le worker de détection (`flouter-worker.js`) et les tests ; moteur de détection MediaPipe copié dans `public/vendor/mediapipe/` |
 | `tools/` | Outils hors serveur : extraction de la carte, tracé par les rues, sauvegarde, traductions |
 
 ## Le code du téléphone et de l'admin

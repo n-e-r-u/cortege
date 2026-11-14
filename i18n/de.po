@@ -4655,3 +4655,282 @@ msgstr "Öffentliche Meldungen anzeigen"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "CRS, Tränengas, Angriffe… von allen auf Cortège gemeldet, zusätzlich zu den Punkten der Teams. Agenda, Routen und Orte findest du in „Vollansicht“."
+
+# --- textes à traduire ---
+#: public/flouter.js
+msgid "{n} visage masqué. Vérifie avant de partager."
+msgid_plural "{n} visages masqués. Vérifie avant de partager."
+msgstr[0] "{n} Gesicht abgedeckt. Prüfe vor dem Teilen."
+msgstr[1] "{n} Gesichter abgedeckt. Prüfe vor dem Teilen."
+
+#: public/flouter.js
+msgid "Exporter {n} photo"
+msgid_plural "Exporter les {n} photos"
+msgstr[0] "{n} Foto exportieren"
+msgstr[1] "Alle {n} Fotos exportieren"
+
+#: public/flouter.js
+msgid "{n} photo exportée."
+msgid_plural "{n} photos exportées."
+msgstr[0] "{n} Foto exportiert."
+msgstr[1] "{n} Fotos exportiert."
+
+#: public/flouter.js
+msgid "Masque {n} (activer pour le retirer)"
+msgstr "Maske {n} (aktivieren, um sie zu entfernen)"
+
+#: public/flouter.js
+msgid "Masque retiré."
+msgstr "Maske entfernt."
+
+#: public/flouter.js
+msgid "Téléchargement du flouteur : {pct}"
+msgstr "Werkzeug wird heruntergeladen: {pct}"
+
+#: public/flouter.js
+msgid "Le mode rapide ne marche pas sur cet appareil. Préparation du mode de secours."
+msgstr "Der schnelle Modus funktioniert auf diesem Gerät nicht. Ersatzmodus wird vorbereitet."
+
+#: public/flouter.js
+msgid "Préparation du flouteur…"
+msgstr "Werkzeug wird vorbereitet…"
+
+#: public/flouter.js
+msgid "Prêt, mais pas hors ligne : cette adresse n’est pas sécurisée (https)."
+msgstr "Bereit, aber nicht offline: Diese Adresse ist nicht sicher (https)."
+
+#: public/flouter.js
+msgid "La préparation a échoué. Vérifie ta connexion et réessaie."
+msgstr "Die Vorbereitung ist fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut."
+
+#: public/flouter.js
+msgid "Le flouteur n’est pas encore prêt et le réseau est indisponible. Reconnecte-toi une fois pour le préparer."
+msgstr "Das Werkzeug ist noch nicht bereit und es gibt kein Netz. Verbinde dich einmal, um es vorzubereiten."
+
+#: public/flouter.js
+msgid "Aucun visage masqué. Touche l’image pour ajouter un masque."
+msgstr "Kein Gesicht abgedeckt. Tippe auf das Bild, um eine Maske hinzuzufügen."
+
+#: public/flouter.js
+msgid "Photo {i} sur {n}"
+msgstr "Foto {i} von {n}"
+
+#: public/flouter.js
+msgid "Exporter les photos"
+msgstr "Fotos exportieren"
+
+#: public/flouter.js
+msgid "Cette photo n’a pas pu être lue."
+msgstr "Dieses Foto konnte nicht gelesen werden."
+
+#: public/flouter.js
+msgid "Analyse en cours…"
+msgstr "Wird analysiert…"
+
+#: public/flouter.js
+msgid "Analyse de la photo {i} sur {n} : {pct}"
+msgstr "Foto {i} von {n} wird analysiert: {pct}"
+
+#: public/flouter.js
+msgid "Analyse de la photo : {pct}"
+msgstr "Foto wird analysiert: {pct}"
+
+#: public/flouter.js
+msgid "Photo exportée : {name}."
+msgstr "Foto exportiert: {name}."
+
+#: public/flouter.js
+msgid "Elle a été réduite à {mp} millions de pixels."
+msgstr "Es wurde auf {mp} Millionen Pixel verkleinert."
+
+#: public/flouter.js
+msgid "L’export a échoué. Réessaie."
+msgstr "Der Export ist fehlgeschlagen. Versuche es erneut."
+
+#: public/flouter.js
+msgid "Export des photos : {pct}"
+msgstr "Fotos werden exportiert: {pct}"
+
+#: public/flouter.js
+msgid "Annulé."
+msgstr "Rückgängig gemacht."
+
+#: public/flouter.js
+msgid "La photo partagée n’a pas pu être reçue. Choisis-la ci-dessous."
+msgstr "Das geteilte Foto konnte nicht empfangen werden. Wähle es unten aus."
+
+#: public/flouter.js
+msgid "Préparer le flouteur ({mb} Mo, une seule fois)"
+msgstr "Werkzeug vorbereiten ({mb} MB, nur einmal)"
+
+#: public/flouter.html
+msgid "Flouter les visages · Cortège"
+msgstr "Gesichter unkenntlich machen · Cortège"
+
+#: public/flouter.html
+msgid "Préparation"
+msgstr "Vorbereitung"
+
+#: public/flouter.html
+msgid "Choisir des photos"
+msgstr "Fotos auswählen"
+
+#: public/flouter.html
+msgid "Photo précédente"
+msgstr "Vorheriges Foto"
+
+#: public/flouter.html
+msgid "Photo suivante"
+msgstr "Nächstes Foto"
+
+#: public/flouter.html
+msgid "Aperçu de la photo masquée"
+msgstr "Vorschau des abgedeckten Fotos"
+
+#: public/flouter.html
+msgid "Masques"
+msgstr "Masken"
+
+#: public/flouter.html
+msgid "Outils d’édition"
+msgstr "Bearbeitungswerkzeuge"
+
+#: public/flouter.html
+msgid "← Carte"
+msgstr "← Karte"
+
+#: public/flouter.html
+msgid "Flouter les visages"
+msgstr "Gesichter unkenntlich machen"
+
+#: public/flouter.html
+msgid "Masque les visages de tes photos avant de les publier."
+msgstr "Verdecke die Gesichter auf deinen Fotos, bevor du sie veröffentlichst."
+
+#: public/flouter.html
+msgid "Rien ne sort de ton téléphone"
+msgstr "Nichts verlässt dein Handy"
+
+#: public/flouter.html
+msgid "La détection des visages se fait dans ton navigateur, sur ton téléphone. Tes photos ne sont envoyées ni à Cortège ni à personne d’autre, et ne sont gardées nulle part. Tu peux le vérifier : une fois le flouteur prêt, il marche en mode avion."
+msgstr "Die Gesichtserkennung läuft in deinem Browser, auf deinem Handy. Deine Fotos werden weder an Cortège noch an sonst jemanden gesendet und nirgends gespeichert. Du kannst es selbst prüfen: Sobald das Werkzeug vorbereitet ist, funktioniert es im Flugmodus."
+
+#: public/flouter.html
+msgid "Prêt hors ligne"
+msgstr "Offline bereit"
+
+#: public/flouter.html
+msgid "Ce téléchargement installe le moteur de détection sur ton téléphone : rien ne part dans l’autre sens. Fais-le avant de partir, il marche ensuite sans réseau."
+msgstr "Dieser Download installiert die Gesichtserkennung auf deinem Handy: In die andere Richtung geht nichts. Mach das vor dem Losgehen, danach funktioniert es ohne Netz."
+
+#: public/flouter.html
+msgid "Prendre une photo"
+msgstr "Foto aufnehmen"
+
+#: public/flouter.html
+msgid "Vérifier les masques"
+msgstr "Masken prüfen"
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">‹</span> Précédente"
+msgstr "<span aria-hidden=\"true\">‹</span> Zurück"
+
+#: public/flouter.html
+msgid "Suivante <span aria-hidden=\"true\">›</span>"
+msgstr "Weiter <span aria-hidden=\"true\">›</span>"
+
+#: public/flouter.html
+msgid "Flèches : masque précédent ou suivant. Maj et flèches : déplacer le masque. Plus ou moins : changer sa taille. Suppr ou Entrée : le retirer. Échap : revenir aux outils."
+msgstr "Pfeiltasten: vorherige oder nächste Maske. Umschalt und Pfeiltasten: Maske verschieben. Plus oder Minus: Größe ändern. Entf oder Eingabe: entfernen. Esc: zurück zu den Werkzeugen."
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">↶</span> Annuler"
+msgstr "<span aria-hidden=\"true\">↶</span> Rückgängig"
+
+#: public/flouter.html
+msgid "Zoom −"
+msgstr "Zoom −"
+
+#: public/flouter.html
+msgid "Zoom +"
+msgstr "Zoom +"
+
+#: public/flouter.html
+msgid "Zoom 100 %"
+msgstr "Zoom 100 %"
+
+#: public/flouter.html
+msgid "Ajouter un masque"
+msgstr "Maske hinzufügen"
+
+#: public/flouter.html
+msgid "Agrandir"
+msgstr "Vergrößern"
+
+#: public/flouter.html
+msgid "Réduire"
+msgstr "Verkleinern"
+
+#: public/flouter.html
+msgid "Aperçu final"
+msgstr "Endgültige Vorschau"
+
+#: public/flouter.html
+msgid "Masquage"
+msgstr "Abdeckung"
+
+#: public/flouter.html
+msgid "Aplat noir (recommandé)"
+msgstr "Schwarze Fläche (empfohlen)"
+
+#: public/flouter.html
+msgid "Pixellisation forte"
+msgstr "Starke Verpixelung"
+
+#: public/flouter.html
+msgid "Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable. L’aplat noir et la pixellisation forte ne laissent rien à retrouver."
+msgstr "Kein normaler Weichzeichner: Er lässt sich umkehren und macht ein Gesicht wieder erkennbar. Schwarze Fläche und starke Verpixelung lassen nichts übrig."
+
+#: public/flouter.html
+msgid "Touche une zone vide pour ajouter un masque."
+msgstr "Tippe auf eine leere Stelle, um eine Maske hinzuzufügen."
+
+#: public/flouter.html
+msgid "Touche un masque pour le retirer. « Annuler » le remet."
+msgstr "Tippe auf eine Maske, um sie zu entfernen. „Rückgängig“ holt sie zurück."
+
+#: public/flouter.html
+msgid "Glisse un masque pour le déplacer. Ou touche le bon endroit, puis retire l’ancien masque."
+msgstr "Ziehe eine Maske, um sie zu verschieben. Oder tippe auf die richtige Stelle und entferne dann die alte Maske."
+
+#: public/flouter.html
+msgid "Le rond orange change la taille du dernier masque ajouté ou déplacé. « Agrandir » et « Réduire » aussi."
+msgstr "Der orange Punkt ändert die Größe der zuletzt hinzugefügten oder verschobenen Maske. „Vergrößern“ und „Verkleinern“ auch."
+
+#: public/flouter.html
+msgid "Pince l’image ou touche « Zoom + » pour voir de près."
+msgstr "Zieh das Bild mit zwei Fingern auf oder tippe auf „Zoom +“, um es näher anzusehen."
+
+#: public/flouter.html
+msgid "La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil."
+msgstr "Das exportierte Foto ist ein neues Bild, ohne GPS-Position und ohne Geräteinformationen."
+
+#: public/flouter.html
+msgid "La détection peut rater un visage de profil, flou ou caché. Vérifie chaque photo, et pense aussi aux tatouages, pancartes et signes distinctifs."
+msgstr "Die Erkennung kann ein Gesicht im Profil, unscharf oder verdeckt übersehen. Prüfe jedes Foto und denk auch an Tattoos, Schilder und besondere Merkmale."
+
+#: public/flouter.html
+msgid "Partager la photo"
+msgstr "Foto teilen"
+
+#: public/flouter.html
+msgid "Enregistrer la photo"
+msgstr "Foto speichern"
+
+#: public/index.html
+msgid "<b>Flouter les visages</b><small>Prépare-le avant de partir : il marche ensuite sans réseau</small>"
+msgstr "<b>Gesichter unkenntlich machen</b><small>Bereite es vor dem Losgehen vor: Danach funktioniert es ohne Netz</small>"
+
+#: public/index.html
+msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
+msgstr "<a class=\"inline-link\" href=\"/flouter\">Gesichter auf einem Foto unkenntlich machen</a>"

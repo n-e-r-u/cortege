@@ -4658,3 +4658,282 @@ msgstr "Mostrar los avisos públicos"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "CRS, lacrimógenos, cargas… avisados por todo el mundo en Cortège, además de los puntos de los equipos. La agenda, los recorridos y los lugares están en «Vista completa»."
+
+# --- textes à traduire ---
+#: public/flouter.js
+msgid "{n} visage masqué. Vérifie avant de partager."
+msgid_plural "{n} visages masqués. Vérifie avant de partager."
+msgstr[0] "{n} cara tapada. Revisa antes de compartir."
+msgstr[1] "{n} caras tapadas. Revisa antes de compartir."
+
+#: public/flouter.js
+msgid "Exporter {n} photo"
+msgid_plural "Exporter les {n} photos"
+msgstr[0] "Exportar {n} foto"
+msgstr[1] "Exportar las {n} fotos"
+
+#: public/flouter.js
+msgid "{n} photo exportée."
+msgid_plural "{n} photos exportées."
+msgstr[0] "{n} foto exportada."
+msgstr[1] "{n} fotos exportadas."
+
+#: public/flouter.js
+msgid "Masque {n} (activer pour le retirer)"
+msgstr "Máscara {n} (actívala para quitarla)"
+
+#: public/flouter.js
+msgid "Masque retiré."
+msgstr "Máscara quitada."
+
+#: public/flouter.js
+msgid "Téléchargement du flouteur : {pct}"
+msgstr "Descargando el difuminador: {pct}"
+
+#: public/flouter.js
+msgid "Le mode rapide ne marche pas sur cet appareil. Préparation du mode de secours."
+msgstr "El modo rápido no funciona en este dispositivo. Preparando el modo de respaldo."
+
+#: public/flouter.js
+msgid "Préparation du flouteur…"
+msgstr "Preparando el difuminador…"
+
+#: public/flouter.js
+msgid "Prêt, mais pas hors ligne : cette adresse n’est pas sécurisée (https)."
+msgstr "Listo, pero no sin conexión: esta dirección no es segura (https)."
+
+#: public/flouter.js
+msgid "La préparation a échoué. Vérifie ta connexion et réessaie."
+msgstr "La preparación ha fallado. Comprueba tu conexión y vuelve a intentarlo."
+
+#: public/flouter.js
+msgid "Le flouteur n’est pas encore prêt et le réseau est indisponible. Reconnecte-toi une fois pour le préparer."
+msgstr "El difuminador aún no está listo y no hay red. Conéctate una vez para prepararlo."
+
+#: public/flouter.js
+msgid "Aucun visage masqué. Touche l’image pour ajouter un masque."
+msgstr "Ninguna cara tapada. Toca la imagen para añadir una máscara."
+
+#: public/flouter.js
+msgid "Photo {i} sur {n}"
+msgstr "Foto {i} de {n}"
+
+#: public/flouter.js
+msgid "Exporter les photos"
+msgstr "Exportar las fotos"
+
+#: public/flouter.js
+msgid "Cette photo n’a pas pu être lue."
+msgstr "No se ha podido leer esta foto."
+
+#: public/flouter.js
+msgid "Analyse en cours…"
+msgstr "Analizando…"
+
+#: public/flouter.js
+msgid "Analyse de la photo {i} sur {n} : {pct}"
+msgstr "Analizando la foto {i} de {n}: {pct}"
+
+#: public/flouter.js
+msgid "Analyse de la photo : {pct}"
+msgstr "Analizando la foto: {pct}"
+
+#: public/flouter.js
+msgid "Photo exportée : {name}."
+msgstr "Foto exportada: {name}."
+
+#: public/flouter.js
+msgid "Elle a été réduite à {mp} millions de pixels."
+msgstr "Se ha reducido a {mp} millones de píxeles."
+
+#: public/flouter.js
+msgid "L’export a échoué. Réessaie."
+msgstr "La exportación ha fallado. Vuelve a intentarlo."
+
+#: public/flouter.js
+msgid "Export des photos : {pct}"
+msgstr "Exportando las fotos: {pct}"
+
+#: public/flouter.js
+msgid "Annulé."
+msgstr "Deshecho."
+
+#: public/flouter.js
+msgid "La photo partagée n’a pas pu être reçue. Choisis-la ci-dessous."
+msgstr "No se ha podido recibir la foto compartida. Elígela abajo."
+
+#: public/flouter.js
+msgid "Préparer le flouteur ({mb} Mo, une seule fois)"
+msgstr "Preparar el difuminador ({mb} MB, una sola vez)"
+
+#: public/flouter.html
+msgid "Flouter les visages · Cortège"
+msgstr "Difuminar caras · Cortège"
+
+#: public/flouter.html
+msgid "Préparation"
+msgstr "Preparación"
+
+#: public/flouter.html
+msgid "Choisir des photos"
+msgstr "Elegir fotos"
+
+#: public/flouter.html
+msgid "Photo précédente"
+msgstr "Foto anterior"
+
+#: public/flouter.html
+msgid "Photo suivante"
+msgstr "Foto siguiente"
+
+#: public/flouter.html
+msgid "Aperçu de la photo masquée"
+msgstr "Vista previa de la foto tapada"
+
+#: public/flouter.html
+msgid "Masques"
+msgstr "Máscaras"
+
+#: public/flouter.html
+msgid "Outils d’édition"
+msgstr "Herramientas de edición"
+
+#: public/flouter.html
+msgid "← Carte"
+msgstr "← Mapa"
+
+#: public/flouter.html
+msgid "Flouter les visages"
+msgstr "Difuminar caras"
+
+#: public/flouter.html
+msgid "Masque les visages de tes photos avant de les publier."
+msgstr "Oculta las caras de tus fotos antes de publicarlas."
+
+#: public/flouter.html
+msgid "Rien ne sort de ton téléphone"
+msgstr "Nada sale de tu móvil"
+
+#: public/flouter.html
+msgid "La détection des visages se fait dans ton navigateur, sur ton téléphone. Tes photos ne sont envoyées ni à Cortège ni à personne d’autre, et ne sont gardées nulle part. Tu peux le vérifier : une fois le flouteur prêt, il marche en mode avion."
+msgstr "La detección de caras se hace en tu navegador, en tu móvil. Tus fotos no se envían ni a Cortège ni a nadie más, y no se guardan en ningún sitio. Puedes comprobarlo: una vez preparado el difuminador, funciona en modo avión."
+
+#: public/flouter.html
+msgid "Prêt hors ligne"
+msgstr "Listo sin conexión"
+
+#: public/flouter.html
+msgid "Ce téléchargement installe le moteur de détection sur ton téléphone : rien ne part dans l’autre sens. Fais-le avant de partir, il marche ensuite sans réseau."
+msgstr "Esta descarga instala el motor de detección en tu móvil: nada sale en sentido contrario. Hazlo antes de salir; luego funciona sin red."
+
+#: public/flouter.html
+msgid "Prendre une photo"
+msgstr "Hacer una foto"
+
+#: public/flouter.html
+msgid "Vérifier les masques"
+msgstr "Revisar las máscaras"
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">‹</span> Précédente"
+msgstr "<span aria-hidden=\"true\">‹</span> Anterior"
+
+#: public/flouter.html
+msgid "Suivante <span aria-hidden=\"true\">›</span>"
+msgstr "Siguiente <span aria-hidden=\"true\">›</span>"
+
+#: public/flouter.html
+msgid "Flèches : masque précédent ou suivant. Maj et flèches : déplacer le masque. Plus ou moins : changer sa taille. Suppr ou Entrée : le retirer. Échap : revenir aux outils."
+msgstr "Flechas: máscara anterior o siguiente. Mayús y flechas: mover la máscara. Más o menos: cambiar su tamaño. Supr o Intro: quitarla. Esc: volver a las herramientas."
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">↶</span> Annuler"
+msgstr "<span aria-hidden=\"true\">↶</span> Deshacer"
+
+#: public/flouter.html
+msgid "Zoom −"
+msgstr "Zoom −"
+
+#: public/flouter.html
+msgid "Zoom +"
+msgstr "Zoom +"
+
+#: public/flouter.html
+msgid "Zoom 100 %"
+msgstr "Zoom 100 %"
+
+#: public/flouter.html
+msgid "Ajouter un masque"
+msgstr "Añadir una máscara"
+
+#: public/flouter.html
+msgid "Agrandir"
+msgstr "Agrandar"
+
+#: public/flouter.html
+msgid "Réduire"
+msgstr "Reducir"
+
+#: public/flouter.html
+msgid "Aperçu final"
+msgstr "Vista final"
+
+#: public/flouter.html
+msgid "Masquage"
+msgstr "Tapado"
+
+#: public/flouter.html
+msgid "Aplat noir (recommandé)"
+msgstr "Negro sólido (recomendado)"
+
+#: public/flouter.html
+msgid "Pixellisation forte"
+msgstr "Pixelado fuerte"
+
+#: public/flouter.html
+msgid "Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable. L’aplat noir et la pixellisation forte ne laissent rien à retrouver."
+msgstr "Nada de desenfoque clásico: se puede revertir y volver a hacer reconocible una cara. El negro sólido y el pixelado fuerte no dejan nada que recuperar."
+
+#: public/flouter.html
+msgid "Touche une zone vide pour ajouter un masque."
+msgstr "Toca una zona vacía para añadir una máscara."
+
+#: public/flouter.html
+msgid "Touche un masque pour le retirer. « Annuler » le remet."
+msgstr "Toca una máscara para quitarla. «Deshacer» la vuelve a poner."
+
+#: public/flouter.html
+msgid "Glisse un masque pour le déplacer. Ou touche le bon endroit, puis retire l’ancien masque."
+msgstr "Arrastra una máscara para moverla. O toca el sitio correcto y luego quita la máscara antigua."
+
+#: public/flouter.html
+msgid "Le rond orange change la taille du dernier masque ajouté ou déplacé. « Agrandir » et « Réduire » aussi."
+msgstr "El círculo naranja cambia el tamaño de la última máscara añadida o movida. «Agrandar» y «Reducir» también."
+
+#: public/flouter.html
+msgid "Pince l’image ou touche « Zoom + » pour voir de près."
+msgstr "Pellizca la imagen o toca «Zoom +» para ver de cerca."
+
+#: public/flouter.html
+msgid "La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil."
+msgstr "La foto exportada es una imagen nueva, sin ubicación GPS ni información del dispositivo."
+
+#: public/flouter.html
+msgid "La détection peut rater un visage de profil, flou ou caché. Vérifie chaque photo, et pense aussi aux tatouages, pancartes et signes distinctifs."
+msgstr "La detección puede no ver una cara de perfil, borrosa u oculta. Revisa cada foto y piensa también en tatuajes, pancartas y rasgos distintivos."
+
+#: public/flouter.html
+msgid "Partager la photo"
+msgstr "Compartir la foto"
+
+#: public/flouter.html
+msgid "Enregistrer la photo"
+msgstr "Guardar la foto"
+
+#: public/index.html
+msgid "<b>Flouter les visages</b><small>Prépare-le avant de partir : il marche ensuite sans réseau</small>"
+msgstr "<b>Difuminar caras</b><small>Prepáralo antes de salir: luego funciona sin red</small>"
+
+#: public/index.html
+msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
+msgstr "<a class=\"inline-link\" href=\"/flouter\">Difuminar las caras de una foto</a>"

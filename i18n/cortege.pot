@@ -4632,3 +4632,281 @@ msgstr ""
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr ""
+
+#: public/flouter.js
+msgid "{n} visage masqué. Vérifie avant de partager."
+msgid_plural "{n} visages masqués. Vérifie avant de partager."
+msgstr[0] ""
+msgstr[1] ""
+
+#: public/flouter.js
+msgid "Exporter {n} photo"
+msgid_plural "Exporter les {n} photos"
+msgstr[0] ""
+msgstr[1] ""
+
+#: public/flouter.js
+msgid "{n} photo exportée."
+msgid_plural "{n} photos exportées."
+msgstr[0] ""
+msgstr[1] ""
+
+#: public/flouter.js
+msgid "Masque {n} (activer pour le retirer)"
+msgstr ""
+
+#: public/flouter.js
+msgid "Masque retiré."
+msgstr ""
+
+#: public/flouter.js
+msgid "Téléchargement du flouteur : {pct}"
+msgstr ""
+
+#: public/flouter.js
+msgid "Le mode rapide ne marche pas sur cet appareil. Préparation du mode de secours."
+msgstr ""
+
+#: public/flouter.js
+msgid "Préparation du flouteur…"
+msgstr ""
+
+#: public/flouter.js
+msgid "Prêt, mais pas hors ligne : cette adresse n’est pas sécurisée (https)."
+msgstr ""
+
+#: public/flouter.js
+msgid "La préparation a échoué. Vérifie ta connexion et réessaie."
+msgstr ""
+
+#: public/flouter.js
+msgid "Le flouteur n’est pas encore prêt et le réseau est indisponible. Reconnecte-toi une fois pour le préparer."
+msgstr ""
+
+#: public/flouter.js
+msgid "Aucun visage masqué. Touche l’image pour ajouter un masque."
+msgstr ""
+
+#: public/flouter.js
+msgid "Photo {i} sur {n}"
+msgstr ""
+
+#: public/flouter.js
+msgid "Exporter les photos"
+msgstr ""
+
+#: public/flouter.js
+msgid "Cette photo n’a pas pu être lue."
+msgstr ""
+
+#: public/flouter.js
+msgid "Analyse en cours…"
+msgstr ""
+
+#: public/flouter.js
+msgid "Analyse de la photo {i} sur {n} : {pct}"
+msgstr ""
+
+#: public/flouter.js
+msgid "Analyse de la photo : {pct}"
+msgstr ""
+
+#: public/flouter.js
+msgid "Photo exportée : {name}."
+msgstr ""
+
+#: public/flouter.js
+msgid "Elle a été réduite à {mp} millions de pixels."
+msgstr ""
+
+#: public/flouter.js
+msgid "L’export a échoué. Réessaie."
+msgstr ""
+
+#: public/flouter.js
+msgid "Export des photos : {pct}"
+msgstr ""
+
+#: public/flouter.js
+msgid "Annulé."
+msgstr ""
+
+#: public/flouter.js
+msgid "La photo partagée n’a pas pu être reçue. Choisis-la ci-dessous."
+msgstr ""
+
+#: public/flouter.js
+msgid "Préparer le flouteur ({mb} Mo, une seule fois)"
+msgstr ""
+
+#: public/flouter.html
+msgid "Flouter les visages · Cortège"
+msgstr ""
+
+#: public/flouter.html
+msgid "Préparation"
+msgstr ""
+
+#: public/flouter.html
+msgid "Choisir des photos"
+msgstr ""
+
+#: public/flouter.html
+msgid "Photo précédente"
+msgstr ""
+
+#: public/flouter.html
+msgid "Photo suivante"
+msgstr ""
+
+#: public/flouter.html
+msgid "Aperçu de la photo masquée"
+msgstr ""
+
+#: public/flouter.html
+msgid "Masques"
+msgstr ""
+
+#: public/flouter.html
+msgid "Outils d’édition"
+msgstr ""
+
+#: public/flouter.html
+msgid "← Carte"
+msgstr ""
+
+#: public/flouter.html
+msgid "Flouter les visages"
+msgstr ""
+
+#: public/flouter.html
+msgid "Masque les visages de tes photos avant de les publier."
+msgstr ""
+
+#: public/flouter.html
+msgid "Rien ne sort de ton téléphone"
+msgstr ""
+
+#: public/flouter.html
+msgid "La détection des visages se fait dans ton navigateur, sur ton téléphone. Tes photos ne sont envoyées ni à Cortège ni à personne d’autre, et ne sont gardées nulle part. Tu peux le vérifier : une fois le flouteur prêt, il marche en mode avion."
+msgstr ""
+
+#: public/flouter.html
+msgid "Prêt hors ligne"
+msgstr ""
+
+#: public/flouter.html
+msgid "Ce téléchargement installe le moteur de détection sur ton téléphone : rien ne part dans l’autre sens. Fais-le avant de partir, il marche ensuite sans réseau."
+msgstr ""
+
+#: public/flouter.html
+msgid "Prendre une photo"
+msgstr ""
+
+#: public/flouter.html
+msgid "Vérifier les masques"
+msgstr ""
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">‹</span> Précédente"
+msgstr ""
+
+#: public/flouter.html
+msgid "Suivante <span aria-hidden=\"true\">›</span>"
+msgstr ""
+
+#: public/flouter.html
+msgid "Flèches : masque précédent ou suivant. Maj et flèches : déplacer le masque. Plus ou moins : changer sa taille. Suppr ou Entrée : le retirer. Échap : revenir aux outils."
+msgstr ""
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">↶</span> Annuler"
+msgstr ""
+
+#: public/flouter.html
+msgid "Zoom −"
+msgstr ""
+
+#: public/flouter.html
+msgid "Zoom +"
+msgstr ""
+
+#: public/flouter.html
+msgid "Zoom 100 %"
+msgstr ""
+
+#: public/flouter.html
+msgid "Ajouter un masque"
+msgstr ""
+
+#: public/flouter.html
+msgid "Agrandir"
+msgstr ""
+
+#: public/flouter.html
+msgid "Réduire"
+msgstr ""
+
+#: public/flouter.html
+msgid "Aperçu final"
+msgstr ""
+
+#: public/flouter.html
+msgid "Masquage"
+msgstr ""
+
+#: public/flouter.html
+msgid "Aplat noir (recommandé)"
+msgstr ""
+
+#: public/flouter.html
+msgid "Pixellisation forte"
+msgstr ""
+
+#: public/flouter.html
+msgid "Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable. L’aplat noir et la pixellisation forte ne laissent rien à retrouver."
+msgstr ""
+
+#: public/flouter.html
+msgid "Touche une zone vide pour ajouter un masque."
+msgstr ""
+
+#: public/flouter.html
+msgid "Touche un masque pour le retirer. « Annuler » le remet."
+msgstr ""
+
+#: public/flouter.html
+msgid "Glisse un masque pour le déplacer. Ou touche le bon endroit, puis retire l’ancien masque."
+msgstr ""
+
+#: public/flouter.html
+msgid "Le rond orange change la taille du dernier masque ajouté ou déplacé. « Agrandir » et « Réduire » aussi."
+msgstr ""
+
+#: public/flouter.html
+msgid "Pince l’image ou touche « Zoom + » pour voir de près."
+msgstr ""
+
+#: public/flouter.html
+msgid "La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil."
+msgstr ""
+
+#: public/flouter.html
+msgid "La détection peut rater un visage de profil, flou ou caché. Vérifie chaque photo, et pense aussi aux tatouages, pancartes et signes distinctifs."
+msgstr ""
+
+#: public/flouter.html
+msgid "Partager la photo"
+msgstr ""
+
+#: public/flouter.html
+msgid "Enregistrer la photo"
+msgstr ""
+
+#: public/index.html
+msgid "<b>Flouter les visages</b><small>Prépare-le avant de partir : il marche ensuite sans réseau</small>"
+msgstr ""
+
+#: public/index.html
+msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
+msgstr ""

@@ -4718,3 +4718,294 @@ msgstr "إظهار البلاغات العامة"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "شرطة مكافحة الشغب، غاز مسيل للدموع، هجمات… يبلّغ عنها الجميع على Cortège، إضافةً إلى نقاط الفرق. الأجندة والمسارات والأماكن موجودة في «العرض الكامل»."
+
+# --- textes à traduire ---
+#: public/flouter.js
+msgid "{n} visage masqué. Vérifie avant de partager."
+msgid_plural "{n} visages masqués. Vérifie avant de partager."
+msgstr[0] "لم يُخفَ أي وجه. تحقّق قبل المشاركة."
+msgstr[1] "تم إخفاء وجه واحد. تحقّق قبل المشاركة."
+msgstr[2] "تم إخفاء وجهين. تحقّق قبل المشاركة."
+msgstr[3] "تم إخفاء {n} وجوه. تحقّق قبل المشاركة."
+msgstr[4] "تم إخفاء {n} وجهًا. تحقّق قبل المشاركة."
+msgstr[5] "تم إخفاء {n} وجه. تحقّق قبل المشاركة."
+
+#: public/flouter.js
+msgid "Exporter {n} photo"
+msgid_plural "Exporter les {n} photos"
+msgstr[0] "تصدير الصور"
+msgstr[1] "تصدير صورة واحدة"
+msgstr[2] "تصدير صورتين"
+msgstr[3] "تصدير {n} صور"
+msgstr[4] "تصدير {n} صورة"
+msgstr[5] "تصدير {n} صورة"
+
+#: public/flouter.js
+msgid "{n} photo exportée."
+msgid_plural "{n} photos exportées."
+msgstr[0] "لم تُصدَّر أي صورة."
+msgstr[1] "تم تصدير صورة واحدة."
+msgstr[2] "تم تصدير صورتين."
+msgstr[3] "تم تصدير {n} صور."
+msgstr[4] "تم تصدير {n} صورة."
+msgstr[5] "تم تصدير {n} صورة."
+
+#: public/flouter.js
+msgid "Masque {n} (activer pour le retirer)"
+msgstr "القناع {n} (فعّله لإزالته)"
+
+#: public/flouter.js
+msgid "Masque retiré."
+msgstr "تمت إزالة القناع."
+
+#: public/flouter.js
+msgid "Téléchargement du flouteur : {pct}"
+msgstr "تنزيل أداة التمويه: {pct}"
+
+#: public/flouter.js
+msgid "Le mode rapide ne marche pas sur cet appareil. Préparation du mode de secours."
+msgstr "الوضع السريع لا يعمل على هذا الجهاز. جارٍ تجهيز الوضع الاحتياطي."
+
+#: public/flouter.js
+msgid "Préparation du flouteur…"
+msgstr "جارٍ تجهيز أداة التمويه…"
+
+#: public/flouter.js
+msgid "Prêt, mais pas hors ligne : cette adresse n’est pas sécurisée (https)."
+msgstr "جاهزة، لكن ليس دون اتصال: هذا العنوان غير آمن (https)."
+
+#: public/flouter.js
+msgid "La préparation a échoué. Vérifie ta connexion et réessaie."
+msgstr "فشل التجهيز. تحقّق من اتصالك وأعد المحاولة."
+
+#: public/flouter.js
+msgid "Le flouteur n’est pas encore prêt et le réseau est indisponible. Reconnecte-toi une fois pour le préparer."
+msgstr "أداة التمويه ليست جاهزة بعد والشبكة غير متاحة. اتصل مرة واحدة لتجهيزها."
+
+#: public/flouter.js
+msgid "Aucun visage masqué. Touche l’image pour ajouter un masque."
+msgstr "لم يُخفَ أي وجه. المس الصورة لإضافة قناع."
+
+#: public/flouter.js
+msgid "Photo {i} sur {n}"
+msgstr "الصورة {i} من {n}"
+
+#: public/flouter.js
+msgid "Exporter les photos"
+msgstr "تصدير الصور"
+
+#: public/flouter.js
+msgid "Cette photo n’a pas pu être lue."
+msgstr "تعذّرت قراءة هذه الصورة."
+
+#: public/flouter.js
+msgid "Analyse en cours…"
+msgstr "جارٍ التحليل…"
+
+#: public/flouter.js
+msgid "Analyse de la photo {i} sur {n} : {pct}"
+msgstr "تحليل الصورة {i} من {n}: {pct}"
+
+#: public/flouter.js
+msgid "Analyse de la photo : {pct}"
+msgstr "تحليل الصورة: {pct}"
+
+#: public/flouter.js
+msgid "Photo exportée : {name}."
+msgstr "تم تصدير الصورة: {name}."
+
+#: public/flouter.js
+msgid "Elle a été réduite à {mp} millions de pixels."
+msgstr "تم تصغيرها إلى {mp} مليون بكسل."
+
+#: public/flouter.js
+msgid "L’export a échoué. Réessaie."
+msgstr "فشل التصدير. أعد المحاولة."
+
+#: public/flouter.js
+msgid "Export des photos : {pct}"
+msgstr "تصدير الصور: {pct}"
+
+#: public/flouter.js
+msgid "Annulé."
+msgstr "تم التراجع."
+
+#: public/flouter.js
+msgid "La photo partagée n’a pas pu être reçue. Choisis-la ci-dessous."
+msgstr "تعذّر استلام الصورة المُشارَكة. اخترها أدناه."
+
+#: public/flouter.js
+msgid "Préparer le flouteur ({mb} Mo, une seule fois)"
+msgstr "تجهيز أداة التمويه ({mb} ميغابايت، مرة واحدة فقط)"
+
+#: public/flouter.html
+msgid "Flouter les visages · Cortège"
+msgstr "تمويه الوجوه · Cortège"
+
+#: public/flouter.html
+msgid "Préparation"
+msgstr "التجهيز"
+
+#: public/flouter.html
+msgid "Choisir des photos"
+msgstr "اختيار صور"
+
+#: public/flouter.html
+msgid "Photo précédente"
+msgstr "الصورة السابقة"
+
+#: public/flouter.html
+msgid "Photo suivante"
+msgstr "الصورة التالية"
+
+#: public/flouter.html
+msgid "Aperçu de la photo masquée"
+msgstr "معاينة الصورة المموّهة"
+
+#: public/flouter.html
+msgid "Masques"
+msgstr "الأقنعة"
+
+#: public/flouter.html
+msgid "Outils d’édition"
+msgstr "أدوات التحرير"
+
+#: public/flouter.html
+msgid "← Carte"
+msgstr "→ الخريطة"
+
+#: public/flouter.html
+msgid "Flouter les visages"
+msgstr "تمويه الوجوه"
+
+#: public/flouter.html
+msgid "Masque les visages de tes photos avant de les publier."
+msgstr "أخفِ الوجوه في صورك قبل نشرها."
+
+#: public/flouter.html
+msgid "Rien ne sort de ton téléphone"
+msgstr "لا شيء يغادر هاتفك"
+
+#: public/flouter.html
+msgid "La détection des visages se fait dans ton navigateur, sur ton téléphone. Tes photos ne sont envoyées ni à Cortège ni à personne d’autre, et ne sont gardées nulle part. Tu peux le vérifier : une fois le flouteur prêt, il marche en mode avion."
+msgstr "يتم كشف الوجوه في متصفحك، على هاتفك. لا تُرسَل صورك إلى Cortège ولا إلى أي جهة أخرى، ولا تُحفَظ في أي مكان. يمكنك التحقق بنفسك: بعد تجهيز أداة التمويه، تعمل في وضع الطيران."
+
+#: public/flouter.html
+msgid "Prêt hors ligne"
+msgstr "جاهزة دون اتصال"
+
+#: public/flouter.html
+msgid "Ce téléchargement installe le moteur de détection sur ton téléphone : rien ne part dans l’autre sens. Fais-le avant de partir, il marche ensuite sans réseau."
+msgstr "هذا التنزيل يثبّت محرّك الكشف على هاتفك: لا شيء يخرج في الاتجاه المعاكس. جهّزها قبل الخروج، فهي تعمل بعد ذلك دون شبكة."
+
+#: public/flouter.html
+msgid "Prendre une photo"
+msgstr "التقاط صورة"
+
+#: public/flouter.html
+msgid "Vérifier les masques"
+msgstr "التحقق من الأقنعة"
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">‹</span> Précédente"
+msgstr "<span aria-hidden=\"true\">›</span> السابقة"
+
+#: public/flouter.html
+msgid "Suivante <span aria-hidden=\"true\">›</span>"
+msgstr "التالية <span aria-hidden=\"true\">‹</span>"
+
+#: public/flouter.html
+msgid "Flèches : masque précédent ou suivant. Maj et flèches : déplacer le masque. Plus ou moins : changer sa taille. Suppr ou Entrée : le retirer. Échap : revenir aux outils."
+msgstr "الأسهم: القناع السابق أو التالي. Shift مع الأسهم: تحريك القناع. زائد أو ناقص: تغيير حجمه. Delete أو Enter: إزالته. Escape: العودة إلى الأدوات."
+
+#: public/flouter.html
+msgid "<span aria-hidden=\"true\">↶</span> Annuler"
+msgstr "<span aria-hidden=\"true\">↷</span> تراجع"
+
+#: public/flouter.html
+msgid "Zoom −"
+msgstr "تصغير العرض"
+
+#: public/flouter.html
+msgid "Zoom +"
+msgstr "تكبير العرض"
+
+#: public/flouter.html
+msgid "Zoom 100 %"
+msgstr "العرض 100%"
+
+#: public/flouter.html
+msgid "Ajouter un masque"
+msgstr "إضافة قناع"
+
+#: public/flouter.html
+msgid "Agrandir"
+msgstr "تكبير القناع"
+
+#: public/flouter.html
+msgid "Réduire"
+msgstr "تصغير القناع"
+
+#: public/flouter.html
+msgid "Aperçu final"
+msgstr "معاينة نهائية"
+
+#: public/flouter.html
+msgid "Masquage"
+msgstr "الإخفاء"
+
+#: public/flouter.html
+msgid "Aplat noir (recommandé)"
+msgstr "لون أسود كامل (موصى به)"
+
+#: public/flouter.html
+msgid "Pixellisation forte"
+msgstr "تبكسل قوي"
+
+#: public/flouter.html
+msgid "Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable. L’aplat noir et la pixellisation forte ne laissent rien à retrouver."
+msgstr "لا تمويه عاديًا: يمكن عكسه وجعل الوجه معروفًا من جديد. اللون الأسود الكامل والتبكسل القوي لا يتركان شيئًا يمكن استرجاعه."
+
+#: public/flouter.html
+msgid "Touche une zone vide pour ajouter un masque."
+msgstr "المس منطقة فارغة لإضافة قناع."
+
+#: public/flouter.html
+msgid "Touche un masque pour le retirer. « Annuler » le remet."
+msgstr "المس قناعًا لإزالته. «تراجع» يعيده."
+
+#: public/flouter.html
+msgid "Glisse un masque pour le déplacer. Ou touche le bon endroit, puis retire l’ancien masque."
+msgstr "اسحب قناعًا لتحريكه. أو المس المكان الصحيح، ثم أزل القناع القديم."
+
+#: public/flouter.html
+msgid "Le rond orange change la taille du dernier masque ajouté ou déplacé. « Agrandir » et « Réduire » aussi."
+msgstr "الدائرة البرتقالية تغيّر حجم آخر قناع أُضيف أو حُرّك. «تكبير القناع» و«تصغير القناع» أيضًا."
+
+#: public/flouter.html
+msgid "Pince l’image ou touche « Zoom + » pour voir de près."
+msgstr "باعد إصبعيك على الصورة أو المس «تكبير العرض» للرؤية عن قرب."
+
+#: public/flouter.html
+msgid "La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil."
+msgstr "الصورة المُصدَّرة صورة جديدة، دون موقع GPS أو معلومات عن الجهاز."
+
+#: public/flouter.html
+msgid "La détection peut rater un visage de profil, flou ou caché. Vérifie chaque photo, et pense aussi aux tatouages, pancartes et signes distinctifs."
+msgstr "قد يفوت الكشفُ وجهًا جانبيًا أو ضبابيًا أو مخفيًا. تحقّق من كل صورة، وفكّر أيضًا في الوشوم واللافتات والعلامات المميزة."
+
+#: public/flouter.html
+msgid "Partager la photo"
+msgstr "مشاركة الصورة"
+
+#: public/flouter.html
+msgid "Enregistrer la photo"
+msgstr "حفظ الصورة"
+
+#: public/index.html
+msgid "<b>Flouter les visages</b><small>Prépare-le avant de partir : il marche ensuite sans réseau</small>"
+msgstr "<b>تمويه الوجوه</b><small>جهّزها قبل الخروج: تعمل بعد ذلك دون شبكة</small>"
+
+#: public/index.html
+msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
+msgstr "<a class=\"inline-link\" href=\"/flouter\">تمويه الوجوه في صورة</a>"

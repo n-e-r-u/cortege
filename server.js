@@ -72,6 +72,10 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Strict-Transport-Security', 'max-age=15552000');
   res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  // Photo partagée vers Cortège depuis une autre appli (Web Share Target) arrivée ici faute de service worker pour la recevoir :
+  // on ne lit pas le corps (la photo n'a rien à faire sur le serveur) et le Flouteur explique comment la choisir.
+  // Avant le contrôle des écritures : ce formulaire n'est pas du JSON.
+  if (req.method === 'POST' && pathname === '/flouter/partage') { res.writeHead(303, { Location: '/flouter?partage=0' }); return res.end(); }
   // Écritures acceptées seulement depuis l'appli elle-même : un autre site ne peut pas faire poster
   // de faux signalements par les navigateurs de ses visiteurs (CSRF).
   if (req.method !== 'GET' && req.method !== 'HEAD') {

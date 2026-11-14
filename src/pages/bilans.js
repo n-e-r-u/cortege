@@ -60,7 +60,7 @@ const GOOGLE_VERIFY = /^google[\w-]{6,60}\.html$/.test(process.env.GOOGLE_SITE_V
 function sitemapXml(req) {
   const base = PUBLIC_URL_REAL(req), day = t => new Date(t).toISOString().slice(0, 10);
   const pubs = q('SELECT date, t FROM pub ORDER BY date DESC').all();
-  const urls = [['/', day(Date.now()), 'always', '1.0'], ['/manif', pubs[0] ? day(pubs[0].t) : null, 'daily', '0.8'], ['/presse', null, 'monthly', '0.6'],
+  const urls = [['/', day(Date.now()), 'always', '1.0'], ['/manif', pubs[0] ? day(pubs[0].t) : null, 'daily', '0.8'], ['/presse', null, 'monthly', '0.6'], ['/flouter', null, 'monthly', '0.5'],
     ['/affiche.html', null, 'monthly', '0.4'], ['/legal.html', null, 'yearly', '0.2'], ...pubs.map(x => ['/manif/' + x.date, day(x.t), 'monthly', '0.7']),
     ['/agenda', day(Date.now()), 'daily', '0.8'], ['/arretes', day(Date.now()), 'daily', '0.7'], ['/droits', null, 'monthly', '0.6'], ['/legal-teams', null, 'weekly', '0.6'], ['/villes', null, 'daily', '0.5'], ['/orgas', null, 'monthly', '0.6'],
     ...[...cityIndex().values()].map(c => ['/ville/' + c.slug, null, 'daily', '0.6']),
