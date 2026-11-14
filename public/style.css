@@ -1054,3 +1054,11 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 .org-list .l { font-weight: 600; }
 .org-list .s { color: var(--muted); font-size: 12px; }
 .org-list .empty { color: var(--muted); font-size: 13px; }
+
+/* ---- Écran medic : seulement les points des équipes et ma position, sauf « Afficher aussi ce qui est public » ---- */
+body.medic:not(.md-pub) .leaflet-marker-pane, body.medic:not(.md-pub) .leaflet-overlay-pane,
+body.medic:not(.md-pub) .leaflet-shadow-pane, body.medic:not(.md-pub) .leaflet-tooltip-pane { display: none; }
+.org-list .md-devs-row { display: block; padding: 0 0 6px 14px; }
+.org-list .md-devs-row[hidden] { display: none; }
+.org-list.md-devs { margin: 0; }
+.org-list.md-devs li { padding: 6px 0; }

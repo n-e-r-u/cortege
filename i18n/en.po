@@ -4584,3 +4584,68 @@ msgstr "Everything an org access lets you do"
 #: public/index.html
 msgid "Ce qu’un accès orga permet"
 msgstr "What an org access lets you do"
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher aussi ce qui est public"
+msgstr "Also show what is public"
+
+#: client/parts/medic.js
+msgid "Par défaut, l’écran medic ne montre que les points des équipes. Ici, tu ajoutes les signalements, l’agenda, les parcours et les lieux de tout le monde sur Cortège."
+msgstr "By default, the medic screen only shows the teams’ points. Here you add everyone’s reports, agenda, routes and places on Cortège."
+
+#: client/parts/medic.js
+msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
+msgstr "{n} device(s) have this team’s access (5 at most). A device that is lost, lent or no longer in the team: remove it and it loses access right away."
+
+#: client/parts/medic.js
+msgid "Appareils"
+msgstr "Devices"
+
+#: client/parts/medic.js
+msgid "Appareil"
+msgstr "Device"
+
+#: client/parts/medic.js
+msgid "ce téléphone"
+msgstr "this phone"
+
+#: client/parts/medic.js
+msgid "depuis le {date}"
+msgstr "since {date}"
+
+#: client/parts/medic.js
+msgid "ajouté avant le suivi des appareils"
+msgstr "added before device tracking"
+
+#: client/parts/medic.js
+msgid "actif {when}"
+msgstr "active {when}"
+
+#: client/parts/medic.js
+msgid "Appareil retiré : il n’a plus accès à la carte medic"
+msgstr "Device removed: it no longer has access to the medic map"
+
+#: client/parts/medic.js
+msgid "Tout ce qui est public est affiché"
+msgstr "Everything public is shown"
+
+#: client/parts/medic.js
+msgid "Seulement les points des équipes"
+msgstr "Only the teams’ points"
+
+#: client/parts/medic.js
+msgid "Afficher ou masquer ce qui est public"
+msgstr "Show or hide what is public"
+
+#: src/medic.js
+msgid "Pour retirer ce téléphone, utilise « Quitter le mode medic sur ce téléphone »."
+msgstr "To remove this phone, use “Leave medic mode on this phone”."
+
+#: src/medic.js
+msgid "C’est le seul appareil de l’équipe : pour couper l’accès, réinvite l’équipe."
+msgstr "It is the team’s only device: to cut access, re-invite the team."
+
+#: src/medic.js
+msgid "Appareil introuvable."
+msgstr "Device not found."

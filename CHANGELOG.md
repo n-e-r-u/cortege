@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.20.0 (en cours)
+
+**Mode medic, retours des street medics de Montpellier** :
+- **Seulement les points des équipes** sur l'écran medic, par défaut : signalements, agenda, parcours, lieux et points de ralliement publics sont masqués. L'œil (et le réglage « Afficher aussi ce qui est public ») les ajoute.
+- **Appareils d'une équipe** : liste (type d'appareil, depuis quand, dernière activité) et retrait d'un appareil perdu, prêté ou qui a quitté l'équipe, depuis un autre téléphone de l'équipe ou par le ou la référent·e. L'appareil retiré perd l'accès tout de suite et ne reçoit plus les notifications d'urgence.
+
 ## 2.19.0
 
 **Pour les orgas** :

@@ -99,6 +99,13 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     assert.equal(await m1.p.evaluate(() => document.querySelectorAll('.leaflet-marker-icon.pin, .marker-cluster').length), 0, 'signalements publics masqués');
     await m1.p.click('#mdHot');
     await m2.p.waitForSelector('.mpin.k-hot');
+    // Seulement les points des équipes : tout ce qui est public (agenda, lieux, parcours…) est masqué, sauf demande
+    const panes = p => p.evaluate(() => ['marker', 'overlay', 'medic'].map(n => getComputedStyle(document.querySelector('.leaflet-' + n + '-pane')).display !== 'none'));
+    assert.deepEqual(await panes(m2.p), [false, false, true], 'écran medic : seulement les points des équipes');
+    assert.equal(await m2.p.isVisible('.mpin.k-hot'), true);
+    await m2.p.click('#medicPub');
+    assert.deepEqual(await panes(m2.p), [true, true, true], '« Afficher aussi ce qui est public »');
+    await m2.p.click('#medicPub');
     await m2.p.click('#mdHelp'); await m2.p.click('.mh-btn.l-vital');
     await m1.p.waitForSelector('.mpin.k-help.l-vital');
     await m1.p.evaluate(() => document.querySelector('.mpin.k-help').click());

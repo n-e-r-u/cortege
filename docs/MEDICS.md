@@ -7,7 +7,7 @@ Une page pour les équipes de street medics. Le mode medic est un écran de Cort
 1. Ton ou ta référent·e (ou l'admin de l'instance) t'envoie un lien d'invitation, par une messagerie chiffrée. Il ne sert qu'une fois et vaut pour toute l'équipe.
 2. Ouvre-le sur le téléphone de l'équipe. Sur iPhone, ajoute d'abord Cortège à l'écran d'accueil et ouvre le lien depuis l'appli installée : sinon Safari peut effacer l'accès après 7 jours sans visite.
 3. Un **code de secours** s'affiche une seule fois. Note-le ailleurs que sur ce téléphone et que dans le sac de manif. C'est lui qui te rendra l'accès si le téléphone est perdu, saisi ou vidé.
-4. Pour un deuxième téléphone de l'équipe : appuie sur le nom de l'équipe en haut, puis « Ajouter un appareil » (5 au plus).
+4. Pour un deuxième téléphone de l'équipe : appuie sur le nom de l'équipe en haut, puis « Ajouter un appareil » (5 au plus). Au même endroit, la liste des appareils de l'équipe (type d'appareil, depuis quand, dernière activité) : « Retirer » coupe tout de suite l'accès d'un téléphone perdu, prêté ou qui a quitté l'équipe.
 
 ## Les quatre boutons
 
@@ -20,7 +20,7 @@ Une page pour les équipes de street medics. Le mode medic est un écran de Cort
 
 Appuie sur un point de la carte pour voir qui l'a posé et depuis quand. Sur un renfort : « J'y vais » montre aux autres qu'une équipe est en route, « Réglé » retire l'appel. Toute équipe peut retirer un point chaud ou un barrage qui n'est plus vrai.
 
-L'œil en haut affiche ou masque les signalements publics de Cortège (CRS, lacrymo, charges…). « Vue complète » ouvre Cortège tel que tout le monde le voit ; le bouton « ⛑️ Écran medic » y ramène.
+Au départ, la carte ne montre que les points des équipes medic et ta position. L'œil en haut ajoute tout ce qui est public sur Cortège : signalements (CRS, lacrymo, charges…), agenda, parcours, lieux. « Vue complète » ouvre Cortège tel que tout le monde le voit ; le bouton « ⛑️ Écran medic » y ramène.
 
 En cas d'urgence vitale, appelle d'abord le 15 ou le 112 : l'appli prévient les autres équipes, pas les secours.
 
@@ -35,8 +35,8 @@ En cas d'urgence vitale, appelle d'abord le 15 ou le 112 : l'appli prévient les
 
 Sur n'importe quel autre téléphone : ouvre Cortège, puis Plus › « J'ai perdu mon accès », et saisis le code de secours. L'accès revient, les autres appareils sont coupés (case cochée au départ), et un nouveau code de secours t'est donné : l'ancien ne sert plus.
 
-Pas de code ? Ton ou ta référent·e, ou l'admin, peut renvoyer une invitation à l'équipe. L'ancien accès est alors coupé.
+Pas de code ? Un autre téléphone de l'équipe peut retirer celui qui est perdu. Sinon, ton ou ta référent·e peut retirer l'appareil perdu, ou renvoyer une invitation à l'équipe (l'admin aussi) : l'ancien accès est alors coupé.
 
 ## Référent·e
 
-L'admin peut te nommer référent·e de ta ville. Dans la fiche de l'équipe (appui sur son nom en haut), tu peux alors inviter des équipes, leur renvoyer une invitation si elles ont perdu leur accès, et les retirer. Tu ne vois rien de plus que les autres équipes sur la carte.
+L'admin peut te nommer référent·e de ta ville. Dans la fiche de l'équipe (appui sur son nom en haut), tu peux alors inviter des équipes, voir et retirer leurs appareils (« Appareils » à côté du nom de l'équipe), leur renvoyer une invitation si elles ont perdu leur accès, et les retirer. Tu ne vois rien de plus que les autres équipes sur la carte.

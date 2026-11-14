@@ -13,6 +13,8 @@ window.cortegeMedic = function (core) {
   const MD_LVL = { duo: t('Besoin d’un binôme'), vital: t('Urgence vitale / évacuation'), gear: t('Besoin de matériel') };
   const MD_DUR = { 30: '30 min', 60: '1 h', 120: '2 h', 240: '4 h' };
   const mdLayer = L.layerGroup(), mdSeen = new Set();
+  // Points des équipes dans leur propre calque : l'écran medic peut masquer tout le reste de la carte (voir body.medic dans style.css)
+  if (!map.getPane('medic')) map.createPane('medic').style.zIndex = 650;
   let mdItems = [], mdVer = 0, mdAbort = null, mdShare = null, mdSel = null, mdFocus = null, mdFirst = true, mdMe = null;
   let mdShowPub = false, mdOpts = { dur: 120, pub: false };
   try { mdShowPub = localStorage.getItem('cortege-medic-pub') === '1'; medicFull = localStorage.getItem('cortege-medic-full') === '1'; mdOpts = { ...mdOpts, ...JSON.parse(localStorage.getItem('cortege-medic-opts') || '{}') }; } catch {}
@@ -32,8 +34,10 @@ window.cortegeMedic = function (core) {
     $('#medicBack').hidden = !medic || on;
     if (on && document.body.classList.contains('manif')) setManif(false);
     if (medic) { if (!map.hasLayer(mdLayer)) mdLayer.addTo(map); } else map.removeLayer(mdLayer);
-    // Signalements publics : masqués sur l'écran medic, sauf demande
+    // Écran medic : seulement les points des équipes (et ta position). Tout ce qui est public (signalements, agenda, parcours,
+    // lieux, points de ralliement…) est masqué, sauf demande.
     const pub = !on || mdShowPub;
+    document.body.classList.toggle('md-pub', pub);
     if (pub && !map.hasLayer(layer)) map.addLayer(layer); else if (!pub && map.hasLayer(layer)) map.removeLayer(layer);
     $('#medicPub').setAttribute('aria-pressed', String(mdShowPub));
     if (on) { closeReport(); if (core.watchId == null) locate(); }
@@ -73,7 +77,7 @@ window.cortegeMedic = function (core) {
       const pin = el('div', { class: `mpin k-${x.k}${x.lvl ? ' l-' + x.lvl : ''}${x.mine ? ' mine' : ''}` }, el('span', { 'aria-hidden': 'true' }, document.createTextNode(MD[x.k][0])));
       if (x.k === 'pos') pin.append(el('i', {}, document.createTextNode(x.team)));
       if (x.k === 'help' && x.go.length) pin.append(el('em', {}, document.createTextNode('→ ' + x.go.length)));
-      const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: 'mpin-wrap', html: pin, iconSize: [44, 44], iconAnchor: [22, 22] }), keyboard: true, title: MD[x.k][1] + ' · ' + x.team, zIndexOffset: x.k === 'help' ? 2000 : 1000 });
+      const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: 'mpin-wrap', html: pin, iconSize: [44, 44], iconAnchor: [22, 22] }), keyboard: true, title: MD[x.k][1] + ' · ' + x.team, zIndexOffset: x.k === 'help' ? 2000 : 1000, pane: 'medic' });
       m.on('click', () => mdCard(x.id));
       mdLayer.addLayer(m);
       // Nouvelle urgence vitale d'une autre équipe : vibration et message, même si la notification n'est pas activée
@@ -196,7 +200,7 @@ window.cortegeMedic = function (core) {
     box.append(h3(t('Notre position')), hint(mdShare ? t('Position partagée en ce moment. Elle s’arrête seule à la fin de la durée, après 3 minutes sans réseau, ou si tu t’éloignes de plus de 2 km.') : t('Les autres équipes voient où vous êtes. Le partage s’arrête seul, et rien n’est gardé ensuite.')),
       el('label', { class: 'note-label' }, t('Pendant'), dur), pubSw, go);
     // Carte
-    box.append(h3(t('Carte')), sw(t('Afficher aussi les signalements publics'), t('CRS, lacrymo, charges… signalés par tout le monde sur Cortège.'), mdShowPub, v => { mdShowPub = v; try { localStorage.setItem('cortege-medic-pub', v ? '1' : '0'); } catch {} mdScreen(); }));
+    box.append(h3(t('Carte')), sw(t('Afficher aussi ce qui est public'), t('Par défaut, l’écran medic ne montre que les points des équipes. Ici, tu ajoutes les signalements, l’agenda, les parcours et les lieux de tout le monde sur Cortège.'), mdShowPub, v => { mdShowPub = v; try { localStorage.setItem('cortege-medic-pub', v ? '1' : '0'); } catch {} mdScreen(); }));
     // Alertes
     box.append(h3(t('Alertes')), hint(core.pushSub ? t('Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée.', { km: String(mdMe.radiusKm).replace('.', ',') })
       : t('Notifications pas encore activées sur ce téléphone : sans elles, tu ne vois les appels de renfort que si l’appli est ouverte.')));
@@ -213,7 +217,9 @@ window.cortegeMedic = function (core) {
     };
     const addDev = el('button', { type: 'button', class: 'secondary' }, t('Ajouter un appareil'));
     addDev.onclick = async () => { try { showLink(t('Ajouter un appareil'), await mdFetch('/api/medic/device', { method: 'POST', body: '{}' }), t('Scanne ce QR code avec l’autre téléphone de l’équipe (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à la carte medic.')); } catch (e) { toast(e.message); } };
-    box.append(h3(t('Appareils de l’équipe')), hint(t('{n} appareil(s) ont l’accès de cette équipe (5 au plus).', { n: mdMe.devices })), addDev);
+    const devList = el('ul', { class: 'org-list' });
+    box.append(h3(t('Appareils de l’équipe')), hint(t('{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite.', { n: mdMe.devices })), devList, addDev);
+    mdDevices(devList, '/api/medic/devices');
     // Code de secours
     const rec = el('button', { type: 'button', class: 'secondary' }, mdMe.rec ? t('Créer un nouveau code de secours') : t('Créer mon code de secours'));
     rec.onclick = async () => { try { const r = await mdFetch('/api/medic/recovery', { method: 'POST', body: '{}' }); showRec(r.rec, 'medic', openMedic); } catch (e) { toast(e.message); } };
@@ -235,7 +241,10 @@ window.cortegeMedic = function (core) {
           again.onclick = async () => { try { showLink(t('Nouvelle invitation pour {who}', { who: o.label }), await mdFetch(`/api/medic/teams/${o.id}/invite`, { method: 'POST', body: '{}' }), t('L’ancien accès de cette équipe est coupé. Envoie le lien par une messagerie chiffrée (Signal), jamais publiquement.')); load(); } catch (e) { toast(e.message); } };
           del.onclick = async () => { if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = t('Confirmer le retrait'); setTimeout(() => { delete del.dataset.armed; del.textContent = t('Retirer'); }, 4000); return; }
             try { await mdFetch('/api/medic/teams/' + o.id, { method: 'DELETE', body: '{}' }); load(); } catch (e) { toast(e.message); } };
-          list.append(el('li', {}, el('div', { class: 't' }, el('div', { class: 'l' }, document.createTextNode(o.label)), el('div', { class: 's' }, o.active ? t('Active · {n} appareil(s)', { n: o.devices }) : o.invite ? t('Invitation en attente') : t('Invitation expirée'))), again, del));
+          const devs = el('ul', { class: 'org-list md-devs' }), row = el('li', { class: 'md-devs-row', hidden: '' }, devs), show = el('button', { type: 'button', class: 'ghost' }, t('Appareils'));
+          show.onclick = () => { row.hidden = !row.hidden; if (!row.hidden) mdDevices(devs, `/api/medic/teams/${o.id}/devices`); };
+          if (!o.active) show.hidden = true;
+          list.append(el('li', {}, el('div', { class: 't' }, el('div', { class: 'l' }, document.createTextNode(o.label)), el('div', { class: 's' }, o.active ? t('Active · {n} appareil(s)', { n: o.devices }) : o.invite ? t('Invitation en attente') : t('Invitation expirée'))), show, again, del), row);
         }
       };
       inv.onclick = async () => {
@@ -257,14 +266,34 @@ window.cortegeMedic = function (core) {
     };
     box.append(h3(t('Cortège')), full, quit);
   }
+  // Liste des appareils d'une équipe, avec retrait (deux appuis). url : les siens, ou ceux d'une équipe invitée par le ou la référent·e
+  async function mdDevices(ul, url) {
+    ul.textContent = '';
+    let d; try { d = await mdFetch(url); } catch (e) { ul.append(el('li', { class: 'empty' }, document.createTextNode(e.message))); return; }
+    const day = x => new Date(x).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'short' });
+    for (const v of d.devices) {
+      const what = (v.kind || t('Appareil')) + (v.me ? ' · ' + t('ce téléphone') : '');
+      const info = [v.since ? t('depuis le {date}', { date: day(v.since) }) : t('ajouté avant le suivi des appareils'), v.active ? t('actif {when}', { when: ago(v.active) }) : null].filter(Boolean).join(' · ');
+      const li = el('li', {}, el('div', { class: 't' }, el('div', { class: 'l' }, document.createTextNode((/^(Windows|Mac|Linux)$/.test(v.kind) ? '💻 ' : '📱 ') + what)), el('div', { class: 's' }, document.createTextNode(info))));
+      if (!v.me && d.devices.length > 1) {
+        const del = el('button', { type: 'button', class: 'ghost danger-link' }, t('Retirer'));
+        del.onclick = async () => {
+          if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = t('Confirmer le retrait'); setTimeout(() => { delete del.dataset.armed; del.textContent = t('Retirer'); }, 4000); return; }
+          try { await mdFetch(url + '/' + v.id, { method: 'DELETE', body: '{}' }); toast(t('Appareil retiré : il n’a plus accès à la carte medic')); mdDevices(ul, url); } catch (e) { toast(e.message); }
+        };
+        li.append(del);
+      }
+      ul.append(li);
+    }
+  }
   $('#medicPill').onclick = openMedic;
   $('#mdClose').onclick = () => closeSheets();
   $('#medicExit').onclick = () => mdFullView(true);
   $('#medicBack').onclick = () => mdFullView(false);
-  $('#medicPub').onclick = () => { mdShowPub = !mdShowPub; try { localStorage.setItem('cortege-medic-pub', mdShowPub ? '1' : '0'); } catch {} mdScreen(); toast(mdShowPub ? t('Signalements publics affichés') : t('Signalements publics masqués')); };
+  $('#medicPub').onclick = () => { mdShowPub = !mdShowPub; try { localStorage.setItem('cortege-medic-pub', mdShowPub ? '1' : '0'); } catch {} mdScreen(); toast(mdShowPub ? t('Tout ce qui est public est affiché') : t('Seulement les points des équipes')); };
   // Textes fixes de l'écran
   $('#medicExit').textContent = t('Vue complète'); $('#medicBack').textContent = '⛑️ ' + t('Écran medic');
-  $('#medicPub').textContent = '👁'; $('#medicPub').title = t('Afficher ou masquer les signalements publics'); $('#medicPub').setAttribute('aria-label', t('Afficher ou masquer les signalements publics'));
+  $('#medicPub').textContent = '👁'; $('#medicPub').title = t('Afficher ou masquer ce qui est public'); $('#medicPub').setAttribute('aria-label', t('Afficher ou masquer ce qui est public'));
   $('#medicPill').title = t('Notre équipe : position, alertes, appareils');
   $('#mdHotLbl').textContent = t('Point chaud'); $('#mdBlockLbl').textContent = t('Barrage filtrant'); $('#mdHelpLbl').textContent = t('Renfort');
   mdShareUI();

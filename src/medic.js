@@ -56,8 +56,58 @@ function medicOf(req) {
   if (!k) return null;
   const h = sha(k);
   const o = readMedics().find(o => keyEq(h, o.hash) || (o.keys || []).some(x => keyEq(h, x)));
-  if (o) return { id: o.id, label: o.label, city: o.city || '', ref: o.ref === true };
+  if (o) { devSeen(o, h, req); return { id: o.id, label: o.label, city: o.city || '', ref: o.ref === true, h }; }
   keyFailed(req); return null;
+}
+
+// ---- Appareils d'une équipe ----
+// Pour qu'une équipe (ou son ou sa référent·e) reconnaisse et retire un appareil : le type d'appareil (iPhone, Android,
+// ordinateur…, tiré du navigateur, jamais le modèle ni la version) et la date à laquelle il est apparu, gardés avec l'équipe.
+// La dernière activité reste en mémoire seulement. Un appareil retiré perd l'accès à sa requête suivante.
+const seen = new Map();
+function devKind(ua) {
+  ua = String(ua || '');
+  return /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows'
+    : /Macintosh|Mac OS X/.test(ua) ? 'Mac' : /Linux|CrOS/.test(ua) ? 'Linux' : '';
+}
+function devSeen(o, h, req) {
+  const now = Date.now(), last = seen.get(h);
+  if (!last || now - last > 60_000) { if (seen.size > 2000) seen.clear(); seen.set(h, now); }
+  if (o.devs && o.devs[h]) return;
+  const kind = devKind(req.headers['user-agent']);
+  editTeam(o.id, t => {
+    const live = new Set([t.hash, ...(t.keys || [])].filter(Boolean)), devs = {};
+    for (const [k, v] of Object.entries(t.devs || {})) if (live.has(k)) devs[k] = v;
+    if (live.has(h) && !devs[h]) devs[h] = { t: now, ua: kind };
+    return { ...t, devs };
+  });
+}
+const devId = h => String(h).slice(0, 12);
+function devices(teamId, myHash) {
+  const o = readMedics().find(x => x.id === teamId);
+  if (!o) return null;
+  return [o.hash, ...(o.keys || [])].filter(Boolean).map((h, i) => ({ id: devId(h), first: i === 0, me: !!myHash && keyEq(h, myHash),
+    since: o.devs?.[h]?.t || null, kind: o.devs?.[h]?.ua || '', active: seen.get(h) || null }));
+}
+// Retire un appareil : sa clé ne vaut plus rien, ses notifications d'urgence s'arrêtent. Jamais le dernier, ni celui qui demande.
+function removeDevice(teamId, id, myHash) {
+  let out = 'none', gone = null;
+  editTeam(teamId, t => {
+    const all = [t.hash, ...(t.keys || [])].filter(Boolean), h = all.find(x => devId(x) === String(id));
+    if (!h) return null;
+    if (myHash && keyEq(h, myHash)) { out = 'self'; return null; }
+    if (all.length < 2) { out = 'last'; return null; }
+    const rest = all.filter(x => x !== h), devs = { ...(t.devs || {}) }; delete devs[h];
+    out = 'ok'; gone = h;
+    return { ...t, hash: rest[0], keys: rest.slice(1), devs };
+  });
+  if (out === 'self') return [400, { error: 'Pour retirer ce téléphone, utilise « Quitter le mode medic sur ce téléphone ».' }];
+  if (out === 'last') return [400, { error: 'C’est le seul appareil de l’équipe : pour couper l’accès, réinvite l’équipe.' }];
+  if (out !== 'ok') return [404, { error: 'Appareil introuvable.' }];
+  seen.delete(gone);
+  for (const [key, s] of subs.get(teamId) || []) if (s.h && keyEq(s.h, gone)) subs.get(teamId).delete(key);
+  changed(); // l'écran ouvert sur l'appareil retiré relit tout de suite, et apprend que sa clé ne vaut plus
+  return [200, { ok: true }];
 }
 const cleanLabel = v => String(v || '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
 function createTeam({ label, city, ref, by }) {
@@ -80,7 +130,7 @@ function createTeam({ label, city, ref, by }) {
 // Nouvelle invitation : l'ancien accès (clés, code de secours) est coupé, la couche oublie l'équipe
 function reinviteTeam(id) {
   const { token, invite } = newInvite();
-  const o = editTeam(id, t => ({ ...t, hash: null, keys: [], devInv: undefined, rec: undefined, recAt: undefined, invite }));
+  const o = editTeam(id, t => ({ ...t, hash: null, keys: [], devs: {}, devInv: undefined, rec: undefined, recAt: undefined, invite }));
   if (!o) return [404, { error: 'Équipe introuvable.' }];
   forgetTeam(id);
   return [200, { id: o.id, label: o.label, invite: token, exp: invite.exp }];
@@ -255,18 +305,19 @@ function subscribe(team, b, now = Date.now()) {
   const key = sha(endpoint).slice(0, 24);
   if (!m.has(key) && m.size >= DEVICE_MAX) m.delete(m.keys().next().value);
   const lat = Number(b.lat), lng = Number(b.lng);
-  m.set(key, { e: endpoint, k, a, t: now, lang: PUSH_LANGS.includes(b.lang) ? b.lang : 'fr', ...(validLatLng(lat, lng) ? { lat: Math.round(lat * 100) / 100, lng: Math.round(lng * 100) / 100 } : {}) });
+  m.set(key, { e: endpoint, k, a, t: now, h: team.h || null, lang: PUSH_LANGS.includes(b.lang) ? b.lang : 'fr', ...(validLatLng(lat, lng) ? { lat: Math.round(lat * 100) / 100, lng: Math.round(lng * 100) / 100 } : {}) });
   return [200, { ok: true }];
 }
 function unsubscribe(team, endpoint) { subs.get(team.id)?.delete(sha(String(endpoint || '')).slice(0, 24)); return [200, { ok: true }]; }
 // Urgence vitale : les autres équipes dans le rayon réglé par l'admin (position partagée, sinon zone de l'abonnement ;
 // une équipe dont on ne sait rien est prévenue aussi : mieux vaut une notification de trop)
 function vitalTargets(x) {
-  const R = cfg().radiusKm * 1000, out = [];
+  const R = cfg().radiusKm * 1000, out = [], teams = new Map(readMedics().map(o => [o.id, [o.hash, ...(o.keys || [])].filter(Boolean)]));
   for (const [tid, m] of subs) {
     if (tid === x.tid) continue;
-    const p = posOf(tid);
+    const p = posOf(tid), live = teams.get(tid) || [];
     for (const [key, s] of m) {
+      if (s.h && !live.some(h => keyEq(h, s.h))) { m.delete(key); continue; }
       const at = p || (s.lat != null ? s : null), d = at ? distM(at, x) : null;
       if (d == null || d <= R) out.push({ tid, key, s, d });
     }
@@ -290,5 +341,5 @@ function stats(now = Date.now()) {
   return { pos: n('pos'), hot: n('hot'), block: n('block'), help: n('help'), helpsToday: helpsToday.day === d ? helpsToday.n : 0, listening: waiters.size };
 }
 
-module.exports = { readMedics, writeMedics, editTeam, medicOf, createTeam, reinviteTeam, removeTeam, redeem, deviceLink, teamView, cfg, saveCfg, cleanLabel,
+module.exports = { readMedics, writeMedics, editTeam, medicOf, createTeam, reinviteTeam, removeTeam, redeem, deviceLink, devices, removeDevice, teamView, cfg, saveCfg, cleanLabel,
   posSet, posStop, posOf, addItem, removeItem, goItem, state, waitChange, forgetTeam, wipe, subscribe, unsubscribe, vitalTargets, stats, sweep, POS_DUR };

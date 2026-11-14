@@ -60,6 +60,14 @@ async function medicRoutes(req, res, url) {
     if (d) orgaLog(logAs(me), 'lien d’appareil créé');
     return d ? send(res, 200, d) : send(res, 404, { error: 'Équipe introuvable.' });
   }
+  // Appareils de l'équipe : liste, retrait (pas celui qui demande, pas le dernier)
+  if (p === '/api/medic/devices' && req.method === 'GET') return send(res, 200, { devices: M.devices(me.id, me.h) });
+  const dv = p.match(/^\/api\/medic\/devices\/([\w-]{12})$/);
+  if (dv && req.method === 'DELETE') {
+    const out = M.removeDevice(me.id, dv[1], me.h);
+    if (out[0] === 200) orgaLog(logAs(me), 'appareil retiré');
+    return send(res, ...out);
+  }
   if (p === '/api/medic/recovery' && req.method === 'POST') {
     if (!quota('rec:m:' + me.id, 5, 60 * MIN)) return send(res, 429, { error: 'Trop de codes demandés, réessaie plus tard.' });
     const rec = newCode();
@@ -75,6 +83,15 @@ async function medicRoutes(req, res, url) {
     if (req.method === 'POST' && p === '/api/medic/teams') {
       const out = M.createTeam({ label: (await readJson(req)).label, city: me.city, ref: false, by: me.id });
       if (out[0] === 201) orgaLog(logAs(me), 'équipe medic invitée', { ref: out[1].id, detail: out[1].label });
+      return send(res, ...out);
+    }
+    // Appareils d'une équipe qu'il ou elle a fait entrer
+    const td = p.match(/^\/api\/medic\/teams\/([\w-]{1,16})\/devices(?:\/([\w-]{12}))?$/);
+    if (td && !mine(td[1])) return send(res, 404, { error: 'Équipe introuvable parmi celles que tu as invitées.' });
+    if (td && !td[2] && req.method === 'GET') return send(res, 200, { devices: M.devices(td[1], null) });
+    if (td && td[2] && req.method === 'DELETE') {
+      const out = M.removeDevice(td[1], td[2], null);
+      if (out[0] === 200) orgaLog(logAs(me), 'appareil d’une équipe medic retiré', { ref: td[1] });
       return send(res, ...out);
     }
     const m = p.match(/^\/api\/medic\/teams\/([\w-]{1,16})(\/invite)?$/);

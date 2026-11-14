@@ -4581,3 +4581,68 @@ msgstr "Alles, was ein Orga-Zugang ermöglicht"
 #: public/index.html
 msgid "Ce qu’un accès orga permet"
 msgstr "Was ein Orga-Zugang ermöglicht"
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher aussi ce qui est public"
+msgstr "Auch Öffentliches anzeigen"
+
+#: client/parts/medic.js
+msgid "Par défaut, l’écran medic ne montre que les points des équipes. Ici, tu ajoutes les signalements, l’agenda, les parcours et les lieux de tout le monde sur Cortège."
+msgstr "Standardmäßig zeigt der Medic-Bildschirm nur die Punkte der Teams. Hier blendest du die Meldungen, die Agenda, die Routen und die Orte aller auf Cortège ein."
+
+#: client/parts/medic.js
+msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
+msgstr "{n} Gerät(e) haben den Zugang dieses Teams (höchstens 5). Ein verlorenes, verliehenes oder nicht mehr zum Team gehörendes Gerät: Entferne es, dann verliert es sofort den Zugang."
+
+#: client/parts/medic.js
+msgid "Appareils"
+msgstr "Geräte"
+
+#: client/parts/medic.js
+msgid "Appareil"
+msgstr "Gerät"
+
+#: client/parts/medic.js
+msgid "ce téléphone"
+msgstr "dieses Handy"
+
+#: client/parts/medic.js
+msgid "depuis le {date}"
+msgstr "seit {date}"
+
+#: client/parts/medic.js
+msgid "ajouté avant le suivi des appareils"
+msgstr "vor der Geräteübersicht hinzugefügt"
+
+#: client/parts/medic.js
+msgid "actif {when}"
+msgstr "aktiv {when}"
+
+#: client/parts/medic.js
+msgid "Appareil retiré : il n’a plus accès à la carte medic"
+msgstr "Gerät entfernt: Es hat keinen Zugang mehr zur Medic-Karte"
+
+#: client/parts/medic.js
+msgid "Tout ce qui est public est affiché"
+msgstr "Alles Öffentliche wird angezeigt"
+
+#: client/parts/medic.js
+msgid "Seulement les points des équipes"
+msgstr "Nur die Punkte der Teams"
+
+#: client/parts/medic.js
+msgid "Afficher ou masquer ce qui est public"
+msgstr "Öffentliches ein- oder ausblenden"
+
+#: src/medic.js
+msgid "Pour retirer ce téléphone, utilise « Quitter le mode medic sur ce téléphone »."
+msgstr "Um dieses Handy zu entfernen, nutze „Medic-Modus auf diesem Handy beenden“."
+
+#: src/medic.js
+msgid "C’est le seul appareil de l’équipe : pour couper l’accès, réinvite l’équipe."
+msgstr "Es ist das einzige Gerät des Teams: Um den Zugang zu sperren, lade das Team neu ein."
+
+#: src/medic.js
+msgid "Appareil introuvable."
+msgstr "Gerät nicht gefunden."

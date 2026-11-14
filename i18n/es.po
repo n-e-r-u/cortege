@@ -4584,3 +4584,68 @@ msgstr "Todo lo que permite un acceso de organización"
 #: public/index.html
 msgid "Ce qu’un accès orga permet"
 msgstr "Lo que permite un acceso de organización"
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher aussi ce qui est public"
+msgstr "Mostrar también lo público"
+
+#: client/parts/medic.js
+msgid "Par défaut, l’écran medic ne montre que les points des équipes. Ici, tu ajoutes les signalements, l’agenda, les parcours et les lieux de tout le monde sur Cortège."
+msgstr "Por defecto, la pantalla medic solo muestra los puntos de los equipos. Aquí añades los avisos, la agenda, los recorridos y los lugares de todo el mundo en Cortège."
+
+#: client/parts/medic.js
+msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
+msgstr "{n} dispositivo(s) tienen el acceso de este equipo (5 como máximo). Un dispositivo perdido, prestado o que ya no está en el equipo: retíralo y pierde el acceso al instante."
+
+#: client/parts/medic.js
+msgid "Appareils"
+msgstr "Dispositivos"
+
+#: client/parts/medic.js
+msgid "Appareil"
+msgstr "Dispositivo"
+
+#: client/parts/medic.js
+msgid "ce téléphone"
+msgstr "este teléfono"
+
+#: client/parts/medic.js
+msgid "depuis le {date}"
+msgstr "desde el {date}"
+
+#: client/parts/medic.js
+msgid "ajouté avant le suivi des appareils"
+msgstr "añadido antes del seguimiento de dispositivos"
+
+#: client/parts/medic.js
+msgid "actif {when}"
+msgstr "activo {when}"
+
+#: client/parts/medic.js
+msgid "Appareil retiré : il n’a plus accès à la carte medic"
+msgstr "Dispositivo retirado: ya no tiene acceso al mapa medic"
+
+#: client/parts/medic.js
+msgid "Tout ce qui est public est affiché"
+msgstr "Se muestra todo lo público"
+
+#: client/parts/medic.js
+msgid "Seulement les points des équipes"
+msgstr "Solo los puntos de los equipos"
+
+#: client/parts/medic.js
+msgid "Afficher ou masquer ce qui est public"
+msgstr "Mostrar u ocultar lo público"
+
+#: src/medic.js
+msgid "Pour retirer ce téléphone, utilise « Quitter le mode medic sur ce téléphone »."
+msgstr "Para retirar este teléfono, usa «Salir del modo medic en este teléfono»."
+
+#: src/medic.js
+msgid "C’est le seul appareil de l’équipe : pour couper l’accès, réinvite l’équipe."
+msgstr "Es el único dispositivo del equipo: para cortar el acceso, vuelve a invitar al equipo."
+
+#: src/medic.js
+msgid "Appareil introuvable."
+msgstr "Dispositivo no encontrado."

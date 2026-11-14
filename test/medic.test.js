@@ -212,6 +212,42 @@ test('code de secours : accès retrouvé, autres appareils coupés, chaque code 
   assert.ok(j.includes('accès récupéré (code de secours)')); assert.ok(!j.includes(or.j.rec) && !j.includes(O.rec));
 });
 
+test('medic : appareils d’une équipe, listés et retirés par l’équipe ou sa référente', async () => {
+  const inv = await A.call('POST', '/api/medic/teams', { label: 'Binôme Écho' });
+  const first = await req('POST', '/api/invite', { token: inv.j.invite });
+  const ua = (key, kind) => (m, p, body) => req(m, p, body, { 'x-medic-key': key, 'user-agent': kind });
+  const E = ua(first.j.key, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)');
+  const add = async () => { const d = await E('POST', '/api/medic/device', {}); return (await req('POST', '/api/invite', { token: d.j.invite })).j.key; };
+  const k2 = await add(), k3 = await add();
+  const E2 = ua(k2, 'Mozilla/5.0 (Linux; Android 14; Pixel 8)'), E3 = ua(k3, 'Mozilla/5.0 (X11; Linux x86_64)');
+  assert.equal((await E2('GET', '/api/medic/me')).s, 200); await E3('GET', '/api/medic/me');
+  const l = (await E('GET', '/api/medic/devices')).j.devices;
+  assert.equal(l.length, 3);
+  assert.deepEqual(l.map(d => [d.kind, d.me, d.first]), [['iPhone', true, true], ['Android', false, false], ['Linux', false, false]]);
+  assert.ok(l.every(d => /^[\w-]{12}$/.test(d.id) && d.since > Date.now() - 60_000 && d.active), 'date d’arrivée et activité');
+  assert.ok(!JSON.stringify(l).includes('Pixel'), 'jamais le modèle');
+  // Pas soi-même, pas un appareil d'une autre équipe
+  assert.equal((await E('DELETE', '/api/medic/devices/' + l[0].id, {})).s, 400);
+  assert.equal((await A.call('DELETE', '/api/medic/devices/' + l[1].id, {})).s, 404);
+  // L'équipe retire son appareil Android : sa clé ne vaut plus rien, il l'oublie
+  assert.equal((await E('DELETE', '/api/medic/devices/' + l[1].id, {})).s, 200);
+  const gone = await E2('GET', '/api/medic/state');
+  assert.deepEqual([gone.s, gone.j.gone], [403, true]);
+  assert.equal((await E('GET', '/api/medic/me')).j.devices, 2);
+  // La référente voit et retire les appareils des équipes qu'elle a fait entrer, pas des autres
+  assert.equal((await A.call('GET', `/api/medic/teams/${Bq.id}/devices`)).s, 404);
+  const rl = (await A.call('GET', `/api/medic/teams/${inv.j.id}/devices`)).j.devices;
+  assert.deepEqual(rl.map(d => [d.kind, d.me]), [['iPhone', false], ['Linux', false]]);
+  // Appareil principal retiré : l'autre prend sa place et garde l'accès
+  assert.equal((await A.call('DELETE', `/api/medic/teams/${inv.j.id}/devices/${rl[0].id}`, {})).s, 200);
+  assert.equal((await E('GET', '/api/medic/me')).s, 403);
+  assert.equal((await E3('GET', '/api/medic/me')).s, 200);
+  // Jamais le dernier : pour couper l'équipe, on la réinvite
+  const last = (await A.call('GET', `/api/medic/teams/${inv.j.id}/devices`)).j.devices;
+  assert.deepEqual(last.map(d => d.first), [true]);
+  assert.equal((await A.call('DELETE', `/api/medic/teams/${inv.j.id}/devices/${last[0].id}`, {})).s, 400);
+});
+
 test('accès : une clé valable n’est jamais perdue pour un refus ou un verrouillage du réseau', async () => {
   const O = await orga('Collectif Verrou'), net = { 'x-forwarded-for': '83.7.7.7' };
   // Action interdite (orga en essai) : 403 sans « gone », le téléphone garde sa clé
@@ -260,6 +296,21 @@ test('medic : urgence vitale, équipes prévenues dans le rayon ; la couche disp
   // Équipe retirée par l'admin : sa clé ne vaut plus rien
   assert.equal((await adm('DELETE', '/api/admin/medics/' + Bq.id)).s, 200);
   assert.deepEqual([(await Bq.call('GET', '/api/medic/me')).s, (await Bq.call('GET', '/api/medic/me')).j.gone], [403, true]);
+});
+
+test('medic : un appareil qui n’a plus accès ne reçoit plus les urgences', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-medic-d-'));
+  process.env.DATA_DIR = dir;
+  delete require.cache[require.resolve('../src/medic')];
+  const M = require('../src/medic');
+  const k = () => ({ p256dh: crypto.createECDH('prime256v1').generateKeys().toString('base64url'), auth: crypto.randomBytes(16).toString('base64url') });
+  M.writeMedics([{ id: 'eq', label: 'Équipe', hash: 'H1', keys: ['H2'] }, { id: 'autre', label: 'Autre', hash: 'H9', keys: [] }]);
+  for (const h of ['H1', 'H2']) M.subscribe({ id: 'eq', h }, { sub: { endpoint: 'https://fcm.googleapis.com/fcm/send/' + h, keys: k() }, ...P });
+  assert.equal(M.vitalTargets({ tid: 'autre', ...P }).length, 2);
+  M.writeMedics([{ id: 'eq', label: 'Équipe', hash: 'H1', keys: [] }, { id: 'autre', label: 'Autre', hash: 'H9', keys: [] }]);
+  assert.deepEqual(M.vitalTargets({ tid: 'autre', ...P }).map(x => x.s.h), ['H1'], 'H2 coupé : plus de notification');
+  M.wipe();
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test('medic : choix des équipes prévenues (rayon, position partagée, zone inconnue)', () => {

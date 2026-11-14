@@ -1061,6 +1061,8 @@
   // ---- Géolocalisation + suivi + boussole (tout reste sur l'appareil) ----
   // ◎ gris : pas localisé · ◎ plein : la carte te suit · ◎ contour : localisé, carte libre (appuie pour te recentrer)
   let follow = false, heading = null, compassOn = false, gpsHeading = null, accCircle = null;
+  // Ma position dans son propre calque, au-dessus des signalements : il reste visible quand l'écran medic masque tout ce qui est public
+  const mePane = () => { if (!map.getPane('me')) map.createPane('me').style.zIndex = 660; return 'me'; };
   const btnLoc = $('#btnLocate');
   function setFollow(on) {
     follow = on;
@@ -1108,11 +1110,11 @@
     me = [p.coords.latitude, p.coords.longitude]; meAcc = Number.isFinite(p.coords.accuracy) ? p.coords.accuracy : Infinity; meAt = Date.now();
     // Cap GPS quand on marche (secours si pas de boussole)
     gpsHeading = p.coords.speed > 0.8 && p.coords.heading != null && !isNaN(p.coords.heading) ? p.coords.heading : gpsHeading;
-    if (!meMarker) meMarker = L.marker(me, { icon: meIcon(), interactive: false, zIndexOffset: 1000, keyboard: false }).addTo(map);
+    if (!meMarker) meMarker = L.marker(me, { icon: meIcon(), interactive: false, keyboard: false, pane: mePane() }).addTo(map);
     else meMarker.setLatLng(me);
     calmNav(); if (ordState) ordState.later();
     const acc = Math.min(p.coords.accuracy || 0, 500);
-    if (!accCircle) accCircle = L.circle(me, { radius: acc, interactive: false, className: 'me-acc' }).addTo(map);
+    if (!accCircle) accCircle = L.circle(me, { radius: acc, interactive: false, className: 'me-acc', pane: mePane() }).addTo(map);
     else accCircle.setLatLng(me).setRadius(acc);
     drawHeading();
     if (pushSub) pushSend(pushSub).catch(() => {});
