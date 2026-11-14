@@ -69,6 +69,8 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
 | `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |
 | `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
+| `ANDROID_CERT_SHA256` | vide | Empreintes SHA-256 du certificat de l'appli Android, séparées par des virgules : active `/.well-known/assetlinks.json` (voir [PLAY_STORE.md](PLAY_STORE.md)) |
+| `ANDROID_PACKAGE` | celui de `android/twa-manifest.json` | Identifiant de l'appli Android de l'instance (`packageId`) |
 
 ## Logo
 

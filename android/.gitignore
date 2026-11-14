@@ -1,0 +1,10 @@
+# Construction et clés : jamais dans le dépôt
+.gradle/
+build/
+app/build/
+local.properties
+*.keystore
+*.jks
+*.apk
+*.aab
+*.idsig

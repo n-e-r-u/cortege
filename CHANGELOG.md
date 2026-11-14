@@ -4,6 +4,8 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 
 ## 2.20.0 (en cours)
 
+**Appli Android pour le Play Store** : coquille officielle de Google (Trusted Web Activity) qui ouvre le site en plein écran, sans aucun code ni outil de statistiques ajouté. Projet dans `android/`, construit et signé par GitHub Actions (`android.yml`) ; `/.well-known/assetlinks.json` (variables `ANDROID_CERT_SHA256`, `ANDROID_PACKAGE`) relie l'appli au site. Guide de publication, fiche et formulaires du Play Store : [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
+
 **Mode medic, retours des street medics de Montpellier** :
 - **Carte medic allégée** : points des équipes et signalements publics, sans l'agenda, les parcours, les lieux ni les points de ralliement (dans « Vue complète »). L'œil masque les signalements pour ne garder que les points des équipes.
 - **Appareils d'une équipe** : liste (type d'appareil, depuis quand, dernière activité) et retrait d'un appareil perdu, prêté ou qui a quitté l'équipe, depuis un autre téléphone de l'équipe ou par le ou la référent·e. L'appareil retiré perd l'accès tout de suite et ne reçoit plus les notifications d'urgence.

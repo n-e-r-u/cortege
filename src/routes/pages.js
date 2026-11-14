@@ -24,6 +24,15 @@ async function pagesRoutes(req, res, url, pathname) {
   // Langue déposée dans l'admin : passe devant le fichier livré du même nom
   const langF = req.method === 'GET' && pathname.match(/^\/lang\/([\w-]{2,10})\.json$/);
   if (langF) { const b = uploadedJson(langF[1]); if (b) return send(res, 200, b, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' }); }
+  // Appli Android (Play Store) : Android vérifie que l'appli et le site ont le même propriétaire avant de l'ouvrir en plein écran.
+  // ANDROID_CERT_SHA256 = empreinte(s) SHA-256 du certificat de signature (Play Console > Intégrité de l'appli), séparées par des virgules.
+  if (req.method === 'GET' && pathname === '/.well-known/assetlinks.json') {
+    const certs = String(process.env.ANDROID_CERT_SHA256 || '').split(',').map(x => x.trim().toUpperCase()).filter(x => /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/.test(x));
+    const pkg = String(process.env.ANDROID_PACKAGE || 'tv.neru.cortege');
+    if (!certs.length || !/^[a-z]\w*(\.[a-z]\w*)+$/i.test(pkg)) return send(res, 404, []);
+    return send(res, 200, [{ relation: ['delegate_permission/common.handle_all_urls'], target: { namespace: 'android_app', package_name: pkg, sha256_cert_fingerprints: certs } }],
+      { 'Cache-Control': 'public, max-age=3600' });
+  }
   // Référencement : robots.txt, plan du site, et fichier de validation de Google Search Console (GOOGLE_SITE_VERIFICATION=google0123….html)
   if (req.method === 'GET' && pathname === '/robots.txt')
     return send(res, 200, `User-agent: *\nDisallow: /api/\nAllow: /\n\nSitemap: ${PUBLIC_URL_REAL(req)}/sitemap.xml\n`, { 'Cache-Control': 'public, max-age=3600' });

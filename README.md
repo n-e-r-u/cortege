@@ -45,6 +45,7 @@ node server.js   # puis ouvre http://localhost:8080
 
 - [Installation et configuration](docs/INSTALLATION.md) : variables, VPS, cPanel, Docker, sauvegarde, carte hébergée, adresse .onion.
 - [Fonctionnement détaillé](docs/FONCTIONNEMENT.md) : signalements, anti-abus, administration, digest.
+- [Appli Android et Play Store](docs/PLAY_STORE.md) : construire, signer et publier l'appli.
 - [Nouveautés de chaque version](CHANGELOG.md).
 
 ## Participer
