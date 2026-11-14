@@ -429,6 +429,38 @@ test('carte à intégrer : seule embed.html peut s’afficher dans un autre site
   assert.equal(cfg.version, require('../package.json').version);
 });
 
+test('flouteur : page publique, moteur WebAssembly compressé, photo partagée sans service worker', async () => {
+  const p = await fetch(B + '/flouter');
+  assert.equal(p.status, 200); assert.match(await p.text(), /flouter\.js/);
+  assert.equal(p.headers.get('x-robots-tag'), null);
+  // Seule la page du Flouteur peut compiler du WebAssembly (repli sans worker)
+  assert.match(p.headers.get('content-security-policy'), /script-src 'self' 'wasm-unsafe-eval'/);
+  for (const u of ['/', '/legal.html']) assert.ok(!(await fetch(B + u)).headers.get('content-security-policy').includes('wasm-unsafe-eval'), u);
+  const wasm = '/vendor/mediapipe/tasks-vision-1.2.2/vision_wasm_internal.wasm', size = fs.statSync(path.join(ROOT, 'public', wasm)).size;
+  const plain = () => new Promise(ok => require('http').get(B + wasm, { headers: { 'accept-encoding': 'identity' } }, res => {
+    let n = 0; res.on('data', d => { n += d.length; }); res.on('end', () => ok({ type: res.headers['content-type'], enc: res.headers['content-encoding'], etag: res.headers.etag, n }));
+  }));
+  const first = await plain();
+  assert.deepEqual([first.type, first.enc, first.n], ['application/wasm', undefined, size]);
+  // Compressé en arrière-plan après la première demande : en gzip dès que c'est prêt, pour qui l'accepte
+  let gz = null;
+  for (let i = 0; i < 50 && !gz; i++) {
+    const r = await fetch(B + wasm);
+    if (r.headers.get('content-encoding') === 'gzip') gz = r; else { await r.arrayBuffer(); await new Promise(ok => setTimeout(ok, 200)); }
+  }
+  assert.ok(gz, 'servi en gzip');
+  assert.equal(gz.headers.get('content-type'), 'application/wasm'); assert.match(gz.headers.get('vary'), /Accept-Encoding/);
+  assert.equal((await gz.arrayBuffer()).byteLength, size, 'décompressé : le fichier entier');
+  const again = await plain();
+  assert.deepEqual([again.enc, again.n], [undefined, size], 'brut pour qui ne demande pas gzip');
+  assert.notEqual(again.etag, gz.headers.get('etag'), 'une empreinte par variante');
+  // Photo partagée depuis une autre appli sans service worker pour la recevoir : rien n'est lu, le Flouteur s'ouvre
+  const form = new FormData(); form.append('photos', new Blob([Buffer.from([0xff, 0xd8, 0xff, 0xd9])], { type: 'image/jpeg' }), 'photo.jpg');
+  const share = await fetch(B + '/flouter/partage', { method: 'POST', body: form, redirect: 'manual' });
+  assert.equal(share.status, 303); assert.equal(share.headers.get('location'), '/flouter?partage=0');
+  assert.ok((await fetch(B + '/sitemap.xml').then(r => r.text())).includes('/flouter</loc>'), 'plan du site');
+});
+
 test('orga confirmée : signalement vérifié d’office, deux fois plus long, prolongeable et corrigeable par elle seule', async () => {
   const o = (await admin('/api/admin/orgas', { label: 'Orga Sûre' })).j;
   const O = await orgaFrom(o.invite);

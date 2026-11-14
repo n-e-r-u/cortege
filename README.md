@@ -13,6 +13,7 @@ Cortège est une appli web gratuite et libre : pendant une manif, chacun·e sign
 - ⚖️ **Connaître ses droits** : les numéros des legal teams de ta ville, les réflexes en cas d'interpellation, un SMS d'alerte pré-rempli pour un proche.
 - 📅 **Agenda** : manifs, blocus, rassemblements et AG, avec le parcours sur la carte.
 - 🏛 **Lieux utiles** : préfectures, commissariats, tribunaux, lycées et facs, hôpitaux, pharmacies, points d'eau.
+- 🙈 **Flouter les visages** d'une photo avant de la publier : détection sur le téléphone, masques à corriger du doigt, photo réenregistrée sans position GPS ni métadonnées. Rien n'est envoyé, et ça marche sans réseau une fois préparé.
 - 📶 **Tenir quand le réseau sature** : mode léger, signalements gardés jusqu'à ce que ça capte, dernière situation connue affichée hors ligne, carte gardée sur le téléphone.
 - 📣 **Pour les orgas et legal teams** : annonces localisées, vérification et retrait des faux signalements, accès par QR code sans mot de passe, code de secours pour retrouver un accès perdu.
 - ⛑️ **Pour les street medics** : un écran à part et une carte privée entre équipes (positions, points chauds, barrages filtrants, appels de renfort), gardée en mémoire seulement. [Guide des équipes](docs/MEDICS.md).
