@@ -4,7 +4,7 @@
 // client/app/17-acces.js. `core` donne les outils du reste de l'appli ; ce qui y change au fil du temps (position du
 // téléphone, abonnement aux notifications) se lit par core.me, core.meAt, core.watchId, core.pushSub.
 window.cortegeMedic = function (core) {
-  const { $, el, t, toast, map, layer, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif } = core;
+  const { $, el, t, toast, map, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif } = core;
   let medic = null, medicFull = false; // équipe medic de ce téléphone ; « vue complète » de Cortège demandée
   // Une carte privée, vue seulement avec la clé de l'équipe : positions des équipes, points chauds, barrages filtrants, renforts.
   // Quatre gros boutons, rien d'autre. Les infos sont ajoutées et retirées à la main par les équipes ; le serveur ne les garde
@@ -16,8 +16,8 @@ window.cortegeMedic = function (core) {
   // Points des équipes dans leur propre calque : l'écran medic peut masquer tout le reste de la carte (voir body.medic dans style.css)
   if (!map.getPane('medic')) map.createPane('medic').style.zIndex = 650;
   let mdItems = [], mdVer = 0, mdAbort = null, mdShare = null, mdSel = null, mdFocus = null, mdFirst = true, mdMe = null;
-  let mdShowPub = false, mdOpts = { dur: 120, pub: false };
-  try { mdShowPub = localStorage.getItem('cortege-medic-pub') === '1'; medicFull = localStorage.getItem('cortege-medic-full') === '1'; mdOpts = { ...mdOpts, ...JSON.parse(localStorage.getItem('cortege-medic-opts') || '{}') }; } catch {}
+  let mdShowPub = true, mdOpts = { dur: 120, pub: false };
+  try { mdShowPub = localStorage.getItem('cortege-medic-sig') !== '0'; medicFull = localStorage.getItem('cortege-medic-full') === '1'; mdOpts = { ...mdOpts, ...JSON.parse(localStorage.getItem('cortege-medic-opts') || '{}') }; } catch {}
   { const m = location.search.match(/[?&]medic=([\w-]{1,16})/); if (m) { mdFocus = m[1]; history.replaceState(null, '', location.pathname); } }
 
   async function mdFetch(url, opts = {}) {
@@ -34,11 +34,9 @@ window.cortegeMedic = function (core) {
     $('#medicBack').hidden = !medic || on;
     if (on && document.body.classList.contains('manif')) setManif(false);
     if (medic) { if (!map.hasLayer(mdLayer)) mdLayer.addTo(map); } else map.removeLayer(mdLayer);
-    // Écran medic : seulement les points des équipes (et ta position). Tout ce qui est public (signalements, agenda, parcours,
-    // lieux, points de ralliement…) est masqué, sauf demande.
-    const pub = !on || mdShowPub;
-    document.body.classList.toggle('md-pub', pub);
-    if (pub && !map.hasLayer(layer)) map.addLayer(layer); else if (!pub && map.hasLayer(layer)) map.removeLayer(layer);
+    // Écran medic : points des équipes, signalements publics (l'œil les masque) et ta position. L'agenda, les parcours,
+    // les lieux et les points de ralliement n'y sont pas : « Vue complète » les montre.
+    document.body.classList.toggle('md-nosig', on && !mdShowPub);
     $('#medicPub').setAttribute('aria-pressed', String(mdShowPub));
     if (on) { closeReport(); if (core.watchId == null) locate(); }
     setTimeout(() => map.invalidateSize(), 50);
@@ -200,7 +198,7 @@ window.cortegeMedic = function (core) {
     box.append(h3(t('Notre position')), hint(mdShare ? t('Position partagée en ce moment. Elle s’arrête seule à la fin de la durée, après 3 minutes sans réseau, ou si tu t’éloignes de plus de 2 km.') : t('Les autres équipes voient où vous êtes. Le partage s’arrête seul, et rien n’est gardé ensuite.')),
       el('label', { class: 'note-label' }, t('Pendant'), dur), pubSw, go);
     // Carte
-    box.append(h3(t('Carte')), sw(t('Afficher aussi ce qui est public'), t('Par défaut, l’écran medic ne montre que les points des équipes. Ici, tu ajoutes les signalements, l’agenda, les parcours et les lieux de tout le monde sur Cortège.'), mdShowPub, v => { mdShowPub = v; try { localStorage.setItem('cortege-medic-pub', v ? '1' : '0'); } catch {} mdScreen(); }));
+    box.append(h3(t('Carte')), sw(t('Afficher les signalements publics'), t('CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète ».'), mdShowPub, v => { mdShowPub = v; try { localStorage.setItem('cortege-medic-sig', v ? '1' : '0'); } catch {} mdScreen(); }));
     // Alertes
     box.append(h3(t('Alertes')), hint(core.pushSub ? t('Tu reçois une notification pour chaque urgence vitale à moins de {km} km, même appli fermée.', { km: String(mdMe.radiusKm).replace('.', ',') })
       : t('Notifications pas encore activées sur ce téléphone : sans elles, tu ne vois les appels de renfort que si l’appli est ouverte.')));
@@ -290,10 +288,10 @@ window.cortegeMedic = function (core) {
   $('#mdClose').onclick = () => closeSheets();
   $('#medicExit').onclick = () => mdFullView(true);
   $('#medicBack').onclick = () => mdFullView(false);
-  $('#medicPub').onclick = () => { mdShowPub = !mdShowPub; try { localStorage.setItem('cortege-medic-pub', mdShowPub ? '1' : '0'); } catch {} mdScreen(); toast(mdShowPub ? t('Tout ce qui est public est affiché') : t('Seulement les points des équipes')); };
+  $('#medicPub').onclick = () => { mdShowPub = !mdShowPub; try { localStorage.setItem('cortege-medic-sig', mdShowPub ? '1' : '0'); } catch {} mdScreen(); toast(mdShowPub ? t('Signalements publics affichés') : t('Seulement les points des équipes')); };
   // Textes fixes de l'écran
   $('#medicExit').textContent = t('Vue complète'); $('#medicBack').textContent = '⛑️ ' + t('Écran medic');
-  $('#medicPub').textContent = '👁'; $('#medicPub').title = t('Afficher ou masquer ce qui est public'); $('#medicPub').setAttribute('aria-label', t('Afficher ou masquer ce qui est public'));
+  $('#medicPub').textContent = '👁'; $('#medicPub').title = t('Afficher ou masquer les signalements publics'); $('#medicPub').setAttribute('aria-label', t('Afficher ou masquer les signalements publics'));
   $('#medicPill').title = t('Notre équipe : position, alertes, appareils');
   $('#mdHotLbl').textContent = t('Point chaud'); $('#mdBlockLbl').textContent = t('Barrage filtrant'); $('#mdHelpLbl').textContent = t('Renfort');
   mdShareUI();

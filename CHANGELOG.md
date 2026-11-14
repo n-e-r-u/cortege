@@ -5,7 +5,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 ## 2.20.0 (en cours)
 
 **Mode medic, retours des street medics de Montpellier** :
-- **Seulement les points des équipes** sur l'écran medic, par défaut : signalements, agenda, parcours, lieux et points de ralliement publics sont masqués. L'œil (et le réglage « Afficher aussi ce qui est public ») les ajoute.
+- **Carte medic allégée** : points des équipes et signalements publics, sans l'agenda, les parcours, les lieux ni les points de ralliement (dans « Vue complète »). L'œil masque les signalements pour ne garder que les points des équipes.
 - **Appareils d'une équipe** : liste (type d'appareil, depuis quand, dernière activité) et retrait d'un appareil perdu, prêté ou qui a quitté l'équipe, depuis un autre téléphone de l'équipe ou par le ou la référent·e. L'appareil retiré perd l'accès tout de suite et ne reçoit plus les notifications d'urgence.
 
 ## 2.19.0

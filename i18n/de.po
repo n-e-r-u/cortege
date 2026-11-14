@@ -4646,3 +4646,12 @@ msgstr "Es ist das einzige Gerät des Teams: Um den Zugang zu sperren, lade das 
 #: src/medic.js
 msgid "Appareil introuvable."
 msgstr "Gerät nicht gefunden."
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher les signalements publics"
+msgstr "Öffentliche Meldungen anzeigen"
+
+#: client/parts/medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
+msgstr "CRS, Tränengas, Angriffe… von allen auf Cortège gemeldet, zusätzlich zu den Punkten der Teams. Agenda, Routen und Orte findest du in „Vollansicht“."

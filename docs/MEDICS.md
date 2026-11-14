@@ -20,7 +20,7 @@ Une page pour les équipes de street medics. Le mode medic est un écran de Cort
 
 Appuie sur un point de la carte pour voir qui l'a posé et depuis quand. Sur un renfort : « J'y vais » montre aux autres qu'une équipe est en route, « Réglé » retire l'appel. Toute équipe peut retirer un point chaud ou un barrage qui n'est plus vrai.
 
-Au départ, la carte ne montre que les points des équipes medic et ta position. L'œil en haut ajoute tout ce qui est public sur Cortège : signalements (CRS, lacrymo, charges…), agenda, parcours, lieux. « Vue complète » ouvre Cortège tel que tout le monde le voit ; le bouton « ⛑️ Écran medic » y ramène.
+La carte montre les points des équipes medic, les signalements publics de Cortège (CRS, lacrymo, charges…) et ta position. L'œil en haut masque les signalements pour ne garder que les points des équipes. L'agenda, les parcours et les lieux sont dans « Vue complète ». « Vue complète » ouvre Cortège tel que tout le monde le voit ; le bouton « ⛑️ Écran medic » y ramène.
 
 En cas d'urgence vitale, appelle d'abord le 15 ou le 112 : l'appli prévient les autres équipes, pas les secours.
 

@@ -4664,3 +4664,12 @@ msgstr ""
 #: src/medic.js
 msgid "Appareil introuvable."
 msgstr ""
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher les signalements publics"
+msgstr ""
+
+#: client/parts/medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
+msgstr ""

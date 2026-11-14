@@ -4709,3 +4709,12 @@ msgstr "إنه الجهاز الوحيد للفريق: لقطع الوصول، �
 #: src/medic.js
 msgid "Appareil introuvable."
 msgstr "الجهاز غير موجود."
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher les signalements publics"
+msgstr "إظهار البلاغات العامة"
+
+#: client/parts/medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
+msgstr "شرطة مكافحة الشغب، غاز مسيل للدموع، هجمات… يبلّغ عنها الجميع على Cortège، إضافةً إلى نقاط الفرق. الأجندة والمسارات والأماكن موجودة في «العرض الكامل»."

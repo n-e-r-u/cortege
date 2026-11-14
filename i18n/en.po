@@ -4649,3 +4649,12 @@ msgstr "It is the team’s only device: to cut access, re-invite the team."
 #: src/medic.js
 msgid "Appareil introuvable."
 msgstr "Device not found."
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher les signalements publics"
+msgstr "Show public reports"
+
+#: client/parts/medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
+msgstr "Riot police, tear gas, charges… reported by everyone on Cortège, on top of the teams’ points. The agenda, routes and places are in “Full view”."

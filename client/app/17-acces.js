@@ -108,7 +108,7 @@
       const s = document.createElement('script'); s.src = '/app-medic.js';
       s.onload = ok; s.onerror = () => { s.remove(); ko(new Error('script')); };
       document.head.append(s);
-    }).then(() => window.cortegeMedic({ $, el, t, toast, map, layer, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif,
+    }).then(() => window.cortegeMedic({ $, el, t, toast, map, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif,
       get me() { return me; }, get meAt() { return meAt; }, get watchId() { return watchId; }, get pushSub() { return pushSub; } }));
     // Pas de réseau et script pas encore gardé : nouvel essai un peu plus tard, tant que la clé est là
     medicPart.then(m => m.medicInit()).catch(() => { medicPart = null; setTimeout(medicInit, 10_000); });

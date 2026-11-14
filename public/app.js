@@ -133,7 +133,10 @@
   map.attributionControl.setPrefix(false); // mention courte : rien ne passe sous le bouton Signaler
   // Regroupement des points quand on dézoome (bulle = nombre de signalements, couleur = le plus grave)
   const SEVERITY = ['fdo', 'danger', 'info', 'soutien'];
+  // Signalements dans leur propre calque : l'écran medic les garde visibles en masquant le reste de la carte publique
+  map.createPane('reports').style.zIndex = 600;
   const layer = L.markerClusterGroup({
+    clusterPane: 'reports',
     maxClusterRadius: z => (z >= 15 ? 30 : 60), disableClusteringAtZoom: 16, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
     iconCreateFunction: cluster => {
       const groups = new Set(cluster.getAllChildMarkers().map(m => CAT[m.options.cat].group));
@@ -454,7 +457,7 @@
       cur.marker.setIcon(icon(r, false));
       if (cur.marker.isPopupOpen() && !typingInPopup()) cur.marker.setPopupContent(popup(r));
     } else {
-      const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat });
+      const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat, pane: 'reports' });
       marker.bindPopup(() => popup(reports.get(r.id).data));
       reports.set(r.id, { data: r, marker }); // affiché par regroup()
     }
@@ -507,7 +510,7 @@
       const sig = g.map(r => `${r.id}:${r.up}:${r.ver || ''}:${r.lat}:${r.lng}:${r.c || ''}:${calmSt.get(r.id)?.lvl || ''}`).join(',');
       let st = stacks.get(k);
       if (!st) {
-        const m = L.marker([g[0].lat, g[0].lng], { icon: stackIcon(g), keyboard: true, title: g.map(r => CAT[r.cat].label).join(', '), cat: g[0].cat });
+        const m = L.marker([g[0].lat, g[0].lng], { icon: stackIcon(g), keyboard: true, title: g.map(r => CAT[r.cat].label).join(', '), cat: g[0].cat, pane: 'reports' });
         m.bindPopup(() => stackPopup(stacks.get(k)?.ids || []), { maxHeight: Math.round(innerHeight * 0.55) });
         st = { marker: m, ids: g.map(r => r.id), sig };
         stacks.set(k, st); layer.addLayer(m);
@@ -798,7 +801,7 @@
       if (!n) continue;
       const size = n < 10 ? 40 : n < 100 ? 50 : 60;
       const label = groups.map(g => `${z.g[g]} ${cfg.groups.find(x => x.id === g)?.label.toLowerCase() || g}`).join(' · ');
-      const m = L.marker([z.lat, z.lng], { title: label, keyboard: true, zIndexOffset: 200,
+      const m = L.marker([z.lat, z.lng], { title: label, keyboard: true, zIndexOffset: 200, pane: 'reports',
         icon: L.divIcon({ className: '', iconSize: [size, size], html: `<div class="cluster nat" style="--c:${GROUP_COLOR[groups[0]]};width:${size}px;height:${size}px">${n}</div>` }) });
       // Zoom sur le cœur de l'activité de la région, assez près pour afficher les vrais points
       m.on('click', () => map.setView([z.lat, z.lng], 12));
@@ -2036,7 +2039,7 @@
       const s = document.createElement('script'); s.src = '/app-medic.js';
       s.onload = ok; s.onerror = () => { s.remove(); ko(new Error('script')); };
       document.head.append(s);
-    }).then(() => window.cortegeMedic({ $, el, t, toast, map, layer, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif,
+    }).then(() => window.cortegeMedic({ $, el, t, toast, map, I18N, MIN, IOS_WARN, ago, fmtDist, fmtExp, qrSvg, iosEvict, keyGet, keySet, showRec, closeReport, closeSheets, locate, setFollow, setManif,
       get me() { return me; }, get meAt() { return meAt; }, get watchId() { return watchId; }, get pushSub() { return pushSub; } }));
     // Pas de réseau et script pas encore gardé : nouvel essai un peu plus tard, tant que la clé est là
     medicPart.then(m => m.medicInit()).catch(() => { medicPart = null; setTimeout(medicInit, 10_000); });

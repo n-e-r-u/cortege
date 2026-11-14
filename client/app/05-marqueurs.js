@@ -168,7 +168,7 @@
       cur.marker.setIcon(icon(r, false));
       if (cur.marker.isPopupOpen() && !typingInPopup()) cur.marker.setPopupContent(popup(r));
     } else {
-      const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat });
+      const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat, pane: 'reports' });
       marker.bindPopup(() => popup(reports.get(r.id).data));
       reports.set(r.id, { data: r, marker }); // affiché par regroup()
     }
@@ -221,7 +221,7 @@
       const sig = g.map(r => `${r.id}:${r.up}:${r.ver || ''}:${r.lat}:${r.lng}:${r.c || ''}:${calmSt.get(r.id)?.lvl || ''}`).join(',');
       let st = stacks.get(k);
       if (!st) {
-        const m = L.marker([g[0].lat, g[0].lng], { icon: stackIcon(g), keyboard: true, title: g.map(r => CAT[r.cat].label).join(', '), cat: g[0].cat });
+        const m = L.marker([g[0].lat, g[0].lng], { icon: stackIcon(g), keyboard: true, title: g.map(r => CAT[r.cat].label).join(', '), cat: g[0].cat, pane: 'reports' });
         m.bindPopup(() => stackPopup(stacks.get(k)?.ids || []), { maxHeight: Math.round(innerHeight * 0.55) });
         st = { marker: m, ids: g.map(r => r.id), sig };
         stacks.set(k, st); layer.addLayer(m);

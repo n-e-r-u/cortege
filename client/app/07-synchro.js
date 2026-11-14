@@ -146,7 +146,7 @@
       if (!n) continue;
       const size = n < 10 ? 40 : n < 100 ? 50 : 60;
       const label = groups.map(g => `${z.g[g]} ${cfg.groups.find(x => x.id === g)?.label.toLowerCase() || g}`).join(' · ');
-      const m = L.marker([z.lat, z.lng], { title: label, keyboard: true, zIndexOffset: 200,
+      const m = L.marker([z.lat, z.lng], { title: label, keyboard: true, zIndexOffset: 200, pane: 'reports',
         icon: L.divIcon({ className: '', iconSize: [size, size], html: `<div class="cluster nat" style="--c:${GROUP_COLOR[groups[0]]};width:${size}px;height:${size}px">${n}</div>` }) });
       // Zoom sur le cœur de l'activité de la région, assez près pour afficher les vrais points
       m.on('click', () => map.setView([z.lat, z.lng], 12));

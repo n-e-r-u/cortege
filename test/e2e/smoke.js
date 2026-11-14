@@ -96,15 +96,14 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     const m1 = await join(t1), m2 = await join(t2);
     assert.match(m1.code, /^(\w{4}-){4}\w{4}$/, 'code de secours affiché à l’activation');
     assert.equal(await m1.p.isVisible('#tabbar'), false, 'écran medic : pas de barre d’onglets');
-    assert.equal(await m1.p.evaluate(() => document.querySelectorAll('.leaflet-marker-icon.pin, .marker-cluster').length), 0, 'signalements publics masqués');
-    await m1.p.click('#mdHot');
+        await m1.p.click('#mdHot');
     await m2.p.waitForSelector('.mpin.k-hot');
-    // Seulement les points des équipes : tout ce qui est public (agenda, lieux, parcours…) est masqué, sauf demande
-    const panes = p => p.evaluate(() => ['marker', 'overlay', 'medic'].map(n => getComputedStyle(document.querySelector('.leaflet-' + n + '-pane')).display !== 'none'));
-    assert.deepEqual(await panes(m2.p), [false, false, true], 'écran medic : seulement les points des équipes');
+    // Points des équipes et signalements publics ; agenda, parcours et lieux masqués. L'œil coupe les signalements.
+    const panes = p => p.evaluate(() => ['marker', 'overlay', 'reports', 'medic'].map(n => getComputedStyle(document.querySelector('.leaflet-' + n + '-pane')).display !== 'none'));
+    assert.deepEqual(await panes(m2.p), [false, false, true, true], 'écran medic : équipes et signalements');
     assert.equal(await m2.p.isVisible('.mpin.k-hot'), true);
     await m2.p.click('#medicPub');
-    assert.deepEqual(await panes(m2.p), [true, true, true], '« Afficher aussi ce qui est public »');
+    assert.deepEqual(await panes(m2.p), [false, false, false, true], 'œil : seulement les points des équipes');
     await m2.p.click('#medicPub');
     await m2.p.click('#mdHelp'); await m2.p.click('.mh-btn.l-vital');
     await m1.p.waitForSelector('.mpin.k-help.l-vital');

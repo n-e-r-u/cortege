@@ -4649,3 +4649,12 @@ msgstr "Es el único dispositivo del equipo: para cortar el acceso, vuelve a inv
 #: src/medic.js
 msgid "Appareil introuvable."
 msgstr "Dispositivo no encontrado."
+
+# --- textes à traduire ---
+#: client/parts/medic.js
+msgid "Afficher les signalements publics"
+msgstr "Mostrar los avisos públicos"
+
+#: client/parts/medic.js
+msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
+msgstr "CRS, lacrimógenos, cargas… avisados por todo el mundo en Cortège, además de los puntos de los equipos. La agenda, los recorridos y los lugares están en «Vista completa»."

@@ -13,7 +13,10 @@
   map.attributionControl.setPrefix(false); // mention courte : rien ne passe sous le bouton Signaler
   // Regroupement des points quand on dézoome (bulle = nombre de signalements, couleur = le plus grave)
   const SEVERITY = ['fdo', 'danger', 'info', 'soutien'];
+  // Signalements dans leur propre calque : l'écran medic les garde visibles en masquant le reste de la carte publique
+  map.createPane('reports').style.zIndex = 600;
   const layer = L.markerClusterGroup({
+    clusterPane: 'reports',
     maxClusterRadius: z => (z >= 15 ? 30 : 60), disableClusteringAtZoom: 16, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
     iconCreateFunction: cluster => {
       const groups = new Set(cluster.getAllChildMarkers().map(m => CAT[m.options.cat].group));
