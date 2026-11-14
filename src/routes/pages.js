@@ -19,6 +19,7 @@ const { tx } = require('../db');
 
 async function pagesRoutes(req, res, url, pathname) {
   if (req.method === 'GET' && (pathname === '/presse' || pathname === '/presse/')) return serveStatic(req, res, '/presse.html');
+  if (req.method === 'GET' && (pathname === '/flouter' || pathname === '/flouter/')) return serveStatic(req, res, '/flouter.html');
   // Langues disponibles, lues avant i18n.js (une langue ajoutée sur le serveur apparaît toute seule)
   if (req.method === 'GET' && pathname === '/lang/langs.js') return send(res, 200, langsJs(), { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache' });
   // Langue déposée dans l'admin : passe devant le fichier livré du même nom
