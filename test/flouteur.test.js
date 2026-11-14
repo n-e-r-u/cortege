@@ -52,7 +52,24 @@ test('masques : agrandis de 40 % autour du visage, jamais hors de l’image ; pi
   assert.ok(Math.abs(br.x + br.width - 500) < 1e-9 && Math.abs(br.y + br.height - 400) < 1e-9);
   assert.deepEqual(F.expandBox({ x: -10, y: -10, width: 300, height: 300 }, 1.4, 200, 100), { x: 0, y: 0, width: 200, height: 100 });
   assert.deepEqual(F.facesToMasks([{ x: 600, y: 600, width: 10, height: 10 }], 500, 400), [], 'boîte hors de l’image écartée');
-  assert.deepEqual([80, 81, 3].map(F.pixelationBlockSize), [10, 11, 1]);
+  assert.deepEqual([60, 61, 3].map(F.pixelationBlockSize), [10, 11, 1], 'au plus 6 blocs de large');
+});
+
+test('pixellisation : bruit secret par photo, borné, stable d’un rendu à l’autre, alpha intact', () => {
+  const a = F.createPixelationNoise(), b = F.createPixelationNoise();
+  assert.ok(a.length >= 3 * 256 && !Buffer.from(a).equals(Buffer.from(b)), 'tiré au hasard pour chaque photo');
+  const blocks = () => new Uint8ClampedArray([0, 128, 255, 200, 10, 20, 30, 255, 250, 128, 5, 0]);
+  const noisy = F.addPixelationNoise(blocks(), a, 0), original = blocks();
+  for (let i = 0; i < noisy.length; i++) {
+    if (i % 4 === 3) { assert.equal(noisy[i], original[i], 'alpha'); continue; }
+    assert.ok(Math.abs(noisy[i] - original[i]) <= F.PIXELATION_NOISE_AMPLITUDE, `canal ${i}`);
+  }
+  assert.deepEqual(F.addPixelationNoise(blocks(), a, 0), noisy, 'même bruit, mêmes blocs : l’aperçu est l’export');
+  const zero = new Uint8Array(a.length), full = new Uint8Array(a.length).fill(255);
+  assert.deepEqual([...F.addPixelationNoise(blocks(), zero, 0)].filter((_, i) => i % 4 !== 3), [0, 96, 223, 0, 0, 0, 218, 96, 0]);
+  assert.deepEqual([...F.addPixelationNoise(blocks(), full, 0)].filter((_, i) => i % 4 !== 3), [32, 160, 255, 42, 52, 62, 255, 160, 37]);
+  const offsets = mask => [...F.addPixelationNoise(new Uint8ClampedArray(4 * 8).fill(128), a, mask)];
+  assert.notDeepEqual(offsets(0), offsets(1), 'chaque masque a son propre bruit');
 });
 
 // JPEG fabriqué octet par octet : chaque sorte de segment que le nettoyage doit garder ou retirer
