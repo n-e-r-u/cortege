@@ -99,7 +99,8 @@
   const shareAvailable = canShareFiles([new File([], 'test.jpg', { type: 'image/jpeg' })]);
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const decode = file => createImageBitmap(file, { imageOrientation: 'from-image' });
-  // Une photo : { file, bitmap (seulement la photo affichée), width, height, masks, history, status : en-attente | analyse | prete | erreur }
+  // Une photo : { file, bitmap (seulement la photo affichée), width, height, masks, history, pixelationNoise (tiré une fois),
+  // status : en-attente | analyse | prete | erreur }
   let photos = [], current = 0, maskStyle = 'aplat', analysing = false, exporting = false, enginePromise = null;
 
   const editor = window.cortegeMaskEditor({ stage: ui.stage, content: ui.stageContent, layer: ui.maskLayer, toolbar: ui.tools,
@@ -167,7 +168,7 @@
     if (!photo?.bitmap) return;
     ui.preview.width = Math.min(photo.width, Math.round((ui.stage.clientWidth || 360) * devicePixelRatio));
     ui.preview.height = Math.max(1, Math.round(ui.preview.width * photo.height / photo.width));
-    F.drawMaskedImage(ctx, photo.bitmap, photo.masks, maskStyle);
+    F.drawMaskedImage(ctx, photo.bitmap, photo.masks, maskStyle, photo.pixelationNoise);
     const n = photo.masks.length;
     setText(ui.maskCount, n ? tn(n, '{n} visage masqué. Vérifie avant de partager.', '{n} visages masqués. Vérifie avant de partager.') : t('Aucun visage masqué. Touche l’image pour ajouter un masque.'));
   }
@@ -249,7 +250,7 @@
     const images = files.filter(f => f.type === '' || f.type.startsWith('image/'));
     if (!images.length) return;
     const first = photos.length;
-    photos.push(...images.map(file => ({ file, bitmap: null, width: 0, height: 0, masks: [], history: new F.MaskHistory(), status: 'en-attente' })));
+    photos.push(...images.map(file => ({ file, bitmap: null, width: 0, height: 0, masks: [], history: new F.MaskHistory(), pixelationNoise: F.createPixelationNoise(), status: 'en-attente' })));
     ui.status.textContent = '';
     if (first === 0 || photos[current]?.status !== 'prete') showPhoto(first); else updateControls();
     // L'éditeur est sous la préparation et le choix des photos : on y amène la vue et le focus
@@ -270,7 +271,7 @@
     exporting = true;
     updateControls();
     try {
-      const { file, isReduced } = await F.exportMaskedPhoto(photo.bitmap, photo.masks, maskStyle);
+      const { file, isReduced } = await F.exportMaskedPhoto(photo.bitmap, photo.masks, maskStyle, photo.pixelationNoise);
       if (!(await shareOrSave([file], preferShare))) return;
       removePhotos([photo]);
       showResult(t('Photo exportée : {name}.', { name: file.name }) + (isReduced ? ' ' + t('Elle a été réduite à {mp} millions de pixels.', { mp: decimal.format(F.MAX_EXPORT_PIXELS / 1e6) }) : ''));
@@ -287,7 +288,7 @@
         showProgress(i / ready.length, t('Export des photos : {pct}', { pct: pct(i / ready.length) }));
         // Une seule image décodée à la fois
         const bitmap = photo.bitmap || await decode(photo.file);
-        try { files.push((await F.exportMaskedPhoto(bitmap, photo.masks, maskStyle)).file); } finally { bitmap.close(); photo.bitmap = null; }
+        try { files.push((await F.exportMaskedPhoto(bitmap, photo.masks, maskStyle, photo.pixelationNoise)).file); } finally { bitmap.close(); photo.bitmap = null; }
       }
       hideProgress();
       if (!(await shareOrSave(files, true))) return void showPhoto(current);
