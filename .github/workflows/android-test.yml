@@ -1,0 +1,48 @@
+# Appli Android : lance l'appli dans un émulateur (Android 14, avec le Play Store et Chrome) et relève les plantages.
+# Version de test (debug) et version finale (release, signée ici avec la clé de test) : un plantage d'une seule des deux
+# pointe la réduction du code (minify) de la version finale.
+name: Appli Android (essai)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulateur:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Construire
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug assembleRelease
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk /tmp/aligned.apk
+          "$BT/apksigner" sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out /tmp/release.apk /tmp/aligned.apk
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/debug.apk
+      - name: Activer KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@c9c93e6ba9c4194322e114c40970d5983d9a07cc # v2.38.0
+        with:
+          api-level: 34
+          target: playstore
+          arch: x86_64
+          disable-animations: true
+          script: |
+            for v in debug release; do echo "===== $v"; adb uninstall tv.neru.cortege > /dev/null 2>&1 || true; adb install -r /tmp/$v.apk; adb logcat -c; adb shell am start -W -n tv.neru.cortege/.LauncherActivity; sleep 25; adb shell pidof tv.neru.cortege && echo "$v : appli toujours ouverte" || echo "$v : APPLI FERMÉE"; adb logcat -d -b crash > /tmp/crash-$v.txt; adb logcat -d | grep -E "AndroidRuntime|tv.neru.cortege|TrustedWebActivity|LauncherActivity|TwaLauncher" | tail -80 > /tmp/log-$v.txt; cat /tmp/crash-$v.txt; tail -40 /tmp/log-$v.txt; adb exec-out screencap -p > /tmp/ecran-$v.png; done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: essai-android
+          path: |
+            /tmp/crash-*.txt
+            /tmp/log-*.txt
+            /tmp/ecran-*.png
+          retention-days: 7
