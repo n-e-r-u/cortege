@@ -44,10 +44,11 @@ jobs:
             cat "$RUNNER_TEMP/kt.err"; rm -f "$RUNNER_TEMP/upload.keystore"; exit 1
           fi
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          KP_VAR=KS_PASS; [ -n "$KEY_PASS" ] && KP_VAR=KEY_PASS
           cp app/build/outputs/bundle/release/app-release.aab ../out/cortege.aab
           jarsigner -keystore "$RUNNER_TEMP/upload.keystore" -storepass "$KS_PASS" -keypass "${KEY_PASS:-$KS_PASS}" ../out/cortege.aab cortege
           "$BT/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
-          "$BT/apksigner" sign --ks "$RUNNER_TEMP/upload.keystore" --ks-pass env:KS_PASS --key-pass "env:${KEY_PASS:+KEY_PASS}${KEY_PASS:-KS_PASS}" --ks-key-alias cortege --out ../out/cortege.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/upload.keystore" --ks-pass env:KS_PASS --key-pass "env:$KP_VAR" --ks-key-alias cortege --out ../out/cortege.apk "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" verify --print-certs ../out/cortege.apk | grep -i "SHA-256"
           rm -f "$RUNNER_TEMP/upload.keystore"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
