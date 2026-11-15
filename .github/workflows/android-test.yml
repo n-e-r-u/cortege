@@ -23,7 +23,8 @@ jobs:
           ./gradlew --no-daemon assembleDebug assembleRelease
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           "$BT/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk /tmp/aligned.apk
-          "$BT/apksigner" sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out /tmp/release.apk /tmp/aligned.apk
+          keytool -genkeypair -keystore /tmp/essai.jks -storepass android -keypass android -alias essai -keyalg RSA -keysize 2048 -validity 2 -dname CN=essai
+          "$BT/apksigner" sign --ks /tmp/essai.jks --ks-pass pass:android --key-pass pass:android --ks-key-alias essai --out /tmp/release.apk /tmp/aligned.apk
           cp app/build/outputs/apk/debug/app-debug.apk /tmp/debug.apk
       - name: Activer KVM
         run: |
