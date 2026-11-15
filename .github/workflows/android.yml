@@ -34,7 +34,15 @@ jobs:
           mkdir -p ../out
           cp app/build/outputs/apk/debug/app-debug.apk ../out/cortege-test-debug.apk
           if [ -z "$KS" ]; then echo "Pas de clé d'envoi dans les secrets : version de test seulement."; exit 0; fi
-          echo "$KS" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+          # Espaces et retours à la ligne ajoutés au copier-coller : ignorés
+          printf '%s' "$KS" | tr -d ' \r\n\t' | base64 -d > "$RUNNER_TEMP/upload.keystore" || { echo "::error::ANDROID_KEYSTORE_B64 n'est pas du base64 valide : recolle-le en entier."; exit 1; }
+          echo "Clé décodée : $(stat -c %s "$RUNNER_TEMP/upload.keystore") octets"
+          if ! keytool -list -keystore "$RUNNER_TEMP/upload.keystore" -storepass "$KS_PASS" -alias cortege > /dev/null 2>"$RUNNER_TEMP/kt.err"; then
+            if grep -qi "password\|tag\|mac" "$RUNNER_TEMP/kt.err"; then echo "::error::Mot de passe refusé : vérifie ANDROID_KEYSTORE_PASSWORD."
+            elif grep -qi "alias" "$RUNNER_TEMP/kt.err"; then echo "::error::La clé n'a pas l'alias « cortege »."
+            else echo "::error::Clé illisible : ANDROID_KEYSTORE_B64 est incomplet ou abîmé. Recolle-le en entier."; fi
+            cat "$RUNNER_TEMP/kt.err"; rm -f "$RUNNER_TEMP/upload.keystore"; exit 1
+          fi
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           cp app/build/outputs/bundle/release/app-release.aab ../out/cortege.aab
           jarsigner -keystore "$RUNNER_TEMP/upload.keystore" -storepass "$KS_PASS" -keypass "${KEY_PASS:-$KS_PASS}" ../out/cortege.aab cortege
