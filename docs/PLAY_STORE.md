@@ -13,7 +13,7 @@ Le Play Store garde la vraie clé de signature de l'appli (« signature d'applic
 d'envoi : si elle est perdue ou volée, Google peut la remplacer. Crée-la sur le serveur, ou sur tout ordinateur avec Java :
 
 ```
-sudo apt install -y openjdk-17-jre-headless
+sudo apt install -y openjdk-21-jre-headless
 PASS=$(openssl rand -base64 24 | tr -d '/+=')
 keytool -genkeypair -v -keystore cortege-upload.keystore -alias cortege -keyalg RSA -keysize 4096 -validity 10000 \
   -storepass "$PASS" -keypass "$PASS" -dname "CN=Cortege"
