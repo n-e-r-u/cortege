@@ -37,7 +37,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/appName"
-        
+        android:manageSpaceActivity="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
@@ -61,6 +61,20 @@
 
         
 
+        <!-- « Gérer l'espace » dans les réglages Android et raccourci « Paramètres du site » : la bibliothèque de Google
+             appelle cette activité au lancement, l'appli plante si elle manque -->
+        <activity android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
+            android:exported="false"
+            android:enabled="true"
+            android:excludeFromRecents="true">
+            <meta-data
+                android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL"
+                android:value="@string/launchUrl" />
+            <intent-filter>
+                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name="LauncherActivity"
             android:alwaysRetainTaskState="true"
             android:label="@string/launcherName"

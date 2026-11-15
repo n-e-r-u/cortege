@@ -21,7 +21,7 @@
     "path": "./cortege-upload.keystore",
     "alias": "cortege"
   },
-  "appVersionCode": 1,
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://cortege.neru.tv/manifest.webmanifest",
@@ -30,7 +30,7 @@
   "alphaDependencies": {
     "enabled": false
   },
-  "enableSiteSettingsShortcut": false,
+  "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://cortege.neru.tv/",
@@ -40,5 +40,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.0"
+  "appVersion": "1.0.1"
 }
