@@ -8,7 +8,9 @@ const { clean, distKm } = require('./util');
 const { dirty, scheduleFlush } = require('./live/files');
 
 const { polyHas } = require('./geo/communes');
-const { q } = require('./db');
+const { db, q } = require('./db');
+// Ancienne veille des préfectures (retirée en 2.20) : ses tables sont effacées
+db.exec('DROP TABLE IF EXISTS veille_src; DROP TABLE IF EXISTS veille_hit; DROP TABLE IF EXISTS veille_pdf;');
 const { getJson } = require('./net');
 const { parisMs } = require('./time');
 

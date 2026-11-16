@@ -6,6 +6,8 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 
 **Appli Android pour le Play Store** : coquille officielle de Google (Trusted Web Activity) qui ouvre le site en plein écran, sans aucun code ni outil de statistiques ajouté. Projet dans `android/`, construit et signé par GitHub Actions (`android.yml`) ; `/.well-known/assetlinks.json` (variables `ANDROID_CERT_SHA256`, `ANDROID_PACKAGE`) relie l'appli au site. Guide de publication, fiche et formulaires du Play Store : [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
 
+**Veille des préfectures retirée** (Admin › Arrêtés) : elle repérait trop peu d'arrêtés utiles pour l'effort de réglage. Les arrêtés s'ajoutent à la main ou par import d'un bloc JSON, préparé par une recherche quotidienne hors du serveur. Les tables de la veille sont effacées au démarrage ; la variable `VEILLE` ne sert plus.
+
 **Mode medic, retours des street medics de Montpellier** :
 - **Carte medic allégée** : points des équipes et signalements publics, sans l'agenda, les parcours, les lieux ni les points de ralliement (dans « Vue complète »). L'œil masque les signalements pour ne garder que les points des équipes.
 - **Appareils d'une équipe** : liste (type d'appareil, depuis quand, dernière activité) et retrait d'un appareil perdu, prêté ou qui a quitté l'équipe, depuis un autre téléphone de l'équipe ou par le ou la référent·e. L'appareil retiré perd l'accès tout de suite et ne reçoit plus les notifications d'urgence.

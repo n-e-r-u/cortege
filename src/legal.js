@@ -66,7 +66,7 @@ function blockedIp(addr) {
 // (une redirection ou un nom de domaine qui change d'adresse ne peut pas mener au réseau interne), 3 redirections au plus.
 // Une adresse IP écrite directement dans le lien ne passe pas par la résolution DNS : elle est vérifiée ici avant toute connexion.
 function fetchPublic(url, opts = {}) { return fetchPublicFull(url, opts).then(r => r.buf.toString('utf8')); }
-// Même garde, réponse complète (octets, en-têtes, adresse finale) : sert aussi à la veille des préfectures et à ses recueils PDF.
+// Même garde, réponse complète (octets, en-têtes, adresse finale) : utilisée par fetchPublic.
 // strict : une réponse plus lourde que max est refusée au lieu d'être coupée ; headers : en-têtes ajoutés (cache conditionnel).
 function fetchPublicFull(url, { max = 3_000_000, timeout = 15000, hops = 3, headers = {}, strict = false, ua = 'Cortege-veille/1 (verification annuaire legal teams)' } = {}) {
   return new Promise((resolve, reject) => {

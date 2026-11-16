@@ -11,7 +11,7 @@ const FP = 'AB:'.repeat(31) + 'CD';
 async function run(env, fn) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-android-')), port = 20000 + Math.floor(Math.random() * 20000);
   const s = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], { stdio: 'ignore', env: { ...process.env, PORT: String(port), DATA_DIR: dir + '/d', LIVE_DIR: dir + '/l', TILE_DIR: dir + '/t',
-    ADMIN_KEY: 'admin-key-for-tests-123', PLACES_IMPORT: '0', SOCIAL: '0', VEILLE: '0', GITHUB_SYNC: '0', MEDIC_PUSH: '0', ORGA_REMIND: '0', ANDROID_CERT_SHA256: '', ANDROID_PACKAGE: '', ...env } });
+    ADMIN_KEY: 'admin-key-for-tests-123', PLACES_IMPORT: '0', SOCIAL: '0', GITHUB_SYNC: '0', MEDIC_PUSH: '0', ORGA_REMIND: '0', ANDROID_CERT_SHA256: '', ANDROID_PACKAGE: '', ...env } });
   try {
     for (let i = 0; i < 100; i++) { try { if ((await fetch(`http://127.0.0.1:${port}/api/health`)).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
     await fn(`http://127.0.0.1:${port}`);

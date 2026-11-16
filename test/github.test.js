@@ -143,10 +143,3 @@ test('temps réel : un même réseau ne peut pas occuper toutes les connexions',
   b.c.abort(); d.c.abort();
 });
 
-test('veille des préfectures : jamais le réseau interne (adresse locale, IP privée)', async () => {
-  for (const url of [B + '/api/health', 'http://127.0.0.1/', 'http://169.254.169.254/latest/meta-data/', 'http://[::1]/']) {
-    const r = await req('POST', '/api/admin/veille/sources', { url, dep: '34' });
-    assert.match(r.j.error || '', /refusée/, url);
-  }
-});
-

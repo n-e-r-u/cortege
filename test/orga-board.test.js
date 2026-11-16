@@ -15,7 +15,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const stop = p => new Promise(r => { if (!p || p.exitCode !== null) return r(); p.once('exit', r); p.kill(); });
 const start = async (extra = {}, p = port) => {
   const s = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore',
-    env: { ...process.env, PORT: String(p), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', PLACES_IMPORT: '0', SOCIAL: '0', VEILLE: '0', GITHUB_SYNC: '0', FLUSH_MS: '150', MEDIC_PUSH: '0', ORGA_REMIND: '0', ...extra } });
+    env: { ...process.env, PORT: String(p), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, TRUST_PROXY: '1', PLACES_IMPORT: '0', SOCIAL: '0', GITHUB_SYNC: '0', FLUSH_MS: '150', MEDIC_PUSH: '0', ORGA_REMIND: '0', ...extra } });
   for (let i = 0; i < 100; i++) { try { if ((await fetch('http://127.0.0.1:' + p + '/api/health')).ok) break; } catch {} await wait(100); }
   return s;
 };

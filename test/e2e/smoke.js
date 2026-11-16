@@ -17,7 +17,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cortege-e2e-'));
   const port = 20000 + Math.floor(Math.random() * 20000), B = 'http://127.0.0.1:' + port;
   const srv = spawn(process.execPath, [path.join(ROOT, 'server.js')], { stdio: 'ignore',
-    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, PLACES_IMPORT: '0', SOCIAL: '0', VEILLE: '0', GITHUB_SYNC: '0', FLUSH_MS: '200', MEDIC_PUSH: '0' } });
+    env: { ...process.env, PORT: String(port), DATA_DIR: DIR + '/d', LIVE_DIR: DIR + '/l', TILE_DIR: DIR + '/t', ADMIN_KEY: ADMIN, PLACES_IMPORT: '0', SOCIAL: '0', GITHUB_SYNC: '0', FLUSH_MS: '200', MEDIC_PUSH: '0' } });
   let browser, failed = null;
   try {
     for (let i = 0; i < 100; i++) { try { if ((await fetch(B + '/api/health')).ok) break; } catch {} await wait(100); }
