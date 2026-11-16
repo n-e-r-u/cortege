@@ -4658,3 +4658,76 @@ msgstr "Show public reports"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "Riot police, tear gas, charges… reported by everyone on Cortège, on top of the teams’ points. The agenda, routes and places are in “Full view”."
+
+# --- textes à traduire ---
+#: client/app/32-enregistrement.js
+msgid "Micro refusé : autorise-le pour Cortège dans les réglages du navigateur."
+msgstr "Microphone blocked: allow it for Cortège in the browser settings."
+
+#: client/app/32-enregistrement.js
+msgid "Ce navigateur ne sait pas enregistrer le son."
+msgstr "This browser cannot record audio."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de place pour enregistrer sur ce téléphone."
+msgstr "Not enough space to record on this phone."
+
+#: client/app/32-enregistrement.js
+msgid "Le téléphone est plein : l’enregistrement ne peut plus être gardé."
+msgstr "The phone is full: the recording can no longer be saved."
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrement gardé sur ce téléphone."
+msgstr "Recording saved on this phone."
+
+#: client/app/32-enregistrement.js
+msgid "interrompu"
+msgstr "interrupted"
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrer le fichier"
+msgstr "Save the file"
+
+#: client/app/32-enregistrement.js
+msgid "Partager (Signal…)"
+msgstr "Share (Signal…)"
+
+#: client/app/32-enregistrement.js
+msgid "Confirmer l’effacement"
+msgstr "Confirm deletion"
+
+msgid "Policiers en civil"
+msgstr "Plainclothes police"
+
+msgid "Lieu occupé (fac, lycée, bâtiment)"
+msgstr "Occupied site (university, school, building)"
+
+msgid "Station fermée (métro, tram, gare)"
+msgstr "Station closed (metro, tram, train)"
+
+msgid "quatre courtes"
+msgstr "four short"
+
+msgid "🎙️ Enregistrer le son"
+msgstr "🎙️ Record audio"
+
+msgid "Garder une trace d’un contrôle ou d’une interpellation. Le son reste sur ton téléphone."
+msgstr "Keep a record of a stop or an arrest. The audio stays on your phone."
+
+msgid "Enregistrer le son"
+msgstr "Record audio"
+
+msgid "Le son reste sur ce téléphone : rien n’est envoyé à Cortège. Garde l’écran allumé et l’appli ouverte : si l’écran se verrouille ou si tu changes d’appli, l’enregistrement peut s’arrêter. Ce qui a déjà été pris est gardé."
+msgstr "The audio stays on this phone: nothing is sent to Cortège. Keep the screen on and the app open: if the screen locks or you switch apps, recording may stop. What has already been recorded is kept."
+
+msgid "● Démarrer"
+msgstr "● Start"
+
+msgid "■ Arrêter"
+msgstr "■ Stop"
+
+msgid "Enregistrer les forces de l’ordre dans l’espace public est autorisé. Avant de partager un enregistrement, pense aux autres : pas de nom ni de voix de manifestant·es reconnaissables sans leur accord. Remets-le vite à la legal team ou à ton avocat·e, puis efface-le d’ici : en garde à vue, ton téléphone peut être fouillé. « Tout effacer » les supprime aussi."
+msgstr "Recording police in public space is allowed. Before sharing a recording, think of others: no names or recognisable voices of protesters without their consent. Hand it quickly to the legal team or your lawyer, then delete it here: in custody, your phone may be searched. “Erase everything” deletes them too."
+
+msgid "Enregistrement en cours"
+msgstr "Recording in progress"

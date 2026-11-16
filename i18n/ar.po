@@ -4718,3 +4718,76 @@ msgstr "إظهار البلاغات العامة"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "شرطة مكافحة الشغب، غاز مسيل للدموع، هجمات… يبلّغ عنها الجميع على Cortège، إضافةً إلى نقاط الفرق. الأجندة والمسارات والأماكن موجودة في «العرض الكامل»."
+
+# --- textes à traduire ---
+#: client/app/32-enregistrement.js
+msgid "Micro refusé : autorise-le pour Cortège dans les réglages du navigateur."
+msgstr "الميكروفون مرفوض: اسمح به لـ Cortège في إعدادات المتصفح."
+
+#: client/app/32-enregistrement.js
+msgid "Ce navigateur ne sait pas enregistrer le son."
+msgstr "هذا المتصفح لا يستطيع تسجيل الصوت."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de place pour enregistrer sur ce téléphone."
+msgstr "لا توجد مساحة للتسجيل على هذا الهاتف."
+
+#: client/app/32-enregistrement.js
+msgid "Le téléphone est plein : l’enregistrement ne peut plus être gardé."
+msgstr "الهاتف ممتلئ: لم يعد بالإمكان حفظ التسجيل."
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrement gardé sur ce téléphone."
+msgstr "حُفظ التسجيل على هذا الهاتف."
+
+#: client/app/32-enregistrement.js
+msgid "interrompu"
+msgstr "متقطع"
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrer le fichier"
+msgstr "حفظ الملف"
+
+#: client/app/32-enregistrement.js
+msgid "Partager (Signal…)"
+msgstr "مشاركة (Signal…)"
+
+#: client/app/32-enregistrement.js
+msgid "Confirmer l’effacement"
+msgstr "تأكيد الحذف"
+
+msgid "Policiers en civil"
+msgstr "شرطة بملابس مدنية"
+
+msgid "Lieu occupé (fac, lycée, bâtiment)"
+msgstr "مكان محتل (جامعة، ثانوية، مبنى)"
+
+msgid "Station fermée (métro, tram, gare)"
+msgstr "محطة مغلقة (مترو، ترام، قطار)"
+
+msgid "quatre courtes"
+msgstr "أربع قصيرة"
+
+msgid "🎙️ Enregistrer le son"
+msgstr "🎙️ تسجيل الصوت"
+
+msgid "Garder une trace d’un contrôle ou d’une interpellation. Le son reste sur ton téléphone."
+msgstr "احتفظ بأثر لتفتيش أو اعتقال. يبقى الصوت على هاتفك."
+
+msgid "Enregistrer le son"
+msgstr "تسجيل الصوت"
+
+msgid "Le son reste sur ce téléphone : rien n’est envoyé à Cortège. Garde l’écran allumé et l’appli ouverte : si l’écran se verrouille ou si tu changes d’appli, l’enregistrement peut s’arrêter. Ce qui a déjà été pris est gardé."
+msgstr "يبقى الصوت على هذا الهاتف: لا يُرسل أي شيء إلى Cortège. أبقِ الشاشة مضاءة والتطبيق مفتوحًا: إذا قُفلت الشاشة أو انتقلت إلى تطبيق آخر، قد يتوقف التسجيل. ما سُجّل يبقى محفوظًا."
+
+msgid "● Démarrer"
+msgstr "● ابدأ"
+
+msgid "■ Arrêter"
+msgstr "■ أوقف"
+
+msgid "Enregistrer les forces de l’ordre dans l’espace public est autorisé. Avant de partager un enregistrement, pense aux autres : pas de nom ni de voix de manifestant·es reconnaissables sans leur accord. Remets-le vite à la legal team ou à ton avocat·e, puis efface-le d’ici : en garde à vue, ton téléphone peut être fouillé. « Tout effacer » les supprime aussi."
+msgstr "تسجيل قوات الأمن في الأماكن العامة مسموح. قبل مشاركة أي تسجيل، فكّر في الآخرين: لا أسماء ولا أصوات متظاهرين يمكن التعرف عليها دون موافقتهم. سلّمه بسرعة للفريق القانوني أو لمحاميك، ثم احذفه من هنا: أثناء الاحتجاز قد يُفتَّش هاتفك. «مسح كل شيء» يحذفها أيضًا."
+
+msgid "Enregistrement en cours"
+msgstr "التسجيل جارٍ"

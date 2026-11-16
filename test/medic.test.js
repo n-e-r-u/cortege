@@ -275,6 +275,18 @@ test('public : type « Contrôle / barrage filtrant » pour tout le monde, sans 
   assert.equal((await req('POST', '/api/reports', { cat: 'calme', lat: 44.2004, lng: 4.2002 })).s, 200, 'une zone calme reste possible à côté (fusion)');
 });
 
+test('types 2.20 : policiers en civil (alerte, direction, nombre), lieu occupé, station fermée ; micro autorisé pour le site seul', async () => {
+  const cfg = await fetch(B + '/api/config').then(r => r.json());
+  const cat = id => cfg.categories.find(x => x.id === id);
+  assert.deepEqual([cat('civil').group, cat('occupation').ttl, cat('station').group], ['fdo', 720, 'info']);
+  assert.ok(cfg.alertCats.includes('civil') && cfg.dirCats.includes('civil') && cfg.countCats.includes('civil'));
+  assert.ok(Array.isArray(cfg.vibes.civil));
+  assert.equal((await req('POST', '/api/reports', { cat: 'civil', lat: 44.31, lng: 4.31 })).s, 201);
+  const home = await fetch(B + '/');
+  assert.match(home.headers.get('permissions-policy') || '', /microphone=\(self\)/);
+  assert.match(home.headers.get('content-security-policy') || '', /media-src 'self' blob:/);
+});
+
 test('medic : urgence vitale, équipes prévenues dans le rayon ; la couche disparaît au redémarrage et à l’effacement d’urgence', async () => {
   const key = () => ({ p256dh: crypto.createECDH('prime256v1').generateKeys().toString('base64url'), auth: crypto.randomBytes(16).toString('base64url') });
   assert.equal((await Bq.call('POST', '/api/medic/push', { sub: { endpoint: 'https://exemple.org/x', keys: key() } })).s, 400);

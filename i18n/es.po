@@ -4658,3 +4658,76 @@ msgstr "Mostrar los avisos públicos"
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr "CRS, lacrimógenos, cargas… avisados por todo el mundo en Cortège, además de los puntos de los equipos. La agenda, los recorridos y los lugares están en «Vista completa»."
+
+# --- textes à traduire ---
+#: client/app/32-enregistrement.js
+msgid "Micro refusé : autorise-le pour Cortège dans les réglages du navigateur."
+msgstr "Micrófono denegado: permítelo para Cortège en los ajustes del navegador."
+
+#: client/app/32-enregistrement.js
+msgid "Ce navigateur ne sait pas enregistrer le son."
+msgstr "Este navegador no puede grabar sonido."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de place pour enregistrer sur ce téléphone."
+msgstr "No hay espacio para grabar en este teléfono."
+
+#: client/app/32-enregistrement.js
+msgid "Le téléphone est plein : l’enregistrement ne peut plus être gardé."
+msgstr "El teléfono está lleno: la grabación ya no se puede guardar."
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrement gardé sur ce téléphone."
+msgstr "Grabación guardada en este teléfono."
+
+#: client/app/32-enregistrement.js
+msgid "interrompu"
+msgstr "interrumpida"
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrer le fichier"
+msgstr "Guardar el archivo"
+
+#: client/app/32-enregistrement.js
+msgid "Partager (Signal…)"
+msgstr "Compartir (Signal…)"
+
+#: client/app/32-enregistrement.js
+msgid "Confirmer l’effacement"
+msgstr "Confirmar el borrado"
+
+msgid "Policiers en civil"
+msgstr "Policías de paisano"
+
+msgid "Lieu occupé (fac, lycée, bâtiment)"
+msgstr "Lugar ocupado (universidad, instituto, edificio)"
+
+msgid "Station fermée (métro, tram, gare)"
+msgstr "Estación cerrada (metro, tranvía, tren)"
+
+msgid "quatre courtes"
+msgstr "cuatro cortas"
+
+msgid "🎙️ Enregistrer le son"
+msgstr "🎙️ Grabar el sonido"
+
+msgid "Garder une trace d’un contrôle ou d’une interpellation. Le son reste sur ton téléphone."
+msgstr "Guarda constancia de un control o una detención. El sonido se queda en tu teléfono."
+
+msgid "Enregistrer le son"
+msgstr "Grabar el sonido"
+
+msgid "Le son reste sur ce téléphone : rien n’est envoyé à Cortège. Garde l’écran allumé et l’appli ouverte : si l’écran se verrouille ou si tu changes d’appli, l’enregistrement peut s’arrêter. Ce qui a déjà été pris est gardé."
+msgstr "El sonido se queda en este teléfono: no se envía nada a Cortège. Mantén la pantalla encendida y la app abierta: si la pantalla se bloquea o cambias de app, la grabación puede pararse. Lo ya grabado se conserva."
+
+msgid "● Démarrer"
+msgstr "● Empezar"
+
+msgid "■ Arrêter"
+msgstr "■ Parar"
+
+msgid "Enregistrer les forces de l’ordre dans l’espace public est autorisé. Avant de partager un enregistrement, pense aux autres : pas de nom ni de voix de manifestant·es reconnaissables sans leur accord. Remets-le vite à la legal team ou à ton avocat·e, puis efface-le d’ici : en garde à vue, ton téléphone peut être fouillé. « Tout effacer » les supprime aussi."
+msgstr "Grabar a las fuerzas del orden en el espacio público está permitido. Antes de compartir una grabación, piensa en los demás: ni nombres ni voces reconocibles de manifestantes sin su permiso. Entrégala pronto al equipo legal o a tu abogado·a y bórrala de aquí: en detención, pueden registrar tu teléfono. «Borrar todo» también las elimina."
+
+msgid "Enregistrement en cours"
+msgstr "Grabación en curso"

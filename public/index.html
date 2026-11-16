@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f1230">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Cortège · Carte des manifs en direct, sans compte</title>
 <link rel="canonical" href="https://cortege.neru.tv/">
 <meta name="description" content="La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Sans compte, sans pistage, partout en France. Par @neru.">
@@ -523,6 +523,7 @@
     </details>
   </div>
   <button class="sos-wide" id="btnSosRights"><b>Je suis interpellé·e</b><span>Prévenir un proche par SMS en deux appuis</span></button>
+  <button class="son-wide" id="btnSon" hidden><b>🎙️ Enregistrer le son</b><span>Garder une trace d’un contrôle ou d’une interpellation. Le son reste sur ton téléphone.</span></button>
   <!-- Droits propres au pays : la France ici ; les autres pays viennent de leur profil (profiles/*.json) -->
   <div data-profile="fr">
   <a class="violence-btn" id="violenceLink" href="https://www.ldh-france.org/stop-violences-policieres/" target="_blank" rel="noopener noreferrer">
@@ -1109,6 +1110,20 @@
     <button class="ghost" id="sosEdit">Changer de contact</button>
   </div>
 </section>
+
+<!-- Enregistrement du son : gardé sur le téléphone seulement (jamais envoyé à Cortège) -->
+<section class="sheet" id="sheetSon" hidden aria-labelledby="sonTitle">
+  <div class="sheet-head">
+    <h2 id="sonTitle">Enregistrer le son</h2>
+    <button class="x" id="sonClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="hint">Le son reste sur ce téléphone : rien n’est envoyé à Cortège. Garde l’écran allumé et l’appli ouverte : si l’écran se verrouille ou si tu changes d’appli, l’enregistrement peut s’arrêter. Ce qui a déjà été pris est gardé.</p>
+  <button class="son-go" id="sonGo" type="button">● Démarrer</button>
+  <p class="son-time" id="sonTime" aria-live="polite" hidden></p>
+  <ul class="org-list" id="sonList"></ul>
+  <p class="fine">Enregistrer les forces de l’ordre dans l’espace public est autorisé. Avant de partager un enregistrement, pense aux autres : pas de nom ni de voix de manifestant·es reconnaissables sans leur accord. Remets-le vite à la legal team ou à ton avocat·e, puis efface-le d’ici : en garde à vue, ton téléphone peut être fouillé. « Tout effacer » les supprime aussi.</p>
+</section>
+<button class="son-chip" id="sonChip" type="button" hidden aria-label="Enregistrement en cours">● <span id="sonChipT">0:00</span></button>
 
 <div class="toast" id="toast" hidden role="status"></div>
 <!-- Juste après un signalement : ajouter une précision sans ralentir l'envoi -->

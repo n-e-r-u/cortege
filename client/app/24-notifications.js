@@ -76,7 +76,8 @@
   // Légende des vibrations, avec un bouton pour les essayer
   const VIBE_TXT = { charge: 'rafale de petites vibrations', nasse: 'deux longues', sommations: 'trois longues', lacrymo: 'deux moyennes',
     canon: 'trois moyennes', bac: 'deux courtes puis une longue', crs: 'deux courtes', interpellation: 'trois courtes',
-    tirs: 'rafale très rapide', facho: 'une longue, deux courtes, une longue', inter: 'trois courtes puis une longue', blinde: 'une longue puis une courte' };
+    tirs: 'rafale très rapide', facho: 'une longue, deux courtes, une longue', inter: 'trois courtes puis une longue', blinde: 'une longue puis une courte',
+    civil: 'quatre courtes' };
   for (const id of Object.keys(VIBE_TXT)) {
     if (!CAT[id]) continue;
     const b = el('button', { type: 'button' }, 'Essayer');

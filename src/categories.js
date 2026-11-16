@@ -6,6 +6,8 @@ const CATEGORIES = [
   { id: 'crs',            group: 'fdo',     label: 'CRS / Gendarmes mobiles', glyph: '🛡️', ttl: 20 },
   { id: 'police',         group: 'fdo',     label: 'Police',                  glyph: '🚓', ttl: 20 },
   { id: 'bac',            group: 'fdo',     label: 'BAC / BRAV-M',            glyph: '🏍️', ttl: 15 },
+  // Policiers en civil dans ou autour du cortège (brassard caché, oreillette) : un endroit à surveiller, jamais une personne désignée (2.20)
+  { id: 'civil',          group: 'fdo',     label: 'Policiers en civil',      glyph: '🕵️', ttl: 15 },
   // Militaires de l'opération Sentinelle : garde statique de bâtiments, pas de maintien de l'ordre (pas d'alerte, ne suspend pas les zones calmes)
   { id: 'militaires',     group: 'fdo',     label: 'Militaires (Sentinelle)', glyph: '🪖', ttl: 60 },
   { id: 'inter',          group: 'fdo',     label: 'Unités d’intervention (BRI, RAID, GIGN)', glyph: '🚨', ttl: 15 },
@@ -36,6 +38,10 @@ const CATEGORIES = [
   // Contrôles et fouilles à l'entrée d'une manif : une information, pas un danger (ne suspend pas les zones calmes, pas d'alerte)
   { id: 'filtrage',       group: 'info',    label: 'Contrôle / barrage filtrant', glyph: '🛂', ttl: 45 },
   { id: 'blocus',         group: 'info',    label: 'Blocus (lycée / fac)',    glyph: '🚧', ttl: 180 },
+  // Fac, lycée ou bâtiment occupé : dure plus longtemps qu'un blocus, le point reste 12 h sans confirmation (2.20)
+  { id: 'occupation',     group: 'info',    label: 'Lieu occupé (fac, lycée, bâtiment)', glyph: '🏴', ttl: 720 },
+  // Métro, tram ou gare fermés par la préfecture ou l'exploitant pendant la manif (2.20)
+  { id: 'station',        group: 'info',    label: 'Station fermée (métro, tram, gare)', glyph: '🚇', ttl: 120 },
 ];
 // Agenda : types d'événements publiés par les orgas (ou proposés puis validés par l'admin)
 const EVENT_TYPES = [
@@ -49,16 +55,16 @@ const CAT = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 // Fusion : un signalement du même type dans ce rayon (m) confirme le point existant au lieu d'en créer un.
 // « move » : le point glisse vers le signalement le plus récent (unités qui se déplacent).
 const MERGE = {
-  crs: { r: 100, move: true }, police: { r: 100, move: true }, bac: { r: 100, move: true }, canon: { r: 100, move: true },
+  crs: { r: 100, move: true }, police: { r: 100, move: true }, bac: { r: 100, move: true }, civil: { r: 80, move: true }, canon: { r: 100, move: true },
   inter: { r: 100, move: true }, blinde: { r: 100, move: true }, tirs: { r: 100 }, militaires: { r: 60 }, facho: { r: 150, move: true },
   nasse: { r: 150 }, interpellation: { r: 80 }, lacrymo: { r: 150 }, charge: { r: 80 }, chaud: { r: 100 }, sommations: { r: 150 },
   medic: { r: 40 }, secours: { r: 100, move: true }, legal: { r: 40 }, presse: { r: 40 }, eau: { r: 40 }, calme: { r: 80 },
-  cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 }, filtrage: { r: 60 },
+  cortege: { r: 2000, move: true }, queue: { r: 2000, move: true }, bloque: { r: 30 }, blocus: { r: 100 }, occupation: { r: 150 }, station: { r: 60 }, filtrage: { r: 60 },
 };
 // Un danger actif à moins de 100 m d’une « zone calme » la suspend (affichage sur le téléphone) et empêche d’en créer une.
 const CALM_KILL_M = 100;
 // Dangers qui déclenchent une alerte de proximité (dans l'appli et en notification)
-const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
+const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'civil', 'inter', 'blinde', 'crs', 'interpellation']);
 // Vibrations par type : on reconnaît le danger sans sortir le téléphone
 const VIBES = {
   charge: [100, 60, 100, 60, 100, 60, 100, 60, 100],   // rafale courte : ça arrive vite
@@ -73,6 +79,7 @@ const VIBES = {
   inter: [150, 80, 150, 80, 150, 80, 600],             // trois courtes, une longue
   blinde: [700, 150, 250],                             // une longue, une courte
   facho: [600, 100, 150, 100, 150, 100, 600],          // une longue, deux courtes, une longue
+  civil: [150, 80, 150, 80, 150, 80, 150],             // quatre courtes
 };
 const isDanger = cat => Object.hasOwn(CAT, cat) && cat !== 'militaires' && (CAT[cat].group === 'fdo' || CAT[cat].group === 'danger');
 const GROUPS = [
@@ -82,9 +89,9 @@ const GROUPS = [
   { id: 'info', label: 'Infos cortège' },
 ];
 // Véhicules et groupes qui roulent ou marchent : leur direction s'affiche (flèche), indiquée par un téléphone ou déduite du déplacement du point
-const DIR_CATS = new Set(['crs', 'police', 'bac', 'inter', 'blinde', 'canon', 'facho', 'secours']);
+const DIR_CATS = new Set(['crs', 'police', 'bac', 'civil', 'inter', 'blinde', 'canon', 'facho', 'secours']);
 // Groupes dont on peut indiquer le nombre (environ) : 1 = 1 à 5 personnes, 2 = 5 à 15, 3 = 15 à 30, 4 = plus de 30 (2.17)
-const COUNT_CATS = new Set(['facho', 'crs', 'police', 'bac', 'militaires', 'inter']);
+const COUNT_CATS = new Set(['facho', 'crs', 'police', 'bac', 'civil', 'militaires', 'inter']);
 const BASE_TTL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.ttl]));
 
 module.exports = { CATEGORIES, EVENT_TYPES, EVT, CAT, MERGE, CALM_KILL_M, ALERT_CATS, VIBES, isDanger, GROUPS, BASE_TTL, DIR_CATS, COUNT_CATS };

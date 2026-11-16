@@ -69,7 +69,7 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Strict-Transport-Security', 'max-age=15552000');
-  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()');
+  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=(self), payment=(), usb=(), interest-cohort=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   // Écritures acceptées seulement depuis l'appli elle-même : un autre site ne peut pas faire poster
   // de faux signalements par les navigateurs de ses visiteurs (CSRF).

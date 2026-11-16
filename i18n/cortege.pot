@@ -4632,3 +4632,75 @@ msgstr ""
 #: client/parts/medic.js
 msgid "CRS, lacrymo, charges… signalés par tout le monde sur Cortège, en plus des points des équipes. L’agenda, les parcours et les lieux sont dans « Vue complète »."
 msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Micro refusé : autorise-le pour Cortège dans les réglages du navigateur."
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Ce navigateur ne sait pas enregistrer le son."
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Pas de place pour enregistrer sur ce téléphone."
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Le téléphone est plein : l’enregistrement ne peut plus être gardé."
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrement gardé sur ce téléphone."
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "interrompu"
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Enregistrer le fichier"
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Partager (Signal…)"
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Confirmer l’effacement"
+msgstr ""
+
+msgid "Policiers en civil"
+msgstr ""
+
+msgid "Lieu occupé (fac, lycée, bâtiment)"
+msgstr ""
+
+msgid "Station fermée (métro, tram, gare)"
+msgstr ""
+
+msgid "quatre courtes"
+msgstr ""
+
+msgid "🎙️ Enregistrer le son"
+msgstr ""
+
+msgid "Garder une trace d’un contrôle ou d’une interpellation. Le son reste sur ton téléphone."
+msgstr ""
+
+msgid "Enregistrer le son"
+msgstr ""
+
+msgid "Le son reste sur ce téléphone : rien n’est envoyé à Cortège. Garde l’écran allumé et l’appli ouverte : si l’écran se verrouille ou si tu changes d’appli, l’enregistrement peut s’arrêter. Ce qui a déjà été pris est gardé."
+msgstr ""
+
+msgid "● Démarrer"
+msgstr ""
+
+msgid "■ Arrêter"
+msgstr ""
+
+msgid "Enregistrer les forces de l’ordre dans l’espace public est autorisé. Avant de partager un enregistrement, pense aux autres : pas de nom ni de voix de manifestant·es reconnaissables sans leur accord. Remets-le vite à la legal team ou à ton avocat·e, puis efface-le d’ici : en garde à vue, ton téléphone peut être fouillé. « Tout effacer » les supprime aussi."
+msgstr ""
+
+msgid "Enregistrement en cours"
+msgstr ""

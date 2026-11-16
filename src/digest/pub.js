@@ -35,7 +35,7 @@ function pubSnapshot(date) {
 // ---- Bilans détaillés (2.8) : moments clés, durées, parcours des cortèges, arrêtés du jour, pages par ville ----
 const EXT_V = 1, CITY_PAGE_MIN = 20;
 // Dangers dont on suit le premier signalement et la durée, ville par ville
-const KEY_DANGERS = ['charge', 'tirs', 'nasse', 'lacrymo', 'canon', 'sommations', 'facho', 'interpellation', 'inter', 'blinde', 'bac', 'crs'];
+const KEY_DANGERS = ['charge', 'tirs', 'nasse', 'lacrymo', 'canon', 'sommations', 'facho', 'interpellation', 'inter', 'blinde', 'bac', 'civil', 'crs'];
 const slugOf = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 // Total en minutes d'intervalles qui se chevauchent
 function unionMin(iv) {

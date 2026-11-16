@@ -386,6 +386,16 @@ details.right b { color: var(--fg); }
 .sos-wide { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 6px 0 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--fdo-strong); background: var(--fdo-strong); color: #fff; text-align: left; }
 .sos-wide b { font-size: 15px; }
 .sos-wide b::after { content: " →"; }
+.son-wide { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0 0 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); text-align: left; }
+.son-wide b { font-size: 15px; }
+.son-go { width: 100%; padding: 16px; border-radius: 14px; border: 0; font-size: 17px; font-weight: 700; background: var(--fdo-strong); color: #fff; }
+.son-go.on { background: var(--surface-2); color: var(--fg); border: 2px solid var(--fdo-strong); }
+.son-time { text-align: center; font-size: 28px; font-variant-numeric: tabular-nums; margin: 8px 0; }
+.son-chip { position: fixed; z-index: 1200; top: calc(env(safe-area-inset-top, 0px) + 64px); left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 99px; border: 0; background: var(--fdo-strong); color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+#sonList li { display: block; }
+#sonList audio { display: block; width: 100%; margin: 8px 0; }
+#sonList .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+#sonList .controls > * { flex: 1 1 auto; width: auto; min-height: 0; margin: 0; padding: 10px 12px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; line-height: 1.2; }
 .sos-wide span { font-size: 13px; }
 .sos-msg { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font: inherit; font-size: 15px; resize: vertical; }
 .sos-send { display: grid; place-items: center; height: 54px; margin: 12px 0 8px; border-radius: 12px; background: var(--fdo-strong); color: #fff; font-weight: 800; font-size: 16px; text-decoration: none; text-align: center; padding: 0 12px; }

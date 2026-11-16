@@ -6,7 +6,7 @@
   // Couleur lue dans le thème en cours (clair ou sombre), pour les tracés dessinés sur la carte
   const themeCol = (name, dflt) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || dflt;
   const MIN = 60_000;
-  const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'inter', 'blinde', 'crs', 'interpellation']);
+  const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'civil', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
   let beacon = null; // position partagée en direct par une orga : { role, until, timer, lock }
   let announcements = [];
