@@ -22,7 +22,7 @@
       cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
       ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
       for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
-      document.querySelectorAll('#catGrid .cat').forEach(b => { b.hidden = !!(CAT[b.dataset.cat] && CAT[b.dataset.cat].off) || !catHere(CAT[b.dataset.cat] || {}); });
+      catVis(); if (famOpen) openFamily(famOpen);
       // Pays, types ou marque changés dans l'admin : appliqués en rechargeant l'appli dès qu'elle passe en arrière-plan
       const shape = x => JSON.stringify([x.profiles, (x.categories || []).map(k => k.id), x.brand, x.violenceUrl, x.contact, x.hostInfo]);
       if (shape(c) !== cfgShape) { cfgShape = shape(c); document.addEventListener('visibilitychange', () => { if (document.hidden) reloadForUpdate(); }, { once: true }); }

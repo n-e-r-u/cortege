@@ -4746,3 +4746,30 @@ msgstr ""
 
 msgid "Enregistrement en cours"
 msgstr ""
+
+msgid "Urgent"
+msgstr ""
+
+msgid "Ou choisis"
+msgstr ""
+
+msgid "Ou précise"
+msgstr ""
+
+msgid "Lacrymo et tirs"
+msgstr ""
+
+msgid "Charge et nasse"
+msgstr ""
+
+msgid "Fachos"
+msgstr ""
+
+msgid "Cortège et blocages"
+msgstr ""
+
+msgid "Retour"
+msgstr ""
+
+msgid "Envoyer sans préciser"
+msgstr ""

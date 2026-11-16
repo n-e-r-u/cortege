@@ -8,7 +8,7 @@ Cortège est une appli web gratuite et libre : pendant une manif, chacun·e sign
 
 ## Ce que ça fait
 
-- 📍 **Signaler en deux gestes** : un viseur, un type, c'est envoyé. Les autres confirment (« Toujours là ») ou démentent (« Plus là »), et chaque point s'éteint tout seul au bout de quelques minutes.
+- 📍 **Signaler en deux gestes** : un viseur, une urgence ou une famille puis la précision, c'est envoyé. Les autres confirment (« Toujours là ») ou démentent (« Plus là »), et chaque point s'éteint tout seul au bout de quelques minutes.
 - 📳 **Être prévenu·e** : une vibration différente pour chaque danger proche, et des notifications même appli fermée (annonces urgentes, dangers dans ta zone).
 - ⚖️ **Connaître ses droits** : les numéros des legal teams de ta ville, les réflexes en cas d'interpellation, un SMS d'alerte pré-rempli pour un proche.
 - 📅 **Agenda** : manifs, blocus, rassemblements et AG, avec le parcours sur la carte.

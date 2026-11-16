@@ -37,11 +37,15 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     };
     const a = await phone();
     assert.equal(await a.evaluate(() => typeof window.qrcode), 'undefined', 'QR code pas chargé au démarrage');
-    // Signalement par l'interface : bouton central, première catégorie proposée, envoi
+    // Signalement par l'interface : bouton central, une famille (Police), retour, puis une urgence en un appui
     await a.click('#btnReport');
     await a.waitForSelector('#sheetReport:not([hidden])');
+    await a.click('#catGrid .fam[data-fam="police"]');
+    assert.ok(await a.isVisible('#catGrid .fam-send'), 'Police : envoi sans préciser proposé');
+    assert.ok(await a.isVisible('#catGrid .cat-fam button[data-cat="bac"]'), 'Police : précisions proposées');
+    await a.click('#catGrid .fam-back');
     const sent = a.waitForResponse(r => r.url().endsWith('/api/reports') && r.request().method() === 'POST');
-    await a.locator('#catGrid button[data-cat]:visible').first().click();
+    await a.locator('#catGrid .cat-urgent button[data-cat]:visible').first().click();
     const res = await sent;
     assert.equal(res.status(), 201, 'signalement accepté');
     const rep = await res.json();

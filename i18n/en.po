@@ -4731,3 +4731,30 @@ msgstr "Recording police in public space is allowed. Before sharing a recording,
 
 msgid "Enregistrement en cours"
 msgstr "Recording in progress"
+
+msgid "Urgent"
+msgstr "Urgent"
+
+msgid "Ou choisis"
+msgstr "Or choose"
+
+msgid "Ou précise"
+msgstr "Or be specific"
+
+msgid "Lacrymo et tirs"
+msgstr "Tear gas and shots"
+
+msgid "Charge et nasse"
+msgstr "Charge and kettling"
+
+msgid "Fachos"
+msgstr "Fascists"
+
+msgid "Cortège et blocages"
+msgstr "March and blockades"
+
+msgid "Retour"
+msgstr "Back"
+
+msgid "Envoyer sans préciser"
+msgstr "Send without details"

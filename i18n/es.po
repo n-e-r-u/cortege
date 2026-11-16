@@ -4731,3 +4731,30 @@ msgstr "Grabar a las fuerzas del orden en el espacio público está permitido. A
 
 msgid "Enregistrement en cours"
 msgstr "Grabación en curso"
+
+msgid "Urgent"
+msgstr "Urgente"
+
+msgid "Ou choisis"
+msgstr "O elige"
+
+msgid "Ou précise"
+msgstr "O precisa"
+
+msgid "Lacrymo et tirs"
+msgstr "Gases y disparos"
+
+msgid "Charge et nasse"
+msgstr "Carga y encapsulamiento"
+
+msgid "Fachos"
+msgstr "Fachas"
+
+msgid "Cortège et blocages"
+msgstr "Marcha y bloqueos"
+
+msgid "Retour"
+msgstr "Volver"
+
+msgid "Envoyer sans préciser"
+msgstr "Enviar sin precisar"

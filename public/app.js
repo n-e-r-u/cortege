@@ -897,7 +897,7 @@
       cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
       ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
       for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
-      document.querySelectorAll('#catGrid .cat').forEach(b => { b.hidden = !!(CAT[b.dataset.cat] && CAT[b.dataset.cat].off) || !catHere(CAT[b.dataset.cat] || {}); });
+      catVis(); if (famOpen) openFamily(famOpen);
       // Pays, types ou marque changés dans l'admin : appliqués en rechargeant l'appli dès qu'elle passe en arrière-plan
       const shape = x => JSON.stringify([x.profiles, (x.categories || []).map(k => k.id), x.brand, x.violenceUrl, x.contact, x.hostInfo]);
       if (shape(c) !== cfgShape) { cfgShape = shape(c); document.addEventListener('visibilitychange', () => { if (document.hidden) reloadForUpdate(); }, { once: true }); }
@@ -1459,6 +1459,7 @@
   }
   function closeReport() {
     $('#crosshair').hidden = true; $('#sheetReport').hidden = true;
+    if (famOpen) famBack();
     reportBtn(pausedUntil > Date.now() ? 'paused' : 'idle');
   }
   $('#btnReport').onclick = $('#mbReport').onclick = () => ($('#crosshair').hidden ? openReport() : closeReport());
@@ -1494,28 +1495,110 @@
   }
   $('#srClose').onclick = closeReport;
 
+  // ---- Choix du type, comme sur Waze : une famille, puis la précision (2.20) ----
+  // Premier écran : les urgences en un appui, puis 6 familles. Une famille qui a un type « par défaut » part sans préciser ;
+  // les autres demandent la précision. Nombre et direction se donnent sur l'écran de précision, avant l'envoi.
+  // Un type inconnu ici (profil d'un autre pays, type ajouté au serveur) va dans la famille de son groupe.
+  const URGENT = ['charge', 'nasse', 'lacrymo'];
+  const FAMILIES = [
+    { id: 'police', glyph: '🚓', label: 'Police', def: 'police', group: 'fdo', cats: ['police', 'crs', 'bac', 'civil', 'inter', 'blinde', 'militaires'] },
+    { id: 'gaz', glyph: '💨', label: 'Lacrymo et tirs', def: 'lacrymo', group: 'danger', cats: ['lacrymo', 'tirs', 'canon', 'sommations'] },
+    { id: 'charge', glyph: '⚡', label: 'Charge et nasse', def: 'charge', group: 'danger', cats: ['charge', 'nasse', 'interpellation'] },
+    { id: 'facho', glyph: '☠️', label: 'Fachos', def: 'facho', group: 'danger', cats: ['facho'] },
+    { id: 'soutien', glyph: '⛑️', label: 'Soutien', def: null, group: 'soutien', cats: ['medic', 'eau', 'legal', 'presse', 'secours', 'calme'] },
+    { id: 'cortege', glyph: '📣', label: 'Cortège et blocages', def: null, group: 'info', cats: ['cortege', 'queue', 'bloque', 'filtrage', 'station', 'blocus', 'occupation', 'chaud'] },
+  ];
+  const FAM_OF_GROUP = { fdo: 'police', danger: 'gaz', soutien: 'soutien', info: 'cortege' };
+  for (const c of cfg.categories) {
+    if (c.beaconOnly || FAMILIES.some(f => f.cats.includes(c.id))) continue;
+    const f = FAMILIES.find(x => x.id === FAM_OF_GROUP[c.group]); if (f) f.cats.push(c.id);
+  }
+  const catOk = id => !!CAT[id] && !CAT[id].off && !CAT[id].beaconOnly && catHere(CAT[id]);
+  let famOpen = null, famPick = { n: null, d: undefined }; // famille ouverte ; nombre et direction choisis avant l'envoi
+  function catBtn(id, onPick) {
+    const c = CAT[id];
+    const b = el('button', { type: 'button', class: 'cat', 'data-cat': id, style: `--c:${GROUP_COLOR[c.group]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
+    b.onclick = () => onPick(id);
+    return b;
+  }
   (function buildGrid() {
     const grid = $('#catGrid');
-    for (const g of cfg.groups) {
-      grid.append(el('div', { class: 'group-title' }, g.label));
-      const row = el('div', { class: 'row' });
-      for (const c of cfg.categories.filter(c => c.group === g.id && !c.beaconOnly)) {
-        const b = el('button', { class: 'cat', 'data-cat': c.id, style: `--c:${GROUP_COLOR[g.id]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, c.glyph), c.label, el('span', { class: 'sub' }));
-        if (c.off || !catHere(c)) b.hidden = true;
-        b.onclick = () => submit(c.id);
-        row.append(b);
-      }
-      grid.append(row);
+    const home = el('div', { class: 'cat-home' });
+    const urg = el('div', { class: 'row cat-urgent' });
+    for (const id of URGENT) if (CAT[id]) urg.append(catBtn(id, submit));
+    home.append(el('div', { class: 'group-title' }, 'Urgent'), urg, el('div', { class: 'group-title' }, 'Ou choisis'));
+    const fams = el('div', { class: 'fam-grid' });
+    for (const f of FAMILIES) {
+      const b = el('button', { type: 'button', class: 'fam', 'data-fam': f.id, style: `--c:${GROUP_COLOR[f.group]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, f.glyph), f.label);
+      b.onclick = () => openFamily(f.id);
+      fams.append(b);
     }
+    home.append(fams);
+    grid.append(home, el('div', { class: 'cat-fam', hidden: '' }));
+    catVis();
   })();
+  // Types visibles : réglages de l'admin (types coupés) et profil du pays ; une famille sans type visible disparaît
+  function catVis() {
+    document.querySelectorAll('#catGrid .cat').forEach(b => { b.hidden = !catOk(b.dataset.cat); });
+    document.querySelectorAll('#catGrid .fam').forEach(b => { b.hidden = !FAMILIES.find(f => f.id === b.dataset.fam).cats.some(catOk); });
+  }
+  function famBack() {
+    famOpen = null;
+    $('#catGrid .cat-home').hidden = false; $('#catGrid .cat-fam').hidden = true; $('#srHint').hidden = false; $('#catGrid .cat-fam').textContent = '';
+    $('#srTitle').textContent = t('Qu’est-ce qui se passe ici ?');
+    catHints();
+  }
+  function openFamily(id) {
+    const f = FAMILIES.find(x => x.id === id), cats = f.cats.filter(catOk);
+    if (!cats.length) return;
+    famOpen = id; famPick = { n: null, d: undefined };
+    const box = $('#catGrid .cat-fam'); box.textContent = '';
+    $('#srTitle').textContent = f.glyph + ' ' + t(f.label);
+    const back = el('button', { type: 'button', class: 'link-btn fam-back' }, '← ' + t('Retour'));
+    back.onclick = famBack;
+    box.append(back);
+    // Nombre et direction (facultatifs) : seulement pour une famille qui a des groupes ou des véhicules qui bougent
+    if (cats.some(c => COUNT_CAT.has(c))) {
+      const pick = el('div', { class: 'count-pick', role: 'group', 'aria-label': t('Combien, environ ?') });
+      for (const n of [1, 2, 3, 4]) {
+        const b = el('button', { type: 'button', class: 'count-b', 'aria-pressed': 'false' }, t(COUNT_LBL[n]));
+        b.onclick = () => { famPick.n = famPick.n === n ? null : n; pick.querySelectorAll('.count-b').forEach((x, i) => { x.classList.toggle('on', famPick.n === i + 1); x.setAttribute('aria-pressed', String(famPick.n === i + 1)); }); };
+        pick.append(b);
+      }
+      box.append(el('div', { class: 'fam-opt' }, el('span', { class: 'fine' }, t('Combien, environ ?')), pick));
+    }
+    if (cats.some(c => DIR_CAT.has(c))) {
+      const pick = el('div', { class: 'dir-pick dir-row', role: 'group', 'aria-label': t('Il se dirige vers…') });
+      const NAMES = ['le nord', 'le nord-est', 'l’est', 'le sud-est', 'le sud', 'le sud-ouest', 'l’ouest', 'le nord-ouest'];
+      for (const d of [6, 7, 0, 1, 2, 3, 4, 5, null]) {
+        const b = el('button', { type: 'button', class: 'dir-b' + (d === null ? ' stop' : '') }, d === null ? '■' : el('span', { style: `--d:${d * 45}deg`, 'aria-hidden': 'true' }, '↑'));
+        b.setAttribute('aria-label', d === null ? t('Ne bouge pas') : t('Vers {dir}', { dir: t(NAMES[d]) }));
+        b.onclick = () => { famPick.d = famPick.d === d ? undefined : d; pick.querySelectorAll('.dir-b').forEach(x => x.classList.toggle('on', x === b && famPick.d === d)); };
+        pick.append(b);
+      }
+      box.append(el('div', { class: 'fam-opt' }, el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), pick));
+    }
+    if (f.def && catOk(f.def) && cats.length > 1) {
+      const go = el('button', { type: 'button', class: 'fam-send cat', 'data-cat': f.def, style: `--c:${GROUP_COLOR[f.group]}` }, el('span', { class: 'g', 'aria-hidden': 'true' }, CAT[f.def].glyph), t('Envoyer sans préciser'), el('span', { class: 'sub' }));
+      go.onclick = () => submit(f.def, famPick);
+      box.append(go, el('div', { class: 'group-title' }, 'Ou précise'));
+    }
+    const row = el('div', { class: 'row' });
+    for (const c of cats) row.append(catBtn(c, x => submit(x, famPick)));
+    box.append(row);
+    $('#catGrid .cat-home').hidden = true; box.hidden = false; $('#srHint').hidden = true;
+    $('#sheetReport').scrollTop = 0;
+    catHints();
+  }
 
   // Profil pays qui change (tu passes la frontière, ou tu regardes un autre pays) : noms et types disponibles mis à jour
   document.addEventListener('cortege-profile', () => {
-    for (const b of document.querySelectorAll('#catGrid .cat')) {
+    for (const b of document.querySelectorAll('#catGrid .cat:not(.fam-send)')) {
       const c = CAT[b.dataset.cat]; if (!c) continue;
-      b.hidden = !!c.off || !catHere(c);
       const tx = [...b.childNodes].find(n => n.nodeType === 3); if (tx) tx.nodeValue = c.label;
     }
+    catVis();
+    if (famOpen) openFamily(famOpen);
     if (typeof regroup === 'function') regroup();
   });
   // Point visé = position du viseur à l'écran
@@ -1628,7 +1711,7 @@
     if (sent) { lastActivity = Date.now(); sync(); }
     return n;
   }
-  async function submit(cat) {
+  async function submit(cat, pick = null) {
     const p = target();
     const it = { k: rid(), cat, lat: p.lat, lng: p.lng, note: '', t: Date.now(), dev: DEVICE, ttl: CAT[cat].ttl * MIN };
     let out;
@@ -1645,8 +1728,12 @@
     voted.add(out.body.id);
     closeReport();
     lastActivity = Date.now();
+    // Nombre et direction choisis sur l'écran de précision : envoyés tout de suite au point créé (ou confirmé)
+    const given = { n: !!(pick && pick.n && COUNT_CAT.has(cat)), d: !!(pick && pick.d !== undefined && DIR_CAT.has(cat)) };
+    if (given.n) fetch(`/api/reports/${out.body.id}/count`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ c: pick.n }) }).then(() => sync()).catch(() => {});
+    if (given.d) fetch(`/api/reports/${out.body.id}/dir`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Device': DEVICE }, body: JSON.stringify({ d: pick.d }) }).then(() => sync()).catch(() => {});
     sync();
-    openNoteCard(out.body.id, cat, resultText(it, out));
+    openNoteCard(out.body.id, cat, resultText(it, out), given);
   }
   // ---- Précisions ----
   const NOTE_HINTS = { fdo: 'ex. : une vingtaine, remontent vers la gare', danger: 'ex. : le nuage s’étend vers la place',
@@ -1666,16 +1753,16 @@
   }
   // Carte « Ajouter une précision ? » juste après un signalement : l'envoi n'attend pas qu'on écrive
   let noteFor = null;
-  function openNoteCard(id, cat, title) {
+  function openNoteCard(id, cat, title, given = {}) {
     noteFor = id;
     $('#noteTitle').textContent = '✓ ' + title;
     $('#noteInput').value = ''; $('#noteInput').placeholder = notePlaceholder(cat);
     $('#noteCard').hidden = false;
     // Véhicule ou groupe qui bouge : sa direction se donne d'un appui (facultatif)
-    const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat);
+    const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat) || !!given.d;
     if (!nd.hidden) nd.append(el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), dirPicker(id, null, () => clearTimeout(openNoteCard.t)));
     // Groupe : combien, environ (facultatif aussi)
-    const nc = $('#noteCount'); nc.textContent = ''; nc.hidden = !COUNT_CAT.has(cat);
+    const nc = $('#noteCount'); nc.textContent = ''; nc.hidden = !COUNT_CAT.has(cat) || !!given.n;
     if (!nc.hidden) nc.append(el('span', { class: 'fine' }, t('Combien, environ ?')), countPicker(id, null, () => clearTimeout(openNoteCard.t)));
     clearTimeout(openNoteCard.t);
     openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);

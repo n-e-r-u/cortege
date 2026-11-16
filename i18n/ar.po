@@ -4791,3 +4791,30 @@ msgstr "تسجيل قوات الأمن في الأماكن العامة مسمو
 
 msgid "Enregistrement en cours"
 msgstr "التسجيل جارٍ"
+
+msgid "Urgent"
+msgstr "عاجل"
+
+msgid "Ou choisis"
+msgstr "أو اختر"
+
+msgid "Ou précise"
+msgstr "أو حدّد"
+
+msgid "Lacrymo et tirs"
+msgstr "غاز مسيل للدموع وإطلاق نار"
+
+msgid "Charge et nasse"
+msgstr "هجوم وتطويق"
+
+msgid "Fachos"
+msgstr "فاشيون"
+
+msgid "Cortège et blocages"
+msgstr "المسيرة والحواجز"
+
+msgid "Retour"
+msgstr "رجوع"
+
+msgid "Envoyer sans préciser"
+msgstr "إرسال دون تحديد"

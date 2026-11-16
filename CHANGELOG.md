@@ -4,6 +4,8 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 
 ## 2.20.0 (en cours)
 
+**Signaler comme sur Waze** : les urgences (charge, nasse, lacrymo) en un appui, puis 6 familles (Police, Lacrymo et tirs, Charge et nasse, Fachos, Soutien, Cortège et blocages). Une famille s'ouvre sur ses précisions ; Police, lacrymo, charge et fachos peuvent aussi partir sans préciser. Le nombre et la direction se donnent sur le même écran, avant l'envoi. Rien ne change côté serveur.
+
 **Nouveaux signalements** (idées les plus votées) :
 - 🕵️ **Policiers en civil** (forces de l'ordre) : alerte de proximité, vibration propre (quatre courtes), direction et nombre. Le point désigne un endroit à surveiller, jamais une personne.
 - 🚇 **Station fermée** (métro, tram, gare) : 2 h, pour éviter d'y aller pour rien ou de s'y retrouver bloqué·e.

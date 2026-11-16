@@ -16,16 +16,16 @@
   }
   // Carte « Ajouter une précision ? » juste après un signalement : l'envoi n'attend pas qu'on écrive
   let noteFor = null;
-  function openNoteCard(id, cat, title) {
+  function openNoteCard(id, cat, title, given = {}) {
     noteFor = id;
     $('#noteTitle').textContent = '✓ ' + title;
     $('#noteInput').value = ''; $('#noteInput').placeholder = notePlaceholder(cat);
     $('#noteCard').hidden = false;
     // Véhicule ou groupe qui bouge : sa direction se donne d'un appui (facultatif)
-    const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat);
+    const nd = $('#noteDir'); nd.textContent = ''; nd.hidden = !DIR_CAT.has(cat) || !!given.d;
     if (!nd.hidden) nd.append(el('span', { class: 'fine' }, t('Ça bouge ? Vers où :')), dirPicker(id, null, () => clearTimeout(openNoteCard.t)));
     // Groupe : combien, environ (facultatif aussi)
-    const nc = $('#noteCount'); nc.textContent = ''; nc.hidden = !COUNT_CAT.has(cat);
+    const nc = $('#noteCount'); nc.textContent = ''; nc.hidden = !COUNT_CAT.has(cat) || !!given.n;
     if (!nc.hidden) nc.append(el('span', { class: 'fine' }, t('Combien, environ ?')), countPicker(id, null, () => clearTimeout(openNoteCard.t)));
     clearTimeout(openNoteCard.t);
     openNoteCard.t = setTimeout(() => { if (document.activeElement !== $('#noteInput') && !$('#noteInput').value) closeNoteCard(); }, 12000);

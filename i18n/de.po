@@ -4728,3 +4728,30 @@ msgstr "Die Polizei im öffentlichen Raum aufzunehmen ist erlaubt. Denk vor dem 
 
 msgid "Enregistrement en cours"
 msgstr "Aufnahme läuft"
+
+msgid "Urgent"
+msgstr "Dringend"
+
+msgid "Ou choisis"
+msgstr "Oder wähle"
+
+msgid "Ou précise"
+msgstr "Oder genauer"
+
+msgid "Lacrymo et tirs"
+msgstr "Tränengas und Schüsse"
+
+msgid "Charge et nasse"
+msgstr "Angriff und Kessel"
+
+msgid "Fachos"
+msgstr "Nazis"
+
+msgid "Cortège et blocages"
+msgstr "Demo und Blockaden"
+
+msgid "Retour"
+msgstr "Zurück"
+
+msgid "Envoyer sans préciser"
+msgstr "Ohne Details senden"
