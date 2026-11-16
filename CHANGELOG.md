@@ -2,7 +2,7 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
-## 2.20.0 (en cours)
+## 2.20.0
 
 **Signaler comme sur Waze** : les urgences (charge, nasse, lacrymo) en un appui, puis 6 familles (Police, Lacrymo et tirs, Charge et nasse, Fachos, Soutien, Cortège et blocages). Une famille s'ouvre sur ses précisions ; Police, lacrymo, charge et fachos peuvent aussi partir sans préciser. Le nombre et la direction se donnent sur le même écran, avant l'envoi. Rien ne change côté serveur.
 
@@ -11,7 +11,7 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 - 🚇 **Station fermée** (métro, tram, gare) : 2 h, pour éviter d'y aller pour rien ou de s'y retrouver bloqué·e.
 - 🏴 **Lieu occupé** (fac, lycée, bâtiment) : 12 h, distinct du blocus qui dure une matinée.
 
-**Enregistrer le son** (Droits) : pour garder une trace d'un contrôle ou d'une interpellation. Le son reste sur le téléphone (écrit toutes les 2 secondes : un écran verrouillé ou une appli fermée ne fait pas perdre ce qui a été pris), se réécoute, s'enregistre en fichier ou se partage (Signal…), et s'efface avec « Tout effacer ». Rien n'est envoyé à Cortège. L'écran reste allumé pendant l'enregistrement.
+**Enregistrer le son** (bouton 🎙️ sur la carte, et dans Signaler, Droits et Plus) : pour garder une trace d'un contrôle ou d'une interpellation. Le son reste sur le téléphone (écrit toutes les 2 secondes : un écran verrouillé ou une appli fermée ne fait pas perdre ce qui a été pris), se réécoute, s'enregistre en fichier ou se partage (Signal…), et s'efface avec « Tout effacer ». Rien n'est envoyé à Cortège. L'écran reste allumé pendant l'enregistrement ; le bouton 🎙️ de la carte devient rouge tant que ça enregistre.
 
 **Appli Android pour le Play Store** : coquille officielle de Google (Trusted Web Activity) qui ouvre le site en plein écran, sans aucun code ni outil de statistiques ajouté. Projet dans `android/`, construit et signé par GitHub Actions (`android.yml`) ; `/.well-known/assetlinks.json` (variables `ANDROID_CERT_SHA256`, `ANDROID_PACKAGE`) relie l'appli au site. Guide de publication, fiche et formulaires du Play Store : [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
 

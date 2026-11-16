@@ -401,6 +401,10 @@ details.right b { color: var(--fg); }
 .sos-wide b::after { content: " →"; }
 .son-wide { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0 0 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); text-align: left; }
 .son-wide b { font-size: 15px; }
+.round.son-tool.rec { background: var(--fdo-strong); border-color: var(--fdo-strong); animation: son-pulse 1.2s ease-in-out infinite; }
+@keyframes son-pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--fdo-strong) 35%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .round.son-tool.rec { animation: none; } }
+.son-link { display: block; margin: 12px auto 0; }
 .son-go { width: 100%; padding: 16px; border-radius: 14px; border: 0; font-size: 17px; font-weight: 700; background: var(--fdo-strong); color: #fff; }
 .son-go.on { background: var(--surface-2); color: var(--fg); border: 2px solid var(--fdo-strong); }
 .son-time { text-align: center; font-size: 28px; font-variant-numeric: tabular-nums; margin: 8px 0; }

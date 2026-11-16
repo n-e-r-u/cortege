@@ -1,73 +1,113 @@
 {
-  "version": "2.19",
+  "version": "2.20",
   "items": [
     [
-      "📊 Tableau de bord des orgas",
-      "Dans « Mon orga » : tes vérifications, tes annonces et tes prochains rendez-vous, avec un rappel la veille si tu le demandes."
+      "👆 Signaler plus vite",
+      "Les urgences en un appui, sinon une famille puis la précision, comme sur Waze. Nombre et direction avant l’envoi."
     ],
     [
-      "🖨️ Affiche et flyers",
-      "Une affiche A4 ou quatre flyers par page, au nom de ton orga, avec le QR code de la carte et le rendez-vous."
+      "🎙️ Enregistrer le son",
+      "Pour garder une trace d’un contrôle ou d’une interpellation. Bouton 🎙️ sur la carte : le son reste sur ton téléphone."
     ],
     [
-      "🤝 Page « Pour les orgas »",
-      "Tout ce qu’un accès orga permet et comment l’obtenir, à envoyer à ton collectif ou ton syndicat."
+      "🕵️ Policiers en civil",
+      "Nouveau signalement, avec alerte de proximité. Il désigne un endroit à surveiller, jamais une personne."
+    ],
+    [
+      "🚇 Stations fermées, lieux occupés",
+      "Métro, tram ou gare fermés, fac ou lycée occupés : deux nouveaux signalements."
+    ],
+    [
+      "⛑️ Mode medic",
+      "Carte allégée par défaut, et retrait d’un appareil perdu de l’équipe."
     ]
   ],
   "items_en": [
     [
-      "📊 Org dashboard",
-      "In “My org”: your verifications, announcements and upcoming events, with a reminder the day before if you ask for it."
+      "👆 Report faster",
+      "Emergencies in one tap, otherwise a family then the detail, like on Waze. Number and direction before sending."
     ],
     [
-      "🖨️ Poster and flyers",
-      "An A4 poster or four flyers per page, in your org’s name, with the map’s QR code and the event."
+      "🎙️ Record audio",
+      "To keep a record of a stop or an arrest. 🎙️ button on the map: the audio stays on your phone."
     ],
     [
-      "🤝 “For orgs” page",
-      "Everything an org access lets you do and how to get one, to send to your collective or union."
+      "🕵️ Plainclothes police",
+      "New report type, with proximity alerts. It marks a place to watch, never a person."
+    ],
+    [
+      "🚇 Closed stations, occupied sites",
+      "Closed metro, tram or train stations, occupied universities or schools: two new report types."
+    ],
+    [
+      "⛑️ Medic mode",
+      "Lighter map by default, and removal of a lost device from the team."
     ]
   ],
   "items_es": [
     [
-      "📊 Panel de las organizaciones",
-      "En «Mi organización»: tus verificaciones, tus anuncios y tus próximas citas, con un recordatorio la víspera si lo pides."
+      "👆 Avisar más rápido",
+      "Las urgencias en un toque; si no, una familia y luego el detalle, como en Waze. Número y dirección antes de enviar."
     ],
     [
-      "🖨️ Cartel y octavillas",
-      "Un cartel A4 o cuatro octavillas por página, a nombre de tu organización, con el código QR del mapa y la cita."
+      "🎙️ Grabar el sonido",
+      "Para guardar constancia de un control o una detención. Botón 🎙️ en el mapa: el sonido se queda en tu teléfono."
     ],
     [
-      "🤝 Página «Para las organizaciones»",
-      "Todo lo que permite un acceso de organización y cómo conseguirlo, para enviar a tu colectivo o sindicato."
+      "🕵️ Policías de paisano",
+      "Nuevo aviso, con alerta de proximidad. Señala un lugar que vigilar, nunca a una persona."
+    ],
+    [
+      "🚇 Estaciones cerradas, lugares ocupados",
+      "Metro, tranvía o estación cerrados, universidad o instituto ocupados: dos avisos nuevos."
+    ],
+    [
+      "⛑️ Modo medic",
+      "Mapa más ligero por defecto, y retirada de un dispositivo perdido del equipo."
     ]
   ],
   "items_ar": [
     [
-      "📊 لوحة متابعة المنظمات",
-      "في «منظمتي»: تأكيداتك وإعلاناتك ومواعيدك القادمة، مع تذكير في اليوم السابق إن طلبته."
+      "👆 إبلاغ أسرع",
+      "الحالات العاجلة بلمسة واحدة، وإلا فئة ثم التفصيل، كما في Waze. العدد والاتجاه قبل الإرسال."
     ],
     [
-      "🖨️ ملصق ومنشورات",
-      "ملصق A4 أو أربع منشورات في الصفحة، باسم منظمتك، مع رمز QR للخريطة والموعد."
+      "🎙️ تسجيل الصوت",
+      "للاحتفاظ بأثر لتفتيش أو اعتقال. زر 🎙️ على الخريطة: يبقى الصوت على هاتفك."
     ],
     [
-      "🤝 صفحة «للمنظمات»",
-      "كل ما يتيحه وصول المنظمة وكيفية الحصول عليه، لإرسالها إلى مجموعتك أو نقابتك."
+      "🕵️ شرطة بملابس مدنية",
+      "بلاغ جديد مع تنبيه عند الاقتراب. يحدد مكانًا يجب الانتباه إليه، لا شخصًا أبدًا."
+    ],
+    [
+      "🚇 محطات مغلقة وأماكن محتلة",
+      "مترو أو ترام أو محطة قطار مغلقة، جامعة أو ثانوية محتلة: بلاغان جديدان."
+    ],
+    [
+      "⛑️ وضع المسعفين",
+      "خريطة أخف افتراضيًا، وإزالة جهاز مفقود من الفريق."
     ]
   ],
   "items_de": [
     [
-      "📊 Übersicht für Orgas",
-      "Unter „Meine Orga“: deine Bestätigungen, Ankündigungen und nächsten Termine, auf Wunsch mit Erinnerung am Vortag."
+      "👆 Schneller melden",
+      "Notfälle mit einem Tipp, sonst eine Gruppe und dann das Detail, wie bei Waze. Anzahl und Richtung vor dem Senden."
     ],
     [
-      "🖨️ Plakat und Flyer",
-      "Ein A4-Plakat oder vier Flyer pro Seite, im Namen deiner Orga, mit dem QR-Code der Karte und dem Termin."
+      "🎙️ Ton aufnehmen",
+      "Um eine Kontrolle oder Festnahme festzuhalten. 🎙️-Knopf auf der Karte: Die Aufnahme bleibt auf deinem Handy."
     ],
     [
-      "🤝 Seite „Für Orgas“",
-      "Alles, was ein Orga-Zugang ermöglicht und wie man ihn bekommt, zum Weiterleiten an dein Kollektiv oder deine Gewerkschaft."
+      "🕵️ Zivilpolizei",
+      "Neue Meldung mit Annäherungsalarm. Sie markiert einen Ort, auf den man achten sollte, nie eine Person."
+    ],
+    [
+      "🚇 Geschlossene Stationen, besetzte Orte",
+      "Geschlossene U-Bahn-, Tram- oder Bahnstationen, besetzte Unis oder Schulen: zwei neue Meldungen."
+    ],
+    [
+      "⛑️ Medic-Modus",
+      "Standardmäßig schlankere Karte, und ein verlorenes Gerät lässt sich aus dem Team entfernen."
     ]
   ]
 }

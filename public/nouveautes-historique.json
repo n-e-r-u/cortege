@@ -1,6 +1,119 @@
 {
  "history": [
   {
+   "version": "2.20",
+   "items": [
+    [
+     "👆 Signaler plus vite",
+     "Les urgences en un appui, sinon une famille puis la précision, comme sur Waze. Nombre et direction avant l’envoi."
+    ],
+    [
+     "🎙️ Enregistrer le son",
+     "Pour garder une trace d’un contrôle ou d’une interpellation. Bouton 🎙️ sur la carte : le son reste sur ton téléphone."
+    ],
+    [
+     "🕵️ Policiers en civil",
+     "Nouveau signalement, avec alerte de proximité. Il désigne un endroit à surveiller, jamais une personne."
+    ],
+    [
+     "🚇 Stations fermées, lieux occupés",
+     "Métro, tram ou gare fermés, fac ou lycée occupés : deux nouveaux signalements."
+    ],
+    [
+     "⛑️ Mode medic",
+     "Carte allégée par défaut, et retrait d’un appareil perdu de l’équipe."
+    ]
+   ],
+   "items_en": [
+    [
+     "👆 Report faster",
+     "Emergencies in one tap, otherwise a family then the detail, like on Waze. Number and direction before sending."
+    ],
+    [
+     "🎙️ Record audio",
+     "To keep a record of a stop or an arrest. 🎙️ button on the map: the audio stays on your phone."
+    ],
+    [
+     "🕵️ Plainclothes police",
+     "New report type, with proximity alerts. It marks a place to watch, never a person."
+    ],
+    [
+     "🚇 Closed stations, occupied sites",
+     "Closed metro, tram or train stations, occupied universities or schools: two new report types."
+    ],
+    [
+     "⛑️ Medic mode",
+     "Lighter map by default, and removal of a lost device from the team."
+    ]
+   ],
+   "items_es": [
+    [
+     "👆 Avisar más rápido",
+     "Las urgencias en un toque; si no, una familia y luego el detalle, como en Waze. Número y dirección antes de enviar."
+    ],
+    [
+     "🎙️ Grabar el sonido",
+     "Para guardar constancia de un control o una detención. Botón 🎙️ en el mapa: el sonido se queda en tu teléfono."
+    ],
+    [
+     "🕵️ Policías de paisano",
+     "Nuevo aviso, con alerta de proximidad. Señala un lugar que vigilar, nunca a una persona."
+    ],
+    [
+     "🚇 Estaciones cerradas, lugares ocupados",
+     "Metro, tranvía o estación cerrados, universidad o instituto ocupados: dos avisos nuevos."
+    ],
+    [
+     "⛑️ Modo medic",
+     "Mapa más ligero por defecto, y retirada de un dispositivo perdido del equipo."
+    ]
+   ],
+   "items_ar": [
+    [
+     "👆 إبلاغ أسرع",
+     "الحالات العاجلة بلمسة واحدة، وإلا فئة ثم التفصيل، كما في Waze. العدد والاتجاه قبل الإرسال."
+    ],
+    [
+     "🎙️ تسجيل الصوت",
+     "للاحتفاظ بأثر لتفتيش أو اعتقال. زر 🎙️ على الخريطة: يبقى الصوت على هاتفك."
+    ],
+    [
+     "🕵️ شرطة بملابس مدنية",
+     "بلاغ جديد مع تنبيه عند الاقتراب. يحدد مكانًا يجب الانتباه إليه، لا شخصًا أبدًا."
+    ],
+    [
+     "🚇 محطات مغلقة وأماكن محتلة",
+     "مترو أو ترام أو محطة قطار مغلقة، جامعة أو ثانوية محتلة: بلاغان جديدان."
+    ],
+    [
+     "⛑️ وضع المسعفين",
+     "خريطة أخف افتراضيًا، وإزالة جهاز مفقود من الفريق."
+    ]
+   ],
+   "items_de": [
+    [
+     "👆 Schneller melden",
+     "Notfälle mit einem Tipp, sonst eine Gruppe und dann das Detail, wie bei Waze. Anzahl und Richtung vor dem Senden."
+    ],
+    [
+     "🎙️ Ton aufnehmen",
+     "Um eine Kontrolle oder Festnahme festzuhalten. 🎙️-Knopf auf der Karte: Die Aufnahme bleibt auf deinem Handy."
+    ],
+    [
+     "🕵️ Zivilpolizei",
+     "Neue Meldung mit Annäherungsalarm. Sie markiert einen Ort, auf den man achten sollte, nie eine Person."
+    ],
+    [
+     "🚇 Geschlossene Stationen, besetzte Orte",
+     "Geschlossene U-Bahn-, Tram- oder Bahnstationen, besetzte Unis oder Schulen: zwei neue Meldungen."
+    ],
+    [
+     "⛑️ Medic-Modus",
+     "Standardmäßig schlankere Karte, und ein verlorenes Gerät lässt sich aus dem Team entfernen."
+    ]
+   ]
+  },
+  {
    "version": "2.19",
    "items": [
     [

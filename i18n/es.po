@@ -4758,3 +4758,6 @@ msgstr "Volver"
 
 msgid "Envoyer sans préciser"
 msgstr "Enviar sin precisar"
+
+msgid "Contrôle, interpellation : garder une trace sur ton téléphone"
+msgstr "Control, detención: guarda constancia en tu teléfono"

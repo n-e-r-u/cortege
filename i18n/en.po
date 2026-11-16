@@ -4758,3 +4758,6 @@ msgstr "Back"
 
 msgid "Envoyer sans préciser"
 msgstr "Send without details"
+
+msgid "Contrôle, interpellation : garder une trace sur ton téléphone"
+msgstr "Stop, arrest: keep a record on your phone"

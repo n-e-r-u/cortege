@@ -1533,7 +1533,7 @@
       b.onclick = () => openFamily(f.id);
       fams.append(b);
     }
-    home.append(fams);
+    home.append(fams, el('button', { type: 'button', class: 'link-btn son-link', id: 'srSon', hidden: '' }, '🎙️ ' + t('Enregistrer le son')));
     grid.append(home, el('div', { class: 'cat-fam', hidden: '' }));
     catVis();
   })();
@@ -3625,7 +3625,8 @@
   // Un enregistrement se garde ici, se télécharge en fichier ou se partage (Signal…) depuis le téléphone.
   const SON_DB = 'cortege-son';
   const sonOk = !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.indexedDB);
-  $('#btnSon').hidden = !sonOk;
+  const SON_BTNS = ['#btnSon', '#btnSonMap', '#btnSonMore', '#srSon'];
+  for (const b of SON_BTNS) { $(b).hidden = !sonOk; $(b).onclick = openSon; }
   let son = null;       // enregistrement en cours : { mr, stream, id, t0, tick, lock }
   let sonUrls = [];     // adresses locales (blob:) des lecteurs affichés, libérées à chaque nouvel affichage
   let sonDbP = null;
@@ -3688,6 +3689,7 @@
     $('#sonGo').textContent = t(on ? '■ Arrêter' : '● Démarrer'); $('#sonGo').classList.toggle('on', on);
     $('#sonTime').hidden = !on; $('#sonTime').textContent = d;
     $('#sonChip').hidden = !on || !$('#sheetSon').hidden; $('#sonChipT').textContent = d;
+    $('#btnSonMap').classList.toggle('rec', on); $('#btnSonMap').setAttribute('aria-label', t(on ? 'Enregistrement en cours' : 'Enregistrer le son'));
   }
   async function sonBlob(r) {
     const parts = await sonTx('chunks', 'readonly', tx => tx.objectStore('chunks').index('rec').getAll(r.id));
@@ -3731,7 +3733,6 @@
     }
   }
   function openSon() { closeReport(); closeSheets(); $('#sheetSon').hidden = false; sonShow(); sonList(); }
-  $('#btnSon').onclick = openSon;
   $('#sonChip').onclick = openSon;
   $('#sonClose').onclick = () => { closeSheets(); sonShow(); };
   $('#sonGo').onclick = () => { if (son) sonStop(); else sonStart(); };

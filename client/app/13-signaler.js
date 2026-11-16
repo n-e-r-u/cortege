@@ -134,7 +134,7 @@
       b.onclick = () => openFamily(f.id);
       fams.append(b);
     }
-    home.append(fams);
+    home.append(fams, el('button', { type: 'button', class: 'link-btn son-link', id: 'srSon', hidden: '' }, '🎙️ ' + t('Enregistrer le son')));
     grid.append(home, el('div', { class: 'cat-fam', hidden: '' }));
     catVis();
   })();

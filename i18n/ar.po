@@ -4818,3 +4818,6 @@ msgstr "رجوع"
 
 msgid "Envoyer sans préciser"
 msgstr "إرسال دون تحديد"
+
+msgid "Contrôle, interpellation : garder une trace sur ton téléphone"
+msgstr "تفتيش، اعتقال: احتفظ بأثر على هاتفك"
