@@ -5012,3 +5012,116 @@ msgstr ""
 #: public/index.html
 msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
 msgstr ""
+
+msgid "Photo du signalement"
+msgstr ""
+
+msgid "Photo indisponible."
+msgstr ""
+
+msgid "Cachée au public après des signalements."
+msgstr ""
+
+msgid "Visible du public quand le point sera vérifié."
+msgstr ""
+
+msgid "Photo cachée après des signalements."
+msgstr ""
+
+msgid "Photo visible quand une orga aura vérifié le point."
+msgstr ""
+
+msgid "Signaler la photo"
+msgstr ""
+
+msgid "Remettre"
+msgstr ""
+
+msgid "Retirer la photo"
+msgstr ""
+
+msgid "Ajouter une photo (visages masqués)"
+msgstr ""
+
+msgid "📷 Ajouter une photo"
+msgstr ""
+
+msgid "Photo signalée : elle est cachée en attendant une orga."
+msgstr ""
+
+msgid "Photo signalée, merci."
+msgstr ""
+
+msgid "Photo retirée"
+msgstr ""
+
+msgid "Photo remise"
+msgstr ""
+
+msgid "Photo envoyée."
+msgstr ""
+
+msgid "Photo envoyée : visible quand une orga aura vérifié le point."
+msgstr ""
+
+msgid "Photo pour ton signalement"
+msgstr ""
+
+msgid "Les visages sont masqués ici, sur ton téléphone. Seule la photo masquée part sur Cortège, sans position GPS ni informations sur l’appareil. Elle est visible quand une orga a vérifié le point, et effacée du serveur au bout de 3 jours, sauf si elle est choisie pour le bilan public de la journée."
+msgstr ""
+
+msgid "Joindre au signalement"
+msgstr ""
+
+msgid "Choisir une photo"
+msgstr ""
+
+msgid "L’envoi a échoué. Réessaie."
+msgstr ""
+
+msgid "Pas de réseau : la photo n’est pas partie. Réessaie quand ça capte."
+msgstr ""
+
+#: src/photos.js
+msgid "Photo trop lourde : passe-la par le flouteur de Cortège."
+msgstr ""
+
+#: src/photos.js
+msgid "Ce n’est pas une photo JPEG."
+msgstr ""
+
+#: src/photos.js
+msgid "Photo illisible ou trop grande."
+msgstr ""
+
+#: src/photos.js
+msgid "Ce point a déjà 3 photos."
+msgstr ""
+
+#: src/photos.js
+msgid "Trop de photos en ce moment, réessaie plus tard."
+msgstr ""
+
+#: src/photos.js
+msgid "Trop de photos envoyées depuis ce téléphone, patiente un peu."
+msgstr ""
+
+#: src/photos.js
+msgid "Photo introuvable."
+msgstr ""
+
+#: src/routes/photos.js
+msgid "Format refusé."
+msgstr ""
+
+#: src/routes/photos.js
+msgid "Photo en attente de vérification."
+msgstr ""
+
+#: src/routes/photos.js
+msgid "Réservé aux orgas."
+msgstr ""
+
+#: src/routes/photos.js
+msgid "Photo déjà retirée."
+msgstr ""

@@ -102,6 +102,8 @@
   // Une photo : { file, bitmap (seulement la photo affichée), width, height, masks, history, pixelationNoise (tiré une fois),
   // status : en-attente | analyse | prete | erreur }
   let photos = [], current = 0, maskStyle = 'aplat', analysing = false, exporting = false, enginePromise = null;
+  // Photo pour un signalement (/flouter?signalement=…) : une seule photo, envoyée à Cortège une fois masquée, puis retour à la carte
+  const attachTo = (() => { const id = new URLSearchParams(location.search).get('signalement'); return /^[\w-]{1,16}$/.test(id || '') ? id : null; })();
 
   const editor = window.cortegeMaskEditor({ stage: ui.stage, content: ui.stageContent, layer: ui.maskLayer, toolbar: ui.tools,
     maskLabel: n => t('Masque {n} (activer pour le retirer)', { n }) }, (masks, change) => {
@@ -187,9 +189,10 @@
     ui.growMask.disabled = ui.shrinkMask.disabled = !canEdit || !editor.hasActive;
     ui.finalPreview.disabled = !isReady;
     ui.finalPreview.setAttribute('aria-pressed', String(editor.isFinalPreview));
-    ui.share.hidden = !shareAvailable;
-    ui.share.disabled = ui.save.disabled = !canExport;
-    ui.exportAll.hidden = photos.length < 2;
+    ui.share.hidden = !shareAvailable || !!attachTo;
+    ui.save.hidden = !!attachTo; ui.attach.hidden = !attachTo;
+    ui.share.disabled = ui.save.disabled = ui.attach.disabled = !canExport;
+    ui.exportAll.hidden = photos.length < 2 || !!attachTo;
     ui.exportAll.disabled = analysing || exporting || !readyCount;
     // Libellé court : il tient sur une ligne à 360 px
     ui.exportAll.textContent = readyCount ? tn(readyCount, 'Exporter {n} photo', 'Exporter les {n} photos') : t('Exporter les photos');
@@ -247,8 +250,10 @@
     } finally { analysing = false; hideProgress(); updateControls(); }
   }
   function addPhotos(files) {
-    const images = files.filter(f => f.type === '' || f.type.startsWith('image/'));
+    let images = files.filter(f => f.type === '' || f.type.startsWith('image/'));
     if (!images.length) return;
+    // Pour un signalement : une seule photo, la nouvelle remplace la précédente
+    if (attachTo) { images = images.slice(0, 1); if (photos.length) { for (const p of photos) { releaseBitmap(p); p.file = null; } photos = []; current = 0; } }
     const first = photos.length;
     photos.push(...images.map(file => ({ file, bitmap: null, width: 0, height: 0, masks: [], history: new F.MaskHistory(), pixelationNoise: F.createPixelationNoise(), status: 'en-attente' })));
     ui.status.textContent = '';
@@ -276,6 +281,23 @@
       removePhotos([photo]);
       showResult(t('Photo exportée : {name}.', { name: file.name }) + (isReduced ? ' ' + t('Elle a été réduite à {mp} millions de pixels.', { mp: decimal.format(F.MAX_EXPORT_PIXELS / 1e6) }) : ''));
     } catch { showResult(t('L’export a échoué. Réessaie.')); } finally { exporting = false; updateControls(); }
+  }
+  // Envoi de la photo masquée au signalement : une image plus légère, sans métadonnées, puis retour à la carte sur le point
+  async function attachCurrent() {
+    const photo = photos[current];
+    if (!photo?.bitmap || exporting || !attachTo) return;
+    exporting = true;
+    updateControls();
+    try {
+      const { file } = await F.exportMaskedPhoto(photo.bitmap, photo.masks, maskStyle, photo.pixelationNoise, { maxPixels: F.REPORT_MAX_PIXELS, quality: F.REPORT_JPEG_QUALITY });
+      let dev = ''; try { dev = localStorage.getItem('cortege-dev') || ''; } catch {}
+      const res = await fetch('/api/reports/' + attachTo + '/photo', { method: 'POST', headers: { 'Content-Type': 'image/jpeg', ...(dev ? { 'X-Device': dev } : {}) }, body: file });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return void showResult(body.error ? t(body.error) : t('L’envoi a échoué. Réessaie.'));
+      removePhotos([photo]);
+      location.replace('/?point=' + encodeURIComponent(attachTo) + '&photo=' + (body.p ? 'pub' : 'attente'));
+    } catch { showResult(navigator.onLine ? t('L’envoi a échoué. Réessaie.') : t('Pas de réseau : la photo n’est pas partie. Réessaie quand ça capte.')); }
+    finally { exporting = false; updateControls(); }
   }
   async function exportAll() {
     const ready = photos.filter(p => p.status === 'prete' && p.file);
@@ -340,6 +362,14 @@
   ui.finalPreview.addEventListener('click', () => { editor.showFinalPreview(!editor.isFinalPreview); updateControls(); });
   ui.share.addEventListener('click', () => exportCurrent(true));
   ui.save.addEventListener('click', () => exportCurrent(false));
+  ui.attach.addEventListener('click', attachCurrent);
+  if (attachTo) {
+    ui.attachInfo.hidden = false; ui.safeInfo.hidden = true;
+    ui.photosGalerie.removeAttribute('multiple'); ui.pickLabel.textContent = t('Choisir une photo');
+    document.querySelector('a.back')?.setAttribute('href', '/?point=' + encodeURIComponent(attachTo));
+    // Le moteur démarre tout de suite : la photo se prend souvent sur le moment
+    prepare().catch(() => {});
+  }
   ui.exportAll.addEventListener('click', exportAll);
   ui.prev.addEventListener('click', () => showPhoto(current - 1));
   ui.next.addEventListener('click', () => showPhoto(current + 1));

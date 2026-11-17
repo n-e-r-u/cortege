@@ -5040,3 +5040,117 @@ msgstr "<b>Blur faces</b><small>Prepare it before you leave: it then works witho
 #: public/index.html
 msgid "<a class=\"inline-link\" href=\"/flouter\">Flouter les visages d’une photo</a>"
 msgstr "<a class=\"inline-link\" href=\"/flouter\">Blur the faces in a photo</a>"
+
+msgid "Photo du signalement"
+msgstr "Report photo"
+
+msgid "Photo indisponible."
+msgstr "Photo unavailable."
+
+msgid "Cachée au public après des signalements."
+msgstr "Hidden from the public after reports."
+
+msgid "Visible du public quand le point sera vérifié."
+msgstr "Visible to the public once the point is verified."
+
+msgid "Photo cachée après des signalements."
+msgstr "Photo hidden after reports."
+
+msgid "Photo visible quand une orga aura vérifié le point."
+msgstr "Photo visible once an org has verified the point."
+
+msgid "Signaler la photo"
+msgstr "Report the photo"
+
+msgid "Remettre"
+msgstr "Restore"
+
+msgid "Retirer la photo"
+msgstr "Remove the photo"
+
+msgid "Ajouter une photo (visages masqués)"
+msgstr "Add a photo (faces hidden)"
+
+msgid "📷 Ajouter une photo"
+msgstr "📷 Add a photo"
+
+msgid "Photo signalée : elle est cachée en attendant une orga."
+msgstr "Photo reported: it is hidden until an org checks it."
+
+msgid "Photo signalée, merci."
+msgstr "Photo reported, thank you."
+
+msgid "Photo retirée"
+msgstr "Photo removed"
+
+msgid "Photo remise"
+msgstr "Photo restored"
+
+msgid "Photo envoyée."
+msgstr "Photo sent."
+
+msgid "Photo envoyée : visible quand une orga aura vérifié le point."
+msgstr "Photo sent: visible once an org has verified the point."
+
+msgid "Photo pour ton signalement"
+msgstr "Photo for your report"
+
+msgid "Les visages sont masqués ici, sur ton téléphone. Seule la photo masquée part sur Cortège, sans position GPS ni informations sur l’appareil. Elle est visible quand une orga a vérifié le point, et effacée du serveur au bout de 3 jours, sauf si elle est choisie pour le bilan public de la journée."
+msgstr "Faces are hidden here, on your phone. Only the masked photo goes to Cortège, without GPS location or device information. It is visible once an org has verified the point, and deleted from the server after 3 days, unless it is chosen for the day’s public report."
+
+msgid "Joindre au signalement"
+msgstr "Attach to the report"
+
+msgid "Choisir une photo"
+msgstr "Choose a photo"
+
+msgid "L’envoi a échoué. Réessaie."
+msgstr "Sending failed. Try again."
+
+msgid "Pas de réseau : la photo n’est pas partie. Réessaie quand ça capte."
+msgstr "No network: the photo was not sent. Try again when you have signal."
+
+# --- textes à traduire ---
+#: src/photos.js
+msgid "Photo trop lourde : passe-la par le flouteur de Cortège."
+msgstr "Photo too large: run it through Cortège’s blurring tool."
+
+#: src/photos.js
+msgid "Ce n’est pas une photo JPEG."
+msgstr "This is not a JPEG photo."
+
+#: src/photos.js
+msgid "Photo illisible ou trop grande."
+msgstr "Unreadable or oversized photo."
+
+#: src/photos.js
+msgid "Ce point a déjà 3 photos."
+msgstr "This point already has 3 photos."
+
+#: src/photos.js
+msgid "Trop de photos en ce moment, réessaie plus tard."
+msgstr "Too many photos right now, try again later."
+
+#: src/photos.js
+msgid "Trop de photos envoyées depuis ce téléphone, patiente un peu."
+msgstr "Too many photos sent from this phone, wait a bit."
+
+#: src/photos.js
+msgid "Photo introuvable."
+msgstr "Photo not found."
+
+#: src/routes/photos.js
+msgid "Format refusé."
+msgstr "Format refused."
+
+#: src/routes/photos.js
+msgid "Photo en attente de vérification."
+msgstr "Photo awaiting verification."
+
+#: src/routes/photos.js
+msgid "Réservé aux orgas."
+msgstr "Orgs only."
+
+#: src/routes/photos.js
+msgid "Photo déjà retirée."
+msgstr "Photo already removed."

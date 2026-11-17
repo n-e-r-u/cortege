@@ -132,10 +132,12 @@ pas de jeux d'argent.
 | Position précise | Collectée, facultative : l'endroit d'un signalement, et la position en direct d'une orga qui l'active. Fonctionnalité de l'appli. Non reliée à une identité |
 | Identifiants de l'appareil | Collectés : identifiant aléatoire anti-spam créé par l'appli (pas l'identifiant publicitaire). Prévention des abus |
 | Contenu généré par l'utilisateur | Collecté : signalements, annonces et propositions d'événements. Fonctionnalité de l'appli |
-| Tout le reste (nom, e-mail, contacts, photos, historique…) | Non collecté |
+| Photos | Collectées, facultatives : photo jointe à un signalement, visages masqués sur le téléphone avant l'envoi. Fonctionnalité de l'appli. Non reliée à une identité. Effacée au bout de 3 jours, sauf si elle est choisie pour un bilan public |
+| Tout le reste (nom, e-mail, contacts, historique…) | Non collecté |
 
 **Contenu généré par les utilisateurs** : Google demande un moyen de signaler un contenu abusif et une modération. Dans
-Cortège : « Faux / plus là » sur chaque signalement, vérification et retrait par les orgas, retrait par l'admin. Le dire dans
+Cortège : « Faux / plus là » sur chaque signalement, « Signaler la photo » sur chaque photo (cachée après 2 signalements),
+vérification et retrait par les orgas, retrait par l'admin. Une photo n'est publique qu'une fois le point vérifié. Le dire dans
 la déclaration.
 
 ## À savoir

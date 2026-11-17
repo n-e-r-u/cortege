@@ -165,6 +165,12 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
 .idea-admin .ib .controls { gap: 6px; }
 .idea-admin .ib input, .idea-admin .ib select { height: 36px; }
 .idea-admin .st-pending { border-left: 4px solid var(--danger); padding-left: 8px; }
+.dg-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.dg-photos figure { margin: 0; border: 2px solid transparent; border-radius: 12px; padding: 4px; }
+.dg-photos figure.kept { border-color: var(--accent); }
+.dg-photos img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; display: block; background: var(--surface-2); }
+.dg-photos figcaption { font-size: 12px; margin: 4px 0; }
+.dg-photos .controls { gap: 6px; }
 </style>
 </head>
 <body>
@@ -861,6 +867,11 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
     <label class="check digest-toggle"><input type="checkbox" id="dgAll" checked> Compter aussi les signalements retirés ou contestés</label>
     <div class="kpis" id="kpis"></div>
     <section class="card"><h2>Carte du jour</h2><div id="dgMap"></div><div class="legend" id="dgLegend"></div></section>
+    <section class="card" id="dgPhotos" hidden>
+      <h2>Photos du jour <span id="dgPhotoN"></span></h2>
+      <p class="fine" id="dgPhotoHint"></p>
+      <div class="dg-photos" id="dgPhotoList"></div>
+    </section>
     <section class="card">
       <h2>Carte d’un créneau (pour un média, une legal team)</h2>
       <form class="stack" id="slotForm">

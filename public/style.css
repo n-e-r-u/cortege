@@ -405,6 +405,13 @@ details.right b { color: var(--fg); }
 @keyframes son-pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--fdo-strong) 35%, transparent); } }
 @media (prefers-reduced-motion: reduce) { .round.son-tool.rec { animation: none; } }
 .son-link { display: block; margin: 12px auto 0; }
+.pop-photos { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; }
+.pop-photo { margin: 0; }
+.pop-photo img { display: block; width: 100%; max-height: 220px; object-fit: cover; border-radius: 10px; background: var(--surface-2); }
+.pop-photo.flagged img { opacity: .5; }
+.pop-photo figcaption { margin-top: 2px; }
+.pop-photo-acts { display: flex; gap: 12px; flex-wrap: wrap; }
+.danger-link { color: var(--fdo); }
 .son-go { width: 100%; padding: 16px; border-radius: 14px; border: 0; font-size: 17px; font-weight: 700; background: var(--fdo-strong); color: #fff; }
 .son-go.on { background: var(--surface-2); color: var(--fg); border: 2px solid var(--fdo-strong); }
 .son-time { text-align: center; font-size: 28px; font-variant-numeric: tabular-nums; margin: 8px 0; }

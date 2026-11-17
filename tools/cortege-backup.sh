@@ -1,6 +1,6 @@
 #!/bin/sh
 # Sauvegarde chiffrée de Cortège (à lancer en root, chaque nuit par le minuteur systemd).
-# Contenu : copie cohérente de la base, accès orga, clés de notification, archive du digest,
+# Contenu : copie cohérente de la base, accès orga, clés de notification, archive du digest, photos gardées pour les bilans publics,
 # clé de l'adresse .onion et fichiers de configuration. Pas la carte (re-téléchargeable).
 # Chiffrée avec age pour une clé publique : seule la clé secrète, gardée hors du serveur, peut l'ouvrir.
 set -eu
@@ -21,7 +21,7 @@ runuser -u "$APP_USER" -- env OUT="$T/data/cortege.db" SRC="$DATA/cortege.db" \
   node -e 'const {DatabaseSync}=require("node:sqlite");new DatabaseSync(process.env.SRC).exec(`VACUUM INTO \x27${process.env.OUT}\x27`)'
 
 for f in orgas.json medics.json vapid.json; do [ -e "$DATA/$f" ] && cp -a "$DATA/$f" "$T/data/"; done
-for d in archive lang i18n; do [ -d "$DATA/$d" ] && cp -a "$DATA/$d" "$T/data/"; done
+for d in archive lang i18n bilan-photos; do [ -d "$DATA/$d" ] && cp -a "$DATA/$d" "$T/data/"; done
 [ -d /var/lib/tor/cortege ] && cp -a /var/lib/tor/cortege "$T/tor-cortege"
 for f in /etc/cortege.env /etc/caddy/Caddyfile /etc/tor/torrc /etc/systemd/system/cortege.service; do
   [ -e "$f" ] && cp -a "$f" "$T/config/"

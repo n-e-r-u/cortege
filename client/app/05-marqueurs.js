@@ -100,6 +100,7 @@
     const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
     for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
     if (r.cat === 'contact') return root; // point de l'admin : ni précision, ni vote
+    root.append(photoBlock(r)); // photos (visages masqués) et « Ajouter une photo »
     // Ajouter une précision à un point déjà signalé
     const addBtn = el('button', { class: 'link-btn pop-add' }, '＋ ' + t('Ajouter une précision'));
     const form = el('form', { class: 'pop-note-form', hidden: '' });

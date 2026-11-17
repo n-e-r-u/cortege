@@ -449,6 +449,7 @@ async function adminRoutes(req, res, url, pathname) {
       try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.exec('VACUUM'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
       rebuildAll();
       try { require('../medic').wipe(); } catch {} // couche medic (en mémoire) : oubliée aussi
+      try { require('../photos').wipePhotos(b.pub === true); } catch (e) { left.push('photos'); console.error('photos', e.message); } // celles des bilans seulement avec eux
       console.log('effacement d’urgence effectué' + (left.length ? ` (${left.length} fichier(s) d’archive non effacé(s))` : ''));
       return send(res, left.length ? 500 : 200, { removed: n, rotated, pub: b.pub === true, left: left.length, ...(left.length ? { error: `${left.length} fichier(s) de l’archive n’ont pas pu être effacés : vérifie les droits du dossier.` } : {}) });
     }

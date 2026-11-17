@@ -2,6 +2,17 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.21.0 (en cours)
+
+**Flouteur** (proposé par MltStephane, PR #27) : masque les visages d'une photo sur le téléphone avant de la publier, sans rien envoyer. Détection automatique (même les petits visages d'une foule), correction au doigt, aplat noir ou pixellisation forte (pas de flou réversible), photo réenregistrée sans position GPS ni informations sur l'appareil, hors ligne une fois préparé, partage depuis la galerie. Corrigé avant la fusion : la bibliothèque de détection de Google (MediaPipe) envoie des statistiques d'utilisation à Google sans option pour les couper ; le worker du Flouteur a maintenant sa propre politique de sécurité, qui bloque toute requête hors du serveur (vérifié dans un navigateur : aucune requête vers Google pendant une détection).
+
+**Photos dans les signalements** : « 📷 Ajouter une photo » dans la fiche d'un point et juste après un signalement. La photo passe obligatoirement par le Flouteur.
+- Visible du public quand le point est vérifié par une orga ou vient d'un téléphone fiable ; avant, seulement les orgas et l'admin.
+- « Signaler la photo » : cachée au public après 2 signalements ; les orgas la remettent ou la retirent.
+- Gardée sur le serveur sans l'identifiant du téléphone, et effacée au bout de 3 jours (`PHOTO_KEEP_DAYS`).
+- Admin › Digest › Photos du jour : « Garder pour le bilan » l'affiche sans limite de durée sur la page publique du bilan.
+- Page de confidentialité et formulaire « Sécurité des données » du Play Store mis à jour.
+
 ## 2.20.0
 
 **Signaler comme sur Waze** : les urgences (charge, nasse, lacrymo) en un appui, puis 6 familles (Police, Lacrymo et tirs, Charge et nasse, Fachos, Soutien, Cortège et blocages). Une famille s'ouvre sur ses précisions ; Police, lacrymo, charge et fachos peuvent aussi partir sans préciser. Le nombre et la direction se donnent sur le même écran, avant l'envoi. Rien ne change côté serveur.

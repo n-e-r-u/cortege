@@ -18,6 +18,7 @@
   let noteFor = null;
   function openNoteCard(id, cat, title, given = {}) {
     noteFor = id;
+    $('#notePhoto').href = '/flouter?signalement=' + encodeURIComponent(id);
     $('#noteTitle').textContent = '✓ ' + title;
     $('#noteInput').value = ''; $('#noteInput').placeholder = notePlaceholder(cat);
     $('#noteCard').hidden = false;

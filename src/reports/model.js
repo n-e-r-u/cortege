@@ -41,7 +41,8 @@ function addNote(r, text, dev, t) {
 }
 // tr : trace de la tête ou de la queue (positions arrondies à ~11 m, heures en secondes) ; live : position partagée en direct par une orga
 const trailView = r => { if (!TRAIL_CATS.has(r.cat)) return {}; const tr = parseTrail(r); return tr.length ? { tr: tr.map(p => [p[0], p[1], Math.round(p[2] / 1000)]) } : {}; };
-const publicView = r => ({ ...trailView(r), ...dirView(r), ...(r.cnt && COUNT_CATS.has(r.cat) ? { n: r.cnt } : {}), ...(r.bk ? { live: 1 } : {}), id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
+// ph : photos du point (src/photos.js), chargé à l'usage pour éviter une boucle entre modules
+const publicView = r => ({ ...require('../photos').phView(r), ...trailView(r), ...dirView(r), ...(r.cnt && COUNT_CATS.has(r.cat) ? { n: r.cnt } : {}), ...(r.bk ? { live: 1 } : {}), id: r.id, cat: r.cat, lat: r.lat, lng: r.lng, note: r.note,
   notes: (Array.isArray(r.notes) ? r.notes : parseNotes(r)).map(n => ({ x: n.x, t: n.t })), t: r.t, last: r.last || r.t, exp: r.exp, up: r.up, down: r.down, ver: r.ver || null, ...(r.ct ? { c: 1 } : {}), ...(r.fl === 1 ? { f: 1 } : r.fl === -1 && !r.up ? { nf: 1 } : {}) });
 
 module.exports = { authorOf, parseNotes, parseTrail, toReport, TRAIL_CATS, TRAIL_MS, TRAIL_MAX, BEACON_ROLES, BEACON_TTL, BEACON_MAX, BEACON_ZONE_M, addTrail, NOTES_KEEP, addNote, trailView, publicView, DIR_MS, bearing45 };

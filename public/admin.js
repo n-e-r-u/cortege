@@ -417,7 +417,7 @@ $('#form').addEventListener('submit', async e => {
     const res = await fetch('/api/digest?date=' + date, { headers: { 'X-Admin-Key': KEY } });
     const d = await res.json();
     if (!res.ok) { $('#msg').textContent = d.error || 'Erreur.'; $('#out').hidden = true; return; }
-    dg = d; renderDigest();
+    dg = d; renderDigest(); dgPhotos(date);
   } catch { $('#msg').textContent = 'Pas de réseau.'; }
 });
 $('#dgAll').addEventListener('change', () => dg && renderDigest());
@@ -594,6 +594,33 @@ $('#copy').addEventListener('click', async () => {
   setTimeout(() => ($('#copy').textContent = 'Copier le résumé'), 2000);
 });
 
+// ---- Photos du jour (2.21) : visages masqués sur le téléphone avant l'envoi. Effacées au bout de quelques jours, sauf celles
+// que l'admin garde pour le bilan public de la journée (permanentes sur /manif/<date>).
+const dgPhotoUrls = new Map();
+async function dgPhotos(date) {
+  const box = $('#dgPhotoList');
+  let d; try { d = await api('/api/admin/photos?date=' + date); } catch { $('#dgPhotos').hidden = true; return; }
+  const list = d.photos || [];
+  $('#dgPhotos').hidden = !list.length; if (!list.length) return;
+  const kept = list.filter(p => p.st === 'kept').length;
+  $('#dgPhotoN').textContent = `(${list.length})`;
+  $('#dgPhotoHint').textContent = `Effacées du serveur ${d.keepDays} jours après l’envoi, sauf celles gardées pour le bilan public (${kept} gardée${kept > 1 ? 's' : ''}). Une photo gardée reste en ligne sur la page du bilan, sans limite de durée : vérifie qu’aucun visage, tatouage ou signe distinctif n’y reste.`;
+  box.textContent = '';
+  for (const p of list) {
+    const img = document.createElement('img'); img.alt = 'Photo';
+    const fig = document.createElement('figure'); fig.className = p.st === 'kept' ? 'kept' : '';
+    const cap = document.createElement('figcaption');
+    cap.textContent = `${hhmm(p.t)} · ${p.cat}${p.st === 'flag' ? ' · signalée' : ''}${p.st === 'kept' ? ' · sur le bilan' : ''}`;
+    const keep = btn(p.st === 'kept' ? 'Retirer du bilan' : 'Garder pour le bilan', p.st === 'kept' ? 'ghost' : '');
+    keep.onclick = async () => { keep.disabled = true; try { await api('/api/admin/photos/' + p.id + '/keep', { method: 'POST', body: JSON.stringify({ keep: p.st !== 'kept' }) }); dgPhotos(date); } catch (e) { alertMsg(e.message); keep.disabled = false; } };
+    const del = btn('Supprimer', 'danger');
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/photos/' + p.id + '/remove', { method: 'POST', body: '{}' }); dgPhotos(date); });
+    const row = document.createElement('div'); row.className = 'controls'; row.append(keep, del);
+    fig.append(img, cap, row); box.append(fig);
+    (dgPhotoUrls.has(p.id) ? Promise.resolve(dgPhotoUrls.get(p.id)) : fetch('/api/photos/' + p.id, { headers: { 'X-Admin-Key': KEY } }).then(r => r.ok ? r.blob() : Promise.reject(new Error(r.status))).then(b => { const u = URL.createObjectURL(b); dgPhotoUrls.set(p.id, u); return u; }))
+      .then(u => { img.src = u; }).catch(() => { img.replaceWith(Object.assign(document.createElement('p'), { className: 'fine', textContent: 'Photo indisponible.' })); });
+  }
+}
 // ---- Annuaire des legal teams ----
 async function loadBadges() {
   try {

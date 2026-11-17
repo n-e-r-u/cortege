@@ -40,7 +40,7 @@ svg{width:100%;height:auto;display:block}.bmap text{fill:var(--fg);stroke:var(--
 .fine{color:var(--muted);font-size:13px}.cta{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:18px}.cta a{display:block;text-align:center;padding:14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-weight:700}
 .cta a.main{background:var(--brand-grad);color:var(--grad-fg);border:0}
 nav.links{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}nav.links a{padding:6px 10px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-size:13px}nav.links a[aria-current]{border-color:var(--accent);color:var(--accent)}
-ul.tl{list-style:none;padding:0;margin:0}ul.tl li{padding:6px 0;border-bottom:1px solid var(--line)}ul.tl time{display:inline-block;min-width:64px;color:var(--accent);font-variant-numeric:tabular-nums;font-weight:700}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.photos figure{margin:0}.photos img{width:100%;height:auto;border-radius:10px;display:block}.photos figcaption{font-size:13px;color:var(--muted);margin-top:4px}ul.tl{list-style:none;padding:0;margin:0}ul.tl li{padding:6px 0;border-bottom:1px solid var(--line)}ul.tl time{display:inline-block;min-width:64px;color:var(--accent);font-variant-numeric:tabular-nums;font-weight:700}
 ul.orders{padding-left:18px}ul.orders>li{margin:10px 0}ul.orders ul{margin:4px 0;padding-left:18px}.rights details{border-bottom:1px solid var(--line);padding:8px 0}.rights summary{font-weight:700;cursor:pointer}ul.days{list-style:none;padding:0}ul.days li{margin:8px 0}ul.days a{display:flex;justify-content:space-between;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--fg);text-decoration:none}`;
 function pubShell(req, { title, desc, body, ld }) {
   const BRAND = instance().brand;
@@ -107,6 +107,7 @@ ${pubRank(d)}
 ${d.cities.length > 12 ? `<p class="fine">+ ${d.cities.length - 12} autres ${d.communes ? 'communes' : 'villes. Chaque ville compte aussi les communes voisines de son agglomération'}.</p>` : ''}
 ${pages.size ? `<p class="fine">Page détaillée pour chaque ville d’au moins ${CITY_PAGE_MIN} signalements : ${[...pages].map(([n, s]) => `<a href="/manif/${d.date}/${s}">${htmlEsc(n)}</a>`).join(', ')}.</p>` : ''}
 ${d.abroad ? `<p class="fine">${d.abroad} ${d.abroad > 1 ? 'signalements envoyés' : 'signalement envoyé'} hors de France, non ${d.abroad > 1 ? 'comptés' : 'compté'} ici.</p>` : ''}</section>
+${photosSection(d.date)}
 ${d.moments && d.moments.length ? `<section><h2>Moments clés</h2><p class="fine">Le premier signalement de chaque danger, ville par ville.</p>${momentsHtml(d.moments.slice(0, 30), true)}</section>` : ''}
 ${durs.length ? `<section><h2>Combien de temps</h2><p class="fine">Durée pendant laquelle chaque danger est resté signalé (les signalements qui se chevauchent ne comptent qu’une fois).</p>
 ${durs.map(([c, l]) => `<p><b>${cityName(c)}</b> : ${l.map(([k, m]) => `${htmlEsc(catTxt(k))} ${fmtMin(m)}`).join(' · ')}</p>`).join('')}</section>` : ''}
@@ -126,6 +127,14 @@ ${dataSection(d)}`;
     creator: { '@type': 'Organization', name: 'Cortège' }, temporalCoverage: d.date, spatialCoverage: 'France', isAccessibleForFree: true,
     distribution: d.pts ? [{ '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: PUBLIC_URL_REAL(req) + `/manif/${d.date}/donnees.csv` }] : undefined };
   return pubShell(req, { title, desc, body, ld });
+}
+// Photos de la journée choisies par l'admin (visages masqués sur le téléphone avant l'envoi) : permanentes sur le bilan
+function photosSection(date) {
+  let list = []; try { list = require('../photos').keptPhotos(date); } catch {}
+  if (!list.length) return '';
+  return `<section><h2>Photos</h2><p class="fine">Envoyées par des manifestant·es avec leur signalement, visages masqués sur leur téléphone, choisies pour ce bilan.</p>
+<div class="photos">${list.map(p => `<figure><a href="/bilans/photo/${p.id}.jpg"><img src="/bilans/photo/${p.id}.jpg" width="${p.w}" height="${p.h}" loading="lazy" alt="${htmlEsc(catTxt(p.cat))}"></a>
+<figcaption>${htmlEsc(catTxt(p.cat))} · ${frHour(p.t)}</figcaption></figure>`).join('')}</div></section>`;
 }
 const dataSection = d => d.pts ? `<section><h2>Données ouvertes</h2><p>Tous les signalements de la journée, un par ligne : type, heures de début et de fin, position (à une dizaine de mètres), commune, confirmations, vérification, devenir.</p>
 <div class="cta" style="grid-template-columns:1fr"><a href="/manif/${d.date}/donnees.csv" download>Télécharger les données (CSV)</a></div>

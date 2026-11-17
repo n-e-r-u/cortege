@@ -109,11 +109,21 @@ Dans l'onglet Digest, « Fabriquer les stories » produit 7 visuels 1080 × 1920
 - **Carte à intégrer** (`/embed.html?lat=…&lng=…&z=…`, et `&theme=clair` ou `&theme=sombre` au choix) : lecture seule, sans géolocalisation des visiteur·ices, dans une iframe. C'est la seule page autorisée dans un autre site.
 - **Nouveautés** : `public/nouveautes.json`, affiché une fois après chaque nouvelle version ; historique dans [`CHANGELOG.md`](../CHANGELOG.md).
 
+## Photos des signalements
+
+Depuis la fiche d'un point (« 📷 Ajouter une photo (visages masqués) ») ou juste après l'envoi d'un signalement : le Flouteur s'ouvre en mode « Joindre au signalement » (`/flouter?signalement=…`). Il n'y a pas d'autre chemin : la photo passe toujours par la détection et la vérification des masques.
+
+- **Envoi** : une seule photo à la fois, réduite à 1,9 million de pixels (JPEG qualité 0,8, quelques centaines de Ko), sans métadonnées. Le serveur refuse ce qui n'est pas un JPEG, au-delà de 900 Ko ou de 2560 pixels de côté, retire encore tout segment de métadonnées, et limite à 3 photos par point et 6 par téléphone et par heure (3000 photos en attente au plus, `PHOTO_MAX`).
+- **Gardé** : l'image (`photos/` dans le dossier de données, hors sauvegarde), le point, son type, l'heure, la position arrondie à ~100 m, le jour. Jamais l'identifiant du téléphone qui l'envoie.
+- **Visibilité** : publique (`/api/photos/<id>`) quand le point est vérifié par une orga ou vient d'un téléphone fiable, et tant qu'il est actif. Avant : seulement les orgas et l'admin (avec leur clé). « Signaler la photo » par 2 téléphones la cache au public ; une orga ou l'admin la remet ou la retire.
+- **Durée** : effacée 3 jours après l'envoi (`PHOTO_KEEP_DAYS`), avec le fichier. Admin › Digest › Photos du jour : « Garder pour le bilan » la range dans `bilan-photos/` (sauvegardé) et l'affiche sans limite de durée sur la page publique du bilan (`/manif/<date>`, `/bilans/photo/<id>.jpg`). L'effacement d'urgence supprime toutes les photos en attente, et celles des bilans seulement si les bilans sont effacés aussi.
+- **Réquisitions** : tant qu'elle est sur le serveur, une photo peut être demandée par la justice. La page de confidentialité le dit.
+
 ## Flouteur
 
 `/flouter` (Plus › Avant de partir, et Droits › Filmer) masque les visages d'une photo avant de la publier.
 
-- **Rien n'est envoyé.** La photo est décodée, analysée, masquée et réenregistrée sur le téléphone. Elle n'est gardée nulle part (ni IndexedDB, ni cache) ; seule la photo affichée reste décodée en mémoire, et une photo exportée quitte la liste.
+- **Rien n'est envoyé** (sauf une photo jointe à un signalement, voir plus haut). La photo est décodée, analysée, masquée et réenregistrée sur le téléphone. Elle n'est gardée nulle part (ni IndexedDB, ni cache) ; seule la photo affichée reste décodée en mémoire, et une photo exportée quitte la liste.
 - **Détection** : MediaPipe (modèle BlazeFace « full range »), dans un worker quand le navigateur sait y dessiner (`OffscreenCanvas`), sinon sur la page elle-même : c'est pour ce repli que seule cette page autorise `'wasm-unsafe-eval'` dans sa politique de sécurité. La photo est réduite à 2048 px de grand côté, analysée entière puis en tuiles de 1024, 512 et 256 px qui se recouvrent de 25 % (pour les petits visages d'une foule), puis les doublons sont fusionnés. Chaque masque déborde de 40 % du visage détecté (cheveux, oreilles, menton). Réglages : `DETECTION_SETTINGS` dans `public/flouter-lib.js`.
 - **Correction à la main** : toucher une zone vide ajoute un masque, toucher un masque le retire, le glisser le déplace, sa poignée le redimensionne, deux doigts zooment ; boutons de zoom et de taille, aperçu final, annulation (30 actions), et tout au clavier. Aplat noir par défaut, ou pixellisation forte : un flou classique peut s'inverser. La pixellisation garde au plus 6 blocs sur la largeur du masque et décale chaque bloc d'un bruit aléatoire (jusqu'à ±32 par canal, tiré une fois par photo avec `crypto.getRandomValues`) : on ne peut pas pixelliser la photo d'un suspect de la même façon et comparer.
 - **Export** : JPEG réencodé (qualité 0,9), sans aucun segment APP1 à APP15 (EXIF, position GPS, XMP, IPTC) ni commentaire, sous un nom aléatoire (`photo-7f3a9c.jpg`), réduit au-delà de 16,8 millions de pixels. Feuille de partage du téléphone si possible, sinon téléchargement ; plusieurs photos d'un coup.

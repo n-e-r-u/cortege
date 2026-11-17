@@ -41,7 +41,7 @@ function dropReport(id, outcome) {
 // Retiré par son auteur (posé par erreur) : supprimé sans laisser de trace dans l'archive ni dans les bilans
 function discardReport(id) {
   const r = q('DELETE FROM reports WHERE id=? RETURNING cell').get(id);
-  if (r) dirtyCell(r.cell);
+  if (r) { dirtyCell(r.cell); require('../photos').dropFor(id); }
   return !!r;
 }
 

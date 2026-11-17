@@ -35,6 +35,7 @@ const ROUTES = [
   require('./src/routes/ideas').ideasRoutes,         // boîte à idées (avant l'admin : /api/admin/ideas est traité ici)
   require('./src/routes/social').socialRoutes,       // partage sur Bluesky et Mastodon (/api/admin/social…)
   require('./src/routes/medic').medicRoutes,         // mode medic : carte privée des équipes (/api/medic/…, /api/admin/medics…)
+  require('./src/routes/photos').photosRoutes,       // photos jointes aux signalements (/api/reports/…/photo, /api/photos/…, /api/admin/photos…)
   require('./src/routes/github').githubRoutes,       // retour des tickets GitHub des idées (/api/github/webhook)
   require('./src/routes/admin').adminRoutes,          // /api/admin/…
   require('./src/routes/reports').reportsRoutes,      // signalements, votes, précisions, propositions
@@ -80,7 +81,9 @@ const server = http.createServer(async (req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     const site = req.headers['sec-fetch-site'];
     if (site && site !== 'same-origin' && site !== 'none') return send(res, 403, { error: 'Requête refusée.' });
-    if (!/^application\/json\b/i.test(String(req.headers['content-type'] || ''))) return send(res, 415, { error: 'Format refusé.' });
+    // Seule exception : la photo d'un signalement, envoyée telle quelle en JPEG (vérifiée par sa route)
+    const photo = req.method === 'POST' && /^\/api\/reports\/[\w-]{1,16}\/photo$/.test(pathname) && /^image\/jpeg$/i.test(String(req.headers['content-type'] || ''));
+    if (!photo && !/^application\/json\b/i.test(String(req.headers['content-type'] || ''))) return send(res, 415, { error: 'Format refusé.' });
   }
 
   // HEAD (outils de surveillance, aperçus de liens) : comme GET, sans le corps. Jamais pour l'API.

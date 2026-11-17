@@ -223,11 +223,13 @@
   const createRandomPhotoName = () => 'photo-' + [...crypto.getRandomValues(new Uint8Array(3))].map(b => b.toString(16).padStart(2, '0')).join('') + '.jpg';
   // Redessine l'original avec ses masques (style : celui de drawMaskedImage) et le réencode en JPEG : les métadonnées de la
   // photo d'origine disparaissent
-  async function exportMaskedPhoto(source, masks, style, noise) {
-    const size = computeExportSize(source.width, source.height), canvas = createCanvas(size.width, size.height);
+  // Photo jointe à un signalement (envoyée au serveur) : plus petite et plus légère qu'un export gardé sur le téléphone
+  const REPORT_MAX_PIXELS = 1600 * 1200, REPORT_JPEG_QUALITY = 0.8;
+  async function exportMaskedPhoto(source, masks, style, noise, { maxPixels = MAX_EXPORT_PIXELS, quality = JPEG_QUALITY } = {}) {
+    const size = computeExportSize(source.width, source.height, maxPixels), canvas = createCanvas(size.width, size.height);
     drawMaskedImage(canvas.getContext('2d'), source, masks, style, noise);
-    const encoded = 'convertToBlob' in canvas ? await canvas.convertToBlob({ type: 'image/jpeg', quality: JPEG_QUALITY })
-      : await new Promise((ok, ko) => canvas.toBlob(b => b ? ok(b) : ko(new Error('Encodage JPEG impossible.')), 'image/jpeg', JPEG_QUALITY));
+    const encoded = 'convertToBlob' in canvas ? await canvas.convertToBlob({ type: 'image/jpeg', quality })
+      : await new Promise((ok, ko) => canvas.toBlob(b => b ? ok(b) : ko(new Error('Encodage JPEG impossible.')), 'image/jpeg', quality));
     const clean = removeJpegMetadata(new Uint8Array(await encoded.arrayBuffer()));
     canvas.width = canvas.height = 0; // libère tout de suite la mémoire de la grande image
     return { file: new File([clean], createRandomPhotoName(), { type: 'image/jpeg' }), isReduced: size.isReduced };
@@ -251,7 +253,7 @@
   const lib = { FLOUTEUR_CACHE, VISION_BUNDLE_URL, MODEL_URL, ENGINE_FILES, ENGINE_DOWNLOAD_MB, PAGE_FILES,
     clampRectToImage, computeTileOrigins, createTiles, createDetectionTiles, mergeDetections, DETECTION_SETTINGS, createFaceDetector, detectFacesInFile,
     MASK_GROWTH_FACTOR, expandBox, facesToMasks, pixelationBlockSize, PIXELATION_NOISE_AMPLITUDE, createPixelationNoise, addPixelationNoise, drawMaskedImage,
-    MAX_EXPORT_PIXELS, computeExportSize, removeJpegMetadata, createRandomPhotoName, exportMaskedPhoto, MASK_HISTORY_LIMIT, MaskHistory };
+    MAX_EXPORT_PIXELS, REPORT_MAX_PIXELS, REPORT_JPEG_QUALITY, computeExportSize, removeJpegMetadata, createRandomPhotoName, exportMaskedPhoto, MASK_HISTORY_LIMIT, MaskHistory };
   if (typeof module === 'object' && module.exports) module.exports = lib;
   if (root) root.cortegeFlouteur = lib;
 })(typeof self !== 'undefined' ? self : null);

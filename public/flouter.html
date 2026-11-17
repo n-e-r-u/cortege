@@ -106,7 +106,13 @@ legend { padding: 0 4px; font-weight: 700; }
     <h1>Flouter les visages</h1>
     <p class="lead">Masque les visages de tes photos avant de les publier.</p>
   </div>
-  <div class="safe">
+  <div class="safe attach" id="attachInfo" hidden>
+    <div>
+      <p class="safe-title">Photo pour ton signalement</p>
+      <p>Les visages sont masqués ici, sur ton téléphone. Seule la photo masquée part sur Cortège, sans position GPS ni informations sur l’appareil. Elle est visible quand une orga a vérifié le point, et effacée du serveur au bout de 3 jours, sauf si elle est choisie pour le bilan public de la journée.</p>
+    </div>
+  </div>
+  <div class="safe" id="safeInfo">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>
     <div>
       <p class="safe-title">Rien ne sort de ton téléphone</p>
@@ -129,7 +135,7 @@ legend { padding: 0 4px; font-weight: 700; }
 
     <section class="pick" aria-label="Choisir des photos">
       <input class="photo-input sr-only" id="photosGalerie" type="file" accept="image/*" multiple>
-      <label class="btn" for="photosGalerie">Choisir des photos</label>
+      <label class="btn" for="photosGalerie" id="pickLabel">Choisir des photos</label>
       <input class="photo-input sr-only" id="photoCamera" type="file" accept="image/*" capture="environment">
       <label class="btn ghost" for="photoCamera">Prendre une photo</label>
     </section>
@@ -177,6 +183,7 @@ legend { padding: 0 4px; font-weight: 700; }
       <div class="export">
         <button type="button" id="share" hidden>Partager la photo</button>
         <button type="button" id="save">Enregistrer la photo</button>
+        <button type="button" id="attach" hidden>Joindre au signalement</button>
         <button type="button" class="ghost" id="exportAll" hidden>Exporter les photos</button>
         <p class="fine">La photo exportée est une nouvelle image, sans position GPS ni informations sur l’appareil.</p>
       </div>
