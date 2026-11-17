@@ -2,7 +2,7 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
-## 2.22.0 (en cours)
+## 2.22.0
 
 **Plus léger au démarrage** : ce que peu de téléphones utilisent n'est plus téléchargé par tout le monde.
 - **Espace orga, enregistreur de son et boîte à idées chargés à la demande** (comme l'écran medic) : leur script et leur fiche n'arrivent que sur un téléphone qui a une clé d'orga, au premier appui sur 🎙️ ou à la première ouverture des idées. L'enregistreur est gardé d'avance par le service worker, pour s'ouvrir aussi sans réseau.

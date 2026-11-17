@@ -1,6 +1,99 @@
 {
  "history": [
   {
+   "version": "2.22",
+   "items": [
+    [
+     "⚡ Plus léger au démarrage",
+     "L’appli charge moins de choses à l’ouverture : ce qui sert rarement n’arrive que quand tu t’en sers. Utile quand le réseau sature."
+    ],
+    [
+     "👋 Présentation en trois écrans",
+     "Se situer, signaler, régler les alertes. À revoir dans Plus, pratique pour montrer l’appli à quelqu’un."
+    ],
+    [
+     "📷 Photos à vérifier",
+     "Orgas : une pastille sur la carte indique les points dont la photo attend ta vérification."
+    ],
+    [
+     "🖨️ Code de secours",
+     "L’impression du code de secours est recadrée, avec la date et le type d’accès."
+    ]
+   ],
+   "items_en": [
+    [
+     "⚡ Lighter at start-up",
+     "The app loads less when it opens: what is rarely used only arrives when you use it. Useful when the network is saturated."
+    ],
+    [
+     "👋 Three-screen introduction",
+     "Locate yourself, report, set up alerts. See it again in More, handy for showing the app to someone."
+    ],
+    [
+     "📷 Photos to verify",
+     "Orgs: a badge on the map shows the points whose photo is waiting for your verification."
+    ],
+    [
+     "🖨️ Recovery code",
+     "Printing the recovery code is now properly framed, with the date and the type of access."
+    ]
+   ],
+   "items_es": [
+    [
+     "⚡ Más ligera al abrir",
+     "La app carga menos cosas al abrirse: lo que se usa poco solo llega cuando lo usas. Útil cuando la red se satura."
+    ],
+    [
+     "👋 Presentación en tres pantallas",
+     "Ubicarte, avisar, configurar las alertas. Puedes volver a verla en Más, práctica para enseñar la app a alguien."
+    ],
+    [
+     "📷 Fotos por verificar",
+     "Organizaciones: una marca en el mapa indica los puntos cuya foto espera tu verificación."
+    ],
+    [
+     "🖨️ Código de emergencia",
+     "La impresión del código de emergencia sale bien encuadrada, con la fecha y el tipo de acceso."
+    ]
+   ],
+   "items_ar": [
+    [
+     "⚡ أخفّ عند الفتح",
+     "يحمّل التطبيق أشياء أقل عند فتحه: ما يُستعمل نادرًا لا يصل إلا عند استعماله. مفيد عند ازدحام الشبكة."
+    ],
+    [
+     "👋 تعريف في ثلاث شاشات",
+     "حدّد موقعك، أبلِغ، اضبط التنبيهات. يمكن إعادة عرضه من «المزيد»، وهو مفيد لتعريف شخص بالتطبيق."
+    ],
+    [
+     "📷 صور بانتظار التحقّق",
+     "للمنظّمين: علامة على الخريطة تدلّ على النقاط التي تنتظر صورتها تحقّقك."
+    ],
+    [
+     "🖨️ رمز الاسترداد",
+     "طباعة رمز الاسترداد صارت مضبوطة الإطار، مع التاريخ ونوع الوصول."
+    ]
+   ],
+   "items_de": [
+    [
+     "⚡ Leichter beim Start",
+     "Die App lädt beim Öffnen weniger: Was selten gebraucht wird, kommt erst, wenn du es nutzt. Hilfreich bei überlastetem Netz."
+    ],
+    [
+     "👋 Einführung in drei Schritten",
+     "Standort zeigen, melden, Warnungen einstellen. Unter Mehr noch einmal ansehen, praktisch, um die App jemandem zu zeigen."
+    ],
+    [
+     "📷 Fotos zu prüfen",
+     "Orgas: Ein Hinweis auf der Karte zeigt die Punkte, deren Foto auf deine Prüfung wartet."
+    ],
+    [
+     "🖨️ Notfallcode",
+     "Der Ausdruck des Notfallcodes ist jetzt richtig ausgerichtet, mit Datum und Art des Zugangs."
+    ]
+   ]
+  },
+  {
    "version": "2.21",
    "items": [
     [
