@@ -92,6 +92,7 @@
   <div class="net-bar" id="netBar" hidden role="status"></div>
   <div class="ann urgent" id="pauseBanner" hidden role="status"><div class="ann-text">Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable.</div></div>
   <div id="ordBar" hidden></div>
+  <div class="ann test-band" id="testBand" hidden><a class="ann-text" id="testBandLink" target="_blank" rel="noopener noreferrer">🤖 Cortège arrive sur le Play Store : deviens testeur·se Android →</a><button type="button" class="ann-x" id="testBandX" aria-label="Masquer ce bandeau">×</button></div>
   <div id="anns" class="anns" aria-live="polite"></div>
 </div>
 
@@ -291,6 +292,12 @@
     <img class="ig-logo" src="/brand/logo.png" alt="" width="44" height="44">
     <span class="ig-txt"><b>Suivre <span class="handle">@neru</span> sur Instagram</b><small>Pas un accident. Un système. Une chronique chaque jour.</small></span>
     <span class="ig-follow">Suivre</span>
+  </a>
+
+  <a class="test-card" id="testCard" hidden target="_blank" rel="noopener noreferrer">
+    <b>🤖 Cortège arrive sur le Play Store</b>
+    <span>Avant la sortie, Google exige un test fermé : au moins 12 personnes qui gardent l’appli installée 14 jours. Tu as un téléphone Android ? Inscris-toi.</span>
+    <span class="tc-btn">Je participe au test →</span>
   </a>
 
   <button type="button" class="tile wide tile-manif" id="btnManif"><span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg></span><span><b>Passer en mode manif</b><small>Carte, Signaler, SOS et legal team. Rien d’autre.</small></span></button>

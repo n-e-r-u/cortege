@@ -44,6 +44,8 @@ function cleanSettings(b) {
   }
   const ar = Math.round(Number(b.alertRadius)); if (ar >= 50 && ar <= 2000) s.alertRadius = ar;
   const nk = Number(b.nearKm); if (nk >= 1 && nk <= 50) s.nearKm = Math.round(nk);
+  // Page d'inscription au test fermé du Play Store (bandeau sur Android et cadre dans Plus) ; vide = rien d'affiché
+  const at = str(b.androidTest, 300); if (/^https:\/\/[^\s"<>]{4,290}$/.test(at)) s.androidTest = at;
   const al = str(b.adminLabel, 40);
   if (al.length >= 2 && !readOrgas().some(o => labelKey(o.label) === labelKey(al)) && !ORGAS.some(o => labelKey(o.label) === labelKey(al))) s.adminLabel = al;
   return s;

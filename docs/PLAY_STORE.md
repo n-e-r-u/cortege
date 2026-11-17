@@ -62,6 +62,8 @@ dans `android/twa-manifest.json`, puis relancer.
    Redémarrer Cortège et vérifier `https://<ton instance>/.well-known/assetlinks.json`. Sans ce fichier, l'appli s'ouvre
    quand même, mais avec une barre d'adresse en haut.
 5. Remplir la fiche et les formulaires (section suivante), puis demander l'accès à la production après les 14 jours.
+6. Pour trouver les testeur·ses : Admin › Réglages › « Test de l’appli Android », le lien de ta page d’inscription. Un bandeau
+   s’affiche sur les téléphones Android et un cadre dans Plus ; vide le champ une fois l’appli publiée.
 
 ## 4. Fiche du Play Store
 

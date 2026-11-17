@@ -21,6 +21,7 @@
       try { localStorage.setItem('cortege-config', JSON.stringify(c)); } catch {}
       cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
       ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
+      cfg.androidTest = c.androidTest || null; testShow();
       for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
       catVis(); if (famOpen) openFamily(famOpen);
       // Pays, types ou marque changés dans l'admin : appliqués en rechargeant l'appli dès qu'elle passe en arrière-plan

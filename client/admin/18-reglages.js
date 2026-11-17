@@ -10,6 +10,7 @@ async function loadSettings() {
   $('#setRadius').value = s.alertRadius || ''; $('#setRadius').placeholder = df.alertRadius;
   $('#setNear').value = s.nearKm || ''; $('#setNear').placeholder = df.nearKm;
   $('#setAdminLabel').value = s.adminLabel || '';
+  $('#setAndroidTest').value = s.androidTest || '';
   const box = $('#setCats'); box.textContent = '';
   for (const c of setData.categories) {
     const on = document.createElement('label'); on.className = 'check';
@@ -27,7 +28,7 @@ $('#setForm').addEventListener('submit', async e => {
   document.querySelectorAll('#setCats .set-on').forEach(cb => { cats[cb.dataset.cat] = { off: !cb.checked }; });
   document.querySelectorAll('#setCats .set-ttl').forEach(i => { cats[i.dataset.cat].ttl = Number(i.value); });
   const num = id => $(id).value.trim() === '' ? null : Number($(id).value.replace(',', '.'));
-  const body = { cats, alertRadius: num('#setRadius'), nearKm: num('#setNear'), adminLabel: $('#setAdminLabel').value.trim() };
+  const body = { cats, alertRadius: num('#setRadius'), nearKm: num('#setNear'), adminLabel: $('#setAdminLabel').value.trim(), androidTest: $('#setAndroidTest').value.trim() };
   if ($('#setBanner').value.trim()) body.banner = { text: $('#setBanner').value, from: $('#setFrom').value, to: $('#setTo').value };
   if (num('#setLat') != null && num('#setLng') != null) body.view = { lat: num('#setLat'), lng: num('#setLng'), zoom: num('#setZoom') ?? 12 };
   if ($('#setTo').value && $('#setFrom').value && $('#setTo').value < $('#setFrom').value) return alertMsg('La date de fin est avant la date de début.');

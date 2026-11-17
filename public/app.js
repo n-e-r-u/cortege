@@ -899,6 +899,7 @@
       try { localStorage.setItem('cortege-config', JSON.stringify(c)); } catch {}
       cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
       ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
+      cfg.androidTest = c.androidTest || null; testShow();
       for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
       catVis(); if (famOpen) openFamily(famOpen);
       // Pays, types ou marque changés dans l'admin : appliqués en rechargeant l'appli dès qu'elle passe en arrière-plan
@@ -3807,4 +3808,22 @@
       setTimeout(open, 500);
     }
   }
+  // ---- Test fermé du Play Store : bandeau sur Android et cadre dans Plus, si l'admin a renseigné la page d'inscription ----
+  // Rien dans l'appli Android elle-même (ouverte depuis le Play Store : elle est déjà installée) ; le bandeau fermé ne revient pas
+  // (sauf si le lien change).
+  const TEST_KEY = 'cortege-test-android';
+  let testInApp = false;
+  try {
+    if (document.referrer.startsWith('android-app://')) sessionStorage.setItem('cortege-twa', '1');
+    testInApp = sessionStorage.getItem('cortege-twa') === '1';
+  } catch {}
+  function testShow() {
+    const url = cfg.androidTest, on = !!url && !testInApp;
+    let closed = false; try { closed = localStorage.getItem(TEST_KEY) === url; } catch {}
+    $('#testCard').hidden = !on; if (on) $('#testCard').href = url;
+    $('#testBand').hidden = !on || closed || !/Android/i.test(navigator.userAgent);
+    if (on) $('#testBandLink').href = url;
+  }
+  $('#testBandX').onclick = () => { try { localStorage.setItem(TEST_KEY, cfg.androidTest); } catch {} $('#testBand').hidden = true; };
+  testShow();
 })();

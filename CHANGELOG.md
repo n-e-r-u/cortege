@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.22.0 (en cours)
+
+**Test fermé du Play Store** : Admin › Réglages › « Test de l’appli Android », le lien de la page d’inscription. Rempli, il affiche un bandeau en haut de la carte sur les téléphones Android (pas dans l’appli du Play Store elle-même ; une fois fermé, il ne revient pas sur ce téléphone, sauf si le lien change) et un cadre « Cortège arrive sur le Play Store » dans Plus. Vide, rien n’apparaît : les autres instances ne sont pas concernées.
+
 ## 2.21.1
 
 - **Fiche d'un point qui se refermait seule** sur les écrans peu hauts : une fiche plus haute que l'écran (avec une photo par exemple) décalait la carte au point d'en sortir le point, que le regroupement retirait alors, ce qui refermait la fiche. Sa hauteur est maintenant limitée et elle défile à l'intérieur, comme celle d'une pile de signalements.

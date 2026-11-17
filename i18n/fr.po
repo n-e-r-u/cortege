@@ -5172,3 +5172,15 @@ msgstr ""
 
 msgid "Les visages sont pixellisés en gros carrés brouillés. Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable."
 msgstr ""
+
+msgid "🤖 Cortège arrive sur le Play Store : deviens testeur·se Android →"
+msgstr ""
+
+msgid "🤖 Cortège arrive sur le Play Store"
+msgstr ""
+
+msgid "Avant la sortie, Google exige un test fermé : au moins 12 personnes qui gardent l’appli installée 14 jours. Tu as un téléphone Android ? Inscris-toi."
+msgstr ""
+
+msgid "Je participe au test →"
+msgstr ""

@@ -275,6 +275,15 @@ test('public : type « Contrôle / barrage filtrant » pour tout le monde, sans 
   assert.equal((await req('POST', '/api/reports', { cat: 'calme', lat: 44.2004, lng: 4.2002 })).s, 200, 'une zone calme reste possible à côté (fusion)');
 });
 
+test('test du Play Store : lien réglé dans l’admin, envoyé dans la config (https seulement)', async () => {
+  const adm = (b) => fetch(B + '/api/admin/settings', { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN }, body: JSON.stringify(b) });
+  assert.equal((await adm({ androidTest: 'http://exemple.org/test' })).status, 200);
+  assert.equal((await fetch(B + '/api/config').then(r => r.json())).androidTest, null, 'http refusé');
+  await adm({ androidTest: 'https://exemple.org/test-cortege/' });
+  assert.equal((await fetch(B + '/api/config').then(r => r.json())).androidTest, 'https://exemple.org/test-cortege/');
+  await adm({});
+});
+
 test('équipe medic : 20 appareils au plus, une orga reste à 5', () => {
   const S = require('../src/orgas/sponsor');
   assert.deepEqual([S.DEVICE_MAX, S.MEDIC_DEVICE_MAX], [5, 20]);
