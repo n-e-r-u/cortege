@@ -47,6 +47,7 @@ function tailor(c, pathname, req) {
   }
   return c.alt.get(key);
 }
+const WORKER_CSP = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'";
 // Politique d'une page, avec ses exceptions
 function pageCsp(pathname, buf) {
   const csp = cspFor(buf);
@@ -85,6 +86,9 @@ function serveStatic(req, res, pathname) {
         // Seule la carte à intégrer peut s'afficher dans un autre site (voir pageCsp)
         if (pathname !== '/embed.html') headers['X-Frame-Options'] = 'DENY';
       }
+      // Worker du Flouteur : un worker suit la politique de son propre fichier, pas celle de la page. MediaPipe y envoie des
+      // statistiques à Google (odml.pa.googleapis.com) sans option pour les couper : ici, rien ne peut sortir du serveur.
+      if (pathname === '/flouter-worker.js') headers['Content-Security-Policy'] = WORKER_CSP;
       if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers); return res.end(); }
       res.writeHead(200, headers); res.end(gz ? c.gz : v.buf);
     };

@@ -285,6 +285,10 @@ test('types 2.20 : policiers en civil (alerte, direction, nombre), lieu occupé,
   const home = await fetch(B + '/');
   assert.match(home.headers.get('permissions-policy') || '', /microphone=\(self\)/);
   assert.match(home.headers.get('content-security-policy') || '', /media-src 'self' blob:/);
+  // Worker du Flouteur : MediaPipe y envoie des statistiques à Google ; sa propre politique bloque toute sortie
+  const wk = await fetch(B + '/flouter-worker.js');
+  assert.equal(wk.status, 200);
+  assert.match(wk.headers.get('content-security-policy') || '', /^default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'$/);
 });
 
 test('medic : urgence vitale, équipes prévenues dans le rayon ; la couche disparaît au redémarrage et à l’effacement d’urgence', async () => {
