@@ -46,6 +46,8 @@ function cleanSettings(b) {
   const nk = Number(b.nearKm); if (nk >= 1 && nk <= 50) s.nearKm = Math.round(nk);
   // Page d'inscription au test fermé du Play Store (bandeau sur Android et cadre dans Plus) ; vide = rien d'affiché
   const at = str(b.androidTest, 300); if (/^https:\/\/[^\s"<>]{4,290}$/.test(at)) s.androidTest = at;
+  // Fiche de l'appli sur le Play Store, une fois publiée : remplace le cadre du test fermé dans Plus, lien sur les pages presse et orgas
+  const ps = str(b.playStore, 300); if (/^https:\/\/play\.google\.com\/store\/apps\/details\?id=[\w.]{3,150}[^\s"<>]{0,100}$/.test(ps)) s.playStore = ps;
   const al = str(b.adminLabel, 40);
   if (al.length >= 2 && !readOrgas().some(o => labelKey(o.label) === labelKey(al)) && !ORGAS.some(o => labelKey(o.label) === labelKey(al))) s.adminLabel = al;
   return s;

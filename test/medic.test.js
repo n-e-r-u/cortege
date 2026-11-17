@@ -281,7 +281,14 @@ test('test du Play Store : lien réglé dans l’admin, envoyé dans la config (
   assert.equal((await fetch(B + '/api/config').then(r => r.json())).androidTest, null, 'http refusé');
   await adm({ androidTest: 'https://exemple.org/test-cortege/' });
   assert.equal((await fetch(B + '/api/config').then(r => r.json())).androidTest, 'https://exemple.org/test-cortege/');
+  // Fiche Google Play, une fois l'appli publiée : seulement une adresse play.google.com
+  await adm({ playStore: 'https://exemple.org/store/apps/details?id=x.y.z' });
+  assert.equal((await fetch(B + '/api/config').then(r => r.json())).playStore, null, 'autre site refusé');
+  await adm({ playStore: 'https://play.google.com/store/apps/details?id=org.exemple.cortege' });
+  assert.equal((await fetch(B + '/api/config').then(r => r.json())).playStore, 'https://play.google.com/store/apps/details?id=org.exemple.cortege');
+  assert.match(await fetch(B + '/orgas').then(r => r.text()), /play\.google\.com\/store\/apps\/details\?id=org\.exemple\.cortege/);
   await adm({});
+  assert.doesNotMatch(await fetch(B + '/orgas').then(r => r.text()), /play\.google\.com/);
 });
 
 test('équipe medic : 20 appareils au plus, une orga reste à 5', () => {

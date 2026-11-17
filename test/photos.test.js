@@ -105,3 +105,25 @@ test('photo : effacée du disque et de la base au bout de 3 jours, sauf si elle 
   assert.deepEqual(r.rows, ['gardeebilan', 'recentephoto']);
   assert.deepEqual(r.files, ['gardeebilan.jpg', 'recentephoto.jpg'], 'vieille photo et fichier orphelin effacés');
 });
+
+test('admin : file des photos à regarder (en attente de vérification, cachées après des signalements), comptée dans la pastille', async () => {
+  const review = async () => (await adm('GET', '/api/admin/photos/review')).j.photos;
+  const before = (await review()).length;
+  const r = (await req('POST', '/api/reports', { cat: 'nasse', lat: 45.7578, lng: 4.832 })).j;
+  const up = await send(r.id);
+  assert.equal(up.s, 201);
+  let mine = (await review()).find(p => p.id === up.j.id);
+  assert.ok(mine, 'photo d’un point pas vérifié : dans la file');
+  assert.equal(mine.why, 'wait'); assert.equal(mine.rid, r.id); assert.equal(typeof mine.place, 'string');
+  assert.equal((await adm('GET', '/api/admin/reports')).j.photos, before + 1, 'comptée dans la pastille de l’admin');
+  assert.equal((await req('GET', '/api/admin/photos/review')).s, 403, 'réservé à l’admin');
+  // Le point est vérifié : la photo devient publique et sort de la file
+  assert.equal((await adm('POST', '/api/admin/reports/' + r.id + '/verify', {})).s, 200);
+  assert.ok(!(await review()).some(p => p.id === up.j.id));
+  // Deux téléphones la signalent : elle revient dans la file, cachée ; « Remettre » l'en sort
+  await req('POST', '/api/photos/' + up.j.id + '/flag', {}); await req('POST', '/api/photos/' + up.j.id + '/flag', {});
+  mine = (await review()).find(p => p.id === up.j.id);
+  assert.equal(mine && mine.why, 'flag');
+  assert.equal((await adm('POST', '/api/photos/' + up.j.id + '/restore', {})).s, 200);
+  assert.ok(!(await review()).some(p => p.id === up.j.id));
+});

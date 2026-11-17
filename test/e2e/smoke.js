@@ -31,8 +31,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
       page.on('pageerror', e => errors.push(e.message));
       await page.goto(B + url, { waitUntil: 'load' });
       await page.waitForFunction(() => window.L && document.querySelector('.leaflet-container'));
-      // Première visite : la page « Plus » s'ouvre, on la referme (pas après une invitation : le code de secours doit rester affiché)
-      if (url === '/') await page.evaluate(() => document.querySelectorAll('.sheet:not([hidden]) .x').forEach(b => b.click()));
+      // Première visite : les trois écrans d'accueil s'ouvrent (chargés à la demande), on les passe. Pas après une invitation :
+      // le code de secours doit rester affiché.
+      if (url === '/') { await page.waitForSelector('#sheetWelcome:not([hidden])'); await page.click('#wlSkip'); }
       return page;
     };
     const a = await phone();
@@ -65,12 +66,34 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     assert.equal((await fetch(B + '/', { method: 'HEAD' })).status, 200, 'HEAD accepté');
     // Écran medic : son script n'est pas chargé sur un téléphone sans accès medic
     assert.equal(await a.evaluate(() => typeof window.cortegeMedic), 'undefined', 'app-medic.js pas chargé sans accès medic');
+    // Espace orga, enregistreur, idées : ni script ni fiche tant qu'on ne s'en sert pas
+    assert.deepEqual(await a.evaluate(() => [typeof window.cortegeOrga, typeof window.cortegeSon, typeof window.cortegeIdees, !!document.querySelector('#sheetOrga, #sheetSon, #sheetIdeas')]),
+      ['undefined', 'undefined', 'undefined', false], 'parties à la demande pas chargées au démarrage');
+    // Idées : la fiche arrive au premier appui, avec son fond assombri, et se ferme comme les autres
+    await a.evaluate(() => document.querySelector('#btnIdeas').click());
+    await a.waitForSelector('#sheetIdeas:not([hidden]) #ideaList li');
+    assert.equal(await a.isVisible('#backdrop'), true, 'fond assombri derrière une fiche chargée à la demande');
+    await a.keyboard.press('Escape');
+    assert.equal(await a.isHidden('#sheetIdeas'), true);
+    // Accueil : revu depuis Plus, trois écrans, le dernier ferme
+    await a.evaluate(() => document.querySelector('#btnWelcome').click());
+    await a.waitForSelector('#sheetWelcome:not([hidden])');
+    await a.click('#wlNext'); await a.click('#wlNext');
+    assert.equal(await a.isVisible('#wlNotif'), true, 'troisième écran : les alertes');
+    await a.click('#wlNext');
+    assert.equal(await a.isHidden('#sheetWelcome'), true);
     // ---- Espace orga : tableau de bord dans « Mon orga », lien vers l'affiche au nom de l'orga ----
     {
       const h = { 'content-type': 'application/json', 'x-admin-key': ADMIN };
       const o = await fetch(B + '/api/admin/orgas', { method: 'POST', headers: h, body: JSON.stringify({ label: 'Collectif E2E' }) }).then(r => r.json());
       const p = await phone('/?invite=' + o.invite);
       await p.waitForSelector('#sheetRec:not([hidden]) #recCode');
+      // Impression du code de secours : la fiche entière tient dans la feuille (ni décalée ni coupée), avec la date et le type d'accès
+      await p.evaluate(() => document.body.classList.add('print-rec')); await p.emulateMedia({ media: 'print' });
+      const pr = await p.evaluate(() => { const b = s => document.querySelector(s).getBoundingClientRect(), c = b('#recCode'), h = b('#rcTitle'), f = b('.rec-print');
+        return { ok: c.left >= 0 && c.right <= innerWidth && h.left >= 0 && h.top >= 0 && h.height > 0 && f.height > 0 && f.top > c.bottom, foot: document.querySelector('.rec-print').textContent }; });
+      assert.ok(pr.ok, 'code de secours imprimé en entier'); assert.match(pr.foot, /accès orga/);
+      await p.evaluate(() => document.body.classList.remove('print-rec')); await p.emulateMedia({ media: 'screen' });
       await p.click('#rcBody .install');
       await p.waitForSelector('#sheetOrga:not([hidden]) #orgaBoard:not([hidden]) .ob-tile');
       assert.equal(await p.locator('#obTiles .ob-tile').count(), 4, 'quatre compteurs');

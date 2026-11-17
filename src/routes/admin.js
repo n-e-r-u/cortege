@@ -138,7 +138,7 @@ async function adminRoutes(req, res, url, pathname) {
         reports: activeReports(now).map(publicView),
         announcements: annAll(now).sort((a, b) => b.t - a.t).map(annView),
         pending: annAll(now).filter(a => a.pending).length, legalAlerts: legalAlerts(), orgaRequests: orgaRequests().length, ordersPending: q("SELECT COUNT(*) n FROM orders WHERE status='pending'").get().n,
-        pushSubs: pushCount(), moderation: modQueue(now).filter(x => !x.low).length, toPublish: mobsToPublish(now) });
+        pushSubs: pushCount(), moderation: modQueue(now).filter(x => !x.low).length, photos: require('../photos').reviewPhotos(getReport, now).length, toPublish: mobsToPublish(now) });
     }
     // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---
     if (req.method === 'GET' && pathname === '/api/admin/settings')

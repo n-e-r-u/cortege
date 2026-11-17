@@ -25,7 +25,7 @@
   }
   (async () => {
     await keysReady;
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(START_QS); // l'adresse d'arrivée : un autre lien (point, position) a pu vider l'adresse entre-temps
     if (params.has('orga')) {
       // Un lien reçu ne remplace pas en silence la clé déjà enregistrée (sinon un lien piégé ferait publier sous un autre compte)
       const nk = params.get('orga'); let ok = true;
@@ -64,7 +64,7 @@
   // Pas de réseau et script pas encore gardé sur le téléphone : l'erreur est dite, l'accès revient à la prochaine ouverture
   function orgaPart() {
     return loadPart('orga', () => ({ $, el, t, tn, toast, map, I18N, MIN, CAT, cfg, IOS_WARN, iosEvict, keySet, showRec, closeReport, closeSheets, qrSvg, left, fmtHour, fmtExp, dist, reports,
-      orgaFetch, setOrga, sync, resync() { etag = null; sync(); }, openEventForm, addSheet,
+      orgaFetch, setOrga, setFollow, sync, resync() { etag = null; sync(); }, openEventForm, addSheet,
       get orga() { return orga; }, get me() { return me; }, get pushSub() { return pushSub; }, get announcements() { return announcements; }, get evCache() { return evCache; } }))
       .then(m => { orgaMod = m; return m; }, () => { throw new Error(t('Pas de réseau : l’espace orga se chargera quand ça capte.')); });
   }

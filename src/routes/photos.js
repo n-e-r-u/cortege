@@ -9,6 +9,7 @@ const { deviceHash, clientHash } = require('../privacy');
 const { getReport, saveReport } = require('../reports/store');
 const { quota, allow } = require('../limits');
 const { tx } = require('../db');
+const { placeOf } = require('../geo/cities');
 const P = require('../photos');
 
 // Corps brut limité en taille (la photo, en JPEG)
@@ -87,6 +88,8 @@ async function photosRoutes(req, res, url, pathname) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return send(res, 400, { error: 'Date invalide.' });
       return send(res, 200, { photos: P.dayPhotos(day), keepDays: Math.round(P.KEEP_MS / 86_400_000) });
     }
+    if (req.method === 'GET' && pathname === '/api/admin/photos/review')
+      return send(res, 200, { photos: P.reviewPhotos(getReport).map(p => ({ ...p, place: placeOf(p.lat, p.lng) })) });
     m = pathname.match(/^\/api\/admin\/photos\/([\w-]{12})\/keep$/);
     if (m && req.method === 'POST') {
       const b = await readJson(req);

@@ -2,7 +2,7 @@
 async function loadBadges() {
   try {
     const d = await api('/api/admin/reports'); $('#annBadge').textContent = d.pending || ''; $('#legalBadge').textContent = d.legalAlerts || '';
-    $('#modBadge').textContent = d.moderation || ''; $('#ordBadge').textContent = d.ordersPending || ''; $('#mobBadge').textContent = (d.toPublish || []).length || '';
+    $('#modBadge').textContent = (d.moderation || 0) + (d.photos || 0) || ''; $('#ordBadge').textContent = d.ordersPending || ''; $('#mobBadge').textContent = (d.toPublish || []).length || '';
     pubPrompt(d.toPublish || []);
   } catch {}
 }

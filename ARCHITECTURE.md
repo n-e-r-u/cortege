@@ -48,11 +48,21 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 
 ## Le code du téléphone et de l'admin
 
-Il est écrit dans `client/app/` et `client/admin/`, en morceaux numérotés. `npm run build` (ou `node tools/build-client.js`) les assemble dans `public/app.js` et `public/admin.js`, dans l'ordre des numéros. Les fichiers assemblés restent dans le dépôt : rien à construire au déploiement, et les téléphones gardent un seul fichier à télécharger, important sur un réseau saturé.
+Il est écrit dans `client/app/` et `client/admin/`, en morceaux numérotés. `npm run build` (ou `node tools/build-client.js`) les assemble dans `public/app.js` et `public/admin.js`, dans l'ordre des numéros. Les fichiers assemblés restent dans le dépôt : rien à construire au déploiement, et les téléphones ont peu de fichiers à télécharger, important sur un réseau saturé.
 
 Les morceaux de `client/app/` sont placés dans une seule fonction : ils partagent leurs variables (la carte, l'état de l'orga, les caches).
 
-`client/parts/` contient les parties chargées à la demande, copiées telles quelles dans `public/app-<nom>.js` : aujourd'hui l'écran medic, que seuls les téléphones qui ont un accès medic téléchargent. Une partie ne partage pas les variables du reste : elle reçoit ce dont elle a besoin dans un objet (`core`, voir la fin de `client/app/17-acces.js`), et lit par `core.x` ce qui change au fil du temps. ESLint vérifie qu'elle n'utilise aucun nom qu'elle n'a pas reçu, et que les scripts assemblés n'en utilisent aucun d'inconnu. Ne modifie jamais `public/app.js` ou `public/admin.js` à la main : un test vérifie qu'ils correspondent à `client/`.
+`client/parts/` contient les parties chargées à la demande, assemblées dans `public/app-<nom>.js` : ce que peu de téléphones utilisent, ou rarement, n'est téléchargé que quand il sert.
+
+| Partie | Chargée | Contenu |
+|---|---|---|
+| `medic` | sur un téléphone qui a un accès medic | écran des équipes de street medics |
+| `orga` | sur un téléphone qui a une clé d'orga | espace orga : annonces, position en direct, lieux de repli, réseau, tableau de bord, photos à vérifier |
+| `son` | au premier appui sur 🎙️ (fichier gardé d'avance par le service worker, pour marcher sans réseau) | enregistreur de son |
+| `idees` | à la première ouverture de Plus › Idées | boîte à idées (le rond 💡 de la carte reste dans `client/app/31-idees.js`) |
+| `accueil` | à la première visite | les trois écrans du premier lancement |
+
+Une partie peut avoir sa fiche (`client/parts/<nom>.html`) : elle voyage dans le même fichier et la partie l'ajoute à la page avec `core.addSheet`, qui la traduit et la branche comme les autres fiches. Une partie ne partage pas les variables du reste : elle reçoit ce dont elle a besoin dans un objet (`core`, donné à `loadPart` dans `client/app/13-signaler.js`), et lit par `core.x` ce qui change au fil du temps. ESLint vérifie qu'elle n'utilise aucun nom qu'elle n'a pas reçu, et que les scripts assemblés n'en utilisent aucun d'inconnu. Les textes d'une fiche ne sont pas relevés par `i18n-build.js --pot` : ils s'ajoutent à la main dans `i18n/cortege.pot` et les fichiers de langue (`I18N.collect(élément)` dans la console du navigateur donne les clés exactes). Ne modifie jamais `public/app*.js` ou `public/admin.js` à la main : un test vérifie qu'ils correspondent à `client/`.
 
 ## Règles de dépendance entre modules
 

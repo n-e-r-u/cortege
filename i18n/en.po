@@ -5169,3 +5169,90 @@ msgstr "Before release, Google requires a closed test: at least 12 people who ke
 
 msgid "Je participe au test →"
 msgstr "I’m in →"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Pas de réseau : l’espace orga se chargera quand ça capte."
+msgstr "No network: the organiser space will load once you have signal."
+
+#: client/app/26-modes.js
+msgid "Pas de réseau : la présentation se chargera quand ça capte."
+msgstr "No network: the introduction will load once you have signal."
+
+#: client/app/31-idees.js
+msgid "Pas de réseau : les idées se chargeront quand ça capte."
+msgstr "No network: ideas will load once you have signal."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de réseau : l’enregistreur se chargera quand ça capte."
+msgstr "No network: the recorder will load once you have signal."
+
+#: client/parts/orga.js
+msgid "📷 {n} photo à vérifier"
+msgid_plural "📷 {n} photos à vérifier"
+msgstr[0] "📷 {n} photo to verify"
+msgstr[1] "📷 {n} photos to verify"
+
+# --- 2.22 : premier lancement, Play Store, impression du code de secours ---
+msgid "Cortège · accès medic · {site} · code créé le {date}"
+msgstr "Cortège · medic access · {site} · code created on {date}"
+
+msgid "Cortège · accès orga · {site} · code créé le {date}"
+msgstr "Cortège · organiser access · {site} · code created on {date}"
+
+msgid "C’est parti"
+msgstr "Let’s go"
+
+msgid "Bienvenue sur Cortège"
+msgstr "Welcome to Cortège"
+
+msgid "La carte des manifs en direct, tenue par celles et ceux qui y sont. Sans compte, sans pub, sans pistage."
+msgstr "The live protest map, kept up to date by the people who are there. No account, no ads, no tracking."
+
+msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
+msgstr "Start by locating yourself: the map opens on your area, with what has been reported around you."
+
+msgid "◎ Me situer"
+msgstr "◎ Locate me"
+
+msgid "Signaler en deux appuis"
+msgstr "Report in two taps"
+
+msgid "Le bouton Signaler est au centre, en bas. Charge, nasse, lacrymo : un seul appui. Pour le reste : la famille, puis le type."
+msgstr "The Report button is at the bottom, in the centre. Charge, kettle, tear gas: one tap. For everything else: the family, then the type."
+
+msgid "Un signalement disparaît seul quand il n’est plus d’actualité. Sur place et tu ne vois plus rien ? Le bouton <b class=\"nw\">« Plus là »</b> le retire plus vite."
+msgstr "A report disappears by itself once it is out of date. On the spot and you see nothing any more? The <b class=\"nw\">“Gone”</b> button removes it faster."
+
+msgid "Être prévenu·e"
+msgstr "Get alerted"
+
+msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
+msgstr "An alert when a danger is reported near you, even with the app closed. You choose your area and what alerts you."
+
+msgid "🔔 Régler les alertes"
+msgstr "🔔 Set up alerts"
+
+msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
+msgstr "In the Rights tab: what to do if you are stopped or arrested, and the legal team numbers."
+
+msgid "Cortège est gratuit et financé par les dons."
+msgstr "Cortège is free and funded by donations."
+
+msgid "Soutenir le projet"
+msgstr "Support the project"
+
+msgid "Suivre sur Instagram"
+msgstr "Follow on Instagram"
+
+msgid "Passer"
+msgstr "Skip"
+
+msgid "Suivant"
+msgstr "Next"
+
+msgid "<b>🤖 Cortège est sur le Play Store</b> <span>L’appli Android s’installe aussi depuis Google Play. Le site et l’installation depuis le navigateur restent là, sans compte Google.</span> <span class=\"tc-btn\">Voir sur Google Play →</span>"
+msgstr "<b>🤖 Cortège is on the Play Store</b> <span>The Android app can also be installed from Google Play. The website and installing from the browser are still there, with no Google account.</span> <span class=\"tc-btn\">See on Google Play →</span>"
+
+msgid "Revoir la présentation de l’appli"
+msgstr "See the app introduction again"

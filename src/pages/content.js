@@ -8,6 +8,7 @@ const { depOf } = require('../geo/departments');
 const { legalAll } = require('../legal');
 const { ordersLive } = require('../orders');
 const { q } = require('../db');
+const { settings } = require('../settings');
 const { slugOf } = require('../digest/pub');
 const { upcoming, cityIndex } = require('./cities');
 const { whereOf, polyHas } = require('../geo/communes');
@@ -91,7 +92,7 @@ function citiesPage(req) {
 
 // Page « Pour les orgas » : ce qu'un accès orga permet, comment l'obtenir, ce qui est gardé. À envoyer aux collectifs et syndicats.
 function orgasPage(req) {
-  const li = (b, x) => `<li><b>${b}</b> ${x}</li>`;
+  const li = (b, x) => `<li><b>${b}</b> ${x}</li>`, play = settings().playStore;
   const body = `<h1>Pour les orgas</h1><p class="lead">Syndicats, collectifs, assemblées, legal teams, street medics : avec un accès orga, c’est toi qui tiens la carte autour de ton cortège. Gratuit, sans pub, sans compte ni mot de passe.</p>
 <section><h2>Ce qu’un accès orga permet</h2><ul>
 ${li('Annoncer ta mobilisation.', 'Manif, blocus, rassemblement ou AG dans l’<a href="/agenda">agenda</a>, avec le parcours tracé sur la carte et le point de dispersion.')}
@@ -112,7 +113,7 @@ ${li('Faire connaître la carte.', 'Une <a href="/affiche.html">affiche et des f
 </ol></section>
 <section><h2>Ce qui est gardé</h2><p>Le nom affiché de l’orga et le journal de ses actions (vérifications, retraits, annonces), sans adresse IP. Seule l’empreinte de la clé d’accès est stockée, jamais la clé. La demande d’accès est effacée une fois traitée, au plus tard au bout de 30 jours. Si tu demandes les rappels avant tes rendez-vous, l’adresse de notification de ton téléphone est gardée avec ton orga jusqu’à ce que tu les coupes. Rien sur les personnes qui signalent : voir les <a href="/legal.html">mentions légales</a>.</p></section>
 <section><h2>Street medics</h2><p>Les équipes de street medics ont en plus un écran à part : une carte privée entre équipes, avec leurs positions, les points chauds, les barrages filtrants et les appels de renfort. Rien n’y est gardé. Précise dans ta demande que tu es une équipe medic.</p></section>
-<div class="cta" style="grid-template-columns:1fr"><a class="main" href="/?rejoindre=">Demander un accès orga</a></div>`;
+<div class="cta" style="grid-template-columns:1fr"><a class="main" href="/?rejoindre=">Demander un accès orga</a>${play ? `<a href="${htmlEsc(play)}" rel="noopener">Cortège sur Google Play</a>` : ''}</div>`;
   return pubShell(req, { title: 'Pour les orgas : annonces, agenda, legal team, signalements vérifiés · Cortège', desc: 'Syndicats, collectifs, legal teams, street medics : ce qu’un accès orga permet sur Cortège, la carte en direct des manifs, et comment l’obtenir.', body });
 }
 

@@ -43,9 +43,34 @@ async function loadMod() {
   sel.length = 1;
   for (const [n, k] of Object.entries(cities).sort((a, b) => b[1] - a[1])) sel.append(new Option(`${n} (${k})`, n));
   sel.value = cities[cur] ? cur : '';
-  renderMod();
+  renderMod(); modPhotos();
 }
 for (const id of ['#modCity', '#modType', '#modLow']) $(id).addEventListener('change', renderMod);
 $('#tabMod').onclick = () => { showTab('Mod'); loadMod(); };
 $('#modReload').onclick = loadMod;
 
+
+// Photos à regarder (tous jours confondus) : cachées après des signalements, ou en attente parce que leur point n'est pas vérifié
+const modPhotoUrls = new Map();
+async function modPhotos() {
+  let d; try { d = await api('/api/admin/photos/review'); } catch { $('#modPhotos').hidden = true; return; }
+  const list = d.photos || [], box = $('#modPhotoList');
+  $('#modPhotos').hidden = !list.length; $('#modPhotoN').textContent = list.length ? `(${list.length})` : '';
+  box.textContent = '';
+  for (const p of list) {
+    const c = CATS[p.cat] || { glyph: '•', label: p.cat };
+    const img = document.createElement('img'); img.alt = 'Photo';
+    const fig = document.createElement('figure'), cap = document.createElement('figcaption');
+    cap.textContent = `${c.glyph} ${c.label} · ${p.place} · ${new Date(p.t).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · `
+      + (p.why === 'flag' ? 'cachée après des signalements' + (p.live ? '' : ' (point expiré)') : 'en attente : point pas vérifié');
+    const again = () => { modPhotos(); loadBadges(); };
+    const main = btn(p.why === 'flag' ? 'Remettre' : 'Vérifier le point');
+    main.onclick = async () => { main.disabled = true; try { await api(p.why === 'flag' ? '/api/photos/' + p.id + '/restore' : '/api/admin/reports/' + p.rid + '/verify', { method: 'POST', body: '{}' }); again(); if (p.why !== 'flag') loadMod(); } catch (e) { alertMsg(e.message); main.disabled = false; } };
+    const del = btn('Supprimer', 'danger');
+    confirmBtn(del, 'Confirmer', async () => { await api('/api/photos/' + p.id + '/remove', { method: 'POST', body: '{}' }); again(); });
+    const row = document.createElement('div'); row.className = 'controls'; row.append(main, del);
+    fig.append(img, cap, row); box.append(fig);
+    (modPhotoUrls.has(p.id) ? Promise.resolve(modPhotoUrls.get(p.id)) : fetch('/api/photos/' + p.id, { headers: { 'X-Admin-Key': KEY } }).then(r => r.ok ? r.blob() : Promise.reject(new Error(r.status))).then(b => { const u = URL.createObjectURL(b); modPhotoUrls.set(p.id, u); return u; }))
+      .then(u => { img.src = u; }).catch(() => { img.replaceWith(Object.assign(document.createElement('p'), { className: 'fine', textContent: 'Photo indisponible.' })); });
+  }
+}

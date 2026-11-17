@@ -249,6 +249,12 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
       </div>
       <ul class="org-list" id="modList"></ul>
     </section>
+    <section class="card" id="modPhotos" hidden>
+      <h2>Photos à regarder <span id="modPhotoN"></span></h2>
+      <p class="fine">Tous jours confondus. « Cachée » : 2 téléphones l’ont signalée, le public ne la voit plus ; remets-la si elle ne pose pas de problème, sinon supprime-la.
+        « En attente » : le point n’est ni vérifié ni envoyé par un téléphone fiable, la photo reste invisible du public tant qu’il ne l’est pas. Sans rien faire, une photo est effacée 3 jours après l’envoi.</p>
+      <div class="dg-photos" id="modPhotoList"></div>
+    </section>
   </section>
 
   <section class="panel" id="panelMobs" role="tabpanel" aria-labelledby="tabMobs" hidden>
@@ -344,6 +350,8 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
         <h2>Test de l’appli Android</h2>
         <p class="fine">Lien de la page d’inscription au test fermé du Play Store. Rempli : un bandeau en haut de la carte sur les téléphones Android (sauf dans l’appli du Play Store, et jusqu’à ce que la personne le ferme) et un cadre dans Plus. Vide : rien n’est affiché.</p>
         <label>Lien (https)<input id="setAndroidTest" type="url" placeholder="https://…" style="width:100%"></label>
+        <p class="fine" style="margin-top:12px">Une fois l’appli publiée : lien de sa fiche sur Google Play. Rempli : le cadre de Plus devient « Cortège est sur le Play Store » (le test fermé n’est plus proposé, même si le lien du dessus reste rempli), et le lien apparaît sur l’espace presse et la page « Pour les orgas ».</p>
+        <label>Fiche Google Play<input id="setPlayStore" type="url" placeholder="https://play.google.com/store/apps/details?id=…" style="width:100%"></label>
       </section>
       <section class="card">
         <h2>Types de signalement</h2>

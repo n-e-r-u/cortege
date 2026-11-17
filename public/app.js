@@ -5,6 +5,7 @@
   const I18N = window.I18N || { lang: 'fr', locale: 'fr-FR', t: (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m)) : s, tn: (n, a, b, v) => (n > 1 ? b : a).replace(/\{(\w+)\}/g, (m, k) => ({ n, ...v })[k] ?? m), set() {}, translate() {} };
   const { t, tn } = I18N;
   const $ = s => document.querySelector(s);
+  const START_QS = location.search; // l'adresse d'arrivée, avant que les liens (invitation, point…) n'en soient retirés
   // Couleur lue dans le thème en cours (clair ou sombre), pour les tracés dessinés sur la carte
   const themeCol = (name, dflt) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || dflt;
   const MIN = 60_000;
@@ -686,6 +687,7 @@
       if (fresh) proximity(r);
     }
     firstSync = false;
+    if (orgaMod) orgaMod.reportsChanged();
     if (repliDraw) repliDraw(); // après les signalements : un danger tout près met le lieu de repli en alerte
     regroup(); calmNav();
     refreshUI();
@@ -897,7 +899,7 @@
       try { localStorage.setItem('cortege-config', JSON.stringify(c)); } catch {}
       cfgSeen = c.cfgh || h; cfg.event = c.event; cfg.banner = c.banner; applyBanner();
       ALERT_RADIUS = c.alertRadius || 300; cfg.nearKm = c.nearKm;
-      cfg.androidTest = c.androidTest || null; testShow();
+      cfg.androidTest = c.androidTest || null; cfg.playStore = c.playStore || null; testShow();
       for (const x of c.categories || []) if (CAT[x.id]) Object.assign(CAT[x.id], { ttl: x.ttl, off: !!x.off });
       catVis(); if (famOpen) openFamily(famOpen);
       // Pays, types ou marque changés dans l'admin : appliqués en rechargeant l'appli dès qu'elle passe en arrière-plan
@@ -1400,7 +1402,7 @@
   $('#poiClose').onclick = () => closeSheets();
 
   // ---- Signaler ----
-  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon'];
+  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon', '#sheetWelcome'];
   // Certaines fiches n'arrivent dans la page qu'avec leur partie chargée à la demande (espace orga, idées, enregistreur) : voir addSheet
   const sheetOpen = s => { const x = $(s); return !!x && !x.hidden; };
   const closeSheets = () => sheets.forEach(s => { const x = $(s); if (x) x.hidden = true; });
@@ -2188,7 +2190,7 @@
   }
   (async () => {
     await keysReady;
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(START_QS); // l'adresse d'arrivée : un autre lien (point, position) a pu vider l'adresse entre-temps
     if (params.has('orga')) {
       // Un lien reçu ne remplace pas en silence la clé déjà enregistrée (sinon un lien piégé ferait publier sous un autre compte)
       const nk = params.get('orga'); let ok = true;
@@ -2227,7 +2229,7 @@
   // Pas de réseau et script pas encore gardé sur le téléphone : l'erreur est dite, l'accès revient à la prochaine ouverture
   function orgaPart() {
     return loadPart('orga', () => ({ $, el, t, tn, toast, map, I18N, MIN, CAT, cfg, IOS_WARN, iosEvict, keySet, showRec, closeReport, closeSheets, qrSvg, left, fmtHour, fmtExp, dist, reports,
-      orgaFetch, setOrga, sync, resync() { etag = null; sync(); }, openEventForm, addSheet,
+      orgaFetch, setOrga, setFollow, sync, resync() { etag = null; sync(); }, openEventForm, addSheet,
       get orga() { return orga; }, get me() { return me; }, get pushSub() { return pushSub; }, get announcements() { return announcements; }, get evCache() { return evCache; } }))
       .then(m => { orgaMod = m; return m; }, () => { throw new Error(t('Pas de réseau : l’espace orga se chargera quand ça capte.')); });
   }
@@ -2970,8 +2972,17 @@
     });
   });
 
-  // Premier lancement : on montre les réflexes (et la carte @neru) une fois
-  try { if (!localStorage.getItem('cortege-seen')) { $('#sheetInfo').hidden = false; localStorage.setItem('cortege-seen', '1'); } } catch {}
+  // Premier lancement : trois écrans (ta zone, signaler, alertes), une seule fois. Leur script n'est chargé que ce jour-là.
+  // Pas avec une invitation ou un lien vers un point, une idée, les nouveautés : la personne vient pour autre chose.
+  // Sans réseau pour les charger : la page Plus, comme avant.
+  const openWelcome = () => loadPart('accueil', () => ({ $, t, closeSheets, addSheet, locate, openNotif })).then(m => m.open());
+  try {
+    if (!localStorage.getItem('cortege-seen')) {
+      localStorage.setItem('cortege-seen', '1');
+      if (!/[?&](invite|orga|medic|point|idee|nouveautes|rejoindre|espace)\b/.test(START_QS)) openWelcome().catch(() => { $('#sheetInfo').hidden = false; });
+    }
+  } catch {}
+  $('#btnWelcome').onclick = () => openWelcome().catch(() => toast('Pas de réseau : la présentation se chargera quand ça capte.'));
 
   // ---- Hors ligne : PWA + pré-chargement des tuiles de la zone ----
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -3203,7 +3214,8 @@
       setTimeout(open, 500);
     }
   }
-  // ---- Test fermé du Play Store : bandeau sur Android et cadre dans Plus, si l'admin a renseigné la page d'inscription ----
+  // ---- Play Store : test fermé (bandeau sur Android et cadre dans Plus) tant que l'admin a renseigné la page d'inscription,
+  // puis cadre « Cortège est sur le Play Store » quand il a renseigné la fiche de l'appli publiée ----
   // Rien dans l'appli Android elle-même (ouverte depuis le Play Store : elle est déjà installée) ; le bandeau fermé ne revient pas
   // (sauf si le lien change).
   const TEST_KEY = 'cortege-test-android';
@@ -3213,11 +3225,13 @@
     testInApp = sessionStorage.getItem('cortege-twa') === '1';
   } catch {}
   function testShow() {
-    const url = cfg.androidTest, on = !!url && !testInApp;
+    // Appli publiée (fiche Google Play renseignée) : le test fermé n'est plus proposé, le cadre de Plus mène à la fiche (pas sur iPhone)
+    const play = cfg.playStore, url = cfg.androidTest, on = !!url && !play && !testInApp;
     let closed = false; try { closed = localStorage.getItem(TEST_KEY) === url; } catch {}
     $('#testCard').hidden = !on; if (on) $('#testCard').href = url;
     $('#testBand').hidden = !on || closed || !/Android/i.test(navigator.userAgent);
     if (on) $('#testBandLink').href = url;
+    $('#playCard').hidden = !play || testInApp || /iphone|ipad|ipod/i.test(navigator.userAgent); if (play) $('#playCard').href = play;
   }
   $('#testBandX').onclick = () => { try { localStorage.setItem(TEST_KEY, cfg.androidTest); } catch {} $('#testBand').hidden = true; };
   testShow();

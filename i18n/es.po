@@ -5169,3 +5169,90 @@ msgstr "Antes del lanzamiento, Google exige una prueba cerrada: al menos 12 pers
 
 msgid "Je participe au test →"
 msgstr "Participo →"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Pas de réseau : l’espace orga se chargera quand ça capte."
+msgstr "Sin red: el espacio de organización se cargará cuando haya cobertura."
+
+#: client/app/26-modes.js
+msgid "Pas de réseau : la présentation se chargera quand ça capte."
+msgstr "Sin red: la presentación se cargará cuando haya cobertura."
+
+#: client/app/31-idees.js
+msgid "Pas de réseau : les idées se chargeront quand ça capte."
+msgstr "Sin red: las ideas se cargarán cuando haya cobertura."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de réseau : l’enregistreur se chargera quand ça capte."
+msgstr "Sin red: la grabadora se cargará cuando haya cobertura."
+
+#: client/parts/orga.js
+msgid "📷 {n} photo à vérifier"
+msgid_plural "📷 {n} photos à vérifier"
+msgstr[0] "📷 {n} foto por verificar"
+msgstr[1] "📷 {n} fotos por verificar"
+
+# --- 2.22 : premier lancement, Play Store, impression du code de secours ---
+msgid "Cortège · accès medic · {site} · code créé le {date}"
+msgstr "Cortège · acceso medic · {site} · código creado el {date}"
+
+msgid "Cortège · accès orga · {site} · code créé le {date}"
+msgstr "Cortège · acceso de organización · {site} · código creado el {date}"
+
+msgid "C’est parti"
+msgstr "Vamos"
+
+msgid "Bienvenue sur Cortège"
+msgstr "Te damos la bienvenida a Cortège"
+
+msgid "La carte des manifs en direct, tenue par celles et ceux qui y sont. Sans compte, sans pub, sans pistage."
+msgstr "El mapa de las manifestaciones en directo, hecho por quienes están allí. Sin cuenta, sin publicidad, sin rastreo."
+
+msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
+msgstr "Empieza por ubicarte: el mapa se abre en tu zona, con lo que se ha avisado a tu alrededor."
+
+msgid "◎ Me situer"
+msgstr "◎ Ubicarme"
+
+msgid "Signaler en deux appuis"
+msgstr "Avisar en dos toques"
+
+msgid "Le bouton Signaler est au centre, en bas. Charge, nasse, lacrymo : un seul appui. Pour le reste : la famille, puis le type."
+msgstr "El botón Avisar está abajo, en el centro. Carga, encapsulamiento, gas lacrimógeno: un solo toque. Para lo demás: la familia y luego el tipo."
+
+msgid "Un signalement disparaît seul quand il n’est plus d’actualité. Sur place et tu ne vois plus rien ? Le bouton <b class=\"nw\">« Plus là »</b> le retire plus vite."
+msgstr "Un aviso desaparece solo cuando deja de estar vigente. ¿Estás allí y ya no ves nada? El botón <b class=\"nw\">«Ya no está»</b> lo retira más rápido."
+
+msgid "Être prévenu·e"
+msgstr "Recibir alertas"
+
+msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
+msgstr "Una alerta cuando se avisa de un peligro cerca de ti, incluso con la app cerrada. Tú eliges tu zona y qué te avisa."
+
+msgid "🔔 Régler les alertes"
+msgstr "🔔 Configurar las alertas"
+
+msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
+msgstr "En la pestaña Derechos: qué hacer ante un control o una detención, y los números de los equipos legales."
+
+msgid "Cortège est gratuit et financé par les dons."
+msgstr "Cortège es gratuito y se financia con donaciones."
+
+msgid "Soutenir le projet"
+msgstr "Apoyar el proyecto"
+
+msgid "Suivre sur Instagram"
+msgstr "Seguir en Instagram"
+
+msgid "Passer"
+msgstr "Saltar"
+
+msgid "Suivant"
+msgstr "Siguiente"
+
+msgid "<b>🤖 Cortège est sur le Play Store</b> <span>L’appli Android s’installe aussi depuis Google Play. Le site et l’installation depuis le navigateur restent là, sans compte Google.</span> <span class=\"tc-btn\">Voir sur Google Play →</span>"
+msgstr "<b>🤖 Cortège está en Play Store</b> <span>La app de Android también se instala desde Google Play. El sitio y la instalación desde el navegador siguen ahí, sin cuenta de Google.</span> <span class=\"tc-btn\">Ver en Google Play →</span>"
+
+msgid "Revoir la présentation de l’appli"
+msgstr "Volver a ver la presentación de la app"

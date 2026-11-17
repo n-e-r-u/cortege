@@ -5241,3 +5241,94 @@ msgstr "قبل الإطلاق، تشترط Google اختبارًا مغلقًا:
 
 msgid "Je participe au test →"
 msgstr "أشارك في الاختبار ←"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Pas de réseau : l’espace orga se chargera quand ça capte."
+msgstr "لا توجد شبكة: ستُحمَّل مساحة المنظّمين عند توفّر التغطية."
+
+#: client/app/26-modes.js
+msgid "Pas de réseau : la présentation se chargera quand ça capte."
+msgstr "لا توجد شبكة: سيُحمَّل التعريف بالتطبيق عند توفّر التغطية."
+
+#: client/app/31-idees.js
+msgid "Pas de réseau : les idées se chargeront quand ça capte."
+msgstr "لا توجد شبكة: ستُحمَّل الأفكار عند توفّر التغطية."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de réseau : l’enregistreur se chargera quand ça capte."
+msgstr "لا توجد شبكة: سيُحمَّل المسجِّل عند توفّر التغطية."
+
+#: client/parts/orga.js
+msgid "📷 {n} photo à vérifier"
+msgid_plural "📷 {n} photos à vérifier"
+msgstr[0] "📷 لا صور للتحقّق"
+msgstr[1] "📷 صورة واحدة للتحقّق"
+msgstr[2] "📷 صورتان للتحقّق"
+msgstr[3] "📷 {n} صور للتحقّق"
+msgstr[4] "📷 {n} صورة للتحقّق"
+msgstr[5] "📷 {n} صورة للتحقّق"
+
+# --- 2.22 : premier lancement, Play Store, impression du code de secours ---
+msgid "Cortège · accès medic · {site} · code créé le {date}"
+msgstr "Cortège · وصول المسعفين · {site} · أُنشئ الرمز في {date}"
+
+msgid "Cortège · accès orga · {site} · code créé le {date}"
+msgstr "Cortège · وصول المنظّمين · {site} · أُنشئ الرمز في {date}"
+
+msgid "C’est parti"
+msgstr "لنبدأ"
+
+msgid "Bienvenue sur Cortège"
+msgstr "مرحبًا بك في Cortège"
+
+msgid "La carte des manifs en direct, tenue par celles et ceux qui y sont. Sans compte, sans pub, sans pistage."
+msgstr "خريطة المظاهرات المباشرة، يحدّثها من هم في الميدان. بلا حساب، بلا إعلانات، بلا تتبّع."
+
+msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
+msgstr "ابدأ بتحديد موقعك: تُفتح الخريطة على منطقتك، مع ما تمّ الإبلاغ عنه حولك."
+
+msgid "◎ Me situer"
+msgstr "◎ تحديد موقعي"
+
+msgid "Signaler en deux appuis"
+msgstr "أبلِغ بنقرتين"
+
+msgid "Le bouton Signaler est au centre, en bas. Charge, nasse, lacrymo : un seul appui. Pour le reste : la famille, puis le type."
+msgstr "زرّ «أبلِغ» في الأسفل، في الوسط. هجوم، تطويق، غاز مسيل للدموع: نقرة واحدة. ولغير ذلك: الفئة ثم النوع."
+
+msgid "Un signalement disparaît seul quand il n’est plus d’actualité. Sur place et tu ne vois plus rien ? Le bouton <b class=\"nw\">« Plus là »</b> le retire plus vite."
+msgstr "يختفي البلاغ تلقائيًا حين لا يعود راهنًا. أنت في المكان ولم تعد ترى شيئًا؟ زرّ <b class=\"nw\">«لم يعد هنا»</b> يزيله أسرع."
+
+msgid "Être prévenu·e"
+msgstr "تلقَّ التنبيهات"
+
+msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
+msgstr "تنبيه عند الإبلاغ عن خطر بالقرب منك، حتى والتطبيق مغلق. أنت تختار منطقتك وما ينبّهك."
+
+msgid "🔔 Régler les alertes"
+msgstr "🔔 ضبط التنبيهات"
+
+msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
+msgstr "في تبويب «الحقوق»: ما العمل عند التوقيف أو الاعتقال، وأرقام الفرق القانونية."
+
+msgid "Cortège est gratuit et financé par les dons."
+msgstr "Cortège مجاني ومموَّل بالتبرعات."
+
+msgid "Soutenir le projet"
+msgstr "ادعم المشروع"
+
+msgid "Suivre sur Instagram"
+msgstr "تابِع على Instagram"
+
+msgid "Passer"
+msgstr "تخطٍّ"
+
+msgid "Suivant"
+msgstr "التالي"
+
+msgid "<b>🤖 Cortège est sur le Play Store</b> <span>L’appli Android s’installe aussi depuis Google Play. Le site et l’installation depuis le navigateur restent là, sans compte Google.</span> <span class=\"tc-btn\">Voir sur Google Play →</span>"
+msgstr "<b>🤖 Cortège متوفّر على Play Store</b> <span>يمكن تثبيت تطبيق أندرويد من Google Play أيضًا. ويبقى الموقع والتثبيت من المتصفّح متاحَين، بلا حساب Google.</span> <span class=\"tc-btn\">عرض على Google Play ←</span>"
+
+msgid "Revoir la présentation de l’appli"
+msgstr "إعادة عرض التعريف بالتطبيق"

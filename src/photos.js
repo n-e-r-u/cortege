@@ -110,6 +110,17 @@ function keepPhoto(p, keep) {
 // Photos d'un jour pour le digest de l'admin (toutes sauf retirées), et celles gardées pour le bilan public
 const dayPhotos = day => q("SELECT id, rid, cat, lat, lng, t, st, w, h FROM photos WHERE day=? AND st<>'gone' ORDER BY t").all(day);
 const keptPhotos = day => q("SELECT id, cat, lat, lng, t, w, h FROM photos WHERE day=? AND st='kept' ORDER BY t").all(day);
+// Photos à regarder, tous jours confondus (admin › Modération) : celles cachées après des signalements (à remettre ou à supprimer),
+// et celles d'un point encore actif qui n'est ni vérifié ni fiable (invisibles du public tant que le point n'est pas vérifié)
+function reviewPhotos(getReport, now = Date.now()) {
+  const out = [];
+  for (const p of q("SELECT id, rid, cat, lat, lng, t, st FROM photos WHERE st IN ('ok','flag') ORDER BY t DESC").all()) {
+    const r = getReport(p.rid, now);
+    if (p.st === 'flag') out.push({ ...p, why: 'flag', live: !!r });
+    else if (r && !isPublicReport(r)) out.push({ ...p, why: 'wait', live: true });
+  }
+  return out;
+}
 // Point retiré par son auteur (posé par erreur) : ses photos partent avec lui
 function dropFor(rid) { for (const p of q("SELECT * FROM photos WHERE rid=? AND st IN ('ok','flag')").all(rid)) removePhoto(p); }
 
@@ -128,5 +139,5 @@ function wipePhotos(withKept) {
 }
 if (process.env.PHOTO_PRUNE !== '0') { try { prunePhotos(); } catch (e) { console.error('photos', e.message); } setInterval(() => { try { prunePhotos(); } catch (e) { console.error('photos', e.message); } }, 10 * MIN).unref(); }
 
-module.exports = { phView, addPhoto, getPhoto, photoAccess, photoFile, flagPhoto, removePhoto, restorePhoto, keepPhoto, dayPhotos, keptPhotos, dropFor,
+module.exports = { phView, addPhoto, getPhoto, photoAccess, photoFile, flagPhoto, removePhoto, restorePhoto, keepPhoto, dayPhotos, keptPhotos, reviewPhotos, dropFor,
   prunePhotos, wipePhotos, jpegSize, KEEP_MS, MAX_BYTES, ID_RE };

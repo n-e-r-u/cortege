@@ -5,7 +5,7 @@
 // (position du téléphone, abonnement aux notifications, annonces affichées) se lit par core.me, core.pushSub, core.announcements.
 window.cortegeOrga = function (core) {
   const { $, el, t, tn, toast, map, I18N, MIN, CAT, cfg, IOS_WARN, iosEvict, keySet, showRec, closeReport, closeSheets, qrSvg, left, fmtHour, fmtExp, dist, reports,
-    orgaFetch, setOrga, sync, resync, openEventForm } = core;
+    orgaFetch, setOrga, setFollow, sync, resync, openEventForm } = core;
   let orga = core.orga;   // l'orga de ce téléphone : tenue à jour par onOrga, appelé par le reste de l'appli à chaque changement
   let beacon = null;      // position partagée en direct : { role, until, timer, lock }
   core.addSheet(window.cortegeHtml.orga);
@@ -29,6 +29,7 @@ window.cortegeOrga = function (core) {
       if (!certified && (info.checked || rally.checked)) { legal.checked = true; legal.dispatchEvent(new Event('change')); }
       for (const op of $('#annRadius').options) op.hidden = op.disabled = !admin && +op.value > 3;
       if (!admin && +$('#annRadius').value > 3) $('#annRadius').value = '3'; }
+    reportsChanged();
   }
   // Mes annonces (l'admin voit tout), y compris les numéros en attente de validation
   let mineAnns = null;
@@ -466,7 +467,23 @@ window.cortegeOrga = function (core) {
   }
 
   $('#btnOrgaEvent').onclick = () => openEventForm(true);
+  // ---- Photos à vérifier : pastille sur la carte (orgas certifiées) ----
+  // Une photo n'est visible du public qu'une fois son point vérifié. La pastille compte les points affichés qui ont une photo en
+  // attente ; un appui ouvre le plus proche du centre de la carte, où l'orga voit la photo et vérifie (ou retire) le point.
+  const photoWait = () => [...reports.values()].filter(x => (x.data.ph || []).some(p => !p.p && !p.f));
+  function reportsChanged() {
+    const n = orga && !orga.trial ? photoWait().length : 0, chip = $('#orgaPhotoChip');
+    chip.hidden = !n;
+    if (n) chip.textContent = tn(n, '📷 {n} photo à vérifier', '📷 {n} photos à vérifier');
+  }
+  $('#orgaPhotoChip').onclick = () => {
+    const c = map.getCenter(), x = photoWait().sort((a, b) => dist([c.lat, c.lng], [a.data.lat, a.data.lng]) - dist([c.lat, c.lng], [b.data.lat, b.data.lng]))[0];
+    if (!x) return reportsChanged();
+    closeReport(); closeSheets(); setFollow(false);
+    map.setView([x.data.lat, x.data.lng], Math.max(map.getZoom(), 18));
+    setTimeout(() => x.marker.openPopup(), 300);
+  };
   onOrga(orga);
   setTimeout(remindSync, 4000);
-  return { onOrga, annsChanged() { if (!$('#sheetOrga').hidden) renderOrgaList(); } };
+  return { onOrga, reportsChanged, annsChanged() { if (!$('#sheetOrga').hidden) renderOrgaList(); } };
 };

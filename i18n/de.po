@@ -5166,3 +5166,90 @@ msgstr "Vor dem Start verlangt Google einen geschlossenen Test: mindestens 12 Pe
 
 msgid "Je participe au test →"
 msgstr "Ich mache mit →"
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Pas de réseau : l’espace orga se chargera quand ça capte."
+msgstr "Kein Netz: Der Orga-Bereich lädt, sobald du Empfang hast."
+
+#: client/app/26-modes.js
+msgid "Pas de réseau : la présentation se chargera quand ça capte."
+msgstr "Kein Netz: Die Einführung lädt, sobald du Empfang hast."
+
+#: client/app/31-idees.js
+msgid "Pas de réseau : les idées se chargeront quand ça capte."
+msgstr "Kein Netz: Die Ideen laden, sobald du Empfang hast."
+
+#: client/app/32-enregistrement.js
+msgid "Pas de réseau : l’enregistreur se chargera quand ça capte."
+msgstr "Kein Netz: Der Rekorder lädt, sobald du Empfang hast."
+
+#: client/parts/orga.js
+msgid "📷 {n} photo à vérifier"
+msgid_plural "📷 {n} photos à vérifier"
+msgstr[0] "📷 {n} Foto zu prüfen"
+msgstr[1] "📷 {n} Fotos zu prüfen"
+
+# --- 2.22 : premier lancement, Play Store, impression du code de secours ---
+msgid "Cortège · accès medic · {site} · code créé le {date}"
+msgstr "Cortège · Medic-Zugang · {site} · Code erstellt am {date}"
+
+msgid "Cortège · accès orga · {site} · code créé le {date}"
+msgstr "Cortège · Orga-Zugang · {site} · Code erstellt am {date}"
+
+msgid "C’est parti"
+msgstr "Los geht’s"
+
+msgid "Bienvenue sur Cortège"
+msgstr "Willkommen bei Cortège"
+
+msgid "La carte des manifs en direct, tenue par celles et ceux qui y sont. Sans compte, sans pub, sans pistage."
+msgstr "Die Live-Karte der Demos, gepflegt von den Menschen vor Ort. Ohne Konto, ohne Werbung, ohne Tracking."
+
+msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
+msgstr "Zeig zuerst deinen Standort: Die Karte öffnet sich in deiner Gegend, mit allem, was um dich herum gemeldet wurde."
+
+msgid "◎ Me situer"
+msgstr "◎ Meinen Standort zeigen"
+
+msgid "Signaler en deux appuis"
+msgstr "Melden mit zwei Tipps"
+
+msgid "Le bouton Signaler est au centre, en bas. Charge, nasse, lacrymo : un seul appui. Pour le reste : la famille, puis le type."
+msgstr "Der Melden-Knopf ist unten in der Mitte. Angriff, Kessel, Tränengas: ein Tipp. Für alles andere: erst die Gruppe, dann die Art."
+
+msgid "Un signalement disparaît seul quand il n’est plus d’actualité. Sur place et tu ne vois plus rien ? Le bouton <b class=\"nw\">« Plus là »</b> le retire plus vite."
+msgstr "Eine Meldung verschwindet von selbst, wenn sie nicht mehr aktuell ist. Du bist vor Ort und siehst nichts mehr? Der Knopf <b class=\"nw\">„Nicht mehr da“</b> entfernt sie schneller."
+
+msgid "Être prévenu·e"
+msgstr "Gewarnt werden"
+
+msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
+msgstr "Eine Warnung, wenn in deiner Nähe eine Gefahr gemeldet wird, auch bei geschlossener App. Du wählst deine Gegend und was dich warnt."
+
+msgid "🔔 Régler les alertes"
+msgstr "🔔 Warnungen einstellen"
+
+msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
+msgstr "Im Tab Rechte: was bei einer Kontrolle oder Festnahme zu tun ist, und die Nummern der Legal Teams (EA)."
+
+msgid "Cortège est gratuit et financé par les dons."
+msgstr "Cortège ist kostenlos und wird durch Spenden finanziert."
+
+msgid "Soutenir le projet"
+msgstr "Das Projekt unterstützen"
+
+msgid "Suivre sur Instagram"
+msgstr "Auf Instagram folgen"
+
+msgid "Passer"
+msgstr "Überspringen"
+
+msgid "Suivant"
+msgstr "Weiter"
+
+msgid "<b>🤖 Cortège est sur le Play Store</b> <span>L’appli Android s’installe aussi depuis Google Play. Le site et l’installation depuis le navigateur restent là, sans compte Google.</span> <span class=\"tc-btn\">Voir sur Google Play →</span>"
+msgstr "<b>🤖 Cortège ist im Play Store</b> <span>Die Android-App lässt sich auch über Google Play installieren. Die Website und die Installation aus dem Browser bleiben, ohne Google-Konto.</span> <span class=\"tc-btn\">Bei Google Play ansehen →</span>"
+
+msgid "Revoir la présentation de l’appli"
+msgstr "Einführung noch einmal ansehen"

@@ -5184,3 +5184,90 @@ msgstr ""
 
 msgid "Je participe au test →"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/17-orga.js
+msgid "Pas de réseau : l’espace orga se chargera quand ça capte."
+msgstr ""
+
+#: client/app/26-modes.js
+msgid "Pas de réseau : la présentation se chargera quand ça capte."
+msgstr ""
+
+#: client/app/31-idees.js
+msgid "Pas de réseau : les idées se chargeront quand ça capte."
+msgstr ""
+
+#: client/app/32-enregistrement.js
+msgid "Pas de réseau : l’enregistreur se chargera quand ça capte."
+msgstr ""
+
+#: client/parts/orga.js
+msgid "📷 {n} photo à vérifier"
+msgid_plural "📷 {n} photos à vérifier"
+msgstr[0] ""
+msgstr[1] ""
+
+# --- 2.22 : premier lancement, Play Store, impression du code de secours ---
+msgid "Cortège · accès medic · {site} · code créé le {date}"
+msgstr ""
+
+msgid "Cortège · accès orga · {site} · code créé le {date}"
+msgstr ""
+
+msgid "C’est parti"
+msgstr ""
+
+msgid "Bienvenue sur Cortège"
+msgstr ""
+
+msgid "La carte des manifs en direct, tenue par celles et ceux qui y sont. Sans compte, sans pub, sans pistage."
+msgstr ""
+
+msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
+msgstr ""
+
+msgid "◎ Me situer"
+msgstr ""
+
+msgid "Signaler en deux appuis"
+msgstr ""
+
+msgid "Le bouton Signaler est au centre, en bas. Charge, nasse, lacrymo : un seul appui. Pour le reste : la famille, puis le type."
+msgstr ""
+
+msgid "Un signalement disparaît seul quand il n’est plus d’actualité. Sur place et tu ne vois plus rien ? Le bouton <b class=\"nw\">« Plus là »</b> le retire plus vite."
+msgstr ""
+
+msgid "Être prévenu·e"
+msgstr ""
+
+msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
+msgstr ""
+
+msgid "🔔 Régler les alertes"
+msgstr ""
+
+msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
+msgstr ""
+
+msgid "Cortège est gratuit et financé par les dons."
+msgstr ""
+
+msgid "Soutenir le projet"
+msgstr ""
+
+msgid "Suivre sur Instagram"
+msgstr ""
+
+msgid "Passer"
+msgstr ""
+
+msgid "Suivant"
+msgstr ""
+
+msgid "<b>🤖 Cortège est sur le Play Store</b> <span>L’appli Android s’installe aussi depuis Google Play. Le site et l’installation depuis le navigateur restent là, sans compte Google.</span> <span class=\"tc-btn\">Voir sur Google Play →</span>"
+msgstr ""
+
+msgid "Revoir la présentation de l’appli"
+msgstr ""

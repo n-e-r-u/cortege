@@ -74,6 +74,15 @@
     });
   });
 
-  // Premier lancement : on montre les réflexes (et la carte @neru) une fois
-  try { if (!localStorage.getItem('cortege-seen')) { $('#sheetInfo').hidden = false; localStorage.setItem('cortege-seen', '1'); } } catch {}
+  // Premier lancement : trois écrans (ta zone, signaler, alertes), une seule fois. Leur script n'est chargé que ce jour-là.
+  // Pas avec une invitation ou un lien vers un point, une idée, les nouveautés : la personne vient pour autre chose.
+  // Sans réseau pour les charger : la page Plus, comme avant.
+  const openWelcome = () => loadPart('accueil', () => ({ $, t, closeSheets, addSheet, locate, openNotif })).then(m => m.open());
+  try {
+    if (!localStorage.getItem('cortege-seen')) {
+      localStorage.setItem('cortege-seen', '1');
+      if (!/[?&](invite|orga|medic|point|idee|nouveautes|rejoindre|espace)\b/.test(START_QS)) openWelcome().catch(() => { $('#sheetInfo').hidden = false; });
+    }
+  } catch {}
+  $('#btnWelcome').onclick = () => openWelcome().catch(() => toast('Pas de réseau : la présentation se chargera quand ça capte.'));
 

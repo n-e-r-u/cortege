@@ -53,7 +53,7 @@ async function publicApiRoutes(req, res, url, pathname) {
   if (req.method === 'GET' && pathname === '/api/config')
     { const S = settings(), banner = bannerNow(), I = instance();
     return send(res, 200, { event: banner || I.event, banner: !!banner, center: S.view ? [S.view.lat, S.view.lng] : CENTER, zoom: S.view ? S.view.zoom : ZOOM,
-      alertRadius: S.alertRadius || 300, nearKm: nearKm(), androidTest: S.androidTest || null, poiKinds: POI_KINDS, orderKinds: ORDER_KINDS, refuge: { glyphs: REFUGE_GLYPHS, colors: REFUGE_COLORS, services: REFUGE_SERVICES }, deps: DEPS.map(d => [d.c, d.n]), cfgh: cfgHash(),
+      alertRadius: S.alertRadius || 300, nearKm: nearKm(), androidTest: S.androidTest || null, playStore: S.playStore || null, poiKinds: POI_KINDS, orderKinds: ORDER_KINDS, refuge: { glyphs: REFUGE_GLYPHS, colors: REFUGE_COLORS, services: REFUGE_SERVICES }, deps: DEPS.map(d => [d.c, d.n]), cfgh: cfgHash(),
       brand: I.brand, credit: showCredit(), violenceUrl: I.violenceUrl, contact: I.contact, hostInfo: I.hostInfo, sourceUrl: I.sourceUrl, categories: activeCategories(), profiles: clientProfiles(), merge: MERGE, offlineTiles: TILE_PREFETCH || !!pmInfo(), groups: GROUPS, eventTypes: EVENT_TYPES, pushKey: VAPID.pub, vibes: VIBES, alertCats: [...ALERT_CATS], dirCats: [...DIR_CATS], countCats: [...COUNT_CATS], stream: STREAM_ON, vector: pmInfo(), version: APP_VERSION, onion: /^[a-z2-7]{56}\.onion$/.test(ONION_HOST) ? ONION_HOST : null, accessLogs: process.env.ACCESS_LOGS === 'none' ? 'none' : '' }, { 'Cache-Control': 'no-cache' }); }
   
   // ---- Notifications : abonnement / désabonnement (zone arrondie à ≈ 10 km) ----

@@ -1086,3 +1086,19 @@ body.medic.md-nosig .leaflet-reports-pane { display: none; }
 .org-list .md-devs-row[hidden] { display: none; }
 .org-list.md-devs { margin: 0; }
 .org-list.md-devs li { padding: 6px 0; }
+/* ---- 2.22 : premier lancement (trois écrans, une seule fois) ---- */
+.sheet.welcome { padding-top: 22px; }
+.wl-step h2 { font-size: 24px; margin: 0 0 10px; }
+.wl-step p { margin: 0 0 12px; font-size: 15.5px; line-height: 1.45; }
+.wl-step .secondary { margin: 2px 0 14px; }
+.wl-step .wl-credit { font-size: 13px; margin-top: 4px; }
+.wl-credit a { color: var(--accent); font-weight: 700; }
+.wl-foot { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin-top: 6px; }
+.wl-foot .link-btn { justify-self: start; color: var(--muted); padding: 10px 0; }
+.wl-foot .install { justify-self: end; padding: 0 22px; grid-column: 3; }
+.wl-dots { display: flex; gap: 6px; grid-column: 2; }
+.wl-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.wl-dots i.on { background: var(--accent); }
+.wl-step .nw { white-space: nowrap; }
+/* Orga : pastille des photos en attente de vérification, sous celle de l'enregistrement */
+.photo-chip { z-index: 1001; top: calc(env(safe-area-inset-top, 0px) + 108px); background: var(--surface); color: var(--fg); border: 1px solid var(--line); }

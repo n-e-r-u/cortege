@@ -10,6 +10,7 @@
     setTimeout(() => { $('#copyEmbed').textContent = 'Copier le code'; }, 2000);
   });
   fetch('/api/config').then(r => r.json()).then(c => {
+    if (c.playStore) { $('#playLink').href = c.playStore; $('#playLine').hidden = false; }
     if (!c.contact) return;
     $('#contactLink').href = 'mailto:' + c.contact + '?subject=' + encodeURIComponent('Cortège : demande presse');
     $('#contactLink').textContent = c.contact;

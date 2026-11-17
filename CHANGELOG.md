@@ -4,9 +4,25 @@ Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'exis
 
 ## 2.22.0 (en cours)
 
-**Test fermé du Play Store** : Admin › Réglages › « Test de l’appli Android », le lien de la page d’inscription. Rempli, il affiche un bandeau en haut de la carte sur les téléphones Android (pas dans l’appli du Play Store elle-même ; une fois fermé, il ne revient pas sur ce téléphone, sauf si le lien change) et un cadre « Cortège arrive sur le Play Store » dans Plus. Vide, rien n’apparaît : les autres instances ne sont pas concernées.
+**Plus léger au démarrage** : ce que peu de téléphones utilisent n'est plus téléchargé par tout le monde.
+- **Espace orga, enregistreur de son et boîte à idées chargés à la demande** (comme l'écran medic) : leur script et leur fiche n'arrivent que sur un téléphone qui a une clé d'orga, au premier appui sur 🎙️ ou à la première ouverture des idées. L'enregistreur est gardé d'avance par le service worker, pour s'ouvrir aussi sans réseau.
+- Script de départ : 273 Ko → 226 Ko (85 → 72 Ko compressé). Page : 82 Ko → 65 Ko (22 → 18 Ko compressé). Le code reste lisible tel quel sur le serveur, sans compression.
+- Styles et variables qui ne servaient plus retirés. Un lien d'accès orga suivi d'un autre paramètre (`?orga=…&at=…`) n'est plus perdu.
 
-**Appli Android 1.0.2** : l'appli n'est plus bloquée en portrait, elle tourne avec le téléphone comme le site dans le navigateur (demandé par le Play Store pour les tablettes et les téléphones pliables, où Android 16 ignore ce blocage).
+**Premier lancement** : trois écrans courts à la première visite (se situer, signaler en deux appuis, régler les alertes), qu'on peut passer, à la place de la page Plus. Pas après une invitation ni un lien vers un point. À revoir depuis Plus › « Revoir la présentation de l'appli ».
+
+**Photos à vérifier** :
+- **Admin › Modération** : nouvelle carte « Photos à regarder », tous jours confondus. Les photos cachées après des signalements (remettre ou supprimer) et celles en attente parce que leur point n'est pas vérifié (vérifier le point ou supprimer). Elles comptent dans la pastille de l'onglet.
+- **Orgas certifiées** : une pastille « 📷 photos à vérifier » sur la carte quand un point affiché a une photo en attente ; un appui ouvre le plus proche, où l'orga voit la photo et vérifie ou retire le point.
+
+**Play Store** :
+- **Test fermé** : Admin › Réglages › « Test de l’appli Android », le lien de la page d’inscription. Rempli, il affiche un bandeau en haut de la carte sur les téléphones Android (pas dans l’appli du Play Store elle-même ; une fois fermé, il ne revient pas sur ce téléphone, sauf si le lien change) et un cadre « Cortège arrive sur le Play Store » dans Plus. Vide, rien n’apparaît : les autres instances ne sont pas concernées.
+- **Appli publiée** : « Fiche Google Play » dans les mêmes réglages. Le cadre de Plus devient « Cortège est sur le Play Store » (pas sur iPhone ni dans l'appli elle-même), le test fermé n'est plus proposé, et le lien apparaît sur l'espace presse et la page « Pour les orgas ».
+- **Appli Android 1.0.2** : l'appli n'est plus bloquée en portrait, elle tourne avec le téléphone comme le site dans le navigateur (demandé par le Play Store pour les tablettes et les téléphones pliables, où Android 16 ignore ce blocage).
+
+**Impression du code de secours** : la feuille sortait décalée et coupée (titre absent, code hors de la page). Elle est recadrée, en noir sur blanc, avec en bas le type d'accès (orga ou medic), l'adresse de l'instance et la date du code.
+
+**README** refait : aperçu en image, entrées selon qui lit (en manif, orga ou street medic, héberger, participer), fonctions récentes.
 
 ## 2.21.1
 
