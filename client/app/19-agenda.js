@@ -8,7 +8,6 @@
   // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
   // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda
   const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
-  evCount = () => evCache.e.filter(e => map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now()).length;
   map.on('zoomend', () => { const z = map.getZoom() >= 9; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
   function evPopup(e) {
     const ty = EVT[e.type] || { glyph: '📍', label: '' };

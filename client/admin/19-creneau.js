@@ -1,5 +1,5 @@
 // ==== Carte d'un créneau : image PNG des signalements actifs pendant un créneau, autour d'un lieu ====
-const { COL: SLOT_COL, FAM: SLOT_FAM } = window.cortegeCreneau;
+const { FAM: SLOT_FAM } = window.cortegeCreneau;
 let slotData = null;
 const slotGeocode = q => window.cortegeCreneau.geocode(q);
 function slotRows(c, R, from, to) {

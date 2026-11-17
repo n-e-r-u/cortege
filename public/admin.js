@@ -1033,7 +1033,7 @@ async function adminDownload(url, name) {
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
 }
 // ==== Carte d'un créneau : image PNG des signalements actifs pendant un créneau, autour d'un lieu ====
-const { COL: SLOT_COL, FAM: SLOT_FAM } = window.cortegeCreneau;
+const { FAM: SLOT_FAM } = window.cortegeCreneau;
 let slotData = null;
 const slotGeocode = q => window.cortegeCreneau.geocode(q);
 function slotRows(c, R, from, to) {

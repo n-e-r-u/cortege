@@ -103,17 +103,8 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 [data-theme="light"] .neru-sig img { filter: none; }
 .by { font-weight: 500; font-size: 12px; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
 .by b { color: var(--accent); font-weight: 700; }
-.ig-card { display: flex; flex-direction: column; gap: 12px; margin: 10px 0 16px; padding: 14px; border-radius: var(--radius); color: var(--fg);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 24%, var(--surface-2)), color-mix(in srgb, var(--accent-2) 30%, var(--surface-2))); border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); }
-.ig-head { display: flex; align-items: center; gap: 12px; }
 .ig-logo { width: 56px; height: 56px; object-fit: contain; flex: none; }
 .ig-txt { display: flex; flex-direction: column; min-width: 0; }
-.ig-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.ig-handle { font-size: 22px; font-weight: 800; line-height: 1.15; }
-.ig-line { font-size: 13px; color: color-mix(in srgb, var(--fg) 80%, transparent); margin-top: 2px; }
-.ig-links { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; }
-.ig-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 14px; color: var(--fg); background: rgba(0,0,0,.25); border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent); }
-.ig-btn-main { background: var(--brand-grad); color: var(--grad-fg); border: 0; }
 .credit { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .credit a { color: var(--accent); font-weight: 700; text-decoration: none; }
 .name { font-weight: 800; letter-spacing: .02em; font-size: 17px; line-height: 1.1; }
@@ -196,7 +187,6 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .fam-send { width: 100%; flex-direction: row; min-height: 56px; margin: 4px 0 2px; font-size: 15px; font-weight: 700; border-color: var(--c); }
 .cat:active { border-color: var(--c); background: color-mix(in srgb, var(--c) 20%, var(--surface-2)); }
 .note-label { display: block; margin: 16px 0 6px; font-size: 13px; color: var(--muted); }
-#srNote { width: 100%; height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font: inherit; }
 .fine { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
 .list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; }
@@ -279,7 +269,6 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 
 /* ---- Haut droit : chip orga + partage ---- */
 .top-right { display: flex; align-items: center; gap: 8px; flex: none; }
-.share-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); display: grid; place-items: center; padding: 0; }
 .orga-chip { font-size: 11px; font-weight: 800; letter-spacing: .08em; padding: 5px 8px; border-radius: 99px; background: var(--info-strong); color: #fff; }
 @media (max-width: 440px) { .status .txt { display: none; } .status { padding: 9px; } .by { display: block; margin-left: 0; } }
 
@@ -337,7 +326,6 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .qr-url { text-align: center; font-weight: 800; font-size: 18px; margin: 0 0 12px; }
 .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .row2 .secondary { font-size: 14px; }
-.share-wide { margin: 0 0 14px; }
 
 /* ---- Mes droits ---- */
 .legal-box { background: var(--surface-2); border: 1px solid var(--soutien); border-radius: 14px; padding: 12px 14px; margin: 6px 0 12px; }
@@ -448,12 +436,10 @@ details.right b { color: var(--fg); }
 .ag-list li { grid-template-columns: 36px 1fr auto; }
 .ag-day { display: block !important; padding: 14px 0 4px !important; border-bottom: 0 !important; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .ag-list .by { display: inline; margin: 0; font-size: 12px; }
-.ag-del { height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--fdo); background: none; color: var(--bad-text); font-size: 12px; }
 #btnPropose, .orga-event-btn { margin-top: 14px; }
 .ev-route { display: flex; flex-direction: column; gap: 6px; }
 .ev-pin { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; background: var(--accent); border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.6); }
 .ev-end { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; background: var(--surface); border: 2px solid var(--accent); }
-.ev-route-line { stroke: var(--accent); }
 .draw-pt { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; }
 
 /* ---- Barre de tracé du parcours ---- */
@@ -463,7 +449,7 @@ details.right b { color: var(--fg); }
 .drawbar-actions { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 8px; }
 .drawbar-actions .secondary { height: 50px; font-size: 14px; }
 @media (min-width: 640px) { .drawbar { left: 50%; right: auto; width: 560px; transform: translateX(-50%); } }
-body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: none; }
+body.drawing .tools, body.drawing .overlays { display: none; }
 
 /* ---- Bien se préparer ---- */
 .prep-wide { width: 100%; margin: 0 0 10px; }
@@ -499,11 +485,10 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 
 /* Soutien Ko-fi et demande d'accès orga */
 .support-card, .orga-card { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); }
-.support-card p, .orga-card p { margin: 0; font-size: 13.5px; line-height: 1.4; color: color-mix(in srgb, var(--fg) 85%, transparent); }
+.orga-card p { margin: 0; font-size: 13.5px; line-height: 1.4; color: color-mix(in srgb, var(--fg) 85%, transparent); }
 .card-title { font-size: 15px; }
-.support-card a.install, .orga-card a.secondary { display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 4px; }
+.orga-card a.secondary { display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 4px; }
 .orga-card .fine { font-size: 12px; color: var(--muted); }
-.round.kofi-tool { text-decoration: none; border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
 .round[hidden] { display: none; }
 .cluster.nat { cursor: pointer; box-shadow: 0 0 0 6px color-mix(in srgb, var(--c) 25%, transparent), 0 4px 14px rgba(0,0,0,.5); }
 .trial-note { border-left: 3px solid var(--info); padding-left: 10px; }
@@ -546,7 +531,6 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 
 /* Logo Ko-fi (bouton rond et carte de soutien) */
 .kofi-ico { width: 30px; height: auto; display: block; }
-.kofi-ico.sm { width: 22px; display: inline-block; vertical-align: -4px; margin-right: 4px; }
 
 /* Alertes et notifications */
 .round.bell[data-on="0"] { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
@@ -600,18 +584,9 @@ body.drawing .bottombar, body.drawing .tools, body.drawing .overlays { display: 
 .tile > span:last-child { display: flex; flex-direction: column; min-width: 0; }
 .tile b { font-size: 14.5px; }
 .tile small { font-size: 12px; color: var(--muted); line-height: 1.25; }
-.tile-rights { border-color: var(--soutien); }
-.tile-kofi { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
 .tile.bell[data-on="0"] { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
-.github-card { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 14px; border-radius: var(--radius); text-decoration: none;
-  color: var(--fg); background: var(--surface-2); border: 1px solid var(--fg); }
-.github-card span { display: flex; flex-direction: column; gap: 2px; }
-.github-card b { font-size: 15px; }
-.github-card small { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
-.sheet.panel .ig-card { margin-top: 0; }
 .sheet.panel .orga-card { margin-top: 4px; }
 .menu-foot { margin-top: 18px; }
-.round.menu-btn { color: var(--fg); }
 
 #onionAddr { word-break: break-all; font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 6px; }
 
@@ -788,7 +763,6 @@ body.drawing .tabbar, body.drawing .manif-bar { display: none; }
 .layer[aria-pressed="true"] { color: var(--fg); border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface-2)); }
 .layer[aria-pressed="true"]::before { background: var(--c); }
 .layer .n { margin-inline-start: auto; font-family: var(--font-num); font-size: 12px; color: var(--muted); }
-#layerToggles .switch-more { margin-inline-start: auto; align-self: center; }
 
 /* Effacer tout : appui long */
 .wipe-btn { position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 14px;
@@ -889,13 +863,23 @@ body:not(.medic) .medic-card { bottom: calc(var(--safe-b) + 84px); }
 /* Code de secours */
 .rec-code { margin: 14px 0; padding: 16px 10px; border-radius: 14px; border: 2px dashed var(--accent); background: var(--surface-2); text-align: center; font: 800 20px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .06em; user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; direction: ltr; }
 #rvCode { font: 700 18px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .05em; text-transform: uppercase; direction: ltr; }
+/* Mention imprimée seulement (date, type d'accès) */
+.rec-print { display: none; }
+/* Impression du code de secours : la fiche seule, en haut de la feuille, en noir sur blanc. Sur une feuille (écran large), une fiche
+   est centrée par un décalage (transform) et son en-tête reste collé en haut : les deux sont annulés, sinon la fiche sort de la page. */
 @media print {
   body.print-rec { background: #fff !important; }
   body.print-rec * { visibility: hidden; }
   body.print-rec #sheetRec, body.print-rec #sheetRec * { visibility: visible; color: #000 !important; background: transparent !important; box-shadow: none !important; }
-  body.print-rec #sheetRec { position: absolute !important; inset: 0 auto auto 0; width: 100%; max-height: none !important; height: auto !important; overflow: visible !important; padding: 24px !important; }
+  body.print-rec #sheetRec { position: absolute !important; inset: 0 auto auto 0 !important; transform: none !important; animation: none !important; width: 100% !important; max-width: 150mm;
+    max-height: none !important; height: auto !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; font-size: 12pt; }
+  body.print-rec #sheetRec .sheet-head { position: static !important; margin: 0 0 8pt !important; padding: 0 !important; }
+  body.print-rec #sheetRec h2 { font-size: 18pt; }
   body.print-rec #sheetRec button { display: none !important; }
-  body.print-rec .rec-code { border-color: #000 !important; }
+  body.print-rec #sheetRec p { font-size: 11pt; line-height: 1.4; }
+  body.print-rec #sheetRec .rec-code { border: 2pt dashed #000 !important; font-size: 20pt; padding: 14pt 8pt; break-inside: avoid; }
+  body.print-rec .access-warn { border: 1pt solid #000 !important; }
+  body.print-rec .rec-print { display: block; margin-top: 14pt; padding-top: 6pt; border-top: 1pt solid #000 !important; font-size: 9.5pt !important; }
 }
 
 /* ======================= 2.5 : langues de droite à gauche (arabe) ======================= */

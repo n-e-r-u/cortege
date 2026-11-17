@@ -4,7 +4,7 @@
   function busyNow() {
     const a = document.activeElement;
     return !$('#crosshair').hidden || !$('#noteCard').hidden || typingInPopup() || !!(a && a.matches && a.matches('input, textarea, select'))
-      || sheets.some(s => s !== '#sheetInfo' && !$(s).hidden);
+      || sheets.some(s => s !== '#sheetInfo' && sheetOpen(s));
   }
   function reloadForUpdate() {
     try { const c = map.getCenter(); sessionStorage.setItem('cortege-view', JSON.stringify({ c: [c.lat, c.lng], z: map.getZoom() })); } catch {}

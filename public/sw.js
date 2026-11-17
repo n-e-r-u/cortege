@@ -5,7 +5,7 @@ const SHELL = 'cortege-shell-v91', TILES = 'cortege-tiles-v1';
 const FLOUTEUR = 'cortege-flouteur-v1';
 // Fichiers de la page du Flouteur (PAGE_FILES dans flouter-lib.js) : /flouter, /flouter.js et /flouter-*.js
 const FLOUTEUR_PAGE = /^\/flouter(\.js|-\w+\.js)?$/;
-const ASSETS = ['/', '/style.css', '/theme.css', '/theme.js', '/deeplink.js', '/vendor/fonts/anton-400.woff2', '/lang/langs.js', '/i18n.js', '/app.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
+const ASSETS = ['/', '/style.css', '/theme.css', '/theme.js', '/deeplink.js', '/vendor/fonts/anton-400.woff2', '/lang/langs.js', '/i18n.js', '/app.js', '/app-son.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/vendor/protomaps-leaflet.js', '/map-style.js', '/vendor/fonts/inter-400.woff2', '/vendor/fonts/inter-700.woff2', '/favicon.png', '/brand/logo.png', '/brand/pin.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil((async () => {

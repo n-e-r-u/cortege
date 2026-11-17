@@ -68,6 +68,6 @@
     if (shown.length > maxBanners) box.append(el('div', { class: 'ann-more' }, tn(shown.length - maxBanners, '+ {n} autre annonce', '+ {n} autres annonces')));
     list.forEach(a => seenAnns.add(a.id));
     renderLegal();
-    if (!$('#sheetOrga').hidden) renderOrgaList();
+    if (orgaMod) orgaMod.annsChanged();
   }
 

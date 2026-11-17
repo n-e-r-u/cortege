@@ -1,0 +1,23 @@
+<section class="sheet" id="sheetIdeas" hidden aria-labelledby="idTitle">
+  <div class="sheet-head">
+    <h2 id="idTitle">Idées pour Cortège</h2>
+    <button class="x" id="idClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="fine">Propose une amélioration, ou vote pour ou contre celles des autres : les idées les mieux soutenues passent en priorité. Chaque idée est relue avant d’être publiée. Pas de compte, et ton vote n’est relié à rien d’autre.</p>
+  <div class="idea-tabs" role="tablist" aria-label="Idées">
+    <button type="button" role="tab" data-v="top" aria-selected="true">Les plus votées</button>
+    <button type="button" role="tab" data-v="new" aria-selected="false">Récentes</button>
+    <button type="button" role="tab" data-v="done" aria-selected="false">Faites</button>
+    <button type="button" role="tab" data-v="no" aria-selected="false">Pas retenues</button>
+  </div>
+  <ul class="idea-list" id="ideaList" aria-live="polite"></ul>
+  <button type="button" class="install" id="ideaNew">Proposer une idée</button>
+  <form class="idea-form" id="ideaForm" hidden>
+    <label class="note-label">Ton idée en une phrase<input id="ideaTitle" maxlength="80" required placeholder="ex. : afficher les toilettes publiques"></label>
+    <div class="idea-similar" id="ideaSimilar" hidden><p class="fine">Ça ressemble peut-être à :</p><ul id="ideaSimilarList"></ul></div>
+    <label class="note-label">Explique en quelques mots (facultatif)<textarea id="ideaBody" maxlength="400" rows="3" placeholder="À quoi ça servirait pendant une manif ?"></textarea></label>
+    <p class="fine">Pas de lien ni d’information personnelle. 3 idées par jour au plus.</p>
+    <div class="row2"><button class="install" type="submit">Envoyer</button><button type="button" class="secondary" id="ideaCancel">Annuler</button></div>
+  </form>
+  <p class="fine" id="ideaMsg" role="status"></p>
+</section>

@@ -8,7 +8,6 @@
   const MIN = 60_000;
   const ALERT_CATS = new Set(['sommations', 'lacrymo', 'canon', 'charge', 'tirs', 'facho', 'nasse', 'bac', 'civil', 'inter', 'blinde', 'crs', 'interpellation']);
   let orga = null; // { label, admin } quand ce téléphone a un lien orga
-  let beacon = null; // position partagée en direct par une orga : { role, until, timer, lock }
   let announcements = [];
   // Économie de batterie : rafraîchissement espacé, GPS moins précis, boussole coupée
   let eco = false; try { eco = localStorage.getItem('cortege-eco') === '1'; } catch {}

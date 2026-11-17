@@ -3,7 +3,8 @@
 // Assemble les scripts du téléphone et de l'admin à partir de leurs morceaux, rangés par fonction dans client/ :
 //   client/app/*.js   → public/app.js   (dans l'ordre des numéros, à l'intérieur d'une seule fonction : le code partage ses variables)
 //   client/admin/*.js → public/admin.js
-//   client/parts/x.js → public/app-x.js  (copié tel quel : une partie chargée à la demande, qui reçoit du reste de l'appli ce dont elle a besoin)
+//   client/parts/x.js → public/app-x.js  (une partie chargée à la demande, qui reçoit du reste de l'appli ce dont elle a besoin ;
+//                                         avec sa fiche client/parts/x.html si elle en a une)
 // Les fichiers assemblés sont gardés dans le dépôt : le serveur les sert tels quels, sans étape de construction au déploiement.
 // Usage : node tools/build-client.js          (assemble)
 //         node tools/build-client.js --check  (vérifie que public/ est à jour, sans rien écrire ; utilisé par les tests)
@@ -32,6 +33,15 @@ for (const b of BUNDLES) {
   }).join('') + b.foot;
   put(b.out, code, `${parts.length} morceaux`);
 }
-for (const f of fs.readdirSync(path.join(ROOT, 'client/parts')).filter(f => /^[\w-]+\.js$/.test(f)).sort())
-  put('public/app-' + f, fs.readFileSync(path.join(ROOT, 'client/parts', f), 'utf8'), 'partie à la demande');
+// Une partie peut avoir sa fiche (client/parts/x.html) : elle voyage dans le même fichier, sous window.cortegeHtml.x,
+// et la partie l'ajoute à la page avec core.addSheet. Les lignes vides et les retraits sont retirés.
+for (const f of fs.readdirSync(path.join(ROOT, 'client/parts')).filter(f => /^[\w-]+\.js$/.test(f)).sort()) {
+  const name = f.slice(0, -3), htmlFile = path.join(ROOT, 'client/parts', name + '.html');
+  let head = '';
+  if (fs.existsSync(htmlFile)) {
+    const html = fs.readFileSync(htmlFile, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !/^<!--.*-->$/.test(l)).join('\n');
+    head = `(window.cortegeHtml = window.cortegeHtml || {}).${name} = ${JSON.stringify(html)};\n`;
+  }
+  put('public/app-' + f, head + fs.readFileSync(path.join(ROOT, 'client/parts', f), 'utf8'), 'partie à la demande');
+}
 process.exit(stale ? 1 : 0);

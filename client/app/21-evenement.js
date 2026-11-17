@@ -47,7 +47,6 @@
   $('#btnPropose').onclick = () => openEventForm(!!orga);
   $('#btnAnnounce').onclick = () => openEventForm(!!orga);
   $('#btnOrganize').onclick = () => openEventForm(!!orga);
-  $('#btnOrgaEvent').onclick = () => openEventForm(true);
   $('#evForm').addEventListener('submit', async ev => {
     ev.preventDefault();
     if (!draft.route.length) { toast('Place d’abord le rendez-vous sur la carte.'); return; }

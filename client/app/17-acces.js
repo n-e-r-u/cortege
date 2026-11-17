@@ -52,7 +52,10 @@
       el('p', { class: 'rec-code', id: 'recCode' }, document.createTextNode(code)),
       el('p', { class: 'access-warn' }, el('b', {}, t('Il ne sera plus jamais affiché.')), ' ',
         t('Note-le maintenant, ailleurs que sur ce téléphone et que dans ton sac de manif : gestionnaire de mots de passe, papier chez toi, ou chez une personne de confiance. Ce code vaut ta clé : ne le donne à personne d’autre.')),
-      el('p', { class: 'fine' }, t('Pour t’en servir : Plus › « J’ai perdu mon accès », sur n’importe quel téléphone. Il ne sert qu’une fois : un nouveau code te sera donné à ce moment-là.')));
+      el('p', { class: 'fine' }, t('Pour t’en servir : Plus › « J’ai perdu mon accès », sur n’importe quel téléphone. Il ne sert qu’une fois : un nouveau code te sera donné à ce moment-là.')),
+      // Sur la feuille imprimée seulement : de quel accès il s'agit et de quand date le code (plusieurs feuilles se ressemblent)
+      el('p', { class: 'rec-print' }, t(kind === 'medic' ? 'Cortège · accès medic · {site} · code créé le {date}' : 'Cortège · accès orga · {site} · code créé le {date}',
+        { site: location.host, date: new Date().toLocaleDateString(I18N.locale, { day: 'numeric', month: 'long', year: 'numeric' }) })));
     const copy = el('button', { class: 'secondary', type: 'button' }, t('Copier le code'));
     copy.onclick = async () => { try { await navigator.clipboard.writeText(code); toast('Code copié'); } catch { toast('Copie impossible : note-le à la main'); } };
     const print = el('button', { class: 'secondary', type: 'button' }, t('Imprimer'));

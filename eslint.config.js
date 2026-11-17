@@ -14,7 +14,7 @@ module.exports = [{
   // Parties du téléphone chargées à la demande (client/parts) : elles ne partagent pas les variables du reste de l'appli.
   // Un nom qu'elles utilisent sans le recevoir (« core ») est une erreur, attrapée ici plutôt que sur le terrain.
   files: ['client/parts/*.js'],
-  languageOptions: { sourceType: 'script', globals: Object.fromEntries(['window', 'document', 'location', 'history', 'localStorage', 'navigator', 'Option', 'L'].map(n => [n, 'readonly'])) },
+  languageOptions: { sourceType: 'script', globals: Object.fromEntries(['window', 'document', 'location', 'history', 'localStorage', 'navigator', 'indexedDB', 'Option', 'Image', 'File', 'Event', 'MutationObserver', 'L'].map(n => [n, 'readonly'])) },
 }, {
   // Scripts assemblés du téléphone et de l'admin : un nom inconnu (fonction déplacée dans une partie à la demande, faute de frappe)
   // casserait l'appli sur le terrain. Seuls les noms du navigateur et des bibliothèques de public/vendor sont admis.

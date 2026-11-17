@@ -1,6 +1,8 @@
   // ---- Signaler ----
   const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon'];
-  const closeSheets = () => sheets.forEach(s => ($(s).hidden = true));
+  // Certaines fiches n'arrivent dans la page qu'avec leur partie chargée à la demande (espace orga, idées, enregistreur) : voir addSheet
+  const sheetOpen = s => { const x = $(s); return !!x && !x.hidden; };
+  const closeSheets = () => sheets.forEach(s => { const x = $(s); if (x) x.hidden = true; });
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
   // Pages des onglets (Infos, Droits, Plus) : plein écran au-dessus de la barre, sans fond assombri
@@ -14,12 +16,31 @@
     }
   }
   const syncBackdrop = () => {
-    backdrop.hidden = !sheets.some(s => s !== '#sheetReport' && !isPage(s) && !$(s).hidden);
+    backdrop.hidden = !sheets.some(s => s !== '#sheetReport' && !isPage(s) && sheetOpen(s));
     if ($('#sheetEvent').hidden && !drawing) drawLayer.clearLayers();
     syncTabs();
   };
   const sheetWatch = new MutationObserver(syncBackdrop);
-  sheets.forEach(s => sheetWatch.observe($(s), { attributes: true, attributeFilter: ['hidden'] }));
+  sheets.forEach(s => { const x = $(s); if (x) sheetWatch.observe(x, { attributes: true, attributeFilter: ['hidden'] }); });
+  // Fiche d'une partie chargée à la demande : ajoutée à la page (traduite), suivie comme les autres
+  function addSheet(html) {
+    const tpl = document.createElement('template'); tpl.innerHTML = html;
+    for (const n of [...tpl.content.children]) {
+      $('#toast').before(n);
+      if (I18N.translate) I18N.translate(n);
+      if (n.classList.contains('sheet')) sheetWatch.observe(n, { attributes: true, attributeFilter: ['hidden'] });
+    }
+  }
+  // Partie chargée à la demande (public/app-<nom>.js, fabriquée à partir de client/parts/) : son script pose window.cortege<Nom>,
+  // appelé une seule fois avec ce dont elle a besoin. En cas d'échec (pas de réseau), le prochain appel réessaie.
+  const partsLoaded = {};
+  function loadPart(name, core) {
+    return partsLoaded[name] || (partsLoaded[name] = new Promise((ok, ko) => {
+      const s = document.createElement('script'); s.src = '/app-' + name + '.js';
+      s.onload = ok; s.onerror = () => { s.remove(); ko(new Error('script')); };
+      document.head.append(s);
+    }).then(() => window['cortege' + name[0].toUpperCase() + name.slice(1)](core())).catch(e => { delete partsLoaded[name]; throw e; }));
+  }
   backdrop.addEventListener('click', () => closeSheets());
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { map.closePopup(); closeSheets(); if (!$('#crosshair').hidden) closeReport(); } });
   function openReport(at) {
