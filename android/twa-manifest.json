@@ -21,7 +21,7 @@
     "path": "./cortege-upload.keystore",
     "alias": "cortege"
   },
-  "appVersionCode": 2,
+  "appVersionCode": 3,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://cortege.neru.tv/manifest.webmanifest",
@@ -35,10 +35,10 @@
   "isMetaQuest": false,
   "fullScopeUrl": "https://cortege.neru.tv/",
   "minSdkVersion": 24,
-  "orientation": "portrait",
+  "orientation": "default",
   "fingerprints": [],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.1"
+  "appVersion": "1.0.2"
 }
