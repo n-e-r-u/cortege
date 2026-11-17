@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.21.1
+
+- **Fiche d'un point qui se refermait seule** sur les écrans peu hauts : une fiche plus haute que l'écran (avec une photo par exemple) décalait la carte au point d'en sortir le point, que le regroupement retirait alors, ce qui refermait la fiche. Sa hauteur est maintenant limitée et elle défile à l'intérieur, comme celle d'une pile de signalements.
+- **Équipes medic : 20 appareils** au lieu de 5 (une orga reste à 5).
+
 ## 2.21.0
 
 **Flouteur** (proposé par [MltStephane](https://github.com/MltStephane), [PR #27](https://github.com/n-e-r-u/cortege/pull/27)) : masque les visages d'une photo sur le téléphone avant de la publier, sans rien envoyer. Détection automatique (même les petits visages d'une foule), correction au doigt, pixellisation forte en gros blocs brouillés (pas de flou réversible), photo réenregistrée sans position GPS ni informations sur l'appareil, hors ligne une fois préparé, partage depuis la galerie. Corrigé avant la fusion : la bibliothèque de détection de Google (MediaPipe) envoie des statistiques d'utilisation à Google sans option pour les couper ; le worker du Flouteur a maintenant sa propre politique de sécurité, qui bloque toute requête hors du serveur (vérifié dans un navigateur : aucune requête vers Google pendant une détection).

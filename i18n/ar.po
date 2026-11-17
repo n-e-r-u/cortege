@@ -4655,8 +4655,8 @@ msgid "Par défaut, l’écran medic ne montre que les points des équipes. Ici,
 msgstr "افتراضيًا، لا تعرض شاشة المسعفين إلا نقاط الفرق. هنا تضيف البلاغات والأجندة والمسارات والأماكن التي ينشرها الجميع على Cortège."
 
 #: client/parts/medic.js
-msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
-msgstr "{n} جهاز (أجهزة) لديها وصول هذا الفريق (5 كحد أقصى). جهاز مفقود أو مُعار أو لم يعد في الفريق: احذفه فيفقد الوصول فورًا."
+msgid "{n} appareil(s) ont l’accès de cette équipe (20 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
+msgstr "{n} جهاز (أجهزة) لديها وصول هذا الفريق (20 كحد أقصى). جهاز مفقود أو مُعار أو لم يعد في الفريق: احذفه فيفقد الوصول فورًا."
 
 #: client/parts/medic.js
 msgid "Appareils"

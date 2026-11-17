@@ -275,6 +275,11 @@ test('public : type « Contrôle / barrage filtrant » pour tout le monde, sans 
   assert.equal((await req('POST', '/api/reports', { cat: 'calme', lat: 44.2004, lng: 4.2002 })).s, 200, 'une zone calme reste possible à côté (fusion)');
 });
 
+test('équipe medic : 20 appareils au plus, une orga reste à 5', () => {
+  const S = require('../src/orgas/sponsor');
+  assert.deepEqual([S.DEVICE_MAX, S.MEDIC_DEVICE_MAX], [5, 20]);
+});
+
 test('types 2.20 : policiers en civil (alerte, direction, nombre), lieu occupé, station fermée ; micro autorisé pour le site seul', async () => {
   const cfg = await fetch(B + '/api/config').then(r => r.json());
   const cat = id => cfg.categories.find(x => x.id === id);

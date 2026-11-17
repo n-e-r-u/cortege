@@ -170,7 +170,9 @@
       if (cur.marker.isPopupOpen() && !typingInPopup()) cur.marker.setPopupContent(popup(r));
     } else {
       const marker = L.marker([r.lat, r.lng], { icon: icon(r, fresh), keyboard: true, title: CAT[r.cat].label, cat: r.cat, pane: 'reports' });
-      marker.bindPopup(() => popup(reports.get(r.id).data));
+      // Hauteur limitée (la fiche défile) : une fiche plus haute que l'écran, avec une photo par exemple, décalait la carte au point
+      // de sortir le point de l'écran ; le regroupement le retirait alors, ce qui refermait la fiche.
+      marker.bindPopup(() => popup(reports.get(r.id).data), { maxHeight: Math.round(innerHeight * 0.55) });
       reports.set(r.id, { data: r, marker }); // affiché par regroup()
     }
   }

@@ -4595,8 +4595,8 @@ msgid "Par défaut, l’écran medic ne montre que les points des équipes. Ici,
 msgstr "Por defecto, la pantalla medic solo muestra los puntos de los equipos. Aquí añades los avisos, la agenda, los recorridos y los lugares de todo el mundo en Cortège."
 
 #: client/parts/medic.js
-msgid "{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
-msgstr "{n} dispositivo(s) tienen el acceso de este equipo (5 como máximo). Un dispositivo perdido, prestado o que ya no está en el equipo: retíralo y pierde el acceso al instante."
+msgid "{n} appareil(s) ont l’accès de cette équipe (20 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite."
+msgstr "{n} dispositivo(s) tienen el acceso de este equipo (20 como máximo). Un dispositivo perdido, prestado o que ya no está en el equipo: retíralo y pierde el acceso al instante."
 
 #: client/parts/medic.js
 msgid "Appareils"

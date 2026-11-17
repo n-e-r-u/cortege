@@ -216,7 +216,7 @@ window.cortegeMedic = function (core) {
     const addDev = el('button', { type: 'button', class: 'secondary' }, t('Ajouter un appareil'));
     addDev.onclick = async () => { try { showLink(t('Ajouter un appareil'), await mdFetch('/api/medic/device', { method: 'POST', body: '{}' }), t('Scanne ce QR code avec l’autre téléphone de l’équipe (ou ouvre-y le lien). Ne l’envoie à personne d’autre : il donne accès à la carte medic.')); } catch (e) { toast(e.message); } };
     const devList = el('ul', { class: 'org-list' });
-    box.append(h3(t('Appareils de l’équipe')), hint(t('{n} appareil(s) ont l’accès de cette équipe (5 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite.', { n: mdMe.devices })), devList, addDev);
+    box.append(h3(t('Appareils de l’équipe')), hint(t('{n} appareil(s) ont l’accès de cette équipe (20 au plus). Un appareil perdu, prêté ou qui n’est plus dans l’équipe : retire-le, il perd l’accès tout de suite.', { n: mdMe.devices })), devList, addDev);
     mdDevices(devList, '/api/medic/devices');
     // Code de secours
     const rec = el('button', { type: 'button', class: 'secondary' }, mdMe.rec ? t('Créer un nouveau code de secours') : t('Créer mon code de secours'));

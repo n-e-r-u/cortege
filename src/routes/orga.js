@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 const { authorOf, BEACON_ROLES, toReport, BEACON_MAX, BEACON_ZONE_M, publicView, addTrail, BEACON_TTL, TRAIL_CATS, TRAIL_MAX, addNote } = require('../reports/model');
 const { CAT, MERGE } = require('../categories');
-const { DEVICE_MAX, banUntil, newInvite, SPONSOR, orgaReady, DEVICE_MS } = require('../orgas/sponsor');
+const { DEVICE_MAX, MEDIC_DEVICE_MAX, banUntil, newInvite, SPONSOR, orgaReady, DEVICE_MS } = require('../orgas/sponsor');
 const { NEXT } = require('./next');
 const { NOTE_MAX, MIN } = require('../config');
 const { abuseLog } = require('../moderation');
@@ -74,14 +74,14 @@ async function orgaRoutes(req, res, url, pathname) {
     const b = await readJson(req);
     if (!validCode(b.code)) return send(res, 400, { error: 'Code de secours invalide : 20 caractères, par groupes de 4.' });
     const h = codeHash(b.code), key = crypto.randomBytes(18).toString('base64url'), rec = newCode(), cut = b.cut !== false, now = Date.now();
-    const renew = t => ({ ...t, ...(cut || !t.hash ? { hash: sha(key), keys: [] } : { keys: [...(t.keys || []), sha(key)].slice(-(DEVICE_MAX - 1)) }), devInv: undefined, rec: codeHash(rec), recAt: now });
+    const renew = (t, max = DEVICE_MAX) => ({ ...t, ...(cut || !t.hash ? { hash: sha(key), keys: [] } : { keys: [...(t.keys || []), sha(key)].slice(-(max - 1)) }), devInv: undefined, rec: codeHash(rec), recAt: now });
     let medic = false;
     let o = withLock(() => {
       const list = readOrgas().slice(), i = list.findIndex(x => x.rec && x.hash && keyEq(x.rec, h));
       if (i < 0) return null;
       list[i] = renew(list[i]); writeOrgas(list); return list[i];
     });
-    if (!o) { const t = M.readMedics().find(x => x.rec && x.hash && keyEq(x.rec, h)); if (t) { o = M.editTeam(t.id, cur => cur.rec && keyEq(cur.rec, h) ? renew(cur) : null); medic = !!o; if (o && cut) M.forgetTeam(o.id); } }
+    if (!o) { const t = M.readMedics().find(x => x.rec && x.hash && keyEq(x.rec, h)); if (t) { o = M.editTeam(t.id, cur => cur.rec && keyEq(cur.rec, h) ? renew(cur, MEDIC_DEVICE_MAX) : null); medic = !!o; if (o && cut) M.forgetTeam(o.id); } }
     if (!o) { keyFailed(req); return send(res, 404, { error: 'Code de secours inconnu ou déjà utilisé.' }); }
     orgaLog({ id: (medic ? 'm:' : '') + o.id, label: o.label }, 'accès récupéré (code de secours)', { detail: cut ? 'autres appareils coupés' : 'appareil ajouté' });
     return send(res, 200, { key, label: o.label, rec, cut, ...(medic ? { medic: true } : {}) });

@@ -7,7 +7,7 @@ Une page pour les équipes de street medics. Le mode medic est un écran de Cort
 1. Ton ou ta référent·e (ou l'admin de l'instance) t'envoie un lien d'invitation, par une messagerie chiffrée. Il ne sert qu'une fois et vaut pour toute l'équipe.
 2. Ouvre-le sur le téléphone de l'équipe. Sur iPhone, ajoute d'abord Cortège à l'écran d'accueil et ouvre le lien depuis l'appli installée : sinon Safari peut effacer l'accès après 7 jours sans visite.
 3. Un **code de secours** s'affiche une seule fois. Note-le ailleurs que sur ce téléphone et que dans le sac de manif. C'est lui qui te rendra l'accès si le téléphone est perdu, saisi ou vidé.
-4. Pour un deuxième téléphone de l'équipe : appuie sur le nom de l'équipe en haut, puis « Ajouter un appareil » (5 au plus). Au même endroit, la liste des appareils de l'équipe (type d'appareil, depuis quand, dernière activité) : « Retirer » coupe tout de suite l'accès d'un téléphone perdu, prêté ou qui a quitté l'équipe.
+4. Pour un deuxième téléphone de l'équipe : appuie sur le nom de l'équipe en haut, puis « Ajouter un appareil » (20 au plus). Au même endroit, la liste des appareils de l'équipe (type d'appareil, depuis quand, dernière activité) : « Retirer » coupe tout de suite l'accès d'un téléphone perdu, prêté ou qui a quitté l'équipe.
 
 ## Les quatre boutons
 
