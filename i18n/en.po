@@ -5154,3 +5154,6 @@ msgstr "Orgs only."
 #: src/routes/photos.js
 msgid "Photo déjà retirée."
 msgstr "Photo already removed."
+
+msgid "Les visages sont pixellisés en gros carrés brouillés. Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable."
+msgstr "Faces are pixelated into large scrambled squares. No classic blur: it can be reversed and make a face recognisable."

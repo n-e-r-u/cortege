@@ -5151,3 +5151,6 @@ msgstr "Nur für Orgas."
 #: src/routes/photos.js
 msgid "Photo déjà retirée."
 msgstr "Foto bereits entfernt."
+
+msgid "Les visages sont pixellisés en gros carrés brouillés. Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable."
+msgstr "Gesichter werden in große, verrauschte Blöcke verpixelt. Kein klassischer Weichzeichner: Er lässt sich umkehren und ein Gesicht erkennbar machen."

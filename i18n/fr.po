@@ -5169,3 +5169,6 @@ msgstr ""
 #: src/routes/photos.js
 msgid "Photo déjà retirée."
 msgstr ""
+
+msgid "Les visages sont pixellisés en gros carrés brouillés. Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable."
+msgstr ""

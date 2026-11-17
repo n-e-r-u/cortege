@@ -5154,3 +5154,6 @@ msgstr "Solo para organizaciones."
 #: src/routes/photos.js
 msgid "Photo déjà retirée."
 msgstr "Foto ya retirada."
+
+msgid "Les visages sont pixellisés en gros carrés brouillés. Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable."
+msgstr "Las caras se pixelan en grandes cuadros revueltos. Sin difuminado clásico: puede invertirse y hacer reconocible una cara."

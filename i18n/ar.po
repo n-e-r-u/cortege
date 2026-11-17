@@ -5226,3 +5226,6 @@ msgstr "للمنظمات فقط."
 #: src/routes/photos.js
 msgid "Photo déjà retirée."
 msgstr "أزيلت الصورة بالفعل."
+
+msgid "Les visages sont pixellisés en gros carrés brouillés. Pas de flou classique : il peut s’inverser et rendre un visage reconnaissable."
+msgstr "تُحوَّل الوجوه إلى مربعات كبيرة مشوشة. لا تمويه عادي: يمكن عكسه وجعل الوجه معروفًا."

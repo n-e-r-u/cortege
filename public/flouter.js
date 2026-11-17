@@ -101,7 +101,8 @@
   const decode = file => createImageBitmap(file, { imageOrientation: 'from-image' });
   // Une photo : { file, bitmap (seulement la photo affichée), width, height, masks, history, pixelationNoise (tiré une fois),
   // status : en-attente | analyse | prete | erreur }
-  let photos = [], current = 0, maskStyle = 'aplat', analysing = false, exporting = false, enginePromise = null;
+  // Masquage : pixellisation forte seulement (gros blocs brouillés d'un bruit secret par photo)
+  let photos = [], current = 0, maskStyle = 'pixellisation', analysing = false, exporting = false, enginePromise = null;
   // Photo pour un signalement (/flouter?signalement=…) : une seule photo, envoyée à Cortège une fois masquée, puis retour à la carte
   const attachTo = (() => { const id = new URLSearchParams(location.search).get('signalement'); return /^[\w-]{1,16}$/.test(id || '') ? id : null; })();
 
@@ -351,7 +352,6 @@
   ui.prepare.textContent = t('Préparer le flouteur ({mb} Mo, une seule fois)', { mb: decimal.format(F.ENGINE_DOWNLOAD_MB) });
   ui.prepare.addEventListener('click', () => prepare().catch(() => {}));
   for (const input of document.querySelectorAll('.photo-input')) input.addEventListener('change', () => { addPhotos([...input.files]); input.value = ''; });
-  for (const input of document.querySelectorAll('input[name="masquage"]')) input.addEventListener('change', () => { maskStyle = input.value; renderPreview(); });
   ui.undo.addEventListener('click', undo);
   ui.zoomOut.addEventListener('click', () => editor.zoomOut());
   ui.zoomIn.addEventListener('click', () => editor.zoomIn());
