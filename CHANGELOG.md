@@ -2,7 +2,7 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
-## 2.21.0 (en cours)
+## 2.21.0
 
 **Flouteur** (proposé par MltStephane, PR #27) : masque les visages d'une photo sur le téléphone avant de la publier, sans rien envoyer. Détection automatique (même les petits visages d'une foule), correction au doigt, aplat noir ou pixellisation forte (pas de flou réversible), photo réenregistrée sans position GPS ni informations sur l'appareil, hors ligne une fois préparé, partage depuis la galerie. Corrigé avant la fusion : la bibliothèque de détection de Google (MediaPipe) envoie des statistiques d'utilisation à Google sans option pour les couper ; le worker du Flouteur a maintenant sa propre politique de sécurité, qui bloque toute requête hors du serveur (vérifié dans un navigateur : aucune requête vers Google pendant une détection).
 

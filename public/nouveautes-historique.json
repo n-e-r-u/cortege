@@ -1,6 +1,59 @@
 {
  "history": [
   {
+   "version": "2.21",
+   "items": [
+    [
+     "🙈 Flouteur",
+     "Masque les visages de tes photos sur ton téléphone avant de les publier, même hors ligne. Proposé par Stéphane."
+    ],
+    [
+     "📷 Photos dans les signalements",
+     "Ajoute une photo à un point, visages masqués d’office. Visible quand une orga a vérifié le point, effacée au bout de 3 jours."
+    ]
+   ],
+   "items_en": [
+    [
+     "🙈 Face blurring",
+     "Hide faces in your photos on your phone before posting them, even offline. Contributed by Stéphane."
+    ],
+    [
+     "📷 Photos in reports",
+     "Add a photo to a point, with faces hidden automatically. Visible once an org has verified the point, deleted after 3 days."
+    ]
+   ],
+   "items_es": [
+    [
+     "🙈 Difuminador",
+     "Oculta las caras de tus fotos en tu teléfono antes de publicarlas, incluso sin conexión. Propuesto por Stéphane."
+    ],
+    [
+     "📷 Fotos en los avisos",
+     "Añade una foto a un punto, con las caras ocultas de oficio. Visible cuando una organización verifica el punto, borrada a los 3 días."
+    ]
+   ],
+   "items_ar": [
+    [
+     "🙈 أداة إخفاء الوجوه",
+     "أخفِ الوجوه في صورك على هاتفك قبل نشرها، حتى دون اتصال. اقترحها ستيفان."
+    ],
+    [
+     "📷 صور في البلاغات",
+     "أضف صورة إلى نقطة مع إخفاء الوجوه تلقائيًا. تظهر عندما تتحقق منظمة من النقطة، وتُحذف بعد 3 أيام."
+    ]
+   ],
+   "items_de": [
+    [
+     "🙈 Verpixler",
+     "Verdecke Gesichter auf deinen Fotos direkt auf dem Handy, bevor du sie postest, auch offline. Beigetragen von Stéphane."
+    ],
+    [
+     "📷 Fotos in Meldungen",
+     "Füge einem Punkt ein Foto hinzu, Gesichter automatisch verdeckt. Sichtbar, sobald eine Orga den Punkt bestätigt hat, nach 3 Tagen gelöscht."
+    ]
+   ]
+  },
+  {
    "version": "2.20",
    "items": [
     [
