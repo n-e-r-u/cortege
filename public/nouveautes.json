@@ -1,93 +1,73 @@
 {
-  "version": "2.22",
+  "version": "2.23",
   "items": [
     [
-      "⚡ Plus léger au démarrage",
-      "L’appli charge moins de choses à l’ouverture : ce qui sert rarement n’arrive que quand tu t’en sers. Utile quand le réseau sature."
+      "🧭 Y aller en évitant les dangers",
+      "Sur la fiche d’une zone calme, d’un point de ralliement, d’un lieu de repli ou de street medics : un itinéraire à pied qui contourne les dangers signalés. Calculé sur ton téléphone, ta position n’est envoyée nulle part."
     ],
     [
-      "👋 Présentation en trois écrans",
-      "Se situer, signaler, régler les alertes. À revoir dans Plus, pratique pour montrer l’appli à quelqu’un."
+      "🛣️ Un cortège qui suit les rues",
+      "Entre la queue et la tête, le tracé passe par les rues et les grands axes au lieu de traverser les bâtiments."
     ],
     [
-      "📷 Photos à vérifier",
-      "Orgas : une pastille sur la carte indique les points dont la photo attend ta vérification."
-    ],
-    [
-      "🖨️ Code de secours",
-      "L’impression du code de secours est recadrée, avec la date et le type d’accès."
+      "🔄 Recalculé en direct",
+      "L’itinéraire s’adapte à chaque nouveau signalement et te dit s’il doit passer par un danger faute d’autre chemin."
     ]
   ],
   "items_en": [
     [
-      "⚡ Lighter at start-up",
-      "The app loads less when it opens: what is rarely used only arrives when you use it. Useful when the network is saturated."
+      "🧭 Go there, avoiding dangers",
+      "On the card of a calm zone, a rally point, a safe place or street medics: a walking route that avoids reported dangers. Calculated on your phone, your location is not sent anywhere."
     ],
     [
-      "👋 Three-screen introduction",
-      "Locate yourself, report, set up alerts. See it again in More, handy for showing the app to someone."
+      "🛣️ A march that follows the streets",
+      "Between the tail and the head, the line follows streets and main roads instead of cutting through buildings."
     ],
     [
-      "📷 Photos to verify",
-      "Orgs: a badge on the map shows the points whose photo is waiting for your verification."
-    ],
-    [
-      "🖨️ Recovery code",
-      "Printing the recovery code is now properly framed, with the date and the type of access."
+      "🔄 Recalculated live",
+      "The route adapts to every new report and tells you if it has to go through a danger for lack of another way."
     ]
   ],
   "items_es": [
     [
-      "⚡ Más ligera al abrir",
-      "La app carga menos cosas al abrirse: lo que se usa poco solo llega cuando lo usas. Útil cuando la red se satura."
+      "🧭 Ir allí evitando los peligros",
+      "En la ficha de una zona tranquila, un punto de encuentro, un lugar de refugio o street medics: un itinerario a pie que evita los peligros avisados. Calculado en tu teléfono, tu ubicación no se envía a ningún sitio."
     ],
     [
-      "👋 Presentación en tres pantallas",
-      "Ubicarte, avisar, configurar las alertas. Puedes volver a verla en Más, práctica para enseñar la app a alguien."
+      "🛣️ Una marcha que sigue las calles",
+      "Entre la cola y la cabecera, el trazado pasa por las calles y las grandes avenidas en vez de atravesar los edificios."
     ],
     [
-      "📷 Fotos por verificar",
-      "Organizaciones: una marca en el mapa indica los puntos cuya foto espera tu verificación."
-    ],
-    [
-      "🖨️ Código de emergencia",
-      "La impresión del código de emergencia sale bien encuadrada, con la fecha y el tipo de acceso."
+      "🔄 Recalculado en directo",
+      "El itinerario se adapta a cada nuevo aviso y te dice si tiene que pasar por un peligro a falta de otro camino."
     ]
   ],
   "items_ar": [
     [
-      "⚡ أخفّ عند الفتح",
-      "يحمّل التطبيق أشياء أقل عند فتحه: ما يُستعمل نادرًا لا يصل إلا عند استعماله. مفيد عند ازدحام الشبكة."
+      "🧭 اذهب مع تجنّب الأخطار",
+      "في بطاقة منطقة هادئة أو نقطة تجمّع أو مكان لجوء أو مسعفي الشارع: مسار سيرًا على الأقدام يتجنّب الأخطار المبلَّغ عنها. يُحسب على هاتفك، ولا يُرسَل موقعك إلى أي مكان."
     ],
     [
-      "👋 تعريف في ثلاث شاشات",
-      "حدّد موقعك، أبلِغ، اضبط التنبيهات. يمكن إعادة عرضه من «المزيد»، وهو مفيد لتعريف شخص بالتطبيق."
+      "🛣️ مسيرة تتبع الشوارع",
+      "بين مؤخّرة المسيرة ومقدّمتها، يمرّ الخط عبر الشوارع والمحاور الكبرى بدل اختراق المباني."
     ],
     [
-      "📷 صور بانتظار التحقّق",
-      "للمنظّمين: علامة على الخريطة تدلّ على النقاط التي تنتظر صورتها تحقّقك."
-    ],
-    [
-      "🖨️ رمز الاسترداد",
-      "طباعة رمز الاسترداد صارت مضبوطة الإطار، مع التاريخ ونوع الوصول."
+      "🔄 يُعاد حسابه مباشرة",
+      "يتكيّف المسار مع كل بلاغ جديد ويخبرك إن كان عليه المرور بخطر لعدم وجود طريق آخر."
     ]
   ],
   "items_de": [
     [
-      "⚡ Leichter beim Start",
-      "Die App lädt beim Öffnen weniger: Was selten gebraucht wird, kommt erst, wenn du es nutzt. Hilfreich bei überlastetem Netz."
+      "🧭 Hingehen und Gefahren umgehen",
+      "Auf der Karte einer ruhigen Zone, eines Sammelpunkts, eines Rückzugsorts oder von Street Medics: eine Route zu Fuß, die gemeldete Gefahren umgeht. Auf deinem Telefon berechnet, dein Standort wird nirgendwohin gesendet."
     ],
     [
-      "👋 Einführung in drei Schritten",
-      "Standort zeigen, melden, Warnungen einstellen. Unter Mehr noch einmal ansehen, praktisch, um die App jemandem zu zeigen."
+      "🛣️ Ein Zug, der den Straßen folgt",
+      "Zwischen Ende und Spitze verläuft die Linie über Straßen und Hauptachsen, statt durch Gebäude zu schneiden."
     ],
     [
-      "📷 Fotos zu prüfen",
-      "Orgas: Ein Hinweis auf der Karte zeigt die Punkte, deren Foto auf deine Prüfung wartet."
-    ],
-    [
-      "🖨️ Notfallcode",
-      "Der Ausdruck des Notfallcodes ist jetzt richtig ausgerichtet, mit Datum und Art des Zugangs."
+      "🔄 Live neu berechnet",
+      "Die Route passt sich jeder neuen Meldung an und sagt dir, wenn sie mangels anderem Weg durch eine Gefahr führen muss."
     ]
   ]
 }

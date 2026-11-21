@@ -2,7 +2,7 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
-## 2.23.0 (en cours)
+## 2.23.0
 
 **Tracé du cortège qui suit vraiment les rues** : entre la queue et la tête, le trait traversait souvent les bâtiments.
 - Le calcul par les rues échouait environ une fois sur deux (41 % sur un test de 39 trajets dans un centre-ville) et retombait sur la ligne droite : dans les morceaux de carte, deux rues qui se croisent n'ont pas toujours de point commun. Les croisements sont maintenant recalculés et les bouts de rue raccordés : 193 trajets sur 193 trouvés sur le même secteur.
