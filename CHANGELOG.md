@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.23.2
+
+- **Taille du texte du téléphone respectée** : les tailles de texte ne sont plus fixées en pixels. Avec « gros caractères » réglé sur le téléphone (ou dans le navigateur), le texte de l'appli grossit d'autant, jusqu'à 200 % sans rien perdre. Sur Android (Chrome 146 et suivants, appli du Play Store comprise), le réglage du système est suivi automatiquement. À taille normale, rien ne change.
+- Les repères de la carte, les boutons ronds et les pastilles gardent leur taille (ce sont des pictos dans un cercle) ; les libellés de la barre d'onglets grossissent jusqu'à 130 %.
+
 ## 2.23.1
 
 Accessibilité et confort de saisie, à la suite d'une relecture de l'appli avec les recommandations web actuelles. Rien ne change dans l'usage.

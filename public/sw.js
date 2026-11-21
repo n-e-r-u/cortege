@@ -1,5 +1,5 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v94', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v95', TILES = 'cortege-tiles-v1';
 // Flouteur : moteur de détection (MediaPipe) et page, mis dans ce cache seulement quand on appuie sur « Préparer le flouteur ».
 // Jamais dans SHELL : il survit aux mises à jour (activate ne supprime que cortege-shell-*). Même nom que dans flouter-lib.js.
 const FLOUTEUR = 'cortege-flouteur-v1';
