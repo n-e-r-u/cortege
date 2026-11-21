@@ -2,6 +2,10 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.23.4
+
+- **Installation depuis le navigateur** : la fenêtre d'installation d'Android montre maintenant trois captures de l'appli (la carte, « Signaler », un point vérifié avec sa photo) au lieu d'une simple ligne.
+
 ## 2.23.3
 
 - **Appli trois à quatre fois plus légère à charger** : le code, les styles et les pages partent compressés (Brotli, sinon gzip) par le serveur lui-même, y compris sur un hébergement sans serveur frontal qui s'en charge. Premier chargement de la carte : environ 160 Ko au lieu de 610.

@@ -12,7 +12,7 @@ const { instance } = require('../instance');
 // ---- Statique ----
 const PUBLIC = path.join(ROOT, 'public');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.woff2': 'font/woff2', '.wasm': 'application/wasm' };
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.woff2': 'font/woff2', '.wasm': 'application/wasm' };
 // Politique de sécurité des pages : le navigateur n'exécute que nos propres scripts. Même si du code
 // était un jour injecté dans une note ou un titre, il ne pourrait pas s'exécuter. Les scripts intégrés
 // aux pages (admin, mentions légales) sont autorisés par leur empreinte exacte.
