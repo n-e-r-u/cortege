@@ -272,7 +272,7 @@ const ABUSE_HELP = {
   'danger près zone calme': 'dangers signalés à moins de 100 m d’une zone calme (souvent légitime)',
   'série de dangers près des zones calmes': 'téléphones repérés : dangers près de plusieurs zones calmes à la suite (marqués non fiables)',
 };
-function bars(arr) { const max = Math.max(1, ...arr); return arr.slice().reverse().map(n => '▁▂▃▄▅▆▇█'[Math.min(7, Math.round(n / max * 7))]).join(''); }
+function bars(arr) { const max = Math.max(1, ...arr); return arr.toReversed().map(n => '▁▂▃▄▅▆▇█'[Math.min(7, Math.round(n / max * 7))]).join(''); }
 async function loadAbuse() {
   let d; try { d = await api('/api/admin/abuse'); } catch (e) { alertMsg(e.message); return; }
   $('#strictState').textContent = d.strict ? 'Actif jusqu’à ' + new Date(d.strict).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '.' : 'Désactivé.';
@@ -407,7 +407,7 @@ let dg = null, dgMap = null, dgLayer = null, brand = {};
 let dgVector = null;
 fetch('/api/config').then(r => r.json()).then(c => { brand = c.brand || {}; dgVector = c.vector || null; }).catch(() => {});
 const minutes = ms => Math.round(ms / 60000);
-const median = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
+const median = a => { if (!a.length) return 0; const b = a.toSorted((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
 
 $('#form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -484,8 +484,7 @@ function renderDigest() {
   }
 
   // Par type
-  const byCat = {};
-  for (const r of rows) (byCat[r.c] ||= []).push(r);
+  const byCat = Object.groupBy(rows, r => r.c);
   const cats = Object.entries(byCat).sort((a, b) => b[1].length - a[1].length);
   $('#cats').textContent = '';
   for (const [c, list] of cats) {
@@ -509,8 +508,7 @@ function renderDigest() {
   for (const g of d.groups) { const s = document.createElement('span'); s.style.setProperty('--c', COLORS[g.id]); s.textContent = g.label; $('#hourLegend').append(s); }
 
   // Par ville
-  const byZone = {};
-  for (const r of rows) (byZone[r.z] ||= []).push(r);
+  const byZone = Object.groupBy(rows, r => r.z);
   const zs = Object.entries(byZone).sort((a, b) => b[1].length - a[1].length).slice(0, 15);
   $('#zones').textContent = '';
   for (const [z, list] of zs) {
@@ -1467,7 +1465,7 @@ function rfOpenForm(r) {
   // Orgas : cases à cocher, les orgas déjà associées d'abord
   const box = $('#rfOrgas'); box.querySelectorAll('label').forEach(l => l.remove());
   const sel = new Set(r ? r.orgas : []);
-  const list = [...RF.data.quotas].sort((a, b) => (sel.has(b.id) - sel.has(a.id)) || a.label.localeCompare(b.label, 'fr'));
+  const list = RF.data.quotas.toSorted((a, b) => (sel.has(b.id) - sel.has(a.id)) || a.label.localeCompare(b.label, 'fr'));
   if (!list.length) box.append(Object.assign(document.createElement('label'), { textContent: 'Aucune orga pour l’instant : le lieu sera tenu par l’admin.' }));
   for (const o of list) { const l = document.createElement('label'), i = document.createElement('input'); i.type = 'checkbox'; i.value = o.id; i.checked = sel.has(o.id); l.append(i, ' ' + o.label + (o.trial ? ' (essai)' : '')); box.append(l); }
   $('#rfFormMsg').textContent = '';

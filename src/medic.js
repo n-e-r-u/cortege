@@ -277,8 +277,8 @@ function state(me, now = Date.now()) {
 const WAIT_MAX = 3000;
 function waitChange(v, ms = 25_000) {
   if (v !== ver || waiters.size >= WAIT_MAX) return { promise: Promise.resolve(), cancel() {} };
-  let done; const promise = new Promise(r => { done = r; });
-  const fin = () => { clearTimeout(to); waiters.delete(fin); done(); };
+  const { promise, resolve } = Promise.withResolvers();
+  const fin = () => { clearTimeout(to); waiters.delete(fin); resolve(); };
   const to = setTimeout(fin, ms); waiters.add(fin);
   return { promise, cancel: fin };
 }

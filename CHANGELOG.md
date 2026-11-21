@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.23.3
+
+- **Appli trois à quatre fois plus légère à charger** : le code, les styles et les pages partent compressés (Brotli, sinon gzip) par le serveur lui-même, y compris sur un hébergement sans serveur frontal qui s'en charge. Premier chargement de la carte : environ 160 Ko au lieu de 610.
+- Petites modernisations du code de l'admin et du serveur, sans effet visible.
+
 ## 2.23.2
 
 - **Taille du texte du téléphone respectée** : les tailles de texte ne sont plus fixées en pixels. Avec « gros caractères » réglé sur le téléphone (ou dans le navigateur), le texte de l'appli grossit d'autant, jusqu'à 200 % sans rien perdre. Sur Android (Chrome 146 et suivants, appli du Play Store comprise), le réglage du système est suivi automatiquement. À taille normale, rien ne change.

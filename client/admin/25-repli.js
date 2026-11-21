@@ -69,7 +69,7 @@ function rfOpenForm(r) {
   // Orgas : cases à cocher, les orgas déjà associées d'abord
   const box = $('#rfOrgas'); box.querySelectorAll('label').forEach(l => l.remove());
   const sel = new Set(r ? r.orgas : []);
-  const list = [...RF.data.quotas].sort((a, b) => (sel.has(b.id) - sel.has(a.id)) || a.label.localeCompare(b.label, 'fr'));
+  const list = RF.data.quotas.toSorted((a, b) => (sel.has(b.id) - sel.has(a.id)) || a.label.localeCompare(b.label, 'fr'));
   if (!list.length) box.append(Object.assign(document.createElement('label'), { textContent: 'Aucune orga pour l’instant : le lieu sera tenu par l’admin.' }));
   for (const o of list) { const l = document.createElement('label'), i = document.createElement('input'); i.type = 'checkbox'; i.value = o.id; i.checked = sel.has(o.id); l.append(i, ' ' + o.label + (o.trial ? ' (essai)' : '')); box.append(l); }
   $('#rfFormMsg').textContent = '';

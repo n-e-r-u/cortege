@@ -12,7 +12,7 @@
   $('#orga').value = (P.get('orga') || '').slice(0, 50); $('#rdv').value = (P.get('rdv') || '').slice(0, 90);
   const get = u => fetch(u, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
   const [cfg, legal, ann] = await Promise.all([get('/api/config'), get('/live/legal.json'), get('/live/ann.json')]);
-  if (cfg && cfg.brand && cfg.brand.handle) { $('#by').textContent = 'La carte en direct des manifs · par @' + cfg.brand.handle; $('#handle').innerHTML = ''; const b = document.createElement('b'); b.textContent = '@' + cfg.brand.handle; $('#handle').append(b); }
+  if (cfg && cfg.brand && cfg.brand.handle) { $('#by').textContent = 'La carte en direct des manifs · par @' + cfg.brand.handle; $('#handle').replaceChildren(); const b = document.createElement('b'); b.textContent = '@' + cfg.brand.handle; $('#handle').append(b); }
   const rows = [...((legal && legal.l) || []).map(e => ({ city: e.city, name: e.name, phone: e.phone })),
     ...((ann && ann.a) || []).filter(a => a.kind === 'legal' && a.city).map(a => ({ city: a.city, name: a.by, phone: a.phone }))];
   const cities = new Map(); for (const r of rows) { const k = norm(r.city); if (!cities.has(k)) cities.set(k, { name: r.city, items: [] }); cities.get(k).items.push(r); }

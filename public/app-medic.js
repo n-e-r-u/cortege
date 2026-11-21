@@ -18,7 +18,7 @@ window.cortegeMedic = function (core) {
   let mdItems = [], mdVer = 0, mdAbort = null, mdShare = null, mdSel = null, mdFocus = null, mdFirst = true, mdMe = null;
   let mdShowPub = true, mdOpts = { dur: 120, pub: false };
   try { mdShowPub = localStorage.getItem('cortege-medic-sig') !== '0'; medicFull = localStorage.getItem('cortege-medic-full') === '1'; mdOpts = { ...mdOpts, ...JSON.parse(localStorage.getItem('cortege-medic-opts') || '{}') }; } catch {}
-  { const m = location.search.match(/[?&]medic=([\w-]{1,16})/); if (m) { mdFocus = m[1]; history.replaceState(null, '', location.pathname); } }
+  { const m = new URLSearchParams(location.search).get('medic'); if (m && /^[\w-]{1,16}$/.test(m)) { mdFocus = m; history.replaceState(null, '', location.pathname); } }
 
   async function mdFetch(url, opts = {}) {
     const res = await fetch(url, { ...opts, cache: 'no-store', headers: { 'Content-Type': 'application/json', 'X-Medic-Key': keyGet('medic'), ...(opts.headers || {}) } });

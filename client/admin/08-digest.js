@@ -7,7 +7,7 @@ let dg = null, dgMap = null, dgLayer = null, brand = {};
 let dgVector = null;
 fetch('/api/config').then(r => r.json()).then(c => { brand = c.brand || {}; dgVector = c.vector || null; }).catch(() => {});
 const minutes = ms => Math.round(ms / 60000);
-const median = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
+const median = a => { if (!a.length) return 0; const b = a.toSorted((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
 
 $('#form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -84,8 +84,7 @@ function renderDigest() {
   }
 
   // Par type
-  const byCat = {};
-  for (const r of rows) (byCat[r.c] ||= []).push(r);
+  const byCat = Object.groupBy(rows, r => r.c);
   const cats = Object.entries(byCat).sort((a, b) => b[1].length - a[1].length);
   $('#cats').textContent = '';
   for (const [c, list] of cats) {
@@ -109,8 +108,7 @@ function renderDigest() {
   for (const g of d.groups) { const s = document.createElement('span'); s.style.setProperty('--c', COLORS[g.id]); s.textContent = g.label; $('#hourLegend').append(s); }
 
   // Par ville
-  const byZone = {};
-  for (const r of rows) (byZone[r.z] ||= []).push(r);
+  const byZone = Object.groupBy(rows, r => r.z);
   const zs = Object.entries(byZone).sort((a, b) => b[1].length - a[1].length).slice(0, 15);
   $('#zones').textContent = '';
   for (const [z, list] of zs) {

@@ -44,6 +44,7 @@ function tailor(c, pathname, req) {
       .replace('"Cortège par @neru"', handle ? `"Cortège par @${handle}"` : '"Cortège"'));
     if (c.alt.size >= 8) c.alt.clear();
     c.alt.set(key, { buf, etag: '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"' });
+    pack(c.alt.get(key), '.html');
   }
   return c.alt.get(key);
 }
@@ -58,8 +59,15 @@ function pageCsp(pathname, buf) {
   if (pathname === '/flouter.html') return csp.replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval'");
   return csp;
 }
-// Moteur du Flouteur (14,6 Mo) : 4,1 Mo une fois compressé. Servi en gzip à qui l'accepte, une fois compressé en mémoire.
-const isPrecompressed = file => file.endsWith('.wasm');
+// Moteur du Flouteur (14,6 Mo) : 4,1 Mo une fois compressé. Le code, les styles et les pages partent compressés eux aussi
+// (l'appli pèse trois à quatre fois moins sur un réseau saturé), même sans serveur frontal qui s'en charge : compressés
+// une seule fois en mémoire, en Brotli pour qui l'accepte, sinon en gzip.
+const isPrecompressed = file => /\.(wasm|js|css|html|json|svg|webmanifest|txt)$/.test(file);
+function pack(entry, file) {
+  if (!isPrecompressed(file) || entry.buf.length < 1024) return;
+  zlib.gzip(entry.buf, { level: 9 }, (e, gz) => { if (!e) entry.gz = gz; });
+  if (!file.endsWith('.wasm')) zlib.brotliCompress(entry.buf, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 9 } }, (e, br) => { if (!e) entry.br = br; });
+}
 // Fichiers de l'appli gardés en mémoire avec une empreinte : un téléphone qui a déjà la bonne version
 // reçoit une réponse vide « pas modifié » (304) au lieu de tout retélécharger.
 const staticCache = new Map();
@@ -73,14 +81,15 @@ function serveStatic(req, res, pathname) {
     let c = staticCache.get(file);
     const reply = () => {
       const v = tailor(c, pathname, req);
-      // Seul le WebAssembly est compressé (jamais une page adaptée à l'instance par tailor)
-      const gz = c.gz && /\bgzip\b/.test(String(req.headers['accept-encoding'] || ''));
-      const etag = gz ? v.etag.slice(0, -1) + '-gz"' : v.etag;
+      const ae = String(req.headers['accept-encoding'] || '');
+      const enc = v.br && /\bbr\b/.test(ae) ? 'br' : v.gz && /\bgzip\b/.test(ae) ? 'gzip' : '';
+      const packed = enc && (enc === 'br' ? v.br : v.gz);
+      const etag = enc ? v.etag.slice(0, -1) + (enc === 'br' ? '-br"' : '-gz"') : v.etag;
       const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', ETag: etag,
         'Cache-Control': pathname.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' };
       if (NOINDEX.has(pathname)) headers['X-Robots-Tag'] = 'noindex, nofollow';
       if (isPrecompressed(file)) headers.Vary = 'Accept-Encoding';
-      if (gz) headers['Content-Encoding'] = 'gzip';
+      if (enc) headers['Content-Encoding'] = enc;
       if (file.endsWith('.html')) {
         headers['Content-Security-Policy'] = pageCsp(pathname, v.buf);
         // Seule la carte à intégrer peut s'afficher dans un autre site (voir pageCsp)
@@ -89,8 +98,10 @@ function serveStatic(req, res, pathname) {
       // Worker du Flouteur : un worker suit la politique de son propre fichier, pas celle de la page. MediaPipe y envoie des
       // statistiques à Google (odml.pa.googleapis.com) sans option pour les couper : ici, rien ne peut sortir du serveur.
       if (pathname === '/flouter-worker.js') headers['Content-Security-Policy'] = WORKER_CSP;
-      if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers); return res.end(); }
-      res.writeHead(200, headers); res.end(gz ? c.gz : v.buf);
+      // « Pas modifié » quelle que soit la forme déjà gardée par le téléphone (brute, gzip ou Brotli) : le contenu est le même
+      const inm = String(req.headers['if-none-match'] || '');
+      if (inm && inm.replace(/-(gz|br)"$/, '"') === v.etag) { res.writeHead(304, headers); return res.end(); }
+      res.writeHead(200, headers); res.end(packed || v.buf);
     };
     if (c && c.mtime === st.mtimeMs && c.size === st.size) return reply();
     fs.readFile(file, (err2, buf) => {
@@ -100,7 +111,7 @@ function serveStatic(req, res, pathname) {
       staticCache.set(file, c);
       // Compressé une seule fois et en arrière-plan (gzipSync bloquerait le serveur plusieurs secondes), puis gardé avec le
       // fichier ; en attendant, le fichier part tel quel.
-      if (isPrecompressed(file)) { const entry = c; zlib.gzip(buf, { level: 9 }, (e, gz) => { if (!e) entry.gz = gz; }); }
+      pack(c, file);
       reply();
     });
   });

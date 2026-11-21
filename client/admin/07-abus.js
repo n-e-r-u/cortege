@@ -8,7 +8,7 @@ const ABUSE_HELP = {
   'danger près zone calme': 'dangers signalés à moins de 100 m d’une zone calme (souvent légitime)',
   'série de dangers près des zones calmes': 'téléphones repérés : dangers près de plusieurs zones calmes à la suite (marqués non fiables)',
 };
-function bars(arr) { const max = Math.max(1, ...arr); return arr.slice().reverse().map(n => '▁▂▃▄▅▆▇█'[Math.min(7, Math.round(n / max * 7))]).join(''); }
+function bars(arr) { const max = Math.max(1, ...arr); return arr.toReversed().map(n => '▁▂▃▄▅▆▇█'[Math.min(7, Math.round(n / max * 7))]).join(''); }
 async function loadAbuse() {
   let d; try { d = await api('/api/admin/abuse'); } catch (e) { alertMsg(e.message); return; }
   $('#strictState').textContent = d.strict ? 'Actif jusqu’à ' + new Date(d.strict).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '.' : 'Désactivé.';
