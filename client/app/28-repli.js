@@ -42,6 +42,7 @@
       if (p.a) root.append(el('div', { class: 'pop-meta' }, '📍 ' + p.a));
       if (p.m) root.append(el('p', { class: 'pop-note' }, p.m));
       if (p.u) root.append(el('a', { href: p.u, target: '_blank', rel: 'noopener noreferrer', class: 'refuge-link' }, t('En savoir plus')));
+      if (p.st !== 'full') root.append(goBtn(p.lat, p.lng, p.n));
       return root;
     }
     // Mise à jour par différence : une fiche ouverte reste ouverte pendant les synchros

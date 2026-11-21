@@ -67,8 +67,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     // Écran medic : son script n'est pas chargé sur un téléphone sans accès medic
     assert.equal(await a.evaluate(() => typeof window.cortegeMedic), 'undefined', 'app-medic.js pas chargé sans accès medic');
     // Espace orga, enregistreur, idées : ni script ni fiche tant qu'on ne s'en sert pas
-    assert.deepEqual(await a.evaluate(() => [typeof window.cortegeOrga, typeof window.cortegeSon, typeof window.cortegeIdees, !!document.querySelector('#sheetOrga, #sheetSon, #sheetIdeas')]),
-      ['undefined', 'undefined', 'undefined', false], 'parties à la demande pas chargées au démarrage');
+    assert.deepEqual(await a.evaluate(() => [typeof window.cortegeOrga, typeof window.cortegeSon, typeof window.cortegeIdees, typeof window.cortegeTrajet, typeof window.cortegeStreets, !!document.querySelector('#sheetOrga, #sheetSon, #sheetIdeas, #trajetChip')]),
+      ['undefined', 'undefined', 'undefined', 'undefined', 'undefined', false], 'parties à la demande pas chargées au démarrage');
     // Idées : la fiche arrive au premier appui, avec son fond assombri, et se ferme comme les autres
     await a.evaluate(() => document.querySelector('#btnIdeas').click());
     await a.waitForSelector('#sheetIdeas:not([hidden]) #ideaList li');

@@ -39,11 +39,14 @@ async function publicApiRoutes(req, res, url, pathname) {
     if (!a || !b) return send(res, 400, { error: 'Points invalides.' });
     if (!pmPrimary()) return send(res, 404, { error: 'Pas de carte hébergée.' });
     if (distM({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] }) > 5000) return send(res, 404, { error: 'Trop loin.' });
-    const k = a.map(x => x.toFixed(4)).join(',') + '|' + b.map(x => x.toFixed(4)).join(',');
+    // via : positions passées de la tête (publiques elles aussi), pour suivre le chemin réellement pris plutôt que le plus court
+    const via = String(url.searchParams.get('via') || '').split(';').filter(Boolean).slice(0, 10).map(pt);
+    if (via.some(p => !p || distM({ lat: a[0], lng: a[1] }, { lat: p[0], lng: p[1] }) > 6000)) return send(res, 400, { error: 'Points invalides.' });
+    const k = [a, ...via, b].map(p => p.map(x => x.toFixed(4)).join(',')).join('|');
     if (!routeCache.has(k)) {
       if (!quota('route:' + clientHash(req), 120, 5 * MIN)) return send(res, 429, { error: 'Trop de demandes.' });
       let r = null;
-      try { const h = await pmOpen(); r = await streetRoute(async (z, x, y) => { const t = await pmTileC(z, x, y); return t ? pmDecomp(t.data, t.c) : null; }, Math.min(h.maxz, 15), a, b); }
+      try { const h = await pmOpen(); r = await streetRoute(async (z, x, y) => { const t = await pmTileC(z, x, y); return t ? pmDecomp(t.data, t.c) : null; }, Math.min(h.maxz, 15), a, b, { via }); }
       catch (e) { console.error('tracé du cortège', e.message); }
       routeCache.set(k, r); if (routeCache.size > 300) routeCache.delete(routeCache.keys().next().value);
     }

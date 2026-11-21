@@ -31,6 +31,7 @@
     }
     firstSync = false;
     if (orgaMod) orgaMod.reportsChanged();
+    if (trajetMod) trajetMod.changed();
     if (repliDraw) repliDraw(); // après les signalements : un danger tout près met le lieu de repli en alerte
     regroup(); calmNav();
     refreshUI();

@@ -1,11 +1,11 @@
 // Cache l'interface et la carte pour tenir quand le réseau sature, et affiche les annonces urgentes (notifications).
-const SHELL = 'cortege-shell-v92', TILES = 'cortege-tiles-v1';
+const SHELL = 'cortege-shell-v93', TILES = 'cortege-tiles-v1';
 // Flouteur : moteur de détection (MediaPipe) et page, mis dans ce cache seulement quand on appuie sur « Préparer le flouteur ».
 // Jamais dans SHELL : il survit aux mises à jour (activate ne supprime que cortege-shell-*). Même nom que dans flouter-lib.js.
 const FLOUTEUR = 'cortege-flouteur-v1';
 // Fichiers de la page du Flouteur (PAGE_FILES dans flouter-lib.js) : /flouter, /flouter.js et /flouter-*.js
 const FLOUTEUR_PAGE = /^\/flouter(\.js|-\w+\.js)?$/;
-const ASSETS = ['/', '/style.css', '/theme.css', '/theme.js', '/deeplink.js', '/vendor/fonts/anton-400.woff2', '/lang/langs.js', '/i18n.js', '/app.js', '/app-son.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
+const ASSETS = ['/', '/style.css', '/theme.css', '/theme.js', '/deeplink.js', '/vendor/fonts/anton-400.woff2', '/lang/langs.js', '/i18n.js', '/app.js', '/app-son.js', '/street-route.js', '/app-trajet.js', '/vendor/leaflet.js', '/vendor/leaflet.css', '/vendor/leaflet.markercluster.js', '/vendor/MarkerCluster.css',
   '/vendor/qrcode.js', '/vendor/protomaps-leaflet.js', '/map-style.js', '/vendor/fonts/inter-400.woff2', '/vendor/fonts/inter-700.woff2', '/favicon.png', '/brand/logo.png', '/brand/pin.png', '/brand/kofi.png', '/icon-192.png', '/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil((async () => {

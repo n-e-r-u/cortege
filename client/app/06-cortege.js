@@ -44,11 +44,12 @@
   const mins = m => m < 60 ? t('{n} min', { n: Math.max(1, Math.round(m)) }) : t('{h} h {m}', { h: Math.floor(m / 60), m: String(Math.round(m % 60)).padStart(2, '0') });
   // Tracé par les rues entre la queue et la tête (positions publiques), gardé en mémoire tant qu'elles ne bougent pas
   const streetCache = new Map();
-  function streetFetch(key, q, h) {
+  // via : quelques positions passées de la tête, pour que le tracé suive les rues qu'elle a réellement prises
+  function streetFetch(key, q, h, via = []) {
     if (!cfg.vector) { streetCache.set(key, { none: true }); return; }
     streetCache.set(key, { pending: true });
     if (streetCache.size > 50) streetCache.delete(streetCache.keys().next().value);
-    fetch(`/api/cortege-route?a=${q.lat},${q.lng}&b=${h.lat},${h.lng}`).then(r => r.ok ? r.json() : null)
+    fetch(`/api/cortege-route?a=${q.lat},${q.lng}&b=${h.lat},${h.lng}${via.length ? '&via=' + via.map(p => p[0].toFixed(5) + ',' + p[1].toFixed(5)).join(';') : ''}`).then(r => r.ok ? r.json() : null)
       .then(x => { streetCache.set(key, x && x.path ? x : { none: true }); if (x && x.path) drawFlow(); })
       .catch(() => streetCache.delete(key));
   }
@@ -99,7 +100,14 @@
         const tr = [...(h.tr || []).map(p => [p[0], p[1]]), [h.lat, h.lng]];
         let bi = -1, bd = Infinity;
         tr.forEach((p, i) => { const d = dist(p, [q.lat, q.lng]); if (d < bd) { bd = d; bi = i; } });
-        if (bi >= 0 && bi < tr.length - 1 && bd <= 150) { line = [[q.lat, q.lng], ...tr.slice(bi)]; len = lenOf(line); }
+        // Les positions de la tête sont espacées : reliées telles quelles, elles coupent à travers les bâtiments. Le serveur
+        // recale donc ce chemin sur les rues (au plus 8 positions, bien réparties) ; en attendant ou à défaut, les positions brutes.
+        if (bi >= 0 && bi < tr.length - 1 && bd <= 150) {
+          const mid = tr.slice(bi, -1), step = Math.max(1, Math.ceil(mid.length / 8)), via = mid.filter((_, i) => i % step === 0);
+          const key = `${q.lat},${q.lng}|${h.lat},${h.lng}|${via.length}|${via.length ? via[0].join(',') : ''}`, st = streetCache.get(key);
+          if (st && st.path) { line = st.path; len = st.len; }
+          else { if (!st) streetFetch(key, q, h, via); line = [[q.lat, q.lng], ...tr.slice(bi)]; len = lenOf(line); }
+        }
         else {
           // 3. Sinon, par les rues de la carte (calculé par le serveur), et en attendant ou à défaut : à vol d'oiseau
           const key = `${q.lat},${q.lng}|${h.lat},${h.lng}`, st = streetCache.get(key);

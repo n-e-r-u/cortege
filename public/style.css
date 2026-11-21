@@ -1102,3 +1102,12 @@ body.medic.md-nosig .leaflet-reports-pane { display: none; }
 .wl-step .nw { white-space: nowrap; }
 /* Orga : pastille des photos en attente de vérification, sous celle de l'enregistrement */
 .photo-chip { z-index: 1001; top: calc(env(safe-area-inset-top, 0px) + 108px); background: var(--surface); color: var(--fg); border: 1px solid var(--line); }
+/* ---- 2.23 : itinéraire à pied qui contourne les dangers signalés ---- */
+.go-btn { display: block; width: 100%; margin: 8px 0 4px; }
+.trajet-chip { position: fixed; z-index: 1060; left: 10px; right: 10px; bottom: calc(var(--tabh) + var(--safe-b) + 30px); max-width: 520px; margin: 0 auto; display: flex; align-items: center; gap: 10px;
+  padding: 10px 8px 10px 14px; border-radius: 16px; background: var(--surface); color: var(--fg); border: 2px solid #1f9d6b; box-shadow: 0 4px 16px rgba(0,0,0,.35); }
+.trajet-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.trajet-txt b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trajet-txt span { font-size: 13px; color: var(--muted); }
+.trajet-txt span.warn { color: var(--danger); font-weight: 700; }
+.trajet-chip .x { flex: none; }

@@ -5253,3 +5253,63 @@ msgstr "<b>🤖 Cortège ist im Play Store</b> <span>Die Android-App lässt sich
 
 msgid "Revoir la présentation de l’appli"
 msgstr "Einführung noch einmal ansehen"
+
+# --- textes à traduire ---
+#: client/app/35-trajet.js
+msgid "Pas de réseau : l’itinéraire se chargera quand ça capte."
+msgstr "Kein Netz: Die Route lädt, sobald du Empfang hast."
+
+#: client/app/35-trajet.js
+msgid "Y aller en évitant les dangers signalés"
+msgstr "Hingehen und gemeldete Gefahren umgehen"
+
+#: client/parts/trajet.js
+msgid "⚠ Passe par {n} danger signalé : pas d’autre chemin"
+msgid_plural "⚠ Passe par {n} dangers signalés : pas d’autre chemin"
+msgstr[0] "⚠ Führt durch {n} gemeldete Gefahr: kein anderer Weg"
+msgstr[1] "⚠ Führt durch {n} gemeldete Gefahren: kein anderer Weg"
+
+#: client/parts/trajet.js
+msgid "Contourne {n} danger signalé"
+msgid_plural "Contourne {n} dangers signalés"
+msgstr[0] "Umgeht {n} gemeldete Gefahr"
+msgstr[1] "Umgeht {n} gemeldete Gefahren"
+
+#: client/parts/trajet.js
+msgid "Tu es arrivé·e."
+msgstr "Du bist angekommen."
+
+#: client/parts/trajet.js
+msgid "Pas de chemin trouvé par les rues."
+msgstr "Kein Weg über die Straßen gefunden."
+
+#: client/parts/trajet.js
+msgid "Aucun danger signalé sur le chemin"
+msgstr "Keine gemeldete Gefahr auf dem Weg"
+
+#: client/parts/trajet.js
+msgid "Pas de réseau : l’itinéraire n’a pas pu être calculé."
+msgstr "Kein Netz: Die Route konnte nicht berechnet werden."
+
+#: client/parts/trajet.js
+msgid "Itinéraire indisponible : cette carte n’a pas ses rues sur le serveur."
+msgstr "Route nicht verfügbar: Diese Karte hat ihre Straßen nicht auf dem Server."
+
+#: client/parts/trajet.js
+msgid "Active ta position (◎) pour calculer un itinéraire."
+msgstr "Aktiviere deinen Standort (◎), um eine Route zu berechnen."
+
+#: client/parts/trajet.js
+msgid "Trop loin pour un itinéraire à pied (3 km au plus)."
+msgstr "Zu weit für eine Route zu Fuß (höchstens 3 km)."
+
+#: client/parts/trajet.js
+msgid "Itinéraire calculé sur ton téléphone. Seuls les dangers signalés sont évités."
+msgstr "Route auf deinem Telefon berechnet. Nur gemeldete Gefahren werden umgangen."
+
+# --- 2.23 : itinéraire à pied ---
+msgid "Pas de réseau : la carte de ce secteur n’est pas sur le téléphone."
+msgstr "Kein Netz: Die Karte dieser Gegend ist nicht auf dem Telefon."
+
+msgid "Arrêter l’itinéraire"
+msgstr "Route beenden"

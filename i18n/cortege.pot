@@ -5225,3 +5225,61 @@ msgstr ""
 
 msgid "Revoir la présentation de l’appli"
 msgstr ""
+
+#: client/app/35-trajet.js
+msgid "Pas de réseau : l’itinéraire se chargera quand ça capte."
+msgstr ""
+
+#: client/app/35-trajet.js
+msgid "Y aller en évitant les dangers signalés"
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "⚠ Passe par {n} danger signalé : pas d’autre chemin"
+msgid_plural "⚠ Passe par {n} dangers signalés : pas d’autre chemin"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/parts/trajet.js
+msgid "Contourne {n} danger signalé"
+msgid_plural "Contourne {n} dangers signalés"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/parts/trajet.js
+msgid "Tu es arrivé·e."
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Pas de chemin trouvé par les rues."
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Aucun danger signalé sur le chemin"
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Pas de réseau : l’itinéraire n’a pas pu être calculé."
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Itinéraire indisponible : cette carte n’a pas ses rues sur le serveur."
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Active ta position (◎) pour calculer un itinéraire."
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Trop loin pour un itinéraire à pied (3 km au plus)."
+msgstr ""
+
+#: client/parts/trajet.js
+msgid "Itinéraire calculé sur ton téléphone. Seuls les dangers signalés sont évités."
+msgstr ""
+
+msgid "Pas de réseau : la carte de ce secteur n’est pas sur le téléphone."
+msgstr ""
+
+msgid "Arrêter l’itinéraire"
+msgstr ""

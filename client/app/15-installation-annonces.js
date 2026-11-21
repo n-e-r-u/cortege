@@ -42,7 +42,7 @@
     for (const a of list.filter(x => x.kind === 'rally' && !x.pending && x.exp > now)) {
       const icon = L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18], html: '<div class="pin rally" style="--c:var(--info, #6966c6)">🚩</div>' });
       const pop = el('div', {}, el('div', { class: 'pop-title' }, '🚩 ' + t('Point de ralliement')), el('div', { class: 'pop-ver' }, '✓ ' + a.by),
-        el('p', {}, a.text), el('div', { class: 'pop-meta' }, t('Jusqu’à {h}', { h: new Date(a.exp).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }) }) + (me ? ' · ' + fmtDist(dist(me, [a.lat, a.lng])) : '')));
+        el('p', {}, a.text), el('div', { class: 'pop-meta' }, t('Jusqu’à {h}', { h: new Date(a.exp).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }) }) + (me ? ' · ' + fmtDist(dist(me, [a.lat, a.lng])) : '')), goBtn(a.lat, a.lng, t('Point de ralliement')));
       L.marker([a.lat, a.lng], { icon, title: t('Point de ralliement'), zIndexOffset: 300 }).bindPopup(pop, { maxWidth: 280 }).addTo(rallyLayer);
     }
   }

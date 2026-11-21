@@ -786,6 +786,50 @@ test('tracé du cortège par les rues : plus court chemin piéton, sans autorout
   const straight = r.path[0], end = r.path[r.path.length - 1];
   assert.ok(r.len > require(path.join(ROOT, 'tools', 'street-route.js')).meters(straight, end) * 1.2, 'plus long qu’à vol d’oiseau');
   assert.equal((await fetch(B + '/api/cortege-route?a=1,2&b=x')).status, 400);
+  assert.equal((await fetch(B + '/api/cortege-route?a=43.61,3.87&b=43.611,3.871&via=43.6,3.8;x')).status, 400, 'point de passage invalide');
+});
+
+test('chemin par les rues : croisements sans point commun, zones à éviter, profil cortège, points de passage', async () => {
+  const S = require(path.join(ROOT, 'public', 'street-route.js'));
+  const vi = n => { const o = []; while (n > 127) { o.push((n & 127) | 128); n = Math.floor(n / 128); } o.push(n); return o; };
+  const zz = n => n >= 0 ? 2 * n : -2 * n - 1;
+  const fld = (f, w, body) => w === 2 ? [...vi(f * 8 + 2), ...vi(body.length), ...body] : [...vi(f * 8), ...vi(body)];
+  const str = x => [...Buffer.from(x)];
+  const line = pts => { const g = [...vi(9), ...vi(zz(pts[0][0])), ...vi(zz(pts[0][1])), ...vi(((pts.length - 1) << 3) | 2)]; for (let i = 1; i < pts.length; i++) g.push(...vi(zz(pts[i][0] - pts[i - 1][0])), ...vi(zz(pts[i][1] - pts[i - 1][1]))); return g; };
+  const feat = (pts, kindIdx) => fld(2, 2, [...fld(2, 2, [0, kindIdx]), ...fld(3, 0, 2), ...fld(4, 2, line(pts))]);
+  // Une grille : deux rues horizontales (y = 1000 et y = 3000) et deux verticales (x = 1000 et x = 3000) qui se croisent SANS point
+  // commun, un boulevard en détour par le haut (y = 200), et une impasse qui touche la rue du haut sans la rejoindre exactement
+  const layer = [...fld(15, 0, 2), ...fld(1, 2, str('roads')),
+    ...feat([[200, 1000], [3900, 1000]], 0), ...feat([[200, 3000], [3900, 3000]], 0), ...feat([[1000, 200], [1000, 3900]], 0), ...feat([[3000, 200], [3000, 3900]], 0),
+    ...feat([[1000, 200], [3000, 200]], 1), ...feat([[2000, 1004], [2000, 1900]], 0),
+    ...fld(3, 2, str('kind')), ...fld(4, 2, fld(1, 2, str('minor_road'))), ...fld(4, 2, fld(1, 2, str('major_road'))), ...fld(5, 0, 4096)];
+  const tile = new Uint8Array(fld(3, 2, layer)); // un Uint8Array, comme dans le navigateur
+  const z = 15, [tx, ty] = S.tileOf(43.61, 3.877, z);
+  const at = (px, py) => { const n = 2 ** z, wx = (tx + px / 4096) / n, wy = (ty + py / 4096) / n; return [Math.atan(Math.sinh(Math.PI * (1 - 2 * wy))) * 180 / Math.PI, wx * 360 - 180]; };
+  const get = async (zz2, x, y) => (x === tx && y === ty ? tile : null);
+  const near = (r, px, py, m = 12) => r.path.some(p => S.meters(p, at(px, py)) < m);
+  const g = await S.buildGraph(get, z, [at(300, 1000), at(3000, 2000)]);
+  assert.ok(g && g.size.length === 1, 'tout le réseau est relié (croisements recalculés, impasse raccordée)');
+  // Du bout gauche de la rue du haut au milieu de la rue de droite : il faut tourner à un croisement sans point commun
+  const r = S.routeOn(g, at(300, 1000), at(3000, 2000));
+  assert.ok(r && near(r, 3000, 1000), 'tourne au croisement');
+  assert.deepEqual(r.through, []);
+  // Un danger sur ce croisement : contourné par l'autre côté de la grille, un peu plus long
+  const hot = at(3000, 1000), r2 = S.routeOn(g, at(300, 1000), at(3000, 2000), { avoid: [{ lat: hot[0], lng: hot[1], r: 60, k: 8 }] });
+  assert.ok(r2 && !near(r2, 3000, 1000, 50) && near(r2, 1000, 3000), 'danger contourné');
+  assert.ok(r2.len >= r.len && r2.len < r.len * 1.6, 'détour raisonnable');
+  assert.deepEqual(r2.through, []);
+  // Un danger sur l'arrivée : pas de détour possible, le trajet le traverse et le dit
+  const end = at(3000, 2000), r3 = S.routeOn(g, at(300, 1000), end, { avoid: [{ lat: end[0], lng: end[1], r: 80, k: 8 }] });
+  assert.deepEqual(r3.through, [0]);
+  // Profil cortège : entre les deux verticales, le boulevard du haut est préféré à la rue (plus directe)
+  const rc = S.routeOn(g, at(1000, 650), at(3000, 650), { profile: 'cortege' }), rp = S.routeOn(g, at(1000, 650), at(3000, 650), { profile: 'pied' });
+  assert.ok(near(rc, 1000, 200) && !near(rp, 1000, 200) && rc.len > rp.len, 'le cortège prend le boulevard, le piéton la rue');
+  // Points de passage : le tracé suit le chemin indiqué (par le bas), pas le plus court (par le haut)
+  const rv = await S.streetRoute(get, z, at(1000, 1100), at(3000, 1100), { via: [at(1000, 3000), at(3000, 3000)], profile: 'pied' });
+  assert.ok(rv && rv.air === 0 && near(rv, 1000, 3000) && near(rv, 3000, 3000), 'passe par les points demandés');
+  // Loin de toute rue : pas de chemin
+  assert.equal(S.routeOn(g, [43.7, 3.9], at(3000, 2000)), null);
 });
 
 test('bilans détaillés : moments clés, durées, parcours, page de ville, données ouvertes', async () => {

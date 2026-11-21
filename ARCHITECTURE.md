@@ -61,6 +61,7 @@ Les morceaux de `client/app/` sont placés dans une seule fonction : ils partage
 | `son` | au premier appui sur 🎙️ (fichier gardé d'avance par le service worker, pour marcher sans réseau) | enregistreur de son |
 | `idees` | à la première ouverture de Plus › Idées | boîte à idées (le rond 💡 de la carte reste dans `client/app/31-idees.js`) |
 | `accueil` | à la première visite | les trois écrans du premier lancement |
+| `trajet` | au premier « Y aller » d'une fiche (avec `public/street-route.js` ; les deux sont gardés d'avance par le service worker) | itinéraire à pied qui contourne les dangers signalés, calculé sur le téléphone |
 
 Une partie peut avoir sa fiche (`client/parts/<nom>.html`) : elle voyage dans le même fichier et la partie l'ajoute à la page avec `core.addSheet`, qui la traduit et la branche comme les autres fiches. Une partie ne partage pas les variables du reste : elle reçoit ce dont elle a besoin dans un objet (`core`, donné à `loadPart` dans `client/app/13-signaler.js`), et lit par `core.x` ce qui change au fil du temps. ESLint vérifie qu'elle n'utilise aucun nom qu'elle n'a pas reçu, et que les scripts assemblés n'en utilisent aucun d'inconnu. Les textes d'une fiche ne sont pas relevés par `i18n-build.js --pot` : ils s'ajoutent à la main dans `i18n/cortege.pot` et les fichiers de langue (`I18N.collect(élément)` dans la console du navigateur donne les clés exactes). Ne modifie jamais `public/app*.js` ou `public/admin.js` à la main : un test vérifie qu'ils correspondent à `client/`.
 
@@ -74,3 +75,12 @@ Une partie peut avoir sa fiche (`client/parts/<nom>.html`) : elle voyage dans le
 ## Vérifier un changement
 
 `npm test` lance le serveur pour de vrai et le teste de bout en bout. Les tests doivent tous passer, et un nouveau comportement mérite un test.
+
+## Chemin par les rues
+
+`public/street-route.js` calcule un chemin piéton sur les rues de la carte hébergée (tuiles vectorielles, couche « roads »), sans service extérieur. Le même fichier sert à deux endroits :
+
+- **sur le serveur** (`/api/cortege-route`) : le tracé d'un cortège entre sa queue et sa tête, en passant par les positions passées de la tête. Positions publiques, résultat gardé en mémoire pour tous les téléphones ;
+- **sur le téléphone** (`client/parts/trajet.js`) : l'itinéraire personnel vers une zone calme, un point de ralliement ou un lieu de repli. La position de la personne n'est envoyée nulle part : c'est la raison pour laquelle ce calcul n'est pas fait par le serveur.
+
+Dans les tuiles, deux rues qui se croisent n'ont pas toujours de point commun : `buildGraph` recalcule les croisements et raccorde les bouts de rue qui en touchent une autre. `routeOn` cherche le chemin le moins coûteux (A*) : la longueur, multipliée selon le profil (`cortege` préfère les grands axes) et selon les zones à éviter (chaque mètre dans la zone d'un danger signalé coûte plus cher : contournée s'il existe un détour raisonnable, traversée sinon, et le résultat dit lesquelles).

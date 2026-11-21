@@ -388,6 +388,7 @@
     const notes = r.notes && r.notes.length ? r.notes : r.note ? [{ x: r.note, t: r.t }] : [];
     for (const n of notes) root.append(el('p', { class: 'pop-note' }, n.x, el('span', { class: 'pop-note-t' }, ' · ' + ago(n.t))));
     if (r.cat === 'contact') return root; // point de l'admin : ni précision, ni vote
+    if (GO_CATS.has(r.cat)) root.append(goBtn(r.lat, r.lng, CAT[r.cat].label));
     root.append(photoBlock(r)); // photos (visages masqués) et « Ajouter une photo »
     // Ajouter une précision à un point déjà signalé
     const addBtn = el('button', { class: 'link-btn pop-add' }, '＋ ' + t('Ajouter une précision'));
@@ -575,11 +576,12 @@
   const mins = m => m < 60 ? t('{n} min', { n: Math.max(1, Math.round(m)) }) : t('{h} h {m}', { h: Math.floor(m / 60), m: String(Math.round(m % 60)).padStart(2, '0') });
   // Tracé par les rues entre la queue et la tête (positions publiques), gardé en mémoire tant qu'elles ne bougent pas
   const streetCache = new Map();
-  function streetFetch(key, q, h) {
+  // via : quelques positions passées de la tête, pour que le tracé suive les rues qu'elle a réellement prises
+  function streetFetch(key, q, h, via = []) {
     if (!cfg.vector) { streetCache.set(key, { none: true }); return; }
     streetCache.set(key, { pending: true });
     if (streetCache.size > 50) streetCache.delete(streetCache.keys().next().value);
-    fetch(`/api/cortege-route?a=${q.lat},${q.lng}&b=${h.lat},${h.lng}`).then(r => r.ok ? r.json() : null)
+    fetch(`/api/cortege-route?a=${q.lat},${q.lng}&b=${h.lat},${h.lng}${via.length ? '&via=' + via.map(p => p[0].toFixed(5) + ',' + p[1].toFixed(5)).join(';') : ''}`).then(r => r.ok ? r.json() : null)
       .then(x => { streetCache.set(key, x && x.path ? x : { none: true }); if (x && x.path) drawFlow(); })
       .catch(() => streetCache.delete(key));
   }
@@ -630,7 +632,14 @@
         const tr = [...(h.tr || []).map(p => [p[0], p[1]]), [h.lat, h.lng]];
         let bi = -1, bd = Infinity;
         tr.forEach((p, i) => { const d = dist(p, [q.lat, q.lng]); if (d < bd) { bd = d; bi = i; } });
-        if (bi >= 0 && bi < tr.length - 1 && bd <= 150) { line = [[q.lat, q.lng], ...tr.slice(bi)]; len = lenOf(line); }
+        // Les positions de la tête sont espacées : reliées telles quelles, elles coupent à travers les bâtiments. Le serveur
+        // recale donc ce chemin sur les rues (au plus 8 positions, bien réparties) ; en attendant ou à défaut, les positions brutes.
+        if (bi >= 0 && bi < tr.length - 1 && bd <= 150) {
+          const mid = tr.slice(bi, -1), step = Math.max(1, Math.ceil(mid.length / 8)), via = mid.filter((_, i) => i % step === 0);
+          const key = `${q.lat},${q.lng}|${h.lat},${h.lng}|${via.length}|${via.length ? via[0].join(',') : ''}`, st = streetCache.get(key);
+          if (st && st.path) { line = st.path; len = st.len; }
+          else { if (!st) streetFetch(key, q, h, via); line = [[q.lat, q.lng], ...tr.slice(bi)]; len = lenOf(line); }
+        }
         else {
           // 3. Sinon, par les rues de la carte (calculé par le serveur), et en attendant ou à défaut : à vol d'oiseau
           const key = `${q.lat},${q.lng}|${h.lat},${h.lng}`, st = streetCache.get(key);
@@ -688,6 +697,7 @@
     }
     firstSync = false;
     if (orgaMod) orgaMod.reportsChanged();
+    if (trajetMod) trajetMod.changed();
     if (repliDraw) repliDraw(); // après les signalements : un danger tout près met le lieu de repli en alerte
     regroup(); calmNav();
     refreshUI();
@@ -1115,6 +1125,7 @@
   function onPosition(p) {
     const first = !me;
     me = [p.coords.latitude, p.coords.longitude]; meAcc = Number.isFinite(p.coords.accuracy) ? p.coords.accuracy : Infinity; meAt = Date.now();
+    if (trajetMod) trajetMod.moved();
     // Cap GPS quand on marche (secours si pas de boussole)
     gpsHeading = p.coords.speed > 0.8 && p.coords.heading != null && !isNaN(p.coords.heading) ? p.coords.heading : gpsHeading;
     if (!meMarker) meMarker = L.marker(me, { icon: meIcon(), interactive: false, keyboard: false, pane: mePane() }).addTo(map);
@@ -1269,6 +1280,7 @@
     const html = `<svg class="cam ${col}" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" aria-hidden="true">${cone}<circle class="cam-dot" cx="${c}" cy="${c}" r="5"/></svg>`;
     return L.divIcon({ className: 'poi-wrap', html, iconSize: [S, S], iconAnchor: [c, c], popupAnchor: [0, -6] });
   }
+  const GO_POIS = new Set(['eau', 'hopital', 'pharma', 'dae']); // lieux où l'on peut vouloir se rendre vite
   function poiPopup(x) {
     if (x[1] === 'cam') return camPopup(x);
     const [, kind, , , name, hours, phone, flag] = x, k = PK[kind] || { label: t('Lieu'), glyph: '📍' };
@@ -1289,6 +1301,7 @@
       root.append(el('p', { class: 'poi-tip' }, pf.code === 'fr' ? t('Arrêt cardiaque : appelle le 15 ou le 112, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.')
         : t('Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.', { n: em.medical || em.general || '112' })));
     }
+    if (GO_POIS.has(kind)) root.append(goBtn(x[2], x[3], name || k.label));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     root.append(hideBtn(kind));
     return root;
@@ -1908,7 +1921,7 @@
     for (const a of list.filter(x => x.kind === 'rally' && !x.pending && x.exp > now)) {
       const icon = L.divIcon({ className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18], html: '<div class="pin rally" style="--c:var(--info, #6966c6)">🚩</div>' });
       const pop = el('div', {}, el('div', { class: 'pop-title' }, '🚩 ' + t('Point de ralliement')), el('div', { class: 'pop-ver' }, '✓ ' + a.by),
-        el('p', {}, a.text), el('div', { class: 'pop-meta' }, t('Jusqu’à {h}', { h: new Date(a.exp).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }) }) + (me ? ' · ' + fmtDist(dist(me, [a.lat, a.lng])) : '')));
+        el('p', {}, a.text), el('div', { class: 'pop-meta' }, t('Jusqu’à {h}', { h: new Date(a.exp).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' }) }) + (me ? ' · ' + fmtDist(dist(me, [a.lat, a.lng])) : '')), goBtn(a.lat, a.lng, t('Point de ralliement')));
       L.marker([a.lat, a.lng], { icon, title: t('Point de ralliement'), zIndexOffset: 300 }).bindPopup(pop, { maxWidth: 280 }).addTo(rallyLayer);
     }
   }
@@ -3080,6 +3093,7 @@
       if (p.a) root.append(el('div', { class: 'pop-meta' }, '📍 ' + p.a));
       if (p.m) root.append(el('p', { class: 'pop-note' }, p.m));
       if (p.u) root.append(el('a', { href: p.u, target: '_blank', rel: 'noopener noreferrer', class: 'refuge-link' }, t('En savoir plus')));
+      if (p.st !== 'full') root.append(goBtn(p.lat, p.lng, p.n));
       return root;
     }
     // Mise à jour par différence : une fiche ouverte reste ouverte pendant les synchros
@@ -3235,4 +3249,22 @@
   }
   $('#testBandX').onclick = () => { try { localStorage.setItem(TEST_KEY, cfg.androidTest); } catch {} $('#testBand').hidden = true; };
   testShow();
+  // ---- Itinéraire à pied qui contourne les dangers signalés ----
+  // Le bouton « Y aller » des fiches (zone calme, medics, point de ralliement, lieu de repli, lieux utiles) charge à la demande le
+  // calcul (public/street-route.js) et son affichage (public/app-trajet.js, client/parts/trajet.js). Tout se passe sur le téléphone :
+  // la position n'est envoyée nulle part. Seulement avec une carte hébergée par le serveur (ses rues servent au calcul).
+  var trajetMod = null;
+  const GO_CATS = new Set(['calme', 'medic', 'legal', 'eau', 'secours']);
+  function goTo(dest) {
+    const lib = window.cortegeStreets ? Promise.resolve() : new Promise((ok, ko) => { const s = document.createElement('script'); s.src = '/street-route.js'; s.onload = ok; s.onerror = () => { s.remove(); ko(new Error('script')); }; document.head.append(s); });
+    lib.then(() => loadPart('trajet', () => ({ $, t, tn, toast, map, CAT, cfg, reports, dist, fmtDist, addSheet, closeSheets, get me() { return me; } })))
+      .then(m => { trajetMod = m; m.go(dest); }).catch(() => toast('Pas de réseau : l’itinéraire se chargera quand ça capte.'));
+  }
+  // Bouton à poser dans une fiche de la carte ; rien sans carte hébergée
+  function goBtn(lat, lng, name) {
+    if (!cfg.vector) return '';
+    const b = el('button', { type: 'button', class: 'secondary go-btn' }, '🧭 ' + t('Y aller en évitant les dangers signalés'));
+    b.onclick = () => goTo({ lat, lng, name });
+    return b;
+  }
 })();

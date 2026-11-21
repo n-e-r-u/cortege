@@ -48,6 +48,7 @@
   function onPosition(p) {
     const first = !me;
     me = [p.coords.latitude, p.coords.longitude]; meAcc = Number.isFinite(p.coords.accuracy) ? p.coords.accuracy : Infinity; meAt = Date.now();
+    if (trajetMod) trajetMod.moved();
     // Cap GPS quand on marche (secours si pas de boussole)
     gpsHeading = p.coords.speed > 0.8 && p.coords.heading != null && !isNaN(p.coords.heading) ? p.coords.heading : gpsHeading;
     if (!meMarker) meMarker = L.marker(me, { icon: meIcon(), interactive: false, keyboard: false, pane: mePane() }).addTo(map);

@@ -2,6 +2,20 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.23.0 (en cours)
+
+**Tracé du cortège qui suit vraiment les rues** : entre la queue et la tête, le trait traversait souvent les bâtiments.
+- Le calcul par les rues échouait environ une fois sur deux (41 % sur un test de 39 trajets dans un centre-ville) et retombait sur la ligne droite : dans les morceaux de carte, deux rues qui se croisent n'ont pas toujours de point commun. Les croisements sont maintenant recalculés et les bouts de rue raccordés : 193 trajets sur 193 trouvés sur le même secteur.
+- Quand la tête a déjà avancé, ses positions passées étaient reliées par des segments droits. Elles sont maintenant recalées sur les rues par le serveur.
+- Un cortège préfère les boulevards, les avenues et les rues piétonnes aux trottoirs, aux voies de desserte et aux escaliers.
+
+**Itinéraire à pied qui contourne les dangers signalés** (instances avec carte hébergée) : bouton « Y aller en évitant les dangers signalés » sur les fiches d'une zone calme, de street medics, d'une legal team, d'un point d'eau, de secours, d'un point de ralliement, d'un lieu de repli, d'une fontaine, d'un hôpital, d'une pharmacie ou d'un défibrillateur.
+- **Calculé sur le téléphone** : ni la position ni la destination ne sont envoyées au serveur. Fonctionne hors ligne quand la carte du secteur est sur le téléphone.
+- Charges, nasses, lacrymo, tirs, forces de l'ordre, rues bloquées et barrages filtrants sont contournés s'il existe un détour raisonnable. Sinon le trajet les traverse et le dit (« Passe par 1 danger signalé : pas d'autre chemin »). Un point contesté est ignoré, un point vérifié pèse plus.
+- Recalculé à chaque nouveau signalement et tous les 25 m. 3 km au plus, avec la distance et le temps de marche.
+- Les textes disent « dangers signalés », jamais « trajet sûr » : un danger pas encore signalé n'est pas évité.
+- Chargé à la demande : le démarrage de l'appli ne grossit pas.
+
 ## 2.22.0
 
 **Plus léger au démarrage** : ce que peu de téléphones utilisent n'est plus téléchargé par tout le monde.

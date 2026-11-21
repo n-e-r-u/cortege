@@ -5332,3 +5332,71 @@ msgstr "<b>🤖 Cortège متوفّر على Play Store</b> <span>يمكن تث�
 
 msgid "Revoir la présentation de l’appli"
 msgstr "إعادة عرض التعريف بالتطبيق"
+
+# --- textes à traduire ---
+#: client/app/35-trajet.js
+msgid "Pas de réseau : l’itinéraire se chargera quand ça capte."
+msgstr "لا توجد شبكة: سيُحمَّل المسار عند توفّر التغطية."
+
+#: client/app/35-trajet.js
+msgid "Y aller en évitant les dangers signalés"
+msgstr "اذهب إلى هناك مع تجنّب الأخطار المبلَّغ عنها"
+
+#: client/parts/trajet.js
+msgid "⚠ Passe par {n} danger signalé : pas d’autre chemin"
+msgid_plural "⚠ Passe par {n} dangers signalés : pas d’autre chemin"
+msgstr[0] "⚠ لا يمرّ بأي خطر"
+msgstr[1] "⚠ يمرّ بخطر واحد مبلَّغ عنه: لا طريق آخر"
+msgstr[2] "⚠ يمرّ بخطرين مبلَّغ عنهما: لا طريق آخر"
+msgstr[3] "⚠ يمرّ بـ{n} أخطار مبلَّغ عنها: لا طريق آخر"
+msgstr[4] "⚠ يمرّ بـ{n} خطرًا مبلَّغًا عنه: لا طريق آخر"
+msgstr[5] "⚠ يمرّ بـ{n} خطر مبلَّغ عنه: لا طريق آخر"
+
+#: client/parts/trajet.js
+msgid "Contourne {n} danger signalé"
+msgid_plural "Contourne {n} dangers signalés"
+msgstr[0] "لا يتجنّب أي خطر"
+msgstr[1] "يتجنّب خطرًا واحدًا مبلَّغًا عنه"
+msgstr[2] "يتجنّب خطرين مبلَّغًا عنهما"
+msgstr[3] "يتجنّب {n} أخطار مبلَّغ عنها"
+msgstr[4] "يتجنّب {n} خطرًا مبلَّغًا عنه"
+msgstr[5] "يتجنّب {n} خطر مبلَّغ عنه"
+
+#: client/parts/trajet.js
+msgid "Tu es arrivé·e."
+msgstr "لقد وصلت."
+
+#: client/parts/trajet.js
+msgid "Pas de chemin trouvé par les rues."
+msgstr "لم يُعثر على طريق عبر الشوارع."
+
+#: client/parts/trajet.js
+msgid "Aucun danger signalé sur le chemin"
+msgstr "لا خطر مبلَّغ عنه في الطريق"
+
+#: client/parts/trajet.js
+msgid "Pas de réseau : l’itinéraire n’a pas pu être calculé."
+msgstr "لا توجد شبكة: تعذّر حساب المسار."
+
+#: client/parts/trajet.js
+msgid "Itinéraire indisponible : cette carte n’a pas ses rues sur le serveur."
+msgstr "المسار غير متاح: شوارع هذه الخريطة غير متوفّرة على الخادم."
+
+#: client/parts/trajet.js
+msgid "Active ta position (◎) pour calculer un itinéraire."
+msgstr "فعّل موقعك (◎) لحساب مسار."
+
+#: client/parts/trajet.js
+msgid "Trop loin pour un itinéraire à pied (3 km au plus)."
+msgstr "بعيد جدًا لمسار سيرًا على الأقدام (3 كم على الأكثر)."
+
+#: client/parts/trajet.js
+msgid "Itinéraire calculé sur ton téléphone. Seuls les dangers signalés sont évités."
+msgstr "حُسب المسار على هاتفك. لا يُتجنَّب إلا الأخطار المبلَّغ عنها."
+
+# --- 2.23 : itinéraire à pied ---
+msgid "Pas de réseau : la carte de ce secteur n’est pas sur le téléphone."
+msgstr "لا توجد شبكة: خريطة هذه المنطقة غير محفوظة على الهاتف."
+
+msgid "Arrêter l’itinéraire"
+msgstr "إيقاف المسار"

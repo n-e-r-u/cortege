@@ -83,6 +83,7 @@
     const html = `<svg class="cam ${col}" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" aria-hidden="true">${cone}<circle class="cam-dot" cx="${c}" cy="${c}" r="5"/></svg>`;
     return L.divIcon({ className: 'poi-wrap', html, iconSize: [S, S], iconAnchor: [c, c], popupAnchor: [0, -6] });
   }
+  const GO_POIS = new Set(['eau', 'hopital', 'pharma', 'dae']); // lieux où l'on peut vouloir se rendre vite
   function poiPopup(x) {
     if (x[1] === 'cam') return camPopup(x);
     const [, kind, , , name, hours, phone, flag] = x, k = PK[kind] || { label: t('Lieu'), glyph: '📍' };
@@ -103,6 +104,7 @@
       root.append(el('p', { class: 'poi-tip' }, pf.code === 'fr' ? t('Arrêt cardiaque : appelle le 15 ou le 112, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.')
         : t('Arrêt cardiaque : appelle le {n}, commence le massage cardiaque, et envoie quelqu’un chercher le défibrillateur. Il guide à la voix, tout le monde peut s’en servir.', { n: em.medical || em.general || '112' })));
     }
+    if (GO_POIS.has(kind)) root.append(goBtn(x[2], x[3], name || k.label));
     root.append(el('p', { class: 'fine' }, 'Lieu permanent · © contributeurs OpenStreetMap'));
     root.append(hideBtn(kind));
     return root;
