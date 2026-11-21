@@ -5,71 +5,71 @@
    "items": [
     [
      "🧭 Y aller en évitant les dangers",
-     "Sur la fiche d’une zone calme, d’un point de ralliement, d’un lieu de repli ou de street medics : un itinéraire à pied qui contourne les dangers signalés. Calculé sur ton téléphone, ta position n’est envoyée nulle part."
+     "Un itinéraire à pied vers une zone calme ou un lieu de repli, qui contourne les dangers signalés. Calculé sur ton téléphone."
     ],
     [
      "🛣️ Un cortège qui suit les rues",
-     "Entre la queue et la tête, le tracé passe par les rues et les grands axes au lieu de traverser les bâtiments."
+     "Entre la queue et la tête, le tracé passe par les rues au lieu de traverser les bâtiments."
     ],
     [
      "🔄 Recalculé en direct",
-     "L’itinéraire s’adapte à chaque nouveau signalement et te dit s’il doit passer par un danger faute d’autre chemin."
+     "L’itinéraire s’adapte à chaque nouveau signalement."
     ]
    ],
    "items_en": [
     [
      "🧭 Go there, avoiding dangers",
-     "On the card of a calm zone, a rally point, a safe place or street medics: a walking route that avoids reported dangers. Calculated on your phone, your location is not sent anywhere."
+     "A walking route to a calm zone or a safe place that avoids reported dangers. Calculated on your phone."
     ],
     [
      "🛣️ A march that follows the streets",
-     "Between the tail and the head, the line follows streets and main roads instead of cutting through buildings."
+     "Between the tail and the head, the line follows the streets instead of cutting through buildings."
     ],
     [
      "🔄 Recalculated live",
-     "The route adapts to every new report and tells you if it has to go through a danger for lack of another way."
+     "The route adapts to every new report."
     ]
    ],
    "items_es": [
     [
      "🧭 Ir allí evitando los peligros",
-     "En la ficha de una zona tranquila, un punto de encuentro, un lugar de refugio o street medics: un itinerario a pie que evita los peligros avisados. Calculado en tu teléfono, tu ubicación no se envía a ningún sitio."
+     "Un itinerario a pie hacia una zona tranquila o un lugar de refugio, que evita los peligros avisados. Calculado en tu teléfono."
     ],
     [
      "🛣️ Una marcha que sigue las calles",
-     "Entre la cola y la cabecera, el trazado pasa por las calles y las grandes avenidas en vez de atravesar los edificios."
+     "Entre la cola y la cabecera, el trazado pasa por las calles en vez de atravesar los edificios."
     ],
     [
      "🔄 Recalculado en directo",
-     "El itinerario se adapta a cada nuevo aviso y te dice si tiene que pasar por un peligro a falta de otro camino."
+     "El itinerario se adapta a cada nuevo aviso."
     ]
    ],
    "items_ar": [
     [
      "🧭 اذهب مع تجنّب الأخطار",
-     "في بطاقة منطقة هادئة أو نقطة تجمّع أو مكان لجوء أو مسعفي الشارع: مسار سيرًا على الأقدام يتجنّب الأخطار المبلَّغ عنها. يُحسب على هاتفك، ولا يُرسَل موقعك إلى أي مكان."
+     "مسار سيرًا على الأقدام نحو منطقة هادئة أو مكان لجوء، يتجنّب الأخطار المبلَّغ عنها. يُحسب على هاتفك."
     ],
     [
      "🛣️ مسيرة تتبع الشوارع",
-     "بين مؤخّرة المسيرة ومقدّمتها، يمرّ الخط عبر الشوارع والمحاور الكبرى بدل اختراق المباني."
+     "بين مؤخّرة المسيرة ومقدّمتها، يمرّ الخط عبر الشوارع بدل اختراق المباني."
     ],
     [
      "🔄 يُعاد حسابه مباشرة",
-     "يتكيّف المسار مع كل بلاغ جديد ويخبرك إن كان عليه المرور بخطر لعدم وجود طريق آخر."
+     "يتكيّف المسار مع كل بلاغ جديد."
     ]
    ],
    "items_de": [
     [
      "🧭 Hingehen und Gefahren umgehen",
-     "Auf der Karte einer ruhigen Zone, eines Sammelpunkts, eines Rückzugsorts oder von Street Medics: eine Route zu Fuß, die gemeldete Gefahren umgeht. Auf deinem Telefon berechnet, dein Standort wird nirgendwohin gesendet."
+     "Eine Route zu Fuß zu einer ruhigen Zone oder einem Rückzugsort, die gemeldete Gefahren umgeht. Auf deinem Telefon berechnet."
     ],
     [
      "🛣️ Ein Zug, der den Straßen folgt",
-     "Zwischen Ende und Spitze verläuft die Linie über Straßen und Hauptachsen, statt durch Gebäude zu schneiden."
+     "Zwischen Ende und Spitze folgt die Linie den Straßen, statt durch Gebäude zu schneiden."
     ],
     [
      "🔄 Live neu berechnet",
-     "Die Route passt sich jeder neuen Meldung an und sagt dir, wenn sie mangels anderem Weg durch eine Gefahr führen muss."
+     "Die Route passt sich jeder neuen Meldung an."
     ]
    ]
   },
