@@ -107,7 +107,7 @@ body.vector #map { background: var(--map-bg); } /* même fond que la carte vecto
 .ig-txt { display: flex; flex-direction: column; min-width: 0; }
 .credit { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .credit a { color: var(--accent); font-weight: 700; text-decoration: none; }
-.name { font-weight: 800; letter-spacing: .02em; font-size: 17px; line-height: 1.1; }
+.name { margin: 0; font-weight: 800; letter-spacing: .02em; font-size: 17px; line-height: 1.1; }
 .event { color: var(--muted); font-size: 12px; line-height: 1.25; margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
 .status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
 .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
@@ -1111,3 +1111,6 @@ body.medic.md-nosig .leaflet-reports-pane { display: none; }
 .trajet-txt span { font-size: 13px; color: var(--muted); }
 .trajet-txt span.warn { color: var(--danger); font-weight: 700; }
 .trajet-chip .x { flex: none; }
+
+/* Champs de saisie : jamais sous 16 px, sinon l'iPhone zoome tout seul dans la page dès qu'on y entre */
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([readonly]), textarea:not([readonly]), select { font-size: max(16px, 1em) !important; }

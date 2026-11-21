@@ -2,6 +2,7 @@
   "name": "Cortège par @neru",
   "short_name": "Cortège",
   "description": "Carte collaborative en temps réel pour se protéger en manifestation.",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#9576a8",

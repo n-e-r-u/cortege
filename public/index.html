@@ -34,7 +34,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Cortège","alternateName":"Cortège, la carte en direct des manifs","url":"https://cortege.neru.tv/","description":"La carte en direct des manifs : CRS, lacrymo, nasses, street medics, legal team. Signalements anonymes, sans compte et sans pistage, partout en France.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web, Android, iOS","browserRequirements":"Navigateur récent","inLanguage":["fr","en","es","ar"],"isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://cortege.neru.tv/og.png","author":{"@type":"Person","name":"Neru","url":"https://neru.tv","sameAs":["https://www.instagram.com/neru/","https://github.com/n-e-r-u"]}}</script>
 </head>
 <body>
-<div id="map" aria-label="Carte de la manifestation"></div>
+<main id="map" aria-label="Carte de la manifestation"></main>
 <div class="bk-banner" id="bkBanner" hidden role="status">
   <span class="bk-dot" aria-hidden="true"></span><span id="bkBannerTxt">Position partagée en direct</span>
   <button type="button" id="bkYes" hidden>Oui, je continue</button>
@@ -46,7 +46,7 @@
     <img class="logo-img" src="/brand/pin.png" alt="" width="38" height="38">
     <span class="logo" aria-hidden="true" hidden></span>
     <div class="brand-txt">
-      <div class="name">Cortège <span class="by">par <b class="handle">@neru</b></span></div>
+      <h1 class="name">Cortège <span class="by">par <b class="handle">@neru</b></span></h1>
       <div class="event" id="eventName">—</div>
     </div>
   </a>
@@ -182,7 +182,7 @@
   <form id="rvForm" class="orga-form">
     <p class="hint" id="rvHint"></p>
     <label class="note-label" for="rvCode" id="rvCodeLbl"></label>
-    <input id="rvCode" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+    <input id="rvCode" autocorrect="off" enterkeyhint="done" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
     <label class="check"><input type="checkbox" id="rvCut" checked> <span id="rvCutLbl"></span></label>
     <p class="fine" id="rvFine"></p>
     <button class="install" type="submit" id="rvGo"></button>
@@ -260,7 +260,7 @@
   </div>
   <form id="searchForm" role="search">
     <label class="note-label" for="searchInput">Ville, quartier ou adresse</label>
-    <input id="searchInput" type="search" autocomplete="off" placeholder="ex. : Montpellier, Lyon 7e, place de la République">
+    <input id="searchInput" type="search" enterkeyhint="search" autocomplete="off" placeholder="ex. : Montpellier, Lyon 7e, place de la République">
   </form>
   <ul id="searchResults" class="results"></ul>
 </section>
@@ -478,7 +478,7 @@
       </label>
     </div>
     <label class="note-label" for="joLink">Site ou compte public du collectif
-      <input id="joLink" type="url" maxlength="300" required placeholder="https://www.instagram.com/…">
+      <input id="joLink" type="url" autocapitalize="none" spellcheck="false" maxlength="300" required placeholder="https://www.instagram.com/…">
     </label>
     <label class="note-label" for="joContact">Canal officiel où te confirmer la demande
       <input id="joContact" maxlength="120" required placeholder="adresse ou compte publié par le collectif, pas un contact perso">
@@ -889,7 +889,7 @@
     <div id="ordItems"></div>
     <button type="button" class="secondary" id="ordAddItem">Ajouter une mesure</button>
     <label class="note-label" for="ordSrc">Source (obligatoire)
-      <input id="ordSrc" type="url" maxlength="400" required placeholder="https://www.herault.gouv.fr/…">
+      <input id="ordSrc" type="url" autocapitalize="none" spellcheck="false" maxlength="400" required placeholder="https://www.herault.gouv.fr/…">
     </label>
     <p class="fine" style="margin:0">Lien vers le site de la préfecture ou de la mairie, leur compte officiel, ou un article de presse. Sans source fiable, la proposition est refusée.</p>
     <button class="install" type="submit" id="ordSubmit">Envoyer pour vérification</button>
@@ -939,7 +939,7 @@
   <label class="sr-only" for="noteInput">Ajouter une précision</label>
   <div class="note-dir" id="noteCount" hidden></div>
   <div class="note-dir" id="noteDir" hidden></div>
-  <div class="note-row"><input id="noteInput" maxlength="120" placeholder="Ajouter une précision (facultatif)"><button type="submit" id="noteSend">Ajouter</button></div>
+  <div class="note-row"><input id="noteInput" enterkeyhint="send" maxlength="120" placeholder="Ajouter une précision (facultatif)"><button type="submit" id="noteSend">Ajouter</button></div>
   <p class="fine">Pas de nom, pas de description physique, pas de matricule. <a class="inline-link" id="notePhoto" href="/flouter">📷 Ajouter une photo</a></p>
 </form>
 

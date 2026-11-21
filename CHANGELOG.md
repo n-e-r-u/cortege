@@ -2,6 +2,15 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.23.1
+
+Accessibilité et confort de saisie, à la suite d'une relecture de l'appli avec les recommandations web actuelles. Rien ne change dans l'usage.
+
+- **Fiches** : une fiche ouverte se comporte comme une vraie fenêtre. Le clavier et le lecteur d'écran y entrent directement, ce qui est derrière n'est plus atteignable tant qu'elle est ouverte, et à la fermeture on revient au bouton qui l'avait ouverte.
+- **Repères pour les lecteurs d'écran** : la page a un titre principal (Cortège) et la carte est déclarée comme zone principale.
+- **Saisie sur téléphone** : aucun champ sous 16 px (l'iPhone ne zoome plus tout seul en entrant dans un champ), touche Entrée du clavier adaptée (Rechercher, Envoyer), pas de correction automatique sur les liens et le code de secours.
+- **Manifeste** : identifiant d'appli explicite.
+
 ## 2.23.0
 
 **Tracé du cortège qui suit vraiment les rues** : entre la queue et la tête, le trait traversait souvent les bâtiments.

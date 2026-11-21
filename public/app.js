@@ -1436,15 +1436,35 @@
     if ($('#sheetEvent').hidden && !drawing) drawLayer.clearLayers();
     syncTabs();
   };
-  const sheetWatch = new MutationObserver(syncBackdrop);
-  sheets.forEach(s => { const x = $(s); if (x) sheetWatch.observe(x, { attributes: true, attributeFilter: ['hidden'] }); });
+  // Une fiche ouverte se comporte comme une fenêtre : le clavier et le lecteur d'écran y entrent, ce qui est derrière
+  // n'est plus atteignable, et à la fermeture on revient au bouton qui l'avait ouverte.
+  // « Signaler » fait exception (la carte sert à viser) ; les pages des onglets laissent la barre d'onglets accessible.
+  const BEHIND = ['.topbar', '#manifTop', '#tabbar', '#manifBar', '#sonChip'], COVERED = ['#map', '.overlays', '.tools', '#calmNav'];
+  let sheetOpener = null;
+  const asDialog = x => { if (x.id !== 'sheetReport' && !isPage('#' + x.id)) { x.setAttribute('role', 'dialog'); x.setAttribute('aria-modal', 'true'); } };
+  function syncFocus(recs) {
+    const opened = recs.map(r => r.target).filter(x => !x.hidden && x.id !== 'sheetReport').pop();
+    const modal = !backdrop.hidden, any = sheets.some(s => s !== '#sheetReport' && sheetOpen(s));
+    const a = document.activeElement;
+    if (opened && !sheetOpener && a && a !== document.body && !a.closest('.sheet')) sheetOpener = a;
+    for (const q of BEHIND) for (const x of document.querySelectorAll(q)) x.inert = modal;
+    for (const q of COVERED) for (const x of document.querySelectorAll(q)) x.inert = any;
+    if (opened) {
+      if (!opened.contains(document.activeElement)) { opened.tabIndex = -1; opened.focus({ preventScroll: true }); }
+    } else if (!any && sheetOpener) {
+      const o = sheetOpener; sheetOpener = null;
+      if (o.isConnected && !o.closest('[hidden]')) o.focus({ preventScroll: true });
+    }
+  }
+  const sheetWatch = new MutationObserver(recs => { syncBackdrop(); syncFocus(recs); });
+  sheets.forEach(s => { const x = $(s); if (x) { asDialog(x); sheetWatch.observe(x, { attributes: true, attributeFilter: ['hidden'] }); } });
   // Fiche d'une partie chargée à la demande : ajoutée à la page (traduite), suivie comme les autres
   function addSheet(html) {
     const tpl = document.createElement('template'); tpl.innerHTML = html;
     for (const n of [...tpl.content.children]) {
       $('#toast').before(n);
       if (I18N.translate) I18N.translate(n);
-      if (n.classList.contains('sheet')) sheetWatch.observe(n, { attributes: true, attributeFilter: ['hidden'] });
+      if (n.classList.contains('sheet')) { asDialog(n); sheetWatch.observe(n, { attributes: true, attributeFilter: ['hidden'] }); }
     }
   }
   // Partie chargée à la demande (public/app-<nom>.js, fabriquée à partir de client/parts/) : son script pose window.cortege<Nom>,
