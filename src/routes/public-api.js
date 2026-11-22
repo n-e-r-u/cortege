@@ -17,6 +17,8 @@ const { STREAM_ON, sseClients } = require('../live/stream');
 const { TILE_PREFETCH } = require('../geo/tiles');
 const { abuseOnce } = require('../moderation');
 const { activeReports } = require('../reports/store');
+const { regionCounts } = require('../geo/regions');
+let activityCache = null;
 const { annActive, annView } = require('../announcements/store');
 const { clientHash, ONION_HOST, deviceHash, PRIVATE_IP, clientIp, viaOnion } = require('../privacy');
 const { geoCache, nominatim, placeName } = require('../geo/search');
@@ -113,6 +115,18 @@ async function publicApiRoutes(req, res, url, pathname) {
         : code === 0 ? 'Le serveur n’arrive pas à joindre le service de notification. Réessaie plus tard.' : `Le service de notification a refusé l’envoi (code ${code}).`, code });
   }
   
+  // Activité publique agrégée : le nombre de signalements actifs, et le compte par région française dès qu'une région en a au moins cinq.
+  // Jamais de position ni de signalement individuel. Recalculé au plus une fois par minute.
+  if (req.method === 'GET' && pathname === '/api/activity') {
+    const now = Date.now();
+    if (!activityCache || now - activityCache.at > 60e3) {
+      const rows = activeReports(now, 5000);
+      activityCache = { at: now, active: rows.length, regions: regionCounts(rows) };
+    }
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    return send(res, 200, activityCache);
+  }
+
   // Vérification d'installation : ne renvoie jamais d'IP, seulement si un en-tête a été trouvé.
   if (req.method === 'GET' && pathname === '/api/health') {
     let writable = true; try { fs.accessSync(DATA_DIR, fs.constants.W_OK); } catch { writable = false; }

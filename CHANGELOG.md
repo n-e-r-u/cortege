@@ -2,6 +2,11 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.24.0
+
+- **Activité publique agrégée** : une nouvelle adresse, `/api/activity`, donne le nombre de signalements actifs et leur compte par région française. Elle permet à un outil extérieur (un robot Discord, un tableau de bord) de prévenir seulement les personnes de la région où la mobilisation est forte.
+- Aucune position ni aucun signalement individuel n'y figure, et une région n'apparaît qu'à partir de cinq signalements actifs. Le résultat est recalculé au plus une fois par minute.
+
 ## 2.23.4
 
 - **Installation depuis le navigateur** : la fenêtre d'installation d'Android montre maintenant trois captures de l'appli (la carte, « Signaler », un point vérifié avec sa photo) au lieu d'une simple ligne.

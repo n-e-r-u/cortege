@@ -359,6 +359,14 @@ test('HEAD : accepté pour les pages et les fichiers, sans corps', async () => {
   assert.equal(JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'nouveautes.json'), 'utf8')).history, undefined, 'nouveautés du démarrage sans historique');
 });
 
+test('activité publique : total et régions, sans position ni signalement individuel', async () => {
+  const r = await fetch(B + '/api/activity'); const a = await r.json();
+  assert.equal(r.status, 200);
+  assert.equal(typeof a.active, 'number'); assert.ok(Array.isArray(a.regions));
+  assert.deepEqual(Object.keys(a).sort(), ['active', 'at', 'regions']);
+  for (const x of a.regions) { assert.deepEqual(Object.keys(x).sort(), ['active', 'code', 'name']); assert.ok(x.active >= 5); }
+});
+
 test('santé : « ok » pour tout le monde, le détail (disque, mémoire, proxy) avec la clé admin', async () => {
   assert.deepEqual(await fetch(B + '/api/health').then(r => r.json()), { ok: true });
   const h = await fetch(B + '/api/health', { headers: { 'x-admin-key': ADMIN } }).then(r => r.json());
