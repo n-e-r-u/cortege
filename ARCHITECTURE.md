@@ -13,13 +13,15 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/config.js` | Variables d'environnement et constantes partagées |
 | `src/db.js` | Base SQLite et **toutes** les tables (créées ou complétées au démarrage) |
 | `src/privacy.js` | Clés de hachage par période, empreintes d'IP et de téléphone, IP réelle derrière le proxy, accès Tor |
+| `src/time.js`, `src/net.js` | Dates et heures (jour de Paris), requêtes sortantes du serveur |
+| `src/github.js` | Idées retenues envoyées en tickets GitHub, et retour de leur état |
 | `src/util.js` | Petits outils sans état (distances, empreintes, nettoyage de texte, verrou de fichier) |
 | `src/categories.js` | Types de signalement et d'événement, fusion, alertes, vibrations |
 | `src/profiles.js`, `profiles/`, `geo/countries/` | Profils pays : noms des types, types masqués ou propres au pays, numéros, droits, unités ; contours des pays (Natural Earth) pour savoir quel profil s'applique où. Voir [docs/INSTANCE.md](docs/INSTANCE.md) |
 | `src/settings.js`, `src/instance.js` | Réglages modifiés depuis l'admin : bandeau, nom affiché, pause ; nom de la carte, contact, liens, marque (les variables d'environnement servent de valeurs de départ) |
 | `src/limits.js` | Limites anti-spam, quotas, plafonds des tables, mode manif renforcé |
 | `src/reports/` | Signalements : modèle et vue publique, stockage, votes « Plus là » et fiabilité |
-| `src/announcements/`, `src/events/` | Annonces et agenda (stockage, création, import du 17 octobre) |
+| `src/announcements/`, `src/events/` | Annonces et agenda (stockage, création) |
 | `src/orgas/` | Orgas : clés, parrainage, journal, noms réservés, demandes d'accès |
 | `src/legal.js`, `src/orders.js` | Annuaire des legal teams, arrêtés et restrictions |
 | `src/refuges.js` | Lieux de repli des orgas : enregistrement, créneaux d'ouverture, logos validés par l'admin, publication des lieux ouverts (`live/repli.json`) |

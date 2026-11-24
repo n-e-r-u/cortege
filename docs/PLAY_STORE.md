@@ -53,7 +53,7 @@ dans `android/twa-manifest.json`, puis relancer.
 3. **Test fermé obligatoire** (comptes personnels créés depuis fin 2023) : 12 testeurs inscrits sans interruption pendant
    14 jours avant de pouvoir demander la publication. Créer une piste « Test fermé », y envoyer `cortege.aab`, ajouter les
    adresses Gmail des testeurs, leur envoyer le lien d'inscription.
-4. **Lier l'appli au site** : Play Console > Test et publication > Configuration > **Intégrité de l'appli** > Signature de
+4. **Lier l'appli au site** : Play Console > Test et publication > **Protégé avec Play** (ou Configuration > Intégrité de l'appli, selon la version de la console) > Signature de
    l'application. Copier l'empreinte SHA-256 du « certificat de clé de signature d'application ». Sur le serveur, dans
    `/etc/cortege.env`, avec l'empreinte de la clé d'envoi (étape 1) pour l'APK installé directement :
    ```
@@ -140,7 +140,7 @@ pas de jeux d'argent.
 | Tout le reste (nom, e-mail, contacts, historique…) | Non collecté |
 
 **Contenu généré par les utilisateurs** : Google demande un moyen de signaler un contenu abusif et une modération. Dans
-Cortège : « Faux / plus là » sur chaque signalement, « Signaler la photo » sur chaque photo (cachée après 2 signalements),
+Cortège : « Plus là » sur chaque signalement, « Signaler la photo » sur chaque photo (cachée après 2 signalements),
 vérification et retrait par les orgas, retrait par l'admin. Une photo n'est publique qu'une fois le point vérifié. Le dire dans
 la déclaration.
 

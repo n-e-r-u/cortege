@@ -58,7 +58,7 @@ Pour un pays sans profil, copie un profil existant (`profiles/us.json`, `profile
 | Champ | Rôle |
 |---|---|
 | `code`, `name` | Code du pays (`it`, `es`…) et nom en français |
-| `area` | Contour du pays : `geo/countries/<area>-50m.json` (serveur) et `-110m.json` (téléphone), tirés de Natural Earth |
+| `area` | Contour du pays : `geo/countries/<area>-50m.json` (serveur) et `-110m.json` (téléphone), tirés de Natural Earth. La France est un cas à part (`france`, contour du serveur tiré des départements) |
 | `lang` | Langue principale du pays (langue de secours si l'instance commence par ce profil) |
 | `units` | `metric` ou `imperial` (pieds et miles) |
 | `emergency` | Numéros d'urgence : `medical`, `general`, et si besoin `pharmacy`, `police`, `poison` |
@@ -66,6 +66,7 @@ Pour un pays sans profil, copie un profil existant (`profiles/us.json`, `profile
 | `hidden` | Types qui n'existent pas dans ton pays |
 | `extra` | Types propres à ton pays : `id`, `group` (`fdo`, `danger`, `soutien`, `info`), `label`, `glyph`, `ttl` (minutes), `alert` (alerte de proximité), `merge` (rayon de fusion) |
 | `rights` | Sections « Mes droits » : `title` et `items` (en français, le gras `<b>` est permis) |
+| `orders` | `true` si le pays a des arrêtés d'interdiction à afficher (carte, agenda, propositions), `false` sinon |
 | `violence` | Lien vers une association qui recense les violences policières : `label`, `desc`, `url` |
 
 Les types gardent partout le même comportement (alertes, vibrations, fusion) : seuls leur nom et la liste visible changent. Fais relire le profil par des personnes du pays (legal teams, street medics) avant de l'ouvrir au public : un conseil juridique faux est dangereux.

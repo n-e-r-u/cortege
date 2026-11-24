@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.24.3
+
+- **Nouveautés de la 2.24** : la fiche « Nouveautés » de l'appli et le message sur les réseaux n'avaient pas été faits à la sortie de la 2.24. Ils présentent ce qui a changé depuis la 2.23 : texte qui suit le réglage du téléphone, chargement trois fois plus léger, fiches utilisables au clavier et au lecteur d'écran.
+- **Documentation remise d'accord avec le code** : 20 appareils par équipe medic (et non 5), rayon des annonces d'une orga, serveurs Overpass par défaut, bouton « Plus là », chemin dans la Play Console, champ `orders` des profils pays, 19 variables de réglage qui n'étaient décrites nulle part. Dans le tableau des variables, les valeurs de marque et d'adresse sont marquées « exemple ».
+- **Flouteur** : le bouton « Préparer le flouteur » annonce le vrai poids du téléchargement (5,4 Mo au plus, au lieu de 5,7).
+
 ## 2.24.2
 
 Suite du rangement du code, sans effet pour les personnes qui utilisent l'appli.

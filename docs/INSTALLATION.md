@@ -34,9 +34,9 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `ONION_SECRET` | vide | Valeur secrète que le bloc .onion de Caddy met dans `X-Cortege-Onion` (au lieu de `1`). Sans `ONION_SECRET` ni `ONION_HOST`, l'en-tête est ignoré : personne ne peut se faire passer pour Tor, même si le site public ne supprime pas l'en-tête |
 | `ONION_KEY_TRIES` | `30` | Essais de clé orga ratés acceptés en 5 min pour tout le trafic Tor réuni (Tor ne donne pas d'adresse IP : sans ce compteur commun, un robot changerait d'identifiant à chaque essai) |
 | `PUSH_ONION_MAX` | `2000` | Abonnements aux notifications créés par Tor (toutes connexions Tor réunies) |
-| `BRAND_HANDLE` | `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») (admin) |
-| `BRAND_INSTAGRAM` | `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » (admin) |
-| `BRAND_KOFI` | `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) (admin) |
+| `BRAND_HANDLE` | exemple : `moncollectif` | Pseudo affiché sous le titre (« Cortège par @moncollectif ») (admin) |
+| `BRAND_INSTAGRAM` | exemple : `https://www.instagram.com/moncollectif/` | Lien du logo et de la carte « Suivre » (admin) |
+| `BRAND_KOFI` | exemple : `https://ko-fi.com/moncollectif` | Bouton « Soutenir » (vide = masqué) (admin) |
 | `DATA_DIR` | hors du dossier web | Dossier des données privées du serveur. Ne jamais le placer dans un dossier servi par le web |
 | `TILE_PMTILES` | vide | Fichier(s) PMTiles installés à la main (tuiles vectorielles), séparés par des virgules : un par pays (zone lue dans le `.geojson` du même nom), puis éventuellement une carte du monde légère pour les zooms éloignés. Facultatif depuis la 2.10.5 : les cartes se téléchargent dans l'admin (onglet Pays). Une carte téléchargée remplace le fichier de même nom |
 | `MAP_DIR` | `DATA_DIR/cartes` | Dossier des cartes téléchargées depuis l'admin (non sauvegardé : elles se re-téléchargent) |
@@ -68,10 +68,28 @@ Variables d'environnement. Celles marquées « admin » se règlent aussi dans l
 | `GITHUB_WEBHOOK_SECRET` | vide | Facultatif : retour des tickets. Sur GitHub, dépôt › Settings › Webhooks › Add webhook : adresse `https://ton-instance/api/github/webhook`, type `application/json`, ce secret, événement « Issues » seulement. Un ticket fermé sur GitHub marque l'idée faite (« completed ») ou pas retenue (« not planned ») ; rouvert, elle repasse à l'étude |
 | `GEO_API` | geo.api.gouv.fr | API Géo de l'État : contour officiel d'une commune, demandé par le serveur à la validation d'un arrêté |
 | `OSM_MIN_FREE_GB` | `6` | Place libre exigée sur le disque avant de télécharger |
-| `OVERPASS_URL` | overpass-api.de | Serveur Overpass utilisé pour cet import |
-| `PUBLIC_URL` | `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
+| `OVERPASS_URL` | overpass.private.coffee, puis overpass-api.de | Serveurs Overpass utilisés pour cet import, séparés par des virgules, essayés dans l'ordre |
+| `PUBLIC_URL` | exemple : `https://carte.exemple.org` | Adresse publique de ton instance (identifie le serveur auprès des services de notification si `CONTACT_EMAIL` est vide) |
 | `ANDROID_CERT_SHA256` | vide | Empreintes SHA-256 du certificat de l'appli Android, séparées par des virgules : active `/.well-known/assetlinks.json` (voir [PLAY_STORE.md](PLAY_STORE.md)) |
 | `ANDROID_PACKAGE` | celui de `android/twa-manifest.json` | Identifiant de l'appli Android de l'instance (`packageId`) |
+| `BRAND_SITE` | exemple : `https://moncollectif.org` | Site de la marque affichée (admin) |
+| `MAX_REPORTS` | `200000` | Garde-fou : signalements actifs au plus sur toute l'instance |
+| `MAX_PER_ZONE` | `300` | Signalements actifs au plus par zone ; au-delà, les plus anciens non confirmés sortent |
+| `ORGA_VERIFY_MAX` | `30` | Vérifications par orga et par 5 minutes |
+| `ORGA_URGENT_MAX` | `3` | Annonces urgentes par orga et par heure |
+| `ORGA_REMOVE_MAX` | `15` | Retraits de signalements par orga et par 5 minutes |
+| `PUSH_NET_MAX` | `60` | Nouveaux abonnements aux notifications par réseau et par 6 heures |
+| `MEDIC_PUSH` | `1` | `0` coupe les notifications d'urgence vitale entre équipes medic |
+| `SOCIAL` | `1` | `0` coupe l'envoi vers Bluesky et Mastodon |
+| `GITHUB_SYNC` | `1` | `0` coupe l'envoi des idées retenues vers les tickets GitHub |
+| `PHOTO_PRUNE` | `1` | `0` coupe l'effacement automatique des photos (à ne pas faire sur une instance ouverte au public) |
+| `TILE_CACHE_MB` | `64` | Mémoire réservée aux tuiles relayées |
+| `TILE_DISK` | `1` | `0` : les tuiles relayées ne sont pas gardées sur le disque |
+| `TILE_DISK_GB` | `2` | Place au plus pour les tuiles gardées sur le disque |
+| `TILE_NET_BUDGET` | `600` | Nouvelles tuiles relayées par réseau et par 10 minutes |
+| `TILE_WORLD` | auto | Relais vers OpenStreetMap hors des zones hébergées. Actif quand une carte est hébergée, `0` pour le couper |
+| `MAP_SOURCE` | vide | Fichier ou adresse d'une carte complète à découper, à la place de la dernière version de Protomaps |
+| `MAP_BUILDS_URL`, `MAP_BUILD_BASE` | serveurs de Protomaps | Où chercher la liste des versions de la carte et les fichiers à découper |
 
 ## Logo
 

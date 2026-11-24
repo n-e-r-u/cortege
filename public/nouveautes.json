@@ -1,73 +1,73 @@
 {
-  "version": "2.23",
+  "version": "2.24",
   "items": [
     [
-      "🧭 Y aller en évitant les dangers",
-      "Un itinéraire à pied vers une zone calme ou un lieu de repli, qui contourne les dangers signalés. Calculé sur ton téléphone."
+      "🔠 Le texte suit ton téléphone",
+      "Réglé en gros caractères ? Le texte de l’appli grossit d’autant."
     ],
     [
-      "🛣️ Un cortège qui suit les rues",
-      "Entre la queue et la tête, le tracé passe par les rues au lieu de traverser les bâtiments."
+      "⚡ Trois fois plus légère à charger",
+      "La carte s’ouvre bien plus vite quand le réseau sature."
     ],
     [
-      "🔄 Recalculé en direct",
-      "L’itinéraire s’adapte à chaque nouveau signalement."
+      "♿ Plus simple au clavier et au lecteur d’écran",
+      "Les fiches s’ouvrent et se ferment comme de vraies fenêtres."
     ]
   ],
   "items_en": [
     [
-      "🧭 Go there, avoiding dangers",
-      "A walking route to a calm zone or a safe place that avoids reported dangers. Calculated on your phone."
+      "🔠 Text follows your phone",
+      "Set to large text? The app’s text grows to match."
     ],
     [
-      "🛣️ A march that follows the streets",
-      "Between the tail and the head, the line follows the streets instead of cutting through buildings."
+      "⚡ Three times lighter to load",
+      "The map opens much faster when the network is saturated."
     ],
     [
-      "🔄 Recalculated live",
-      "The route adapts to every new report."
+      "♿ Easier with a keyboard or screen reader",
+      "Sheets open and close like real windows."
     ]
   ],
   "items_es": [
     [
-      "🧭 Ir allí evitando los peligros",
-      "Un itinerario a pie hacia una zona tranquila o un lugar de refugio, que evita los peligros avisados. Calculado en tu teléfono."
+      "🔠 El texto sigue a tu teléfono",
+      "¿Lo tienes en letra grande? El texto de la app crece igual."
     ],
     [
-      "🛣️ Una marcha que sigue las calles",
-      "Entre la cola y la cabecera, el trazado pasa por las calles en vez de atravesar los edificios."
+      "⚡ Tres veces más ligera al cargar",
+      "El mapa se abre mucho más rápido cuando la red se satura."
     ],
     [
-      "🔄 Recalculado en directo",
-      "El itinerario se adapta a cada nuevo aviso."
+      "♿ Más fácil con teclado o lector de pantalla",
+      "Las fichas se abren y se cierran como ventanas de verdad."
     ]
   ],
   "items_ar": [
     [
-      "🧭 اذهب مع تجنّب الأخطار",
-      "مسار سيرًا على الأقدام نحو منطقة هادئة أو مكان لجوء، يتجنّب الأخطار المبلَّغ عنها. يُحسب على هاتفك."
+      "🔠 النص يتبع إعدادات هاتفك",
+      "هل تستخدم خطًّا كبيرًا؟ نص التطبيق يكبر بالقدر نفسه."
     ],
     [
-      "🛣️ مسيرة تتبع الشوارع",
-      "بين مؤخّرة المسيرة ومقدّمتها، يمرّ الخط عبر الشوارع بدل اختراق المباني."
+      "⚡ أخفّ ثلاث مرات عند التحميل",
+      "تُفتح الخريطة أسرع بكثير عندما تكون الشبكة مزدحمة."
     ],
     [
-      "🔄 يُعاد حسابه مباشرة",
-      "يتكيّف المسار مع كل بلاغ جديد."
+      "♿ أسهل بلوحة المفاتيح وقارئ الشاشة",
+      "تُفتح البطاقات وتُغلق كنوافذ حقيقية."
     ]
   ],
   "items_de": [
     [
-      "🧭 Hingehen und Gefahren umgehen",
-      "Eine Route zu Fuß zu einer ruhigen Zone oder einem Rückzugsort, die gemeldete Gefahren umgeht. Auf deinem Telefon berechnet."
+      "🔠 Der Text folgt deinem Telefon",
+      "Große Schrift eingestellt? Der Text der App wächst mit."
     ],
     [
-      "🛣️ Ein Zug, der den Straßen folgt",
-      "Zwischen Ende und Spitze folgt die Linie den Straßen, statt durch Gebäude zu schneiden."
+      "⚡ Dreimal leichter zu laden",
+      "Die Karte öffnet sich viel schneller, wenn das Netz überlastet ist."
     ],
     [
-      "🔄 Live neu berechnet",
-      "Die Route passt sich jeder neuen Meldung an."
+      "♿ Einfacher mit Tastatur und Screenreader",
+      "Fenster öffnen und schließen sich wie echte Dialoge."
     ]
   ]
 }

@@ -15,7 +15,7 @@
     { url: MEDIAPIPE_BASE + '/vision_wasm_internal.wasm', size: 14603354 }, { url: MODEL_URL, size: 1083786 }];
   // Ce qui passe sur le réseau au plus, en Mo, annoncé sur le bouton « Préparer le flouteur » : le serveur compresse lui-même
   // le WebAssembly (src/http/static.js) ; les autres fichiers sont comptés entiers, faute de savoir si un proxy les compresse
-  const ENGINE_DOWNLOAD_MB = 5.7;
+  const ENGINE_DOWNLOAD_MB = 5.4;
   // La page elle-même, gardée avec le moteur pour s'ouvrir hors ligne
   const PAGE_FILES = ['/flouter', '/flouter.js', '/flouter-lib.js', '/flouter-editor.js', '/flouter-worker.js'];
 

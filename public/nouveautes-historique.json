@@ -1,6 +1,79 @@
 {
  "history": [
   {
+   "version": "2.24",
+   "items": [
+    [
+     "🔠 Le texte suit ton téléphone",
+     "Réglé en gros caractères ? Le texte de l’appli grossit d’autant."
+    ],
+    [
+     "⚡ Trois fois plus légère à charger",
+     "La carte s’ouvre bien plus vite quand le réseau sature."
+    ],
+    [
+     "♿ Plus simple au clavier et au lecteur d’écran",
+     "Les fiches s’ouvrent et se ferment comme de vraies fenêtres."
+    ]
+   ],
+   "items_en": [
+    [
+     "🔠 Text follows your phone",
+     "Set to large text? The app’s text grows to match."
+    ],
+    [
+     "⚡ Three times lighter to load",
+     "The map opens much faster when the network is saturated."
+    ],
+    [
+     "♿ Easier with a keyboard or screen reader",
+     "Sheets open and close like real windows."
+    ]
+   ],
+   "items_es": [
+    [
+     "🔠 El texto sigue a tu teléfono",
+     "¿Lo tienes en letra grande? El texto de la app crece igual."
+    ],
+    [
+     "⚡ Tres veces más ligera al cargar",
+     "El mapa se abre mucho más rápido cuando la red se satura."
+    ],
+    [
+     "♿ Más fácil con teclado o lector de pantalla",
+     "Las fichas se abren y se cierran como ventanas de verdad."
+    ]
+   ],
+   "items_ar": [
+    [
+     "🔠 النص يتبع إعدادات هاتفك",
+     "هل تستخدم خطًّا كبيرًا؟ نص التطبيق يكبر بالقدر نفسه."
+    ],
+    [
+     "⚡ أخفّ ثلاث مرات عند التحميل",
+     "تُفتح الخريطة أسرع بكثير عندما تكون الشبكة مزدحمة."
+    ],
+    [
+     "♿ أسهل بلوحة المفاتيح وقارئ الشاشة",
+     "تُفتح البطاقات وتُغلق كنوافذ حقيقية."
+    ]
+   ],
+   "items_de": [
+    [
+     "🔠 Der Text folgt deinem Telefon",
+     "Große Schrift eingestellt? Der Text der App wächst mit."
+    ],
+    [
+     "⚡ Dreimal leichter zu laden",
+     "Die Karte öffnet sich viel schneller, wenn das Netz überlastet ist."
+    ],
+    [
+     "♿ Einfacher mit Tastatur und Screenreader",
+     "Fenster öffnen und schließen sich wie echte Dialoge."
+    ]
+   ]
+  },
+  {
    "version": "2.23",
    "items": [
     [

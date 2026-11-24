@@ -133,8 +133,9 @@ test('moteur : fichiers livrés, tailles annoncées exactes, modèle vérifié, 
   assert.ok(F.ENGINE_FILES.some(f => f.url === F.MODEL_URL) && F.ENGINE_FILES.some(f => f.url === F.VISION_BUNDLE_URL));
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(local(F.MODEL_URL))).digest('hex'), MODEL_SHA256);
   assert.ok(fs.existsSync(path.join(PUBLIC, 'vendor', 'mediapipe', 'mediapipe.LICENSE')));
-  // Ce qui passe sur le réseau au plus (WebAssembly compressé par le serveur, le reste entier) : c'est ce qu'annonce le bouton
-  const sent = F.ENGINE_FILES.reduce((n, f) => { const b = fs.readFileSync(local(f.url)); return n + (f.url.endsWith('.wasm') ? zlib.gzipSync(b, { level: 9 }).length : b.length); }, 0);
+  // Ce qui passe sur le réseau au plus (WebAssembly et JavaScript compressés en gzip par le serveur, le modèle entier) :
+  // c'est ce qu'annonce le bouton
+  const sent = F.ENGINE_FILES.reduce((n, f) => { const b = fs.readFileSync(local(f.url)); return n + (/\.(wasm|js)$/.test(f.url) ? zlib.gzipSync(b, { level: 9 }).length : b.length); }, 0);
   assert.equal(Math.round(sent / 1e5) / 10, F.ENGINE_DOWNLOAD_MB, `${sent} octets envoyés`);
 });
 
