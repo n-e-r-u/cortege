@@ -25,7 +25,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/refuges.js` | Lieux de repli des orgas : enregistrement, créneaux d'ouverture, logos validés par l'admin, publication des lieux ouverts (`live/repli.json`) |
 | `src/social.js` | Partage sur Bluesky et Mastodon : messages automatiques (veille et jour J d'une journée, arrêtés regroupés, bilan publié) et écrits par l'admin, relecture facultative, envoi avec nouveaux essais, retrait |
 | `src/ideas.js` | Boîte à idées : propositions, validation par l'admin, statuts, votes anonymes par jeton propre à chaque idée, fusion des doublons |
-| `src/medic.js`, `src/routes/medic.js` | Mode medic : comptes des équipes (`medics.json`), couche privée en mémoire (positions, points chauds, barrages, renforts), attente longue, notifications des urgences vitales, référent·es |
+| `src/medic.js` (réunit `src/medic/store.js`, `teams.js`, `layer.js`), `src/routes/medic.js` | Mode medic : comptes des équipes (`medics.json`), couche privée en mémoire (positions, points chauds, barrages, renforts), attente longue, notifications des urgences vitales, référent·es |
 | `src/orgas/board.js` | Tableau de bord d'une orga (chiffres du journal, prochains rendez-vous) et rappels avant ses rendez-vous (table `orga_push`) |
 | `src/orgas/recovery.js` | Code de secours des orgas et des équipes medic (création, saisie tolérante, empreinte) |
 | `src/moderation.js`, `src/sweep.js` | File de modération, tableau des abus, ménage toutes les 30 s |
@@ -37,7 +37,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/pages/` | Pages HTML fabriquées par le serveur : bilans, agenda, arrêtés, villes, droits |
 | `src/live/` | Publication des fichiers `live/`, minuteur, temps réel (Server-Sent Events) |
 | `src/http/` | Réponses, fichiers statiques et politique de sécurité, version en ligne, protection contre la saturation |
-| `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin, signalements, orgas, fichiers. `admin.js` vérifie la clé admin puis passe la main à un fichier par thème (`admin-orgas.js`, `admin-moderation.js`, `admin-lieux.js`, `admin-publication.js`, `admin-config.js`) ; `orga.js` fait de même avec la clé d'orga (`orga-acces.js`, `orga-terrain.js`, `orga-publication.js`) |
+| `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin, signalements, orgas, fichiers. `admin.js` vérifie la clé admin puis passe la main à un fichier par thème (`admin-orgas.js`, `admin-moderation.js`, `admin-lieux.js`, `admin-publication.js`, `admin-config.js`) ; `orga.js` fait de même avec la clé d'orga (`orga-acces.js`, `orga-terrain.js`, `orga-publication.js`) ; `reports.js` garde le digest et les propositions, et délègue l'envoi d'un signalement (`reports-create.js`) et les actions sur un signalement existant (`reports-actions.js`) |
 | `src/server-info.js` | État du serveur pour l'admin : version publiée, disque, mémoire, cartes, dernière sauvegarde |
 | `src/mobs.js`, `src/migrate.js` | Journées de mobilisation prévues, reprise des anciennes données |
 | `client/app/`, `client/admin/` | Le code du téléphone et de la page admin, en morceaux numérotés par fonction (carte, synchro, signaler, orga, agenda…) |

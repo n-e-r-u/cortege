@@ -2,6 +2,13 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.24.2
+
+Suite du rangement du code, sans effet pour les personnes qui utilisent l'appli.
+
+- Routes des participant·es : l'envoi d'un signalement et les actions sur un signalement existant (direction, nombre, précision, retrait, vote) ont chacun leur fichier.
+- Mode medic : le module est réparti en trois fichiers (équipes sur le disque, équipes et appareils, couche privée en mémoire), réunis par le même point d'entrée.
+
 ## 2.24.1
 
 Rangement du code, sans effet pour les personnes qui utilisent l'appli.
