@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.24.1
+
+Rangement du code, sans effet pour les personnes qui utilisent l'appli.
+
+- Les routes de l'admin (565 lignes dans un seul fichier) sont réparties par thème : orgas, modération, lieux, publication, configuration. Celles de l'espace orga de même : accès, terrain, publication. Chaque fichier d'entrée ne fait plus que vérifier la clé et passer la main.
+
 ## 2.24.0
 
 - **Activité publique agrégée** : une nouvelle adresse, `/api/activity`, donne le nombre de signalements actifs et leur compte par région française. Elle permet à un outil extérieur (un robot Discord, un tableau de bord) de prévenir seulement les personnes de la région où la mobilisation est forte.

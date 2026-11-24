@@ -37,7 +37,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/pages/` | Pages HTML fabriquées par le serveur : bilans, agenda, arrêtés, villes, droits |
 | `src/live/` | Publication des fichiers `live/`, minuteur, temps réel (Server-Sent Events) |
 | `src/http/` | Réponses, fichiers statiques et politique de sécurité, version en ligne, protection contre la saturation |
-| `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin (dont `admin-config.js` : instance, pays, langues, serveur), signalements, orgas, fichiers |
+| `src/routes/` | Les routes HTTP, par domaine : pages, API publique, admin, signalements, orgas, fichiers. `admin.js` vérifie la clé admin puis passe la main à un fichier par thème (`admin-orgas.js`, `admin-moderation.js`, `admin-lieux.js`, `admin-publication.js`, `admin-config.js`) ; `orga.js` fait de même avec la clé d'orga (`orga-acces.js`, `orga-terrain.js`, `orga-publication.js`) |
 | `src/server-info.js` | État du serveur pour l'admin : version publiée, disque, mémoire, cartes, dernière sauvegarde |
 | `src/mobs.js`, `src/migrate.js` | Journées de mobilisation prévues, reprise des anciennes données |
 | `client/app/`, `client/admin/` | Le code du téléphone et de la page admin, en morceaux numérotés par fonction (carte, synchro, signaler, orga, agenda…) |
