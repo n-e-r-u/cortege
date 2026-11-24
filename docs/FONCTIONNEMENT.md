@@ -197,7 +197,7 @@ Pour tout le monde, un type public « Contrôle / barrage filtrant » 🛂 (45 m
 
 - Signaler une faille, ce que l'appli protège et ne protège pas : voir [`SECURITY.md`](../SECURITY.md).
 - Tests automatiques (`npm test`, sans dépendance) : fusion, votes contestés, zones calmes, fiabilité, mode renforcé, invitations d'orga, effacement d'urgence, notifications, en-têtes de sécurité. Ils tournent sur GitHub à chaque modification (badge en haut de page).
-- Vérifier que l'appli en ligne est identique à ce dépôt : `node verifier.js https://carte.exemple.org` (depuis une copie du dépôt, avec l'adresse de l'instance à vérifier). Version et empreintes déclarées : `/api/version`. Si tu remplaces le logo (`public/brand/logo.png`), ce fichier apparaîtra logiquement comme différent.
+- Vérifier que l'appli en ligne est identique à ce dépôt : `node verifier.js https://carte.exemple.org` (depuis une copie du dépôt, avec l'adresse de l'instance à vérifier). Version et empreintes déclarées : `/api/version`. Le script tient compte de ce qu'une instance adapte : la page d'accueil et le manifeste, servis avec l'adresse et le pseudo de l'instance, sont comparés après la même adaptation, et une image de marque remplacée (`public/brand/`) est signalée à part. Le résultat vaut pour ce qui a été reçu à ce moment-là, depuis la machine qui lance le script : il ne dit rien du serveur ni de son hébergeur.
 
 ## Limites à connaître
 

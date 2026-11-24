@@ -27,21 +27,17 @@ function cspFor(buf) {
   }
   return cspCache.get(key);
 }
-// Page d'accueil et manifeste : écrits pour l'instance d'origine (adresse et pseudo en dur, lus par les moteurs de recherche
-// et les aperçus de partage, qui n'exécutent pas le script). Une autre instance les sert avec sa propre adresse et son pseudo.
-// La mention d'origine (auteur du logiciel, liens du pied de page) ne change pas.
-const HOME = 'https://cortege.neru.tv', TAILORED = new Set(['/', '/index.html', '/manifest.webmanifest']);
+// Page d'accueil et manifeste adaptés à l'instance (adresse, pseudo) : voir http/tailor.js
+const { TAILORED, cleanHandle, isHome, tailorText } = require('./tailor');
 function tailor(c, pathname, req) {
   if (!TAILORED.has(pathname)) return c;
   const base = (process.env.PUBLIC_URL || ('https://' + String(req.headers.host || 'localhost').replace(/[^\w.:-]/g, ''))).replace(/\/$/, '');
-  const handle = String(instance().brand.handle || '').replace(/[^\w.]/g, '');
-  if (base === HOME && handle === 'neru') return c;
+  const handle = cleanHandle(instance().brand.handle);
+  if (isHome(base, handle)) return c;
   const key = base + '|' + handle;
   if (!c.alt) c.alt = new Map();
   if (!c.alt.has(key)) {
-    const buf = Buffer.from(c.buf.toString('utf8').split('</head>').map((part, i) => i ? part : part.replaceAll(HOME, base)
-      .replaceAll(' Par @neru.', handle ? ` Par @${handle}.` : '').replaceAll(', par @neru', handle ? `, par @${handle}` : '')).join('</head>')
-      .replace('"Cortège par @neru"', handle ? `"Cortège par @${handle}"` : '"Cortège"'));
+    const buf = Buffer.from(tailorText(c.buf.toString('utf8'), base, handle));
     if (c.alt.size >= 8) c.alt.clear();
     c.alt.set(key, { buf, etag: '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 16) + '"' });
     pack(c.alt.get(key), '.html');

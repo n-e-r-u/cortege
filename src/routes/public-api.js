@@ -121,7 +121,10 @@ async function publicApiRoutes(req, res, url, pathname) {
     const now = Date.now();
     if (!activityCache || now - activityCache.at > 60e3) {
       const rows = activeReports(now, 5000);
-      activityCache = { at: now, active: rows.length, regions: regionCounts(rows) };
+      // Le total suit la même règle que les régions : ce qui reste hors des régions listées n'est compté qu'à partir de
+      // cinq, sinon le total (ou le total moins les régions) trahirait une poignée de signalements.
+      const regions = regionCounts(rows), listed = regions.reduce((n, x) => n + x.active, 0), rest = rows.length - listed;
+      activityCache = { at: now, active: listed + (rest >= 5 ? rest : 0), regions };
     }
     res.setHeader('Cache-Control', 'public, max-age=60');
     return send(res, 200, activityCache);
@@ -170,9 +173,11 @@ async function publicApiRoutes(req, res, url, pathname) {
     const q = String(url.searchParams.get('q') || '').trim().slice(0, 80);
     if (q.length < 2) return send(res, 400, { error: 'Tape au moins 2 lettres.' });
     const gk = 'geo:' + clientHash(req);
-    if (!geoCache.has('/search?format=jsonv2&addressdetails=1&limit=6&countrycodes=fr&q=' + encodeURIComponent(q)) && !tx(() => bump(gk, 'vote', 30, Date.now())))
+    // Recherche limitée aux pays de l'instance (et non à la France seule)
+    const where = '/search?format=jsonv2&addressdetails=1&limit=6&countrycodes=' + (clientProfiles().map(p => p.code).filter(c => /^[a-z]{2}$/.test(c)).join(',') || 'fr') + '&q=';
+    if (!geoCache.has(where + encodeURIComponent(q)) && !tx(() => bump(gk, 'vote', 30, Date.now())))
       return send(res, 429, { error: 'Trop de recherches, patiente un peu.' });
-    const data = await nominatim('/search?format=jsonv2&addressdetails=1&limit=6&countrycodes=fr&q=' + encodeURIComponent(q));
+    const data = await nominatim(where + encodeURIComponent(q));
     if (!data) return send(res, 502, { error: 'Recherche indisponible pour l’instant.' });
     return send(res, 200, data.map(d => ({ name: d.display_name.split(',').slice(0, 2).join(','), place: placeName(d.address),
       lat: +d.lat, lng: +d.lon, bbox: d.boundingbox && d.boundingbox.map(Number) })), { 'Cache-Control': 'public, max-age=86400' });

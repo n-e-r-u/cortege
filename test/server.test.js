@@ -365,6 +365,20 @@ test('activité publique : total et régions, sans position ni signalement indiv
   assert.equal(typeof a.active, 'number'); assert.ok(Array.isArray(a.regions));
   assert.deepEqual(Object.keys(a).sort(), ['active', 'at', 'regions']);
   for (const x of a.regions) { assert.deepEqual(Object.keys(x).sort(), ['active', 'code', 'name']); assert.ok(x.active >= 5); }
+  // Le total ne trahit pas une poignée de signalements : hors des régions listées, rien n'est compté sous cinq
+  const rest = a.active - a.regions.reduce((n, x) => n + x.active, 0);
+  assert.ok(rest === 0 || rest >= 5, `reste hors régions : ${rest}`);
+});
+
+test('vérificateur : la page d\'accueil et le manifeste d\'une autre instance se retrouvent à partir du dépôt', () => {
+  const { tailorText, isHome, TAILORED } = require('../src/http/tailor');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  assert.ok(isHome('https://cortege.neru.tv/', 'neru') && !isHome('https://carte.exemple.org', 'neru'));
+  assert.ok(TAILORED.has('/index.html') && TAILORED.has('/manifest.webmanifest'));
+  const out = tailorText(html, 'https://carte.exemple.org', 'moncollectif');
+  assert.notEqual(out, html);
+  assert.ok(!out.split('</head>')[0].includes('https://cortege.neru.tv'), 'adresse d\'origine remplacée dans l\'en-tête');
+  assert.equal(out.split('</head>').slice(1).join('</head>'), html.split('</head>').slice(1).join('</head>'), 'le corps de la page ne change pas');
 });
 
 test('santé : « ok » pour tout le monde, le détail (disque, mémoire, proxy) avec la clé admin', async () => {

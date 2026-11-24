@@ -11,6 +11,10 @@
 //
 // Le code du serveur (server.js), lui, ne peut pas être vérifié de l'extérieur : aucun site ne peut
 // le prouver. Son empreinte est affichée pour information, telle que le serveur la déclare.
+//
+// Une instance sert sa page d'accueil et son manifeste avec sa propre adresse et son pseudo (src/http/tailor.js). Le script
+// refait la même adaptation sur le fichier du dépôt avant de comparer : une instance honnête n'apparaît donc pas comme
+// différente. Les images de marque (public/brand/) qu'une instance a remplacées sont signalées à part, sans faire échouer.
 // Aucune dépendance : Node 18 ou plus récent suffit.
 
 const fs = require('fs');
@@ -23,6 +27,7 @@ const root = __dirname;
 const encPath = rel => rel.split('/').map(encodeURIComponent).join('/');
 const TIMEOUT = 15000;
 const sha = buf => crypto.createHash('sha256').update(buf).digest('hex');
+const { TAILORED, tailorText } = require('./src/http/tailor');
 
 function listFiles(dir, rel = '') {
   const out = [];
@@ -36,14 +41,20 @@ function listFiles(dir, rel = '') {
 
 (async () => {
   console.log(`Vérification de ${base} contre ce dépôt\n`);
-  let ok = 0, diff = 0, err = 0;
+  let ok = 0, diff = 0, err = 0, brand = 0;
+  // Pseudo de l'instance, tel qu'elle le déclare : il ne sert qu'à refaire l'adaptation. S'il est faux, la comparaison échoue.
+  let handle = '';
+  try { handle = (await (await fetch(base + '/api/config', { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT) })).json()).brand.handle || ''; } catch {}
   for (const rel of listFiles(path.join(root, 'public'))) {
     const local = sha(fs.readFileSync(path.join(root, 'public', rel)));
     try {
       const res = await fetch(base + encPath(rel), { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const remote = sha(Buffer.from(await res.arrayBuffer()));
+      const adapted = TAILORED.has(rel) ? sha(Buffer.from(tailorText(fs.readFileSync(path.join(root, 'public', rel), 'utf8'), base, handle))) : null;
       if (remote === local) { ok++; console.log('  ✓ public' + rel); }
+      else if (remote === adapted) { ok++; console.log('  ✓ public' + rel + '  (adapté à l\'instance : adresse et pseudo)'); }
+      else if (/^\/brand\/[\w.-]+\.png$/.test(rel)) { brand++; console.log('  ~ public' + rel + '  image de marque remplacée par l\'instance'); }
       else { diff++; console.log('  ✗ public' + rel + '  DIFFÉRENT'); }
     } catch (e) { err++; console.log('  ? public' + rel + '  (' + e.message + ')'); }
   }
@@ -59,7 +70,8 @@ function listFiles(dir, rel = '') {
       console.log(`${f} (déclaré, non vérifiable) : ${h === l ? 'identique' : 'différent'} au dépôt`);
     }
   } catch { console.log('\n/api/version indisponible'); }
-  console.log(`\n${ok} identique(s), ${diff} différent(s), ${err} injoignable(s).`);
+  console.log(`\n${ok} identique(s), ${diff} différent(s), ${err} injoignable(s)${brand ? `, ${brand} image(s) de marque remplacée(s)` : ''}.`);
+  console.log('Cette vérification vaut pour ce qui a été reçu ici, maintenant. Elle ne dit rien du serveur, de son hébergeur ni de ce qu\'il garde.');
   if (diff) console.log('Un fichier différent peut venir d\'une version plus récente ou plus ancienne : compare avec le bon commit (git log).');
   process.exit(diff || err ? 1 : 0);
 })();

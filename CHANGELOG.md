@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.24.4
+
+- **Activité publique** (`/api/activity`) : le total suivait une règle moins stricte que les régions et était publié dès le premier signalement. Hors des régions listées, rien n'est plus compté sous cinq signalements : ni le total, ni le total moins les régions ne trahissent une poignée de points.
+- **Recherche de lieux** : elle était limitée à la France, même sur une instance qui couvre d'autres pays. Elle cherche maintenant dans les pays de l'instance.
+- **Vérificateur** (`verifier.js`) : il donnait « DIFFÉRENT » sur toute instance autre que celle d'origine, parce que chaque instance sert sa page d'accueil et son manifeste avec sa propre adresse et son pseudo. Il refait maintenant la même adaptation avant de comparer, signale à part les images de marque remplacées, et rappelle ce que le résultat ne prouve pas (le serveur, l'hébergeur).
+
 ## 2.24.3
 
 - **Nouveautés de la 2.24** : la fiche « Nouveautés » de l'appli et le message sur les réseaux n'avaient pas été faits à la sortie de la 2.24. Ils présentent ce qui a changé depuis la 2.23 : texte qui suit le réglage du téléphone, chargement trois fois plus léger, fiches utilisables au clavier et au lecteur d'écran.
