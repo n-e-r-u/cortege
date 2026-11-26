@@ -5516,3 +5516,20 @@ msgstr "<b>الأمان</b><small>تور، فقدان الوصول، مسح كل
 
 msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
 msgstr "<b>حول</b><small>كيف يعمل، الحصائل، الجديد، الإشعارات القانونية</small>"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Où"
+msgstr "أين"
+
+#: client/app/19-agenda.js
+msgid "Autour de moi"
+msgstr "قربي"
+
+#: client/app/19-agenda.js
+msgid "Partout"
+msgstr "في كل مكان"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé à moins de 50 km de toi. Appuie sur « Partout » pour voir le reste."
+msgstr "لا شيء مُعلن على بعد أقل من 50 كم منك. اضغط «في كل مكان» لرؤية البقية."

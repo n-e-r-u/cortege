@@ -5425,3 +5425,20 @@ msgstr "<b>Sicherheit</b><small>Tor, Zugang verloren, alles löschen</small>"
 
 msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
 msgstr "<b>Über</b><small>Wie es funktioniert, Bilanzen, Neuigkeiten, Impressum</small>"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Où"
+msgstr "Wo"
+
+#: client/app/19-agenda.js
+msgid "Autour de moi"
+msgstr "In meiner Nähe"
+
+#: client/app/19-agenda.js
+msgid "Partout"
+msgstr "Überall"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé à moins de 50 km de toi. Appuie sur « Partout » pour voir le reste."
+msgstr "Nichts angekündigt im Umkreis von 50 km. Tippe auf „Überall“, um den Rest zu sehen."

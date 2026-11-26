@@ -110,6 +110,7 @@
 }
 :root[data-theme="light"].jour .pin.ver { box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key), 0 0 0 4px var(--ok-text); }
 :root[data-theme="light"].jour .pin.admin { box-shadow: 0 0 0 1px var(--key); }
+:root[data-theme="light"].jour .cluster { box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key); }
 /* Les couleurs de groupe assombries portent du texte blanc : le texte foncé d'origine n'y tient plus le contraste
    (bandeau d'alerte 3,91 et bouton « Appeler » de la legal team 3,49, contre 4,72 et 5,38 en blanc) */
 :root[data-theme="light"].jour .alert,
@@ -545,6 +546,8 @@ body.drawing .tools, body.drawing .overlays { display: none; }
 .orga-card a.secondary { display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 4px; }
 .orga-card .fine { font-size: .75rem; color: var(--muted); }
 .round[hidden] { display: none; }
+/* Grappe d'événements de l'agenda : même cercle que celle des signalements, en carré arrondi comme leurs épingles */
+.cluster.ev { border-radius: 12px; }
 .cluster.nat { cursor: pointer; box-shadow: 0 0 0 6px color-mix(in srgb, var(--c) 25%, transparent), 0 4px 14px rgba(0,0,0,.5); }
 .trial-note { border-left: 3px solid var(--info); padding-left: 10px; }
 

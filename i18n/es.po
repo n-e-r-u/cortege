@@ -5428,3 +5428,20 @@ msgstr "<b>Seguridad</b><small>Tor, acceso perdido, borrar todo</small>"
 
 msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
 msgstr "<b>Acerca de</b><small>Cómo funciona, balances, novedades, aviso legal</small>"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Où"
+msgstr "Dónde"
+
+#: client/app/19-agenda.js
+msgid "Autour de moi"
+msgstr "Cerca de mí"
+
+#: client/app/19-agenda.js
+msgid "Partout"
+msgstr "En todas partes"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé à moins de 50 km de toi. Appuie sur « Partout » pour voir le reste."
+msgstr "Nada anunciado a menos de 50 km de ti. Pulsa «En todas partes» para ver el resto."

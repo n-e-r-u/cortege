@@ -1,6 +1,14 @@
   // ---- Agenda : manifs, blocus, rassemblements, AG ----
   const EVT = Object.fromEntries((cfg.eventTypes || []).map(t => [t.id, t]));
-  const evLayer = L.layerGroup().addTo(map);
+  const evLayer = L.layerGroup().addTo(map);           // parcours et points de dispersion (une grappe n'accepte que des marqueurs)
+  // Épingles regroupées au dézoom : au zoom région, sept jours de mobilisations faisaient une forêt d'épingles
+  const evPins = L.markerClusterGroup({
+    maxClusterRadius: z => (z >= 13 ? 24 : 70), disableClusteringAtZoom: 15, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
+    iconCreateFunction: cluster => {
+      const n = cluster.getChildCount(), size = n < 10 ? 38 : n < 100 ? 46 : 54;
+      return L.divIcon({ className: '', iconSize: [size, size], html: `<div class="cluster ev" style="--c:var(--accent);width:${size}px;height:${size}px">${n}</div>` });
+    },
+  }).addTo(map);
   const evMarkers = new Map();
   let selectedEv = null;
   const fmtWhen = x => new Date(x).toLocaleString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -45,7 +53,7 @@
     return root;
   }
   function renderEvents() {
-    evLayer.clearLayers(); evMarkers.clear();
+    evLayer.clearLayers(); evPins.clearLayers(); evMarkers.clear();
     for (const e of evShown()) {
       const ty = EVT[e.type] || { glyph: '📍' };
       if (e.route) {
@@ -54,7 +62,7 @@
           .bindPopup(() => el('div', {}, t('Dispersion prévue : {title}', { title: e.title }))).addTo(evLayer);
       }
       const m = L.marker([e.lat, e.lng], { icon: L.divIcon({ className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -18], html: `<div class="ev-pin">${ty.glyph}</div>` }),
-        title: e.title, zIndexOffset: 500 }).bindPopup(() => evPopup(e)).addTo(evLayer);
+        title: e.title, zIndexOffset: 500 }).bindPopup(() => evPopup(e)).addTo(evPins);
       evMarkers.set(e.id, m);
     }
     if (!$('#sheetAgenda').hidden) renderAgenda();
@@ -67,6 +75,11 @@
   // Repris de la proposition de 22eme-Arkane (branche refonte-interface), y compris la correction du week-end le dimanche.
   // Plus de rayon de 50 km par défaut : il se calculait depuis le centre de la carte et pouvait cacher des manifs proches.
   let agWhen = 'all', agSel = null, agCal = false;
+  // Autour de soi : actif par défaut dès que la position est connue. Le rayon part de la position de la personne,
+  // jamais du centre de la carte (c'était le défaut de l'ancien filtre : il cachait des manifs proches quand on
+  // regardait ailleurs sur la carte).
+  const AG_NEAR_M = 50_000;
+  let agNear = true;
   const agTypes = new Set();
   const dayKey = x => { const d = new Date(x); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
   function agWhenOk(e) {
@@ -88,6 +101,11 @@
       b.onclick = () => { fn(); agSel = null; renderAgenda(); };
       return b;
     };
+    if (me) {
+      const where = el('div', { class: 'ag-chips', role: 'group', 'aria-label': t('Où') });
+      where.append(chip(t('Autour de moi'), agNear, () => { agNear = true; }), chip(t('Partout'), !agNear, () => { agNear = false; }));
+      box.append(where);
+    }
     const when = el('div', { class: 'ag-chips', role: 'group', 'aria-label': t('Quand') });
     for (const [k, l] of [['all', 'Tout'], ['today', 'Aujourd’hui'], ['weekend', 'Ce week-end'], ['week', '7 jours']])
       when.append(chip(t(l), agWhen === k, () => { agWhen = k; }));
@@ -136,6 +154,7 @@
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
     renderAgChips();
     let list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now);
+    if (me && agNear) list = list.filter(e => dist(me, [e.lat, e.lng]) <= AG_NEAR_M);
     if (agTypes.size) list = list.filter(e => agTypes.has(e.type));
     renderCal(list);                       // le calendrier montre le mois entier, avant le filtre « quand »
     list = list.filter(agWhenOk);
@@ -144,6 +163,7 @@
     const ol = $('#agList'); ol.textContent = '';
     $('#agEmpty').hidden = list.length > 0;
     $('#agEmpty').textContent = agSel ? t('Rien d’annoncé ce jour-là.')
+      : me && agNear ? t('Rien d’annoncé à moins de 50 km de toi. Appuie sur « Partout » pour voir le reste.')
       : agWhen !== 'all' || agTypes.size ? t('Rien d’annoncé avec ces filtres.')
       : t('Aucune mobilisation annoncée pour l’instant.');
     let day = '';
@@ -170,6 +190,6 @@
     selectedEv = e.id; renderEvents();
     if (e.route) map.fitBounds(L.latLngBounds(e.route.concat([[e.lat, e.lng]])), { padding: [40, 40], maxZoom: 16 });
     else map.setView([e.lat, e.lng], 16);
-    setTimeout(() => evMarkers.get(e.id)?.openPopup(), 350);
+    setTimeout(() => { const m = evMarkers.get(e.id); if (m) evPins.zoomToShowLayer(m, () => m.openPopup()); }, 350);
   }
 

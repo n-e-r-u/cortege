@@ -5410,3 +5410,53 @@ msgstr ""
 #: client/app/25-preparation.js
 msgid "Agenda, {n} à lire"
 msgstr ""
+
+# --- textes à traduire ---
+msgid "Pendant la manif"
+msgstr ""
+
+msgid "Apparence et langue"
+msgstr ""
+
+msgid "Sécurité"
+msgstr ""
+
+msgid "À propos"
+msgstr ""
+
+msgid "‹ Réglages"
+msgstr ""
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr ""
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr ""
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr ""
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr ""
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr ""
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Où"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Autour de moi"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Partout"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé à moins de 50 km de toi. Appuie sur « Partout » pour voir le reste."
+msgstr ""
