@@ -37,6 +37,8 @@
   document.addEventListener('visibilitychange', () => { if (manif && !document.hidden) applyManifTheme(); });
   $('#btnManif').onclick = () => { closeSheets(); setManif(true); if (watchId == null) locate(); toast('Mode manif. « Quitter » en haut pour revenir à l’appli complète.'); };
   $('#manifExit').onclick = () => setManif(false);
+  // Raccourci sur la carte : le mode manif ne se trouvait que dans les réglages, personne ne l'ouvrait dans la rue
+  $('#btnManifMap').onclick = () => { closeReport(); closeSheets(); $('#btnManif').click(); };
   $('#mbSos').onclick = openSos;
   $('#mbLegal').onclick = () => openPage('#sheetRights');
   setManif(manif);

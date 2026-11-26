@@ -5458,3 +5458,61 @@ msgstr "طيّ الأشرطة"
 #: client/app/18-bandeaux.js
 msgid "Voir les autres bandeaux"
 msgstr "عرض الأشرطة الأخرى"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr "متى"
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr "ماذا"
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr "تقويم الشهر"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr "لا شيء مُعلن في ذلك اليوم."
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr "لا شيء مُعلن بهذه المرشّحات."
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr "الأجندة، {n} للقراءة"
+
+msgid "Pendant la manif"
+msgstr "أثناء المظاهرة"
+
+msgid "Apparence et langue"
+msgstr "المظهر واللغة"
+
+msgid "Sécurité"
+msgstr "الأمان"
+
+msgid "À propos"
+msgstr "حول"
+
+msgid "‹ Réglages"
+msgstr "‹ الإعدادات"
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr "<b>أثناء المظاهرة</b><small>وضع المظاهرة، التنبيهات، البطارية</small>"
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr "<b>قبل الخروج</b><small>قائمة التحضير، خريطة دون اتصال، التثبيت، أداة التمويه</small>"
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr "<b>تكبير كورتيج</b><small>المشاركة، الملصق، الأفكار، صلاحية الجهات</small>"
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr "<b>المظهر واللغة</b><small>السمة، حجم النص، التباين، اللغة</small>"
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr "<b>الأمان</b><small>تور، فقدان الوصول، مسح كل شيء</small>"
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr "<b>حول</b><small>كيف يعمل، الحصائل، الجديد، الإشعارات القانونية</small>"

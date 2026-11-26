@@ -1179,3 +1179,39 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):
 .overlays:not(.open) #anns > .ann ~ .ann, .overlays:not(.open) #anns > .ann-more { display: none; }
 .ov-more { align-self: center; pointer-events: auto; font-size: .75rem; font-weight: 700; color: var(--muted);
   background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; box-shadow: var(--float-shadow); }
+
+/* Réglages : sommaire en thèmes, puis une page par thème (voir client/app/23-reglages.js) */
+.rg-menu { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 8px; }
+.rg-item { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; text-align: start;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); color: var(--fg); }
+.rg-item:active { transform: scale(.995); }
+.rg-ico { flex: none; color: var(--accent); }
+.rg-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.rg-txt b { font-size: .9375rem; }
+.rg-txt small { font-size: .75rem; color: var(--muted); line-height: 1.25; }
+.rg-go { flex: none; color: var(--muted); font-size: 1.25rem; }
+.rg-back { align-self: start; background: none; border: 0; color: var(--accent); font-weight: 700; padding: 6px 2px; margin-bottom: 2px; }
+.rg-title { font: 700 1.0625rem/1.2 var(--font); margin: 0 0 10px; }
+
+/* Agenda : filtres combinables et calendrier du mois (voir client/app/19-agenda.js) */
+.ag-filters { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 8px; }
+/* Les puces passent à la ligne au lieu de défiler : un libellé coupé au bord se lit comme un bug, et une puce
+   qui dépasse hors de l'écran ne se voit pas du tout */
+.ag-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ag-chip { min-height: 36px; padding: 6px 14px; border-radius: 99px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+.ag-chip.on { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.ag-cal-toggle { align-self: start; background: none; border: 0; color: var(--accent); font-weight: 700; padding: 6px 2px; }
+.ag-cal { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; margin-bottom: 10px; }
+.cal-head { text-align: center; font-weight: 700; margin-bottom: 8px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-day { position: relative; min-height: 38px; display: grid; place-items: center; border: 0; background: none;
+  color: var(--fg); font-size: .875rem; border-radius: 10px; }
+.cal-day.past { color: var(--muted); opacity: .5; }
+.cal-day.has { font-weight: 800; }
+.cal-day.on { background: var(--accent); color: var(--accent-fg); }
+.cal-dot { position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.cal-day.on .cal-dot { background: var(--accent-fg); }
+.round.manif-tool { border-color: var(--accent); color: var(--accent); }
+body.manif .round.manif-tool { display: none !important; }
+.cal-wd { display: grid; place-items: center; font-size: .6875rem; font-weight: 700; color: var(--muted); text-decoration: none; padding-bottom: 4px; }

@@ -1,12 +1,12 @@
   // ---- Signaler ----
-  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon', '#sheetWelcome'];
+  const sheets = ['#sheetLayers', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon', '#sheetWelcome'];
   // Certaines fiches n'arrivent dans la page qu'avec leur partie chargée à la demande (espace orga, idées, enregistreur) : voir addSheet
   const sheetOpen = s => { const x = $(s); return !!x && !x.hidden; };
   const closeSheets = () => sheets.forEach(s => { const x = $(s); if (x) x.hidden = true; });
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
-  // Pages des onglets (Infos, Droits, Plus) : plein écran au-dessus de la barre, sans fond assombri
-  const PAGES = { tabInfos: '#sheetFeed', tabRights: '#sheetRights', tabMore: '#sheetInfo' };
+  // Pages des onglets (Agenda, Droits, Réglages) : plein écran au-dessus de la barre, sans fond assombri
+  const PAGES = { tabAgenda: '#sheetAgenda', tabRights: '#sheetRights', tabMore: '#sheetInfo' };
   const isPage = s => Object.values(PAGES).includes(s);
   function syncTabs() {
     const open = Object.entries(PAGES).find(([, s]) => !$(s).hidden);

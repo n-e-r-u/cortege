@@ -5370,3 +5370,61 @@ msgstr "Plegar los avisos"
 #: client/app/18-bandeaux.js
 msgid "Voir les autres bandeaux"
 msgstr "Ver los demás avisos"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr "Cuándo"
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr "Qué"
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr "Calendario del mes"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr "Nada anunciado ese día."
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr "Nada anunciado con estos filtros."
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr "Agenda, {n} por leer"
+
+msgid "Pendant la manif"
+msgstr "Durante la manifestación"
+
+msgid "Apparence et langue"
+msgstr "Apariencia e idioma"
+
+msgid "Sécurité"
+msgstr "Seguridad"
+
+msgid "À propos"
+msgstr "Acerca de"
+
+msgid "‹ Réglages"
+msgstr "‹ Ajustes"
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr "<b>Durante la manifestación</b><small>Modo manifestación, alertas, batería</small>"
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr "<b>Antes de salir</b><small>Lista, mapa sin conexión, instalación, difuminador</small>"
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr "<b>Hacer crecer Cortège</b><small>Compartir, cartel, ideas, acceso de organización</small>"
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr "<b>Apariencia e idioma</b><small>Tema, tamaño del texto, contraste, idioma</small>"
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr "<b>Seguridad</b><small>Tor, acceso perdido, borrar todo</small>"
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr "<b>Acerca de</b><small>Cómo funciona, balances, novedades, aviso legal</small>"

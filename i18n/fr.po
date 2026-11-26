@@ -5385,3 +5385,28 @@ msgstr ""
 #: client/app/18-bandeaux.js
 msgid "Voir les autres bandeaux"
 msgstr ""
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr ""
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr ""

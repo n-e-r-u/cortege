@@ -5370,3 +5370,61 @@ msgstr "Collapse the banners"
 #: client/app/18-bandeaux.js
 msgid "Voir les autres bandeaux"
 msgstr "See the other banners"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr "When"
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr "What"
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr "This month’s calendar"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr "Nothing announced that day."
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr "Nothing announced with these filters."
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr "Agenda, {n} to read"
+
+msgid "Pendant la manif"
+msgstr "During the protest"
+
+msgid "Apparence et langue"
+msgstr "Appearance and language"
+
+msgid "Sécurité"
+msgstr "Security"
+
+msgid "À propos"
+msgstr "About"
+
+msgid "‹ Réglages"
+msgstr "‹ Settings"
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr "<b>During the protest</b><small>Protest mode, alerts, battery</small>"
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr "<b>Before you leave</b><small>Checklist, offline map, install, blur tool</small>"
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr "<b>Help Cortège grow</b><small>Share, poster, ideas, organiser access</small>"
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr "<b>Appearance and language</b><small>Theme, text size, contrast, language</small>"
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr "<b>Security</b><small>Tor, lost access, erase everything</small>"
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr "<b>About</b><small>How it works, reports, what’s new, legal notice</small>"

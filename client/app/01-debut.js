@@ -81,6 +81,7 @@
     document.dispatchEvent(new CustomEvent('cortege-profile'));
   }
   applyProfile(PROFILES[0]);
+  let rgHome = () => {};               // réglages : revenir au sommaire (posée par 23-reglages.js)
   let ALERT_RADIUS = cfg.alertRadius || 300;   // mètres (réglable par l'admin)
   const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;

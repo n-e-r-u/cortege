@@ -5,10 +5,21 @@
   let selectedEv = null;
   const fmtWhen = x => new Date(x).toLocaleString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const fmtHour = x => new Date(x).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' });
-  // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
-  // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda
-  const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
-  map.on('zoomend', () => { const z = map.getZoom() >= 9; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
+  // Sur la carte : les événements des 7 jours qui viennent (jusqu'à 10 h après le départ), dès le zoom région,
+  // plus celui choisi dans l'agenda. Avant, il fallait attendre 12 h avant le départ et zoomer sur le quartier.
+  // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda.
+  const EV_AHEAD = 7 * 24 * 60 * MIN, EV_ZOOM = 6, EV_MAX = 60;
+  const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= EV_ZOOM && e.start - EV_AHEAD < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  map.on('zoomend', () => { const z = map.getZoom() >= EV_ZOOM; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
+  // Au zoom région, sept jours d'événements peuvent faire des centaines d'épingles : on garde les plus proches
+  // du centre de la carte, et toujours celui qui est ouvert.
+  function evShown() {
+    const list = evCache.e.filter(evOnMap);
+    if (list.length <= EV_MAX) return list;
+    const c = map.getCenter();
+    return list.slice().sort((a, b) => (b.id === selectedEv) - (a.id === selectedEv)
+      || dist([c.lat, c.lng], [a.lat, a.lng]) - dist([c.lat, c.lng], [b.lat, b.lng])).slice(0, EV_MAX);
+  }
   function evPopup(e) {
     const ty = EVT[e.type] || { glyph: '📍', label: '' };
     const root = el('div');
@@ -35,7 +46,7 @@
   }
   function renderEvents() {
     evLayer.clearLayers(); evMarkers.clear();
-    for (const e of evCache.e.filter(evOnMap)) {
+    for (const e of evShown()) {
       const ty = EVT[e.type] || { glyph: '📍' };
       if (e.route) {
         L.polyline(e.route, { color: themeCol('--route', '#f6a29c'), weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
@@ -52,16 +63,89 @@
   }
   // Thème changé (réglage, système ou mode manif) : les parcours prennent la couleur du nouveau thème
   window.addEventListener('cortege-theme', () => { try { renderEvents(); drawFlow(); } catch {} });
+  // ---- Agenda : filtres, calendrier du mois, puis la liste ----
+  // Repris de la proposition de 22eme-Arkane (branche refonte-interface), y compris la correction du week-end le dimanche.
+  // Plus de rayon de 50 km par défaut : il se calculait depuis le centre de la carte et pouvait cacher des manifs proches.
+  let agWhen = 'all', agSel = null, agCal = false;
+  const agTypes = new Set();
+  const dayKey = x => { const d = new Date(x); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  function agWhenOk(e) {
+    const now = new Date(), day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    if (agWhen === 'today') return e.start < day0 + 864e5;
+    if (agWhen === 'week') return e.start < day0 + 7 * 864e5;
+    // Le dimanche, « ce week-end » se réduit à aujourd'hui : calculer le samedi suivant faisait sauter le jour même
+    if (agWhen === 'weekend') {
+      const wd = now.getDay(), sat = wd === 0 ? day0 : day0 + (6 - wd) * 864e5;
+      return e.start >= Math.min(sat, day0) && e.start < (wd === 0 ? day0 + 864e5 : sat + 2 * 864e5);
+    }
+    return true;
+  }
+  function renderAgChips() {
+    const box = $('#agFilters'); if (!box) return;
+    box.textContent = '';
+    const chip = (label, on, fn) => {
+      const b = el('button', { type: 'button', class: 'ag-chip' + (on ? ' on' : ''), 'aria-pressed': String(on) }, label);
+      b.onclick = () => { fn(); agSel = null; renderAgenda(); };
+      return b;
+    };
+    const when = el('div', { class: 'ag-chips', role: 'group', 'aria-label': t('Quand') });
+    for (const [k, l] of [['all', 'Tout'], ['today', 'Aujourd’hui'], ['weekend', 'Ce week-end'], ['week', '7 jours']])
+      when.append(chip(t(l), agWhen === k, () => { agWhen = k; }));
+    const what = el('div', { class: 'ag-chips', role: 'group', 'aria-label': t('Quoi') });
+    for (const ty of Object.values(EVT))
+      what.append(chip(ty.glyph + ' ' + t(ty.label), agTypes.has(ty.id), () => { agTypes.has(ty.id) ? agTypes.delete(ty.id) : agTypes.add(ty.id); }));
+    box.append(when, what);
+  }
+  // Calendrier du mois : une pastille les jours qui ont quelque chose, un appui filtre la liste sur ce jour.
+  // Replié par défaut : la liste du jour compte plus que la grille.
+  function renderCal(list) {
+    const box = $('#agCal'), tog = $('#agCalToggle');
+    if (!box || !tog) return;
+    box.hidden = !agCal;
+    tog.setAttribute('aria-expanded', String(agCal));
+    tog.textContent = (agCal ? '▾ ' : '▸ ') + t('Calendrier du mois');
+    if (!agCal) return;
+    box.textContent = '';
+    const now = new Date(), first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const days = new Set(list.map(e => dayKey(e.start)));
+    box.append(el('div', { class: 'cal-head' }, first.toLocaleDateString(I18N.locale, { month: 'long', year: 'numeric' })));
+    const grid = el('div', { class: 'cal-grid' });
+    // En-tête des jours, dans la langue de l'appli : sans elle, on ne sait pas quelle colonne est quel jour
+    for (let k = 0; k < 7; k++) {
+      const d = new Date(2024, 0, 1 + k);   // 1er janvier 2024 était un lundi
+      grid.append(el('abbr', { class: 'cal-wd', title: d.toLocaleDateString(I18N.locale, { weekday: 'long' }) },
+        d.toLocaleDateString(I18N.locale, { weekday: 'narrow' })));
+    }
+    // Première colonne : lundi (le tableau commence au jour 1 du mois)
+    const shift = (first.getDay() + 6) % 7;
+    for (let k = 0; k < shift; k++) grid.append(el('span', { class: 'cal-pad', 'aria-hidden': 'true' }));
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= last; d++) {
+      const date = new Date(now.getFullYear(), now.getMonth(), d), key = dayKey(date);
+      const past = d < now.getDate(), has = days.has(key);
+      if (!has) { grid.append(el('span', { class: 'cal-day' + (past ? ' past' : '') }, String(d))); continue; }
+      const b = el('button', { type: 'button', class: 'cal-day has' + (agSel === key ? ' on' : ''), 'aria-pressed': String(agSel === key) },
+        String(d), el('i', { class: 'cal-dot', 'aria-hidden': 'true' }));
+      b.setAttribute('aria-label', date.toLocaleDateString(I18N.locale, { weekday: 'long', day: 'numeric', month: 'long' }));
+      b.onclick = () => { agSel = agSel === key ? null : key; renderAgenda(); };
+      grid.append(b);
+    }
+    box.append(grid);
+  }
   function renderAgenda() {
-    const scope = document.querySelector('input[name="agScope"]:checked').value;
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
+    renderAgChips();
     let list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now);
-    if (scope === 'near') list = list.filter(e => dist(ref, [e.lat, e.lng]) <= 50_000);
-    list.sort((a, b) => a.start - b.start);
+    if (agTypes.size) list = list.filter(e => agTypes.has(e.type));
+    renderCal(list);                       // le calendrier montre le mois entier, avant le filtre « quand »
+    list = list.filter(agWhenOk);
+    if (agSel) list = list.filter(e => dayKey(e.start) === agSel);
+    list.sort((a, b) => a.start - b.start || dist(ref, [a.lat, a.lng]) - dist(ref, [b.lat, b.lng]));
     const ol = $('#agList'); ol.textContent = '';
     $('#agEmpty').hidden = list.length > 0;
-    $('#agEmpty').textContent = t(scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
-      : me ? t('Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».') : t('Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».'));
+    $('#agEmpty').textContent = agSel ? t('Rien d’annoncé ce jour-là.')
+      : agWhen !== 'all' || agTypes.size ? t('Rien d’annoncé avec ces filtres.')
+      : t('Aucune mobilisation annoncée pour l’instant.');
     let day = '';
     if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, t('{n} événements : les 200 premiers', { n: list.length })));
     for (const e of list.slice(0, 200)) {
@@ -80,14 +164,6 @@
       el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
     btn.onclick = () => showEvent(e);
     return el('li', {}, btn);
-  }
-  // Infos : les 4 prochains événements à moins de 50 km
-  function feedAgenda(ref) {
-    const now = Date.now(), ol = $('#feedAg'); ol.textContent = '';
-    const list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now && dist(ref, [e.lat, e.lng]) <= 50_000).sort((a, b) => a.start - b.start).slice(0, 4);
-    $('#feedAgEmpty').hidden = list.length > 0;
-    let day = '';
-    for (const e of list) { const d = agDay(e, now); if (d !== day) { day = d; ol.append(el('li', { class: 'ag-day' }, d)); } ol.append(agRow(e, ref)); }
   }
   function showEvent(e) {
     closeSheets(); setFollow(false);
