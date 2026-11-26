@@ -1,73 +1,93 @@
 {
-  "version": "2.24",
+  "version": "2.25",
   "items": [
     [
-      "🔠 Le texte suit ton téléphone",
-      "Réglé en gros caractères ? Le texte de l’appli grossit d’autant."
+      "🧭 Chaque chose à sa place",
+      "Agenda, Droits et Réglages ont leur onglet. Le mode manif s’ouvre depuis la carte."
     ],
     [
-      "⚡ Trois fois plus légère à charger",
-      "La carte s’ouvre bien plus vite quand le réseau sature."
+      "☀️ Lisible en plein soleil",
+      "Traits francs, aucune ombre. En mode manif, l’appli suit le soleil."
     ],
     [
-      "♿ Plus simple au clavier et au lecteur d’écran",
-      "Les fiches s’ouvrent et se ferment comme de vraies fenêtres."
+      "📅 Un vrai agenda",
+      "Calendrier, filtres par date et par type, manifs visibles 7 jours avant."
+    ],
+    [
+      "🗺️ La carte reste la carte",
+      "Un seul bandeau en haut, les autres derrière un compteur."
     ]
   ],
   "items_en": [
     [
-      "🔠 Text follows your phone",
-      "Set to large text? The app’s text grows to match."
+      "🧭 Everything in its place",
+      "Agenda, Rights and Settings each have a tab. Protest mode opens from the map."
     ],
     [
-      "⚡ Three times lighter to load",
-      "The map opens much faster when the network is saturated."
+      "☀️ Readable in bright sun",
+      "Crisp lines, no shadows. In protest mode, the app follows the sun."
     ],
     [
-      "♿ Easier with a keyboard or screen reader",
-      "Sheets open and close like real windows."
+      "📅 A real agenda",
+      "Calendar, filters by date and type, protests visible 7 days ahead."
+    ],
+    [
+      "🗺️ The map stays the map",
+      "One banner at the top, the rest behind a counter."
     ]
   ],
   "items_es": [
     [
-      "🔠 El texto sigue a tu teléfono",
-      "¿Lo tienes en letra grande? El texto de la app crece igual."
+      "🧭 Cada cosa en su sitio",
+      "Agenda, Derechos y Ajustes tienen pestaña. El modo manifestación se abre desde el mapa."
     ],
     [
-      "⚡ Tres veces más ligera al cargar",
-      "El mapa se abre mucho más rápido cuando la red se satura."
+      "☀️ Legible a pleno sol",
+      "Trazos francos, sin sombras. En modo manifestación, la app sigue al sol."
     ],
     [
-      "♿ Más fácil con teclado o lector de pantalla",
-      "Las fichas se abren y se cierran como ventanas de verdad."
+      "📅 Una agenda de verdad",
+      "Calendario, filtros por fecha y tipo, manifestaciones visibles 7 días antes."
+    ],
+    [
+      "🗺️ El mapa sigue siendo el mapa",
+      "Un solo aviso arriba, los demás tras un contador."
     ]
   ],
   "items_ar": [
     [
-      "🔠 النص يتبع إعدادات هاتفك",
-      "هل تستخدم خطًّا كبيرًا؟ نص التطبيق يكبر بالقدر نفسه."
+      "🧭 كل شيء في مكانه",
+      "للأجندة والحقوق والإعدادات تبويب. ووضع المظاهرة يُفتح من الخريطة."
     ],
     [
-      "⚡ أخفّ ثلاث مرات عند التحميل",
-      "تُفتح الخريطة أسرع بكثير عندما تكون الشبكة مزدحمة."
+      "☀️ واضحة تحت الشمس",
+      "خطوط صريحة بلا ظلال. في وضع المظاهرة، يتبع التطبيق الشمس."
     ],
     [
-      "♿ أسهل بلوحة المفاتيح وقارئ الشاشة",
-      "تُفتح البطاقات وتُغلق كنوافذ حقيقية."
+      "📅 أجندة حقيقية",
+      "تقويم، ومرشّحات حسب التاريخ والنوع، ومظاهرات تظهر قبل 7 أيام."
+    ],
+    [
+      "🗺️ الخريطة تبقى خريطة",
+      "شريط واحد في الأعلى، والبقية خلف عدّاد."
     ]
   ],
   "items_de": [
     [
-      "🔠 Der Text folgt deinem Telefon",
-      "Große Schrift eingestellt? Der Text der App wächst mit."
+      "🧭 Alles an seinem Platz",
+      "Termine, Rechte und Einstellungen haben je einen Tab. Demo-Modus von der Karte aus."
     ],
     [
-      "⚡ Dreimal leichter zu laden",
-      "Die Karte öffnet sich viel schneller, wenn das Netz überlastet ist."
+      "☀️ In praller Sonne lesbar",
+      "Klare Linien, keine Schatten. Im Demo-Modus folgt die App der Sonne."
     ],
     [
-      "♿ Einfacher mit Tastatur und Screenreader",
-      "Fenster öffnen und schließen sich wie echte Dialoge."
+      "📅 Ein echter Kalender",
+      "Monatskalender, Filter nach Datum und Art, Demos 7 Tage im Voraus."
+    ],
+    [
+      "🗺️ Die Karte bleibt die Karte",
+      "Ein Hinweis oben, der Rest hinter einem Zähler."
     ]
   ]
 }

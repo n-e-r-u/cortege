@@ -84,7 +84,7 @@ Pas besoin de savoir coder pour être utile :
 - **Coder** : le code est en JavaScript sans framework ni dépendance, découpé en petits fichiers par fonction. [CONTRIBUTING.md](CONTRIBUTING.md) explique comment lancer l'appli, les tests et les règles du projet (la position ne quitte pas le téléphone, rien d'identifiant en clair, pensé pour un réseau saturé).
 - **Une faille de sécurité** : voir [SECURITY.md](SECURITY.md), sans la publier.
 
-Merci à celles et ceux qui ont déjà contribué, dont [MltStephane](https://github.com/MltStephane) (Flouteur) et [JadePrice](https://github.com/JadePrice) (audit et corrections) et [22eme-Arkane](https://github.com/22eme-Arkane) (signalements de sécurité).
+Merci à celles et ceux qui ont déjà contribué, dont [MltStephane](https://github.com/MltStephane) (Flouteur) et [JadePrice](https://github.com/JadePrice) (audit et corrections) et [22eme-Arkane](https://github.com/22eme-Arkane) (signalements de sécurité, proposition de refonte de l’interface).
 
 ## Licence et crédits
 
