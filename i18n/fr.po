@@ -5227,7 +5227,7 @@ msgstr ""
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr ""
 
-msgid "◎ Me situer"
+msgid "Me situer"
 msgstr ""
 
 msgid "Signaler en deux appuis"
@@ -5245,7 +5245,7 @@ msgstr ""
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr ""
 
-msgid "🔔 Régler les alertes"
+msgid "Régler les alertes"
 msgstr ""
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."

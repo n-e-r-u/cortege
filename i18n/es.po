@@ -5212,8 +5212,8 @@ msgstr "El mapa de las manifestaciones en directo, hecho por quienes están all�
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr "Empieza por ubicarte: el mapa se abre en tu zona, con lo que se ha avisado a tu alrededor."
 
-msgid "◎ Me situer"
-msgstr "◎ Ubicarme"
+msgid "Me situer"
+msgstr "Ubicarme"
 
 msgid "Signaler en deux appuis"
 msgstr "Avisar en dos toques"
@@ -5230,8 +5230,8 @@ msgstr "Recibir alertas"
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr "Una alerta cuando se avisa de un peligro cerca de ti, incluso con la app cerrada. Tú eliges tu zona y qué te avisa."
 
-msgid "🔔 Régler les alertes"
-msgstr "🔔 Configurar las alertas"
+msgid "Régler les alertes"
+msgstr "Configurar las alertas"
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
 msgstr "En la pestaña Derechos: qué hacer ante un control o una detención, y los números de los equipos legales."

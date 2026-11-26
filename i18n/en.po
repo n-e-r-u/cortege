@@ -5212,8 +5212,8 @@ msgstr "The live protest map, kept up to date by the people who are there. No ac
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr "Start by locating yourself: the map opens on your area, with what has been reported around you."
 
-msgid "◎ Me situer"
-msgstr "◎ Locate me"
+msgid "Me situer"
+msgstr "Locate me"
 
 msgid "Signaler en deux appuis"
 msgstr "Report in two taps"
@@ -5230,8 +5230,8 @@ msgstr "Get alerted"
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr "An alert when a danger is reported near you, even with the app closed. You choose your area and what alerts you."
 
-msgid "🔔 Régler les alertes"
-msgstr "🔔 Set up alerts"
+msgid "Régler les alertes"
+msgstr "Set up alerts"
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
 msgstr "In the Rights tab: what to do if you are stopped or arrested, and the legal team numbers."

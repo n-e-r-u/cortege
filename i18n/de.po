@@ -5209,8 +5209,8 @@ msgstr "Die Live-Karte der Demos, gepflegt von den Menschen vor Ort. Ohne Konto,
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr "Zeig zuerst deinen Standort: Die Karte öffnet sich in deiner Gegend, mit allem, was um dich herum gemeldet wurde."
 
-msgid "◎ Me situer"
-msgstr "◎ Meinen Standort zeigen"
+msgid "Me situer"
+msgstr "Meinen Standort zeigen"
 
 msgid "Signaler en deux appuis"
 msgstr "Melden mit zwei Tipps"
@@ -5227,8 +5227,8 @@ msgstr "Gewarnt werden"
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr "Eine Warnung, wenn in deiner Nähe eine Gefahr gemeldet wird, auch bei geschlossener App. Du wählst deine Gegend und was dich warnt."
 
-msgid "🔔 Régler les alertes"
-msgstr "🔔 Warnungen einstellen"
+msgid "Régler les alertes"
+msgstr "Warnungen einstellen"
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
 msgstr "Im Tab Rechte: was bei einer Kontrolle oder Festnahme zu tun ist, und die Nummern der Legal Teams (EA)."
