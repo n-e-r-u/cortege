@@ -5351,3 +5351,22 @@ msgstr "Pleno día"
 
 msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
 msgstr "«Pleno día» engrosa los trazos y quita las sombras, para una pantalla leída al sol. En modo manifestación, la apariencia sigue al sol."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} más"
+msgstr[1] "+ {n} más"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "Plegar"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "Plegar los avisos"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "Ver los demás avisos"

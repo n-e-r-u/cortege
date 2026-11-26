@@ -110,6 +110,11 @@
 }
 :root[data-theme="light"].jour .pin.ver { box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key), 0 0 0 4px var(--ok-text); }
 :root[data-theme="light"].jour .pin.admin { box-shadow: 0 0 0 1px var(--key); }
+/* Les couleurs de groupe assombries portent du texte blanc : le texte foncé d'origine n'y tient plus le contraste
+   (bandeau d'alerte 3,91 et bouton « Appeler » de la legal team 3,49, contre 4,72 et 5,38 en blanc) */
+:root[data-theme="light"].jour .alert,
+:root[data-theme="light"].jour .legal-call,
+:root[data-theme="light"].jour .calm-nav .arrow { color: #ffffff; }
 :root[data-theme="light"].jour .round,
 :root[data-theme="light"].jour .tile,
 :root[data-theme="light"].jour .sheet,
@@ -1168,3 +1173,9 @@ body.medic.md-nosig .leaflet-reports-pane { display: none; }
 
 /* Champs de saisie : jamais sous 16 px, sinon l'iPhone zoome tout seul dans la page dès qu'on y entre */
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([readonly]), textarea:not([readonly]), select { font-size: max(1rem, 1em) !important; }
+
+/* Bandeau de situation : un seul visible, les autres repliés derrière « + n » (voir client/app/18-bandeaux.js) */
+.ov-stacked { display: none !important; }
+.overlays:not(.open) #anns > .ann ~ .ann, .overlays:not(.open) #anns > .ann-more { display: none; }
+.ov-more { align-self: center; pointer-events: auto; font-size: .75rem; font-weight: 700; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; box-shadow: var(--float-shadow); }

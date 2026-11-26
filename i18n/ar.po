@@ -5435,3 +5435,26 @@ msgstr "ضوء النهار"
 
 msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
 msgstr "«ضوء النهار» يُثخِّن الخطوط ويزيل الظلال، لشاشة تُقرأ تحت الشمس. في وضع المظاهرة، يتبع المظهر حركة الشمس."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} أخرى"
+msgstr[1] "+ واحد آخر"
+msgstr[2] "+ {n} أخرى"
+msgstr[3] "+ {n} أخرى"
+msgstr[4] "+ {n} أخرى"
+msgstr[5] "+ {n} أخرى"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "طيّ"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "طيّ الأشرطة"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "عرض الأشرطة الأخرى"

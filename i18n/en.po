@@ -5351,3 +5351,22 @@ msgstr "Daylight"
 
 msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
 msgstr "“Daylight” thickens lines and removes shadows, for a screen read in the sun. In protest mode, the appearance follows the sun."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} more"
+msgstr[1] "+ {n} more"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "Collapse"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "Collapse the banners"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "See the other banners"

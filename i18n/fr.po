@@ -5360,3 +5360,28 @@ msgstr ""
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
 msgstr ""
+
+# --- textes à traduire ---
+msgid "Plein jour"
+msgstr ""
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr ""
+
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr ""
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr ""
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr ""

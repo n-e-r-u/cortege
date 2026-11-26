@@ -5348,3 +5348,22 @@ msgstr "Tageslicht"
 
 msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
 msgstr "„Tageslicht“ verstärkt die Linien und entfernt Schatten, für einen Bildschirm, der in der Sonne gelesen wird. Im Demo-Modus richtet sich das Aussehen nach der Sonne."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} weiteres"
+msgstr[1] "+ {n} weitere"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "Einklappen"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "Hinweise einklappen"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "Die anderen Hinweise ansehen"
