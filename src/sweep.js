@@ -11,6 +11,7 @@ const { dirtyCell, dirty, scheduleFlush } = require('./live/files');
 const { pruneKeys } = require('./privacy');
 const { q, tx, getMeta, setMeta, isBusy } = require('./db');
 const { refugesTick } = require('./refuges');
+const { feedTick } = require('./events/import');
 
 // Ménage toutes les 30 s : signalements, annonces et événements expirés, limites périmées, fin de pause.
 function sweep() {
@@ -41,6 +42,7 @@ function sweep() {
     const p = Number(getMeta('paused') || 0);
     if (p && p <= now) { setMeta('paused', 0); dirty.global = true; }
     try { refugesTick(now); } catch (e) { console.error('lieux de repli', e.message); }
+    feedTick(now).catch(e => console.error('import agenda', e.message));
     if (expired.length || dirty.ann || dirty.events || dirty.ord || dirty.repli || dirty.global) scheduleFlush(0);
   } catch (e) { if (!isBusy(e)) console.error('ménage', e.message); }
 }
