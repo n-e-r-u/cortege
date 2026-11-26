@@ -319,7 +319,7 @@ msgstr ""
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr ""
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
 msgstr ""
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"

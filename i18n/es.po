@@ -319,8 +319,8 @@ msgstr "<b>Ahorro de batería</b><span>Mapa actualizado cada 20 s en lugar de 5,
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>Texto más grande</b><span>Botones y textos ampliados en toda la app.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>Contraste reforzado</b><span>Textos más blancos y bordes más marcados, para pleno sol.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>Contraste reforzado</b><span>Textos y bordes aún más marcados, sobre la apariencia elegida. Para una vista cansada.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Borrar todo de este teléfono</b><small>Mantén el dedo pulsado 2 segundos</small></span>"
@@ -5320,28 +5320,34 @@ msgstr "Detener el itinerario"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "Introduce tu código de recuperación actual para crear uno nuevo"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "Confirmar: los demás dispositivos perderán el acceso"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "Cortar todos mis otros dispositivos"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "Los demás dispositivos ya no tienen acceso"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "Para crear un código nuevo, introduce el código de recuperación actual. ¿Lo has perdido? Pide una nueva invitación al admin o a la organización que te dio acceso."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "Este punto lo verificó otra organización: pídele a ella, o al admin, que lo retire."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "Demasiados avisos de organización de golpe. Inténtalo de nuevo en unos minutos."
+
+msgid "Plein jour"
+msgstr "Pleno día"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "«Pleno día» engrosa los trazos y quita las sombras, para una pantalla leída al sol. En modo manifestación, la apariencia sigue al sol."

@@ -69,6 +69,54 @@
   --page-bg: linear-gradient(180deg, #fdeceb, #eae4ee 50%, #d8dbf0);
   color-scheme: light;
 }
+/* Plein jour : le thème clair renforcé, pour un écran lu dehors au soleil. Trois règles, reprises de la signalétique
+   routière et des instruments de plein air : des aplats francs, un trait sombre autour de chaque couleur (la forme
+   reste lisible même quand la couleur, elle, ne ressort pas), et aucune ombre floue (c'est la première chose que le
+   soleil efface). Posé par theme.js, qui garde data-theme="light" : la carte et les tuiles restent celles du thème clair. */
+:root[data-theme="light"].jour {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #eceaf4;
+  --line: #4b4a6b;
+  --fg: #0b0e2e;
+  --muted: #26294f;
+  --accent: #23309a;
+  --accent-2: #23309a;
+  --ok-text: #0d6440;
+  --warn-text: #7a4f00;
+  --bad-text: #a01b20;
+  /* Couleurs des groupes assombries : chacune tient au moins 4,7:1 sur une carte claire, et porte en plus son trait sombre */
+  --fdo: #c2181f;
+  --danger: #b35c00;
+  --soutien: #0f7a4a;
+  --info: #4a3fa8;
+  --route: #b43f38;
+  --zone-line: #a35e00;
+  --map-bg: #ffffff;
+  --map-label: #0b0e2e; --map-halo: #ffffff;
+  --attr-bg: rgba(255, 255, 255, .92);
+  /* Contours francs à la place des ombres portées */
+  --float-shadow: 0 0 0 1px var(--key);
+  --sheet-shadow: 0 -2px 0 0 var(--key);
+  --page-bg: #ffffff;
+  --key: #0b0e2e;   /* le trait sombre posé autour des couleurs et des surfaces */
+}
+/* Épingles : corps teinté de la couleur du groupe (une pastille colorée se repère de bien plus loin qu'un anneau),
+   anneau épaissi, un trait sombre de chaque côté, et plus d'ombre floue. */
+:root[data-theme="light"].jour .pin {
+  background: color-mix(in srgb, var(--c) 22%, #ffffff);
+  border-width: 4px;
+  box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key);
+}
+:root[data-theme="light"].jour .pin.ver { box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key), 0 0 0 4px var(--ok-text); }
+:root[data-theme="light"].jour .pin.admin { box-shadow: 0 0 0 1px var(--key); }
+:root[data-theme="light"].jour .round,
+:root[data-theme="light"].jour .tile,
+:root[data-theme="light"].jour .sheet,
+:root[data-theme="light"].jour .chip { border-color: var(--key); }
+:root[data-theme="light"].jour .round { box-shadow: 0 0 0 1px var(--key); }
+:root[data-theme="light"].jour .topbar,
+:root[data-theme="light"].jour .tabbar { box-shadow: 0 0 0 1px var(--key); }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); -webkit-tap-highlight-color: transparent; }
@@ -940,7 +988,7 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 [data-theme="light"] .pin, [data-theme="light"] .cluster { box-shadow: 3px -3px 0 0 rgba(28, 33, 86, .18); }
 [data-theme="light"] .leaflet-popup-content-wrapper, [data-theme="light"] .leaflet-popup-tip { box-shadow: 5px -6px 0 0 rgba(28, 33, 86, .14); }
 /* Choix du thème (Plus › Réglages) */
-.theme-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 12px; }
+.theme-seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 4px 0 12px; }
 .theme-seg button { height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-weight: 700; font-size: .875rem; }
 .theme-seg button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .embed-theme { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; font-size: .875rem; color: var(--muted); }

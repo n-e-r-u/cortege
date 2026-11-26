@@ -319,8 +319,8 @@ msgstr "<b>Battery saver</b><span>Map updated every 20 s instead of 5, less prec
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>Larger text</b><span>Bigger buttons and text across the app.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>Higher contrast</b><span>Whiter text and stronger borders, for bright sunlight.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>Higher contrast</b><span>Even stronger text and borders, on top of the chosen appearance. For tired eyes.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Erase everything from this phone</b><small>Keep your finger pressed for 2 seconds</small></span>"
@@ -5320,28 +5320,34 @@ msgstr "Stop the route"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "Enter your current recovery code to create a new one"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "Confirm: the other devices will lose access"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "Cut off all my other devices"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "The other devices no longer have access"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "To create a new code, enter your current recovery code. Lost it? Ask the admin, or the organiser who let you in, for a new invitation."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "This point was verified by another organiser: ask them, or the admin, to remove it."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "Too many organiser reports at once. Try again in a few minutes."
+
+msgid "Plein jour"
+msgstr "Daylight"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "“Daylight” thickens lines and removes shadows, for a screen read in the sun. In protest mode, the appearance follows the sun."

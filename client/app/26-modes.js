@@ -1,12 +1,40 @@
   // ---- Mode manif : la carte, Signaler, SOS et Droits, rien d'autre ----
   let manif = false; try { manif = localStorage.getItem('cortege-manif') === '1'; } catch {}
+  // Hauteur du soleil au-dessus de l'horizon, en degrés (calcul local, méthode NOAA simplifiée, à quelques minutes près).
+  // Le calcul se fait sur le centre de l'instance, jamais sur la position de la personne : rien de nouveau n'est écrit
+  // sur le téléphone, et la différence d'un bout à l'autre d'un pays est de l'ordre du quart d'heure.
+  function sunAltitude(now = new Date()) {
+    const RAD = Math.PI / 180, c = cfg.center || [46.6, 2.4], lat = c[0], lng = c[1];
+    const d = (now.getTime() - Date.UTC(2000, 0, 1, 12)) / 864e5;   // jours depuis J2000
+    const g = (357.529 + 0.98560028 * d) * RAD;                     // anomalie moyenne
+    const L = (280.459 + 0.98564736 * d + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * RAD; // longitude apparente
+    const e = (23.439 - 0.00000036 * d) * RAD;                      // obliquité
+    const dec = Math.asin(Math.sin(e) * Math.sin(L));               // déclinaison
+    const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)) / RAD / 15;  // ascension droite, en heures
+    const mod = (x, n) => ((x % n) + n) % n;
+    const ha = (mod(18.697375 + 24.065709824279 * d + lng / 15 - ra + 12, 24) - 12) * 15 * RAD; // angle horaire
+    const p = lat * RAD;
+    return Math.asin(Math.sin(p) * Math.sin(dec) + Math.cos(p) * Math.cos(dec) * Math.cos(ha)) / RAD;
+  }
+  // Apparence du mode manif : « plein jour » tant que le soleil est levé (un écran lu dehors), sombre une fois couché
+  // (écran discret dans la rue, moins de batterie). Comme avant, le mode manif impose l'apparence ; le choix de la
+  // personne revient en sortant. Revu toutes les dix minutes et au retour sur l'appli, pour la tombée de la nuit.
+  const manifTheme = () => (sunAltitude() > 0 ? 'jour' : 'dark');
+  let manifTimer = null;
+  function applyManifTheme() {
+    const want = manifTheme();
+    try { localStorage.setItem('cortege-manif-theme', want); } catch {}
+    window.cortegeTheme?.force(want);
+  }
   function setManif(on) {
     manif = on; document.body.classList.toggle('manif', on);
-    // Sombre imposé pendant le mode manif : écran discret la nuit, moins de batterie. Le choix d'apparence revient en sortant.
-    if (window.cortegeTheme) window.cortegeTheme.force(on ? 'dark' : null);
+    clearInterval(manifTimer); manifTimer = null;
+    if (on) { applyManifTheme(); manifTimer = setInterval(applyManifTheme, 10 * 60_000); }
+    else window.cortegeTheme?.force(null);
     try { localStorage.setItem('cortege-manif', on ? '1' : '0'); } catch {}
     $('#manifTitle').textContent = t('Mode manif') + (cfg.banner && cfg.event ? ' · ' + t(cfg.event) : '');
   }
+  document.addEventListener('visibilitychange', () => { if (manif && !document.hidden) applyManifTheme(); });
   $('#btnManif').onclick = () => { closeSheets(); setManif(true); if (watchId == null) locate(); toast('Mode manif. « Quitter » en haut pour revenir à l’appli complète.'); };
   $('#manifExit').onclick = () => setManif(false);
   $('#mbSos').onclick = openSos;

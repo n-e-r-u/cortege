@@ -318,8 +318,8 @@ msgstr "<b>Akku sparen</b><span>Karte alle 20 s statt alle 5 s aktualisiert, ung
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>Größerer Text</b><span>Größere Buttons und Texte in der ganzen App.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>Stärkerer Kontrast</b><span>Hellere Texte, deutlichere Ränder, für pralle Sonne.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>Stärkerer Kontrast</b><span>Noch deutlichere Texte und Ränder, über dem gewählten Aussehen. Für müde Augen.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Alles von diesem Handy löschen</b><small>Finger 2 Sekunden gedrückt halten</small></span>"
@@ -5317,28 +5317,34 @@ msgstr "Route beenden"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "Gib deinen aktuellen Notfallcode ein, um einen neuen zu erstellen"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "Bestätigen: Die anderen Geräte verlieren den Zugang"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "Alle meine anderen Geräte trennen"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "Die anderen Geräte haben keinen Zugang mehr"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "Für einen neuen Code gib den aktuellen Notfallcode ein. Verloren? Bitte die Admin oder die Orga, die dich aufgenommen hat, um eine neue Einladung."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "Diesen Punkt hat eine andere Orga bestätigt: Bitte sie oder die Admin, ihn zu entfernen."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "Zu viele Orga-Meldungen auf einmal. Versuch es in ein paar Minuten noch einmal."
+
+msgid "Plein jour"
+msgstr "Tageslicht"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "„Tageslicht“ verstärkt die Linien und entfernt Schatten, für einen Bildschirm, der in der Sonne gelesen wird. Im Demo-Modus richtet sich das Aussehen nach der Sonne."

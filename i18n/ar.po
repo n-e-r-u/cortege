@@ -319,8 +319,8 @@ msgstr "<b>توفير البطارية</b><span>تحديث الخريطة كل 2
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>نص أكبر</b><span>تكبير الأزرار والنصوص في كل التطبيق.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>تباين أقوى</b><span>نصوص أكثر بياضًا وحواف أوضح، لضوء الشمس الساطع.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>تباين أقوى</b><span>نصوص وحواف أوضح، فوق المظهر المختار. لنظر متعب.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>امسح كل شيء من هذا الهاتف</b><small>أبقِ إصبعك ضاغطًا لثانيتين</small></span>"
@@ -5404,28 +5404,34 @@ msgstr "إيقاف المسار"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "أدخل رمز الطوارئ الحالي لإنشاء رمز جديد"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "تأكيد: ستفقد الأجهزة الأخرى صلاحية الدخول"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "قطع الوصول عن كل أجهزتي الأخرى"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "لم يعد لدى الأجهزة الأخرى صلاحية الدخول"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "لإنشاء رمز جديد، أدخل رمز الطوارئ الحالي. فقدته؟ اطلب دعوة جديدة من المشرف أو من الجهة التي أدخلتك."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "تحقّقت من هذه النقطة جهة أخرى: اطلب منها أو من المشرف حذفها."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "بلاغات كثيرة من الجهة دفعة واحدة. أعد المحاولة بعد بضع دقائق."
+
+msgid "Plein jour"
+msgstr "ضوء النهار"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "«ضوء النهار» يُثخِّن الخطوط ويزيل الظلال، لشاشة تُقرأ تحت الشمس. في وضع المظاهرة، يتبع المظهر حركة الشمس."
