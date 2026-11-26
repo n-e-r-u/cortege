@@ -89,3 +89,35 @@
     }).catch(() => {});
   } catch {}
 
+
+  // ---- Réglages : un sommaire, puis une page par thème ----
+  // L'onglet contenait une vingtaine de tuiles à la suite. Les blocs n'ont pas bougé dans le HTML : on montre
+  // soit le sommaire, soit un thème. Chaque identifiant existant est conservé, donc le reste du code est inchangé.
+  {
+    const menu = $('#rgMenu'), subs = [...document.querySelectorAll('.rg-sub')];
+    // Ce qui reste visible au-dessus du sommaire (don, Instagram, Play Store) et disparaît dans un thème
+    const tops = [$('#kofiLink'), $('#igLink'), $('#testCard'), $('#playCard')].filter(Boolean);
+    const topHidden = new WeakSet();
+    let inSub = false;
+    function rgOpen(key) {
+      const sub = key && $('#rg-' + key);
+      for (const s of subs) s.hidden = s !== sub;
+      menu.hidden = !!sub;
+      // Les cartes du haut ont leur propre « hidden » (Play Store, selon les réglages du serveur) : on le retient
+      // en entrant dans un thème et on le rend en sortant, sans jamais y toucher sur le sommaire lui-même
+      if (sub) {
+        if (!inSub) for (const n of tops) if (n.hidden) topHidden.add(n);
+        for (const n of tops) n.hidden = true;
+      } else if (inSub) {
+        for (const n of tops) n.hidden = topHidden.has(n);
+      }
+      inSub = !!sub;
+      $('#siTitle').textContent = sub ? t('Réglages') + ' · ' + sub.querySelector('.rg-title').textContent : t('Réglages');
+      $('#sheetInfo').scrollTop = 0;
+      if (sub) sub.querySelector('.rg-back').focus({ preventScroll: true });
+    }
+    rgHome = () => rgOpen(null);
+    for (const b of document.querySelectorAll('.rg-item')) b.onclick = () => rgOpen(b.dataset.rg);
+    for (const b of document.querySelectorAll('.rg-back')) b.onclick = () => { rgOpen(null); $('#rgMenu').querySelector(`[data-rg="${b.closest('.rg-sub').id.slice(3)}"]`)?.focus({ preventScroll: true }); };
+    rgOpen(null);
+  }

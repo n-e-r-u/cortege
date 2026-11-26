@@ -117,7 +117,6 @@
       } catch { toast('Pas de réseau : réessaie plus tard.'); }
     });
   }
-  $('#btnAgenda').onclick = () => { closeReport(); closeSheets(); renderAgenda(); $('#sheetAgenda').hidden = false; };
   $('#agClose').onclick = () => closeSheets();
-  document.querySelectorAll('input[name="agScope"]').forEach(r => r.addEventListener('change', renderAgenda));
+  $('#agCalToggle').onclick = () => { agCal = !agCal; renderAgenda(); };
 

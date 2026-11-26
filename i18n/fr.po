@@ -319,7 +319,7 @@ msgstr ""
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr ""
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
 msgstr ""
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
@@ -5227,7 +5227,7 @@ msgstr ""
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr ""
 
-msgid "◎ Me situer"
+msgid "Me situer"
 msgstr ""
 
 msgid "Signaler en deux appuis"
@@ -5245,7 +5245,7 @@ msgstr ""
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr ""
 
-msgid "🔔 Régler les alertes"
+msgid "Régler les alertes"
 msgstr ""
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
@@ -5359,4 +5359,54 @@ msgstr ""
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
+msgstr ""
+
+# --- textes à traduire ---
+msgid "Plein jour"
+msgstr ""
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr ""
+
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] ""
+msgstr[1] ""
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr ""
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr ""
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr ""
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr ""
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr ""
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
 msgstr ""

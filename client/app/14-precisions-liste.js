@@ -91,14 +91,14 @@
     const wasOpen = !$(sel).hidden;
     closeSheets();
     if (wasOpen) return; // deuxième appui sur l'onglet : retour à la carte
-    if (sel === '#sheetFeed') renderFeed();
+    if (sel === '#sheetAgenda') { renderFeed(); renderAgenda(); }
     if (sel === '#sheetRights') renderLegal();
+    if (sel === '#sheetInfo') rgHome();
     $(sel).hidden = false; $(sel).scrollTop = 0;
   }
   $('#tabMap').onclick = () => { closeReport(); closeSheets(); };
-  $('#tabInfos').onclick = () => openPage('#sheetFeed');
+  $('#tabAgenda').onclick = () => openPage('#sheetAgenda');
   $('#tabRights').onclick = () => openPage('#sheetRights');
   $('#tabMore').onclick = () => openPage('#sheetInfo');
-  $('#fdClose').onclick = () => closeSheets();
   $('#siClose').onclick = () => closeSheets();
 

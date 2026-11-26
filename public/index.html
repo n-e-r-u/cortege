@@ -88,13 +88,13 @@
 </div>
 <button type="button" class="medic-back" id="medicBack" hidden></button>
 
-<div class="overlays">
+<div class="overlays" id="overlays">
   <div class="alert" id="alert" hidden role="alert"></div>
   <div class="net-bar" id="netBar" hidden role="status"></div>
   <div class="ann urgent" id="pauseBanner" hidden role="status"><div class="ann-text">Signalements en pause quelques minutes : un afflux de faux signalements est en cours de nettoyage. La carte reste consultable.</div></div>
   <div id="ordBar" hidden></div>
-  <div class="ann test-band" id="testBand" hidden><a class="ann-text" id="testBandLink" target="_blank" rel="noopener noreferrer">🤖 Cortège arrive sur le Play Store : deviens testeur·se Android →</a><button type="button" class="ann-x" id="testBandX" aria-label="Masquer ce bandeau">×</button></div>
   <div id="anns" class="anns" aria-live="polite"></div>
+  <div class="ann test-band" id="testBand" hidden><a class="ann-text" id="testBandLink" target="_blank" rel="noopener noreferrer">🤖 Cortège arrive sur le Play Store : deviens testeur·se Android →</a><button type="button" class="ann-x" id="testBandX" aria-label="Masquer ce bandeau">×</button></div>
 </div>
 
 <div class="crosshair" id="crosshair" hidden aria-hidden="true"><span></span></div>
@@ -102,10 +102,10 @@
 <button class="calm-nav" id="calmNav" hidden aria-live="polite"><span class="arrow" id="calmArrow" aria-hidden="true">↑</span><span id="calmTxt"></span></button>
 
 <div class="tools">
-  <button class="round install-tool" id="btnInstallTool" hidden title="Installer l’appli" aria-label="Installer l’appli">⤓</button>
-  <button class="round son-tool" id="btnSonMap" hidden title="Enregistrer le son" aria-label="Enregistrer le son">🎙️</button>
-  <button class="round" id="btnSearch" title="Chercher une ville" aria-label="Chercher une ville">⌕</button>
-  <button class="round" id="btnLocate" title="Me localiser" aria-label="Me localiser">◎</button>
+  <button class="round install-tool" id="btnInstallTool" hidden title="Installer l’appli" aria-label="Installer l’appli"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11M7.5 10l4.5 4.5 4.5-4.5"></path><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"></path></svg></button>
+  <button class="round son-tool" id="btnSonMap" hidden title="Enregistrer le son" aria-label="Enregistrer le son"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="3" width="7" height="11" rx="3.5"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18V21M8.5 21h7"></path></svg></button>
+  <button class="round" id="btnSearch" title="Chercher une ville" aria-label="Chercher une ville"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="14" cy="10" r="6"></circle><path d="M9.8 14.2L4 20"></path></svg></button>
+  <button class="round" id="btnLocate" title="Me localiser" aria-label="Me localiser"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.5"></circle><circle cx="12" cy="12" r="1.6"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"></path></svg></button>
   <button class="round layers-btn" id="btnLayers" title="Ce que montre la carte" aria-label="Ce que montre la carte" aria-controls="sheetLayers">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>
     <span class="layers-dot" id="layersDot" hidden></span>
@@ -113,8 +113,9 @@
 </div>
 
 <div class="tools tools-left">
-  <button class="round orga-tool" id="btnOrga" hidden title="Espace orga" aria-label="Espace orga">📣</button>
-  <button class="round idea-tool" id="btnIdeaVote" hidden title="Idées au vote" aria-label="Idées au vote"><span aria-hidden="true">💡</span><span class="idea-badge" id="ideaBadgeMap" hidden></span></button>
+  <button class="round manif-tool" id="btnManifMap" title="Passer en mode manif" aria-label="Passer en mode manif"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21.5V5"></path><circle cx="6" cy="3.6" r="1.1"></circle><path d="M6 5.5h12.5l-2.6 4 2.6 4H6"></path></svg></button>
+  <button class="round orga-tool" id="btnOrga" hidden title="Espace orga" aria-label="Espace orga"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10.5v4h2.6L14 18.5V6.5L7.6 10.5z"></path><path d="M7.6 14.5l1.2 4.5h2.4l-1-4"></path><path d="M17 9.5a3.6 3.6 0 0 1 0 5.6M19.3 7.4a6.6 6.6 0 0 1 0 9.8"></path></svg></button>
+  <button class="round idea-tool" id="btnIdeaVote" hidden title="Idées au vote" aria-label="Idées au vote"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 1 3.5 10.9V16h-7v-2.1A6 6 0 0 1 12 3z"></path><path d="M9.5 19h5M10.5 21.5h3"></path></svg><span class="idea-badge" id="ideaBadgeMap" hidden></span></button>
   <button class="round sos" id="btnSos" title="Interpellation : prévenir un proche" aria-label="Interpellation : prévenir un proche">SOS</button>
 </div>
 
@@ -134,10 +135,10 @@
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
     <span>Carte</span>
   </button>
-  <button type="button" class="tab" id="tabInfos" aria-controls="sheetFeed">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
-    <span>Infos</span>
-    <b class="tab-badge" id="infosBadge" hidden></b>
+  <button type="button" class="tab" id="tabAgenda" aria-controls="sheetAgenda">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>
+    <span>Agenda</span>
+    <b class="tab-badge" id="agBadge" hidden></b>
   </button>
   <button type="button" class="tab tab-report" id="btnReport">
     <span class="tr-ico" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
@@ -148,8 +149,8 @@
     <span>Droits</span>
   </button>
   <button type="button" class="tab" id="tabMore" aria-controls="sheetInfo">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
-    <span>Plus</span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h3.2M10.8 6H20M4 12h9.2M16.8 12H20M4 18h5.2M12.8 18H20"></path><circle cx="9" cy="6" r="1.8"></circle><circle cx="15" cy="12" r="1.8"></circle><circle cx="11" cy="18" r="1.8"></circle></svg>
+    <span>Réglages</span>
   </button>
 </nav>
 
@@ -198,37 +199,12 @@
   </div>
   <h3 class="menu-group">Signalements</h3>
   <div class="layer-grid" id="filters" role="group" aria-label="Signalements affichés"></div>
+  <button type="button" class="tile wide" id="btnList"><span class="ico" aria-hidden="true">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span></button>
   <h3 class="menu-group">Sur la carte</h3>
   <div id="layerToggles"></div>
 </section>
 
 <!-- Infos : arrêtés, annonces, agenda -->
-<section class="sheet page" id="sheetFeed" hidden aria-labelledby="fdTitle">
-  <div class="sheet-head">
-    <h2 id="fdTitle">Infos</h2>
-    <button class="x" id="fdClose" aria-label="Fermer">×</button>
-  </div>
-  <p class="hint" id="feedWhere"></p>
-  <h3 class="menu-group">Arrêtés et restrictions</h3>
-  <div id="feedOrd"></div>
-  <button type="button" class="secondary" id="btnOrders">Tous les arrêtés en France</button>
-  <h3 class="menu-group">Annonces des orgas</h3>
-  <div id="feedAnn" class="feed-anns"></div>
-  <h3 class="menu-group">Agenda</h3>
-  <ol id="feedAg" class="list ag-list"></ol>
-  <p class="empty" id="feedAgEmpty" hidden>Rien d’annoncé à moins de 50 km.</p>
-  <div class="ag-actions">
-    <button type="button" class="secondary" id="btnAgenda">Tout l’agenda</button>
-    <button type="button" class="secondary" id="btnAnnounce">＋ Annoncer une manif</button>
-  </div>
-  <h3 class="menu-group">Sur la carte</h3>
-  <button type="button" class="tile wide" id="btnList"><span class="ico" aria-hidden="true">☰</span><span><b>Signalements dans la zone</b><small>La liste, du plus proche au plus loin</small></span></button>
-  <a class="kofi-nudge" href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"></path></svg>
-    <span><b>Cortège est gratuit et sans pub.</b> Tes dons servent à l’améliorer.</span>
-    <span class="kn-go">Ko-fi</span>
-  </a>
-</section>
 
 <!-- Choix de catégorie -->
 <section class="sheet" id="sheetReport" hidden aria-labelledby="srTitle">
@@ -279,7 +255,7 @@
 <!-- Plus -->
 <section class="sheet page" id="sheetInfo" hidden aria-labelledby="siTitle">
   <div class="sheet-head">
-    <h2 id="siTitle">Plus</h2>
+    <h2 id="siTitle">Réglages</h2>
     <button class="x" id="siClose" aria-label="Fermer">×</button>
   </div>
 
@@ -306,10 +282,31 @@
     <span class="tc-btn">Voir sur Google Play →</span>
   </a>
 
+  <nav class="rg-menu" id="rgMenu" aria-label="Réglages">
+    <button type="button" class="rg-item" data-rg="manif" aria-controls="rg-manif"><svg class="rg-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21.5V5"/><circle cx="6" cy="3.6" r="1.1"/><path d="M6 5.5h12.5l-2.6 4 2.6 4H6"/></svg><span class="rg-txt"><b>Pendant la manif</b><small>Mode manif, alertes, batterie</small></span><span class="rg-go" aria-hidden="true">›</span></button>
+    <button type="button" class="rg-item" data-rg="avant" aria-controls="rg-avant"><svg class="rg-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5a6 6 0 0 1 12 0v10a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19.5z"/><path d="M9 5V3h6v2M9 14h6v4H9z"/></svg><span class="rg-txt"><b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small></span><span class="rg-go" aria-hidden="true">›</span></button>
+    <button type="button" class="rg-item" data-rg="grandir" aria-controls="rg-grandir"><svg class="rg-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10v4h3l7 4V6l-7 4z"/><path d="M6.5 14l1 4.5H10l-.6-3.5"/><path d="M19 9v6M16 12h6"/></svg><span class="rg-txt"><b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small></span><span class="rg-go" aria-hidden="true">›</span></button>
+    <button type="button" class="rg-item" data-rg="apparence" aria-controls="rg-apparence"><svg class="rg-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.8 0-1.3-1.3-1.6-1.3-2.7 0-.9.8-1.5 1.7-1.5H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg><span class="rg-txt"><b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small></span><span class="rg-go" aria-hidden="true">›</span></button>
+    <button type="button" class="rg-item" data-rg="securite" aria-controls="rg-securite"><svg class="rg-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.7-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.8-7.5-9.5V6z"/><circle cx="12" cy="10.5" r="1.8"/><path d="M12 12.3v3.2"/></svg><span class="rg-txt"><b>Sécurité</b><small>Tor, accès perdu, tout effacer</small></span><span class="rg-go" aria-hidden="true">›</span></button>
+    <button type="button" class="rg-item" data-rg="apropos" aria-controls="rg-apropos"><svg class="rg-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8v.01"/></svg><span class="rg-txt"><b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small></span><span class="rg-go" aria-hidden="true">›</span></button>
+  </nav>
+
+  <div class="rg-sub" id="rg-manif" hidden>
+    <button type="button" class="rg-back">‹ Réglages</button>
+    <h3 class="rg-title">Pendant la manif</h3>
   <button type="button" class="tile wide tile-manif" id="btnManif"><span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg></span><span><b>Passer en mode manif</b><small>Carte, Signaler, SOS et legal team. Rien d’autre.</small></span></button>
   <button type="button" class="tile wide" id="btnSonMore" hidden><span class="ico" aria-hidden="true">🎙️</span><span><b>Enregistrer le son</b><small>Contrôle, interpellation : garder une trace sur ton téléphone</small></span></button>
+  <button class="tile wide bell" id="btnNotif" data-on="0"><span class="ico" aria-hidden="true">🔕</span><span><b>Alertes</b><small id="notifSub">Notifications, vibrations et voix</small></span></button>
+  <label class="switch">
+    <input type="checkbox" id="optEco">
+    <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
+  </label>
+  <button class="secondary" id="btnNotifInfo" hidden>🔔 Alertes et notifications</button>
+  </div>
 
-  <h3 class="menu-group">Avant de partir</h3>
+  <div class="rg-sub" id="rg-avant" hidden>
+    <button type="button" class="rg-back">‹ Réglages</button>
+    <h3 class="rg-title">Avant de partir</h3>
   <div class="tiles">
     <button class="tile" id="btnPrep"><span class="ico" aria-hidden="true">🎒</span><span><b>Se préparer</b><small>La checklist</small></span></button>
     <button class="tile" id="btnPrefetch"><span class="ico" aria-hidden="true">📶</span><span><b>Prêt pour la manif</b><small>Carte et numéros sans réseau</small></span></button>
@@ -319,10 +316,13 @@
     <button class="install" id="btnInstall">Installer l’appli sur mon téléphone</button>
     <p class="install-help" id="installHelp" hidden></p>
   </div>
-  <button class="tile wide bell" id="btnNotif" data-on="0"><span class="ico" aria-hidden="true">🔕</span><span><b>Alertes</b><small id="notifSub">Notifications, vibrations et voix</small></span></button>
   <a class="tile wide" href="/flouter"><span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4.5"></circle><path d="M4 21a8 8 0 0 1 16 0"></path><path d="M5.5 7.5h13" stroke-width="3.4"></path></svg></span><span><b>Flouter les visages</b><small>Prépare-le avant de partir : il marche ensuite sans réseau</small></span></a>
+  <button class="secondary" id="btnPrepInfo" hidden>🎒 Bien se préparer</button>
+  </div>
 
-  <h3 class="menu-group">Faire grandir Cortège</h3>
+  <div class="rg-sub" id="rg-grandir" hidden>
+    <button type="button" class="rg-back">‹ Réglages</button>
+    <h3 class="rg-title">Faire grandir Cortège</h3>
   <button class="tile wide" id="btnOrganize"><span class="ico" aria-hidden="true">📣</span><span><b>Organiser une manif</b><small>L’annoncer dans l’agenda de Cortège</small></span></button>
   <div class="tiles">
     <button class="tile" id="btnShare"><span class="ico" aria-hidden="true">
@@ -339,25 +339,11 @@
     <a class="inline-link ob-more" href="/orgas" target="_blank" rel="noopener">Ce qu’un accès orga permet</a>
     <p class="fine">Chaque demande est vérifiée auprès du collectif, par ses canaux publics. L’accès est remis au collectif, jamais à une personne seule.</p>
   </div>
-
-  <h3 class="menu-group">Comment ça marche</h3>
-  <ul class="tips">
-    <li><b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.</li>
-    <li><b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor.</li>
-    <li><b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer.</li>
-    <li class="tip-prefetch"><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone.</li>
-    <li class="tip-browse" hidden><b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone.</li>
-    <li><b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.</li>
-    <li id="onionTip" hidden><b>Avec Tor.</b> Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) : <code id="onionAddr"></code> <button type="button" class="link-btn" id="onionCopy">copier</button></li>
-  </ul>
-
-  <div class="tiles">
-    <a class="tile" href="/manif"><span class="ico" aria-hidden="true">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span></a>
-    <button class="tile" id="btnNews"><span class="ico" aria-hidden="true">✨</span><span><b>Nouveautés</b><small id="newsVersion">Version</small></span></button>
   </div>
-  <p class="fine"><button class="link-btn" type="button" id="btnWelcome">Revoir la présentation de l’appli</button></p>
 
-  <h3 class="menu-group">Réglages</h3>
+  <div class="rg-sub" id="rg-apparence" hidden>
+    <button type="button" class="rg-back">‹ Réglages</button>
+    <h3 class="rg-title">Apparence et langue</h3>
   <label class="lang-row" for="optLang" data-no-i18n>
     <span lang="fr">Langue</span> · <span lang="en">Language</span> · <span lang="es">Idioma</span> · <span lang="ar" dir="rtl">اللغة</span>
     <select id="optLang">
@@ -367,16 +353,12 @@
       <option value="ar" lang="ar">العربية</option>
     </select>
   </label>
-  <button class="secondary" id="btnNotifInfo" hidden>🔔 Alertes et notifications</button>
-  <button class="secondary" id="btnPrepInfo" hidden>🎒 Bien se préparer</button>
-  <label class="switch">
-    <input type="checkbox" id="optEco">
-    <span class="switch-txt"><b>Économie de batterie</b><span>Carte mise à jour toutes les 20 s au lieu de 5, GPS moins précis, boussole coupée. Pour tenir une longue manif.</span></span>
-  </label>
   <p class="menu-group" id="themeLabel">Apparence</p>
+  <p class="fine" id="themeHint">« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil.</p>
   <div class="theme-seg" id="themeSeg" role="group" aria-labelledby="themeLabel">
     <button type="button" data-theme-pref="system">Système</button>
     <button type="button" data-theme-pref="light">Clair</button>
+    <button type="button" data-theme-pref="jour">Plein jour</button>
     <button type="button" data-theme-pref="dark">Sombre</button>
   </div>
   <label class="switch">
@@ -385,11 +367,37 @@
   </label>
   <label class="switch">
     <input type="checkbox" id="optContrast">
-    <span class="switch-txt"><b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span></span>
+    <span class="switch-txt"><b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span></span>
   </label>
+  </div>
+
+  <div class="rg-sub" id="rg-securite" hidden>
+    <button type="button" class="rg-back">‹ Réglages</button>
+    <h3 class="rg-title">Sécurité</h3>
+  <ul class="tips">
+    <li id="onionTip" hidden><b>Avec Tor.</b> Cortège a aussi une adresse .onion : ton opérateur ne voit même pas que tu utilises l’appli. Ouvre-la dans Tor Browser (ordinateur ou Android) : <code id="onionAddr"></code> <button type="button" class="link-btn" id="onionCopy">copier</button></li>
+  </ul>
   <button type="button" class="secondary" id="btnRecover">J’ai perdu mon accès orga ou medic</button>
   <button type="button" class="wipe-btn" data-wipe><span class="wipe-fill" aria-hidden="true"></span><span class="wipe-txt"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span></button>
   <p class="fine">Efface le contact SOS, la checklist, le point de ralliement, les réglages, la carte gardée hors ligne et l’accès orga, puis ferme Cortège. L’historique du navigateur n’est pas effacé : vide-le aussi depuis ses réglages.</p>
+  </div>
+
+  <div class="rg-sub" id="rg-apropos" hidden>
+    <button type="button" class="rg-back">‹ Réglages</button>
+    <h3 class="rg-title">À propos</h3>
+  <ul class="tips">
+    <li><b>Ta position reste sur ton téléphone.</b> Elle sert à centrer la carte et à t’alerter. Pour charger les signalements, l’appli demande seulement ceux de ta zone, à quelques kilomètres près. Les points que tu signales sont arrondis à une dizaine de mètres.</li>
+    <li><b>Aucun compte.</b> Les signalements s’effacent tout seuls à expiration. Comme tout site, l’hébergeur peut garder des journaux de connexion : en situation sensible, passe par un VPN ou Tor.</li>
+    <li><b>Les signalements se vérifient entre manifestant·es.</b> « Toujours là » prolonge un point, « Plus là » le fait douter puis disparaître quand assez de personnes sur place le disent. Les orgas certifiées peuvent le vérifier ou le retirer.</li>
+    <li class="tip-prefetch"><b>Réseau saturé ?</b> Ouvre l’appli avant le départ et appuie sur « Prêt pour la manif » : la carte de ta zone, les numéros de legal team et l’agenda restent sur ton téléphone.</li>
+    <li class="tip-browse" hidden><b>Réseau saturé ?</b> Avant de partir, parcours sur la carte le trajet de la manif : les morceaux de carte affichés restent en mémoire sur ton téléphone.</li>
+    <li><b>Note le numéro de ta legal team</b> au stylo sur le bras. Un téléphone se perd ou se confisque.</li>
+  </ul>
+  <div class="tiles">
+    <a class="tile" href="/manif"><span class="ico" aria-hidden="true">📊</span><span><b>Bilans</b><small>Les manifs passées</small></span></a>
+    <button class="tile" id="btnNews"><span class="ico" aria-hidden="true">✨</span><span><b>Nouveautés</b><small id="newsVersion">Version</small></span></button>
+  </div>
+  <p class="fine"><button class="link-btn" type="button" id="btnWelcome">Revoir la présentation de l’appli</button></p>
   <p class="fine menu-foot"><a class="inline-link" href="/legal.html">Mentions légales, confidentialité et règles d’utilisation</a></p>
   <div class="credit">
     <span>Cortège est un projet de <a class="handle-link" href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer"><b class="handle">@neru</b></a></span>
@@ -399,6 +407,7 @@
   <div class="powered" id="poweredBy">
     <p class="fine">Propulsé par <a class="inline-link" href="https://github.com/n-e-r-u/cortege" target="_blank" rel="noopener noreferrer">Cortège</a>, un projet de Neru</p>
     <p class="fine powered-links"><a href="https://github.com/n-e-r-u/cortege" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="https://neru.tv" target="_blank" rel="noopener noreferrer">neru.tv</a> · <a href="https://www.instagram.com/neru/" target="_blank" rel="noopener noreferrer">Instagram @neru</a> · <a href="https://ko-fi.com/neru" target="_blank" rel="noopener noreferrer">Ko-fi</a></p>
+  </div>
   </div>
 </section>
 
@@ -675,7 +684,6 @@
   <div id="rightsProfile"></div>
 </section>
 
-
 <!-- Bien se préparer -->
 <section class="sheet" id="sheetNotif" hidden aria-labelledby="ntTitle">
   <div class="sheet-head">
@@ -807,19 +815,27 @@
 </div>
 
 <!-- Agenda -->
-<section class="sheet" id="sheetAgenda" hidden aria-labelledby="agTitle">
+<section class="sheet page" id="sheetAgenda" hidden aria-labelledby="agTitle">
   <div class="sheet-head">
-    <h2 id="agTitle">Prochaines mobilisations</h2>
+    <h2 id="agTitle">Agenda</h2>
     <button class="x" id="agClose" aria-label="Fermer">×</button>
   </div>
-  <fieldset class="seg" aria-label="Zone">
-    <label><input type="radio" name="agScope" value="near" checked> Près de toi (50 km)</label>
-    <label><input type="radio" name="agScope" value="all"> Toute la France</label>
-  </fieldset>
+  <p class="hint" id="feedWhere"></p>
+  <button type="button" class="secondary" id="btnAnnounce">＋ Annoncer une manif</button>
+  <div class="ag-filters" id="agFilters"></div>
+  <button type="button" class="ag-cal-toggle" id="agCalToggle" aria-expanded="false" aria-controls="agCal">Calendrier du mois</button>
+  <div class="ag-cal" id="agCal" hidden></div>
   <ol id="agList" class="list ag-list"></ol>
   <p class="empty" id="agEmpty" hidden></p>
   <button class="secondary" id="btnPropose">Proposer un blocus ou une manif</button>
   <p class="fine" id="agFine">Les propositions sont vérifiées avant d’apparaître. Les orgas publient directement depuis leur espace.</p>
+
+  <h3 class="menu-group">Annonces des orgas</h3>
+  <div id="feedAnn" class="feed-anns"></div>
+
+  <h3 class="menu-group">Arrêtés et restrictions</h3>
+  <div id="feedOrd"></div>
+  <button type="button" class="secondary" id="btnOrders">Tous les arrêtés en France</button>
 </section>
 
 <!-- Publier / proposer un événement -->

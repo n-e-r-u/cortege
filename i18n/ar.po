@@ -319,8 +319,8 @@ msgstr "<b>توفير البطارية</b><span>تحديث الخريطة كل 2
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>نص أكبر</b><span>تكبير الأزرار والنصوص في كل التطبيق.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>تباين أقوى</b><span>نصوص أكثر بياضًا وحواف أوضح، لضوء الشمس الساطع.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>تباين أقوى</b><span>نصوص وحواف أوضح، فوق المظهر المختار. لنظر متعب.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>امسح كل شيء من هذا الهاتف</b><small>أبقِ إصبعك ضاغطًا لثانيتين</small></span>"
@@ -5288,8 +5288,8 @@ msgstr "خريطة المظاهرات المباشرة، يحدّثها من ه�
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr "ابدأ بتحديد موقعك: تُفتح الخريطة على منطقتك، مع ما تمّ الإبلاغ عنه حولك."
 
-msgid "◎ Me situer"
-msgstr "◎ تحديد موقعي"
+msgid "Me situer"
+msgstr "تحديد موقعي"
 
 msgid "Signaler en deux appuis"
 msgstr "أبلِغ بنقرتين"
@@ -5306,8 +5306,8 @@ msgstr "تلقَّ التنبيهات"
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr "تنبيه عند الإبلاغ عن خطر بالقرب منك، حتى والتطبيق مغلق. أنت تختار منطقتك وما ينبّهك."
 
-msgid "🔔 Régler les alertes"
-msgstr "🔔 ضبط التنبيهات"
+msgid "Régler les alertes"
+msgstr "ضبط التنبيهات"
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
 msgstr "في تبويب «الحقوق»: ما العمل عند التوقيف أو الاعتقال، وأرقام الفرق القانونية."
@@ -5404,28 +5404,115 @@ msgstr "إيقاف المسار"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "أدخل رمز الطوارئ الحالي لإنشاء رمز جديد"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "تأكيد: ستفقد الأجهزة الأخرى صلاحية الدخول"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "قطع الوصول عن كل أجهزتي الأخرى"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "لم يعد لدى الأجهزة الأخرى صلاحية الدخول"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "لإنشاء رمز جديد، أدخل رمز الطوارئ الحالي. فقدته؟ اطلب دعوة جديدة من المشرف أو من الجهة التي أدخلتك."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "تحقّقت من هذه النقطة جهة أخرى: اطلب منها أو من المشرف حذفها."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "بلاغات كثيرة من الجهة دفعة واحدة. أعد المحاولة بعد بضع دقائق."
+
+msgid "Plein jour"
+msgstr "ضوء النهار"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "«ضوء النهار» يُثخِّن الخطوط ويزيل الظلال، لشاشة تُقرأ تحت الشمس. في وضع المظاهرة، يتبع المظهر حركة الشمس."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} أخرى"
+msgstr[1] "+ واحد آخر"
+msgstr[2] "+ {n} أخرى"
+msgstr[3] "+ {n} أخرى"
+msgstr[4] "+ {n} أخرى"
+msgstr[5] "+ {n} أخرى"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "طيّ"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "طيّ الأشرطة"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "عرض الأشرطة الأخرى"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr "متى"
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr "ماذا"
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr "تقويم الشهر"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr "لا شيء مُعلن في ذلك اليوم."
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr "لا شيء مُعلن بهذه المرشّحات."
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr "الأجندة، {n} للقراءة"
+
+msgid "Pendant la manif"
+msgstr "أثناء المظاهرة"
+
+msgid "Apparence et langue"
+msgstr "المظهر واللغة"
+
+msgid "Sécurité"
+msgstr "الأمان"
+
+msgid "À propos"
+msgstr "حول"
+
+msgid "‹ Réglages"
+msgstr "‹ الإعدادات"
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr "<b>أثناء المظاهرة</b><small>وضع المظاهرة، التنبيهات، البطارية</small>"
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr "<b>قبل الخروج</b><small>قائمة التحضير، خريطة دون اتصال، التثبيت، أداة التمويه</small>"
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr "<b>تكبير كورتيج</b><small>المشاركة، الملصق، الأفكار، صلاحية الجهات</small>"
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr "<b>المظهر واللغة</b><small>السمة، حجم النص، التباين، اللغة</small>"
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr "<b>الأمان</b><small>تور، فقدان الوصول، مسح كل شيء</small>"
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr "<b>حول</b><small>كيف يعمل، الحصائل، الجديد، الإشعارات القانونية</small>"

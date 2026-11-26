@@ -93,14 +93,13 @@
     const anns = announcements.filter(a => a.kind === 'info').sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
     for (const a of anns) ab.append(annCard(a));
     if (!anns.length) ab.append(el('p', { class: 'empty' }, t('Aucune annonce d’orga dans cette zone pour l’instant.')));
-    feedAgenda(ref);
     feedBadge();
   }
-  // Pastille de l'onglet Infos : arrêtés qui concernent la zone, annonces urgentes
+  // Pastille de l'onglet Agenda : arrêtés qui concernent la zone, annonces urgentes
   function feedBadge() {
-    const b = $('#infosBadge'); if (!b) return;
+    const b = $('#agBadge'); if (!b) return;
     const n = (ordState && ordState.here ? ordState.here().length : 0) + announcements.filter(a => a.kind === 'info' && a.level === 'urgent').length;
     b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
-    $('#tabInfos').setAttribute('aria-label', n ? `Infos, ${n} à lire` : 'Infos');
+    $('#tabAgenda').setAttribute('aria-label', n ? t('Agenda, {n} à lire', { n }) : t('Agenda'));
   }
 

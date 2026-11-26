@@ -319,8 +319,8 @@ msgstr "<b>Battery saver</b><span>Map updated every 20 s instead of 5, less prec
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>Larger text</b><span>Bigger buttons and text across the app.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>Higher contrast</b><span>Whiter text and stronger borders, for bright sunlight.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>Higher contrast</b><span>Even stronger text and borders, on top of the chosen appearance. For tired eyes.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Erase everything from this phone</b><small>Keep your finger pressed for 2 seconds</small></span>"
@@ -5212,8 +5212,8 @@ msgstr "The live protest map, kept up to date by the people who are there. No ac
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr "Start by locating yourself: the map opens on your area, with what has been reported around you."
 
-msgid "◎ Me situer"
-msgstr "◎ Locate me"
+msgid "Me situer"
+msgstr "Locate me"
 
 msgid "Signaler en deux appuis"
 msgstr "Report in two taps"
@@ -5230,8 +5230,8 @@ msgstr "Get alerted"
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr "An alert when a danger is reported near you, even with the app closed. You choose your area and what alerts you."
 
-msgid "🔔 Régler les alertes"
-msgstr "🔔 Set up alerts"
+msgid "Régler les alertes"
+msgstr "Set up alerts"
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
 msgstr "In the Rights tab: what to do if you are stopped or arrested, and the legal team numbers."
@@ -5320,28 +5320,111 @@ msgstr "Stop the route"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "Enter your current recovery code to create a new one"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "Confirm: the other devices will lose access"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "Cut off all my other devices"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "The other devices no longer have access"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "To create a new code, enter your current recovery code. Lost it? Ask the admin, or the organiser who let you in, for a new invitation."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "This point was verified by another organiser: ask them, or the admin, to remove it."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "Too many organiser reports at once. Try again in a few minutes."
+
+msgid "Plein jour"
+msgstr "Daylight"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "“Daylight” thickens lines and removes shadows, for a screen read in the sun. In protest mode, the appearance follows the sun."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} more"
+msgstr[1] "+ {n} more"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "Collapse"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "Collapse the banners"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "See the other banners"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr "When"
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr "What"
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr "This month’s calendar"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr "Nothing announced that day."
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr "Nothing announced with these filters."
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr "Agenda, {n} to read"
+
+msgid "Pendant la manif"
+msgstr "During the protest"
+
+msgid "Apparence et langue"
+msgstr "Appearance and language"
+
+msgid "Sécurité"
+msgstr "Security"
+
+msgid "À propos"
+msgstr "About"
+
+msgid "‹ Réglages"
+msgstr "‹ Settings"
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr "<b>During the protest</b><small>Protest mode, alerts, battery</small>"
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr "<b>Before you leave</b><small>Checklist, offline map, install, blur tool</small>"
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr "<b>Help Cortège grow</b><small>Share, poster, ideas, organiser access</small>"
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr "<b>Appearance and language</b><small>Theme, text size, contrast, language</small>"
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr "<b>Security</b><small>Tor, lost access, erase everything</small>"
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr "<b>About</b><small>How it works, reports, what’s new, legal notice</small>"

@@ -318,8 +318,8 @@ msgstr "<b>Akku sparen</b><span>Karte alle 20 s statt alle 5 s aktualisiert, ung
 msgid "<b>Texte plus grand</b><span>Boutons et textes agrandis dans toute l’appli.</span>"
 msgstr "<b>Größerer Text</b><span>Größere Buttons und Texte in der ganzen App.</span>"
 
-msgid "<b>Contraste renforcé</b><span>Textes plus blancs, bordures plus marquées, pour le plein soleil.</span>"
-msgstr "<b>Stärkerer Kontrast</b><span>Hellere Texte, deutlichere Ränder, für pralle Sonne.</span>"
+msgid "<b>Contraste renforcé</b><span>Textes et bordures encore plus marqués, par-dessus l’apparence choisie. Pour une vue fatiguée.</span>"
+msgstr "<b>Stärkerer Kontrast</b><span>Noch deutlichere Texte und Ränder, über dem gewählten Aussehen. Für müde Augen.</span>"
 
 msgid "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Tout effacer de ce téléphone</b><small>Garde le doigt appuyé 2 secondes</small></span>"
 msgstr "<span class=\"wipe-fill\" aria-hidden=\"true\"></span><span class=\"wipe-txt\"><b>Alles von diesem Handy löschen</b><small>Finger 2 Sekunden gedrückt halten</small></span>"
@@ -5209,8 +5209,8 @@ msgstr "Die Live-Karte der Demos, gepflegt von den Menschen vor Ort. Ohne Konto,
 msgid "Commence par te situer : la carte s’ouvre sur ta zone, avec ce qui est signalé autour de toi."
 msgstr "Zeig zuerst deinen Standort: Die Karte öffnet sich in deiner Gegend, mit allem, was um dich herum gemeldet wurde."
 
-msgid "◎ Me situer"
-msgstr "◎ Meinen Standort zeigen"
+msgid "Me situer"
+msgstr "Meinen Standort zeigen"
 
 msgid "Signaler en deux appuis"
 msgstr "Melden mit zwei Tipps"
@@ -5227,8 +5227,8 @@ msgstr "Gewarnt werden"
 msgid "Une alerte quand un danger est signalé près de toi, même appli fermée. Tu choisis ta zone et ce qui te prévient."
 msgstr "Eine Warnung, wenn in deiner Nähe eine Gefahr gemeldet wird, auch bei geschlossener App. Du wählst deine Gegend und was dich warnt."
 
-msgid "🔔 Régler les alertes"
-msgstr "🔔 Warnungen einstellen"
+msgid "Régler les alertes"
+msgstr "Warnungen einstellen"
 
 msgid "Dans l’onglet Droits : quoi faire en cas de contrôle ou d’interpellation, et les numéros des legal teams."
 msgstr "Im Tab Rechte: was bei einer Kontrolle oder Festnahme zu tun ist, und die Nummern der Legal Teams (EA)."
@@ -5317,28 +5317,111 @@ msgstr "Route beenden"
 # --- textes à traduire ---
 #: client/parts/orga.js
 msgid "Saisis ton code de secours actuel pour en créer un nouveau"
-msgstr ""
+msgstr "Gib deinen aktuellen Notfallcode ein, um einen neuen zu erstellen"
 
 #: client/parts/orga.js
 msgid "Confirmer : les autres appareils perdront l’accès"
-msgstr ""
+msgstr "Bestätigen: Die anderen Geräte verlieren den Zugang"
 
 #: client/parts/orga.js
 msgid "Couper tous mes autres appareils"
-msgstr ""
+msgstr "Alle meine anderen Geräte trennen"
 
 #: client/parts/orga.js
 msgid "Les autres appareils n’ont plus accès"
-msgstr ""
+msgstr "Die anderen Geräte haben keinen Zugang mehr"
 
 #: src/routes/orga-acces.js
 msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
-msgstr ""
+msgstr "Für einen neuen Code gib den aktuellen Notfallcode ein. Verloren? Bitte die Admin oder die Orga, die dich aufgenommen hat, um eine neue Einladung."
 
 #: src/routes/orga-publication.js
 msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
-msgstr ""
+msgstr "Diesen Punkt hat eine andere Orga bestätigt: Bitte sie oder die Admin, ihn zu entfernen."
 
 #: src/routes/reports-create.js
 msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
-msgstr ""
+msgstr "Zu viele Orga-Meldungen auf einmal. Versuch es in ein paar Minuten noch einmal."
+
+msgid "Plein jour"
+msgstr "Tageslicht"
+
+msgid "« Plein jour » épaissit les traits et supprime les ombres, pour un écran lu au soleil. En mode manif, l’apparence suit le soleil."
+msgstr "„Tageslicht“ verstärkt die Linien und entfernt Schatten, für einen Bildschirm, der in der Sonne gelesen wird. Im Demo-Modus richtet sich das Aussehen nach der Sonne."
+
+# --- textes à traduire ---
+#: client/app/18-bandeaux.js
+msgid "+ {n} autre"
+msgid_plural "+ {n} autres"
+msgstr[0] "+ {n} weiteres"
+msgstr[1] "+ {n} weitere"
+
+#: client/app/18-bandeaux.js
+msgid "Replier"
+msgstr "Einklappen"
+
+#: client/app/18-bandeaux.js
+msgid "Replier les bandeaux"
+msgstr "Hinweise einklappen"
+
+#: client/app/18-bandeaux.js
+msgid "Voir les autres bandeaux"
+msgstr "Die anderen Hinweise ansehen"
+
+# --- textes à traduire ---
+#: client/app/19-agenda.js
+msgid "Quand"
+msgstr "Wann"
+
+#: client/app/19-agenda.js
+msgid "Quoi"
+msgstr "Was"
+
+#: client/app/19-agenda.js
+msgid "Calendrier du mois"
+msgstr "Monatskalender"
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé ce jour-là."
+msgstr "An dem Tag ist nichts angekündigt."
+
+#: client/app/19-agenda.js
+msgid "Rien d’annoncé avec ces filtres."
+msgstr "Mit diesen Filtern ist nichts angekündigt."
+
+#: client/app/25-preparation.js
+msgid "Agenda, {n} à lire"
+msgstr "Kalender, {n} zu lesen"
+
+msgid "Pendant la manif"
+msgstr "Während der Demo"
+
+msgid "Apparence et langue"
+msgstr "Aussehen und Sprache"
+
+msgid "Sécurité"
+msgstr "Sicherheit"
+
+msgid "À propos"
+msgstr "Über"
+
+msgid "‹ Réglages"
+msgstr "‹ Einstellungen"
+
+msgid "<b>Pendant la manif</b><small>Mode manif, alertes, batterie</small>"
+msgstr "<b>Während der Demo</b><small>Demo-Modus, Warnungen, Akku</small>"
+
+msgid "<b>Avant de partir</b><small>Checklist, carte hors ligne, installation, flouteur</small>"
+msgstr "<b>Vor dem Losgehen</b><small>Checkliste, Offline-Karte, Installation, Weichzeichner</small>"
+
+msgid "<b>Faire grandir Cortège</b><small>Partager, affiche, idées, accès orga</small>"
+msgstr "<b>Cortège wachsen lassen</b><small>Teilen, Plakat, Ideen, Orga-Zugang</small>"
+
+msgid "<b>Apparence et langue</b><small>Thème, taille du texte, contraste, langue</small>"
+msgstr "<b>Aussehen und Sprache</b><small>Design, Textgröße, Kontrast, Sprache</small>"
+
+msgid "<b>Sécurité</b><small>Tor, accès perdu, tout effacer</small>"
+msgstr "<b>Sicherheit</b><small>Tor, Zugang verloren, alles löschen</small>"
+
+msgid "<b>À propos</b><small>Comment ça marche, bilans, nouveautés, mentions légales</small>"
+msgstr "<b>Über</b><small>Wie es funktioniert, Bilanzen, Neuigkeiten, Impressum</small>"

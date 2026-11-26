@@ -69,6 +69,59 @@
   --page-bg: linear-gradient(180deg, #fdeceb, #eae4ee 50%, #d8dbf0);
   color-scheme: light;
 }
+/* Plein jour : le thème clair renforcé, pour un écran lu dehors au soleil. Trois règles, reprises de la signalétique
+   routière et des instruments de plein air : des aplats francs, un trait sombre autour de chaque couleur (la forme
+   reste lisible même quand la couleur, elle, ne ressort pas), et aucune ombre floue (c'est la première chose que le
+   soleil efface). Posé par theme.js, qui garde data-theme="light" : la carte et les tuiles restent celles du thème clair. */
+:root[data-theme="light"].jour {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #eceaf4;
+  --line: #4b4a6b;
+  --fg: #0b0e2e;
+  --muted: #26294f;
+  --accent: #23309a;
+  --accent-2: #23309a;
+  --ok-text: #0d6440;
+  --warn-text: #7a4f00;
+  --bad-text: #a01b20;
+  /* Couleurs des groupes assombries : chacune tient au moins 4,7:1 sur une carte claire, et porte en plus son trait sombre */
+  --fdo: #c2181f;
+  --danger: #b35c00;
+  --soutien: #0f7a4a;
+  --info: #4a3fa8;
+  --route: #b43f38;
+  --zone-line: #a35e00;
+  --map-bg: #ffffff;
+  --map-label: #0b0e2e; --map-halo: #ffffff;
+  --attr-bg: rgba(255, 255, 255, .92);
+  /* Contours francs à la place des ombres portées */
+  --float-shadow: 0 0 0 1px var(--key);
+  --sheet-shadow: 0 -2px 0 0 var(--key);
+  --page-bg: #ffffff;
+  --key: #0b0e2e;   /* le trait sombre posé autour des couleurs et des surfaces */
+}
+/* Épingles : corps teinté de la couleur du groupe (une pastille colorée se repère de bien plus loin qu'un anneau),
+   anneau épaissi, un trait sombre de chaque côté, et plus d'ombre floue. */
+:root[data-theme="light"].jour .pin {
+  background: color-mix(in srgb, var(--c) 22%, #ffffff);
+  border-width: 4px;
+  box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key);
+}
+:root[data-theme="light"].jour .pin.ver { box-shadow: 0 0 0 1px var(--key), inset 0 0 0 1px var(--key), 0 0 0 4px var(--ok-text); }
+:root[data-theme="light"].jour .pin.admin { box-shadow: 0 0 0 1px var(--key); }
+/* Les couleurs de groupe assombries portent du texte blanc : le texte foncé d'origine n'y tient plus le contraste
+   (bandeau d'alerte 3,91 et bouton « Appeler » de la legal team 3,49, contre 4,72 et 5,38 en blanc) */
+:root[data-theme="light"].jour .alert,
+:root[data-theme="light"].jour .legal-call,
+:root[data-theme="light"].jour .calm-nav .arrow { color: #ffffff; }
+:root[data-theme="light"].jour .round,
+:root[data-theme="light"].jour .tile,
+:root[data-theme="light"].jour .sheet,
+:root[data-theme="light"].jour .chip { border-color: var(--key); }
+:root[data-theme="light"].jour .round { box-shadow: 0 0 0 1px var(--key); }
+:root[data-theme="light"].jour .topbar,
+:root[data-theme="light"].jour .tabbar { box-shadow: 0 0 0 1px var(--key); }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); -webkit-tap-highlight-color: transparent; }
@@ -940,7 +993,7 @@ body.manif .leaflet-bottom { bottom: calc(var(--safe-b) + 104px); }
 [data-theme="light"] .pin, [data-theme="light"] .cluster { box-shadow: 3px -3px 0 0 rgba(28, 33, 86, .18); }
 [data-theme="light"] .leaflet-popup-content-wrapper, [data-theme="light"] .leaflet-popup-tip { box-shadow: 5px -6px 0 0 rgba(28, 33, 86, .14); }
 /* Choix du thème (Plus › Réglages) */
-.theme-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 12px; }
+.theme-seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 4px 0 12px; }
 .theme-seg button { height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-weight: 700; font-size: .875rem; }
 .theme-seg button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .embed-theme { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; font-size: .875rem; color: var(--muted); }
@@ -1120,3 +1173,45 @@ body.medic.md-nosig .leaflet-reports-pane { display: none; }
 
 /* Champs de saisie : jamais sous 16 px, sinon l'iPhone zoome tout seul dans la page dès qu'on y entre */
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([readonly]), textarea:not([readonly]), select { font-size: max(1rem, 1em) !important; }
+
+/* Bandeau de situation : un seul visible, les autres repliés derrière « + n » (voir client/app/18-bandeaux.js) */
+.ov-stacked { display: none !important; }
+.overlays:not(.open) #anns > .ann ~ .ann, .overlays:not(.open) #anns > .ann-more { display: none; }
+.ov-more { align-self: center; pointer-events: auto; font-size: .75rem; font-weight: 700; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; box-shadow: var(--float-shadow); }
+
+/* Réglages : sommaire en thèmes, puis une page par thème (voir client/app/23-reglages.js) */
+.rg-menu { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 8px; }
+.rg-item { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; text-align: start;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); color: var(--fg); }
+.rg-item:active { transform: scale(.995); }
+.rg-ico { flex: none; color: var(--accent); }
+.rg-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.rg-txt b { font-size: .9375rem; }
+.rg-txt small { font-size: .75rem; color: var(--muted); line-height: 1.25; }
+.rg-go { flex: none; color: var(--muted); font-size: 1.25rem; }
+.rg-back { align-self: start; background: none; border: 0; color: var(--accent); font-weight: 700; padding: 6px 2px; margin-bottom: 2px; }
+.rg-title { font: 700 1.0625rem/1.2 var(--font); margin: 0 0 10px; }
+
+/* Agenda : filtres combinables et calendrier du mois (voir client/app/19-agenda.js) */
+.ag-filters { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 8px; }
+/* Les puces passent à la ligne au lieu de défiler : un libellé coupé au bord se lit comme un bug, et une puce
+   qui dépasse hors de l'écran ne se voit pas du tout */
+.ag-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ag-chip { min-height: 36px; padding: 6px 14px; border-radius: 99px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+.ag-chip.on { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.ag-cal-toggle { align-self: start; background: none; border: 0; color: var(--accent); font-weight: 700; padding: 6px 2px; }
+.ag-cal { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; margin-bottom: 10px; }
+.cal-head { text-align: center; font-weight: 700; margin-bottom: 8px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-day { position: relative; min-height: 38px; display: grid; place-items: center; border: 0; background: none;
+  color: var(--fg); font-size: .875rem; border-radius: 10px; }
+.cal-day.past { color: var(--muted); opacity: .5; }
+.cal-day.has { font-weight: 800; }
+.cal-day.on { background: var(--accent); color: var(--accent-fg); }
+.cal-dot { position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.cal-day.on .cal-dot { background: var(--accent-fg); }
+.round.manif-tool { border-color: var(--accent); color: var(--accent); }
+body.manif .round.manif-tool { display: none !important; }
+.cal-wd { display: grid; place-items: center; font-size: .6875rem; font-weight: 700; color: var(--muted); text-decoration: none; padding-bottom: 4px; }

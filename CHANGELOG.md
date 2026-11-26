@@ -2,6 +2,16 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.25.0
+
+- **Chaque chose à sa place.** La barre du bas devient Carte, Agenda, Signaler, Droits, Réglages. L'onglet « Infos » disparaît : les annonces des orgas et les arrêtés descendent dans l'agenda, et « Signalements dans la zone » rejoint la fiche des calques. Le mode manif, qui n'était qu'une ligne parmi vingt dans l'ancien onglet « Plus », s'ouvre maintenant depuis la carte en un appui.
+- **Réglages en thèmes.** Au lieu d'une vingtaine de tuiles à la suite : un sommaire de six thèmes (pendant la manif, avant de partir, faire grandir Cortège, apparence et langue, sécurité, à propos), puis une page par thème. Le don et le compte Instagram restent en tête de page.
+- **Agenda.** Calendrier du mois (replié par défaut), filtres combinables par date et par type, et plus de rayon de 50 km par défaut : il se calculait depuis le centre de la carte et pouvait cacher des mobilisations proches. Sur la carte, les événements apparaissent dès 7 jours avant le départ et au zoom région, au lieu de 12 h avant au zoom quartier ; le nombre d'épingles est plafonné aux 60 plus proches.
+- **Apparence « plein jour ».** Une quatrième apparence, à côté de Système, Clair et Sombre : traits épaissis, un contour sombre autour de chaque couleur, aucune ombre floue, pour un écran lu dehors au soleil. En apparence claire, trois des quatre couleurs de groupe passaient sous le seuil de contraste sur une carte claire (1,80 pour le groupe « danger ») ; en plein jour, elles vont de 4,72 à 8,18. Le mode manif n'impose plus le sombre : il calcule la hauteur du soleil et prend le plein jour tant qu'il est levé.
+- **Un seul bandeau en haut de la carte.** Six bandeaux pouvaient s'empiler et réduire la carte à une bande. Seul le plus important s'affiche, les autres sont repliés derrière un compteur, et une alerte de danger reprend toujours la main.
+- **Icônes de l'interface.** Les boutons de la carte et des écrans d'accueil passent des emoji à des dessins, qui suivent le thème, le mode contraste et le texte agrandi, et sont identiques sur tous les téléphones. Les épingles de la carte et les catégories gardent leurs emoji pour l'instant.
+- Merci à [22eme-Arkane](https://github.com/22eme-Arkane), dont la proposition de refonte d'interface a servi de base à la nouvelle navigation, à l'agenda et aux dessins des boutons.
+
 ## 2.24.5
 
 - **Accès des orgas renforcés** : une orga peut couper elle-même la clé d'un téléphone perdu ou saisi (bouton « Couper tous mes autres appareils », et « Quitter le mode orga » ou « Tout effacer » coupent la clé de ce téléphone). Un nouveau code de secours demande l'actuel. L'admin voit quand un appareil est ajouté ou un code de secours utilisé.

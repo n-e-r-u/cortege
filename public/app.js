@@ -83,6 +83,7 @@
     document.dispatchEvent(new CustomEvent('cortege-profile'));
   }
   applyProfile(PROFILES[0]);
+  let rgHome = () => {};               // réglages : revenir au sommaire (posée par 23-reglages.js)
   let ALERT_RADIUS = cfg.alertRadius || 300;   // mètres (réglable par l'admin)
   const MERGE = cfg.merge || {};              // rayon de fusion par type (m), même règle que le serveur
   const mergeR = cat => (MERGE[cat] && MERGE[cat].r) || 50;
@@ -1415,14 +1416,14 @@
   $('#poiClose').onclick = () => closeSheets();
 
   // ---- Signaler ----
-  const sheets = ['#sheetLayers', '#sheetFeed', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon', '#sheetWelcome'];
+  const sheets = ['#sheetLayers', '#sheetPoi', '#sheetNews', '#sheetEmbed', '#sheetIdeas', '#sheetJoin', '#sheetReport', '#sheetList', '#sheetInfo', '#sheetSearch', '#sheetShare', '#sheetRights', '#sheetOrga', '#sheetAgenda', '#sheetEvent', '#sheetSos', '#sheetPrep', '#sheetQueue', '#sheetNotif', '#sheetOrd', '#sheetOrdNew', '#sheetMedic', '#sheetMedicHelp', '#sheetRec', '#sheetRecover', '#sheetSon', '#sheetWelcome'];
   // Certaines fiches n'arrivent dans la page qu'avec leur partie chargée à la demande (espace orga, idées, enregistreur) : voir addSheet
   const sheetOpen = s => { const x = $(s); return !!x && !x.hidden; };
   const closeSheets = () => sheets.forEach(s => { const x = $(s); if (x) x.hidden = true; });
   // Fond assombri derrière les feuilles : un appui dessus ferme la feuille (sauf « Signaler », qui a besoin de la carte)
   const backdrop = $('#backdrop');
-  // Pages des onglets (Infos, Droits, Plus) : plein écran au-dessus de la barre, sans fond assombri
-  const PAGES = { tabInfos: '#sheetFeed', tabRights: '#sheetRights', tabMore: '#sheetInfo' };
+  // Pages des onglets (Agenda, Droits, Réglages) : plein écran au-dessus de la barre, sans fond assombri
+  const PAGES = { tabAgenda: '#sheetAgenda', tabRights: '#sheetRights', tabMore: '#sheetInfo' };
   const isPage = s => Object.values(PAGES).includes(s);
   function syncTabs() {
     const open = Object.entries(PAGES).find(([, s]) => !$(s).hidden);
@@ -1886,15 +1887,15 @@
     const wasOpen = !$(sel).hidden;
     closeSheets();
     if (wasOpen) return; // deuxième appui sur l'onglet : retour à la carte
-    if (sel === '#sheetFeed') renderFeed();
+    if (sel === '#sheetAgenda') { renderFeed(); renderAgenda(); }
     if (sel === '#sheetRights') renderLegal();
+    if (sel === '#sheetInfo') rgHome();
     $(sel).hidden = false; $(sel).scrollTop = 0;
   }
   $('#tabMap').onclick = () => { closeReport(); closeSheets(); };
-  $('#tabInfos').onclick = () => openPage('#sheetFeed');
+  $('#tabAgenda').onclick = () => openPage('#sheetAgenda');
   $('#tabRights').onclick = () => openPage('#sheetRights');
   $('#tabMore').onclick = () => openPage('#sheetInfo');
-  $('#fdClose').onclick = () => closeSheets();
   $('#siClose').onclick = () => closeSheets();
 
   // ---- Installation sur l'écran d'accueil (PWA) ----
@@ -2310,6 +2311,45 @@
   });
   { const q = new URLSearchParams(location.search), city = q.get('rejoindre');
     if (city !== null) { history.replaceState(null, '', location.pathname); setTimeout(() => openJoin(city.slice(0, 60)), 800); } }
+  // ---- Bandeau de situation : un seul en haut de la carte ----
+  // Six bandeaux pouvaient s'empiler (alerte de proximité, réseau, pause des signalements, arrêtés, annonces d'orga,
+  // Play Store) et réduire la carte à une bande. On n'affiche que le plus important ; un bouton « + n » déplie les autres.
+  // Chaque bandeau garde son code et son apparence : ce fichier ne fait que choisir celui qui se voit.
+  {
+    const box = $('#overlays');
+    // Du plus urgent au moins urgent : un danger tout près, puis ce qui fausse ce qu'on voit (réseau, pause),
+    // puis ce qui concerne le lieu (arrêté), puis les orgas, puis l'appli elle-même.
+    const ORDER = ['#alert', '#netBar', '#pauseBanner', '#ordBar', '#anns', '#testBand'];
+    const count = n => (n.id === 'anns' ? n.querySelectorAll('.ann').length : 1);
+    const live = () => ORDER.map(s => $(s)).filter(n => n && !n.hidden && count(n) > 0);
+    const more = el('button', { type: 'button', class: 'ov-more', hidden: '', 'aria-expanded': 'false' });
+    more.onclick = () => { box.classList.toggle('open'); restack(); };
+    let lastTop = null;
+    // L'observateur est coupé le temps de ranger : sinon nos propres changements le relanceraient sans fin
+    const obs = new MutationObserver(() => restack());
+    const watch = () => obs.observe(box, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'class'] });
+    function restack() {
+      obs.disconnect();
+      try {
+        const list = live();
+        const top = list[0] || null;
+        // Un danger qui arrive reprend la main : la pile se referme pour qu'il soit seul à l'écran
+        if (top && top.id === 'alert' && lastTop !== top) box.classList.remove('open');
+        lastTop = top;
+        const open = box.classList.contains('open');
+        for (const n of ORDER.map(s => $(s))) if (n) n.classList.toggle('ov-stacked', !open && n !== top);
+        const extra = list.reduce((n, x) => n + count(x), 0) - 1;
+        const label = open ? t('Replier') : tn(extra, '+ {n} autre', '+ {n} autres');
+        if (more.hidden !== extra < 1) more.hidden = extra < 1;
+        if (more.textContent !== label) more.textContent = label;
+        if (more.getAttribute('aria-expanded') !== String(open)) more.setAttribute('aria-expanded', String(open));
+        const aria = open ? t('Replier les bandeaux') : t('Voir les autres bandeaux');
+        if (more.getAttribute('aria-label') !== aria) more.setAttribute('aria-label', aria);
+        if (box.lastElementChild !== more) box.append(more);  // toujours en dernier, même après l'ajout d'un bandeau
+      } finally { obs.takeRecords(); watch(); }
+    }
+    restack();
+  }
   // ---- Agenda : manifs, blocus, rassemblements, AG ----
   const EVT = Object.fromEntries((cfg.eventTypes || []).map(t => [t.id, t]));
   const evLayer = L.layerGroup().addTo(map);
@@ -2317,10 +2357,21 @@
   let selectedEv = null;
   const fmtWhen = x => new Date(x).toLocaleString(I18N.locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const fmtHour = x => new Date(x).toLocaleTimeString(I18N.locale, { hour: '2-digit', minute: '2-digit' });
-  // Sur la carte : les événements du moment (de 12 h avant à 10 h après le départ), plus celui choisi dans l'agenda
-  // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda
-  const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= 9 && e.start - 12 * 60 * MIN < Date.now() && e.start + 10 * 60 * MIN > Date.now());
-  map.on('zoomend', () => { const z = map.getZoom() >= 9; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
+  // Sur la carte : les événements des 7 jours qui viennent (jusqu'à 10 h après le départ), dès le zoom région,
+  // plus celui choisi dans l'agenda. Avant, il fallait attendre 12 h avant le départ et zoomer sur le quartier.
+  // Masqués par le filtre « Agenda » sauf celui que la personne vient d'ouvrir dans l'agenda.
+  const EV_AHEAD = 7 * 24 * 60 * MIN, EV_ZOOM = 6, EV_MAX = 60;
+  const evOnMap = e => e.id === selectedEv || (!evHidden && map.getZoom() >= EV_ZOOM && e.start - EV_AHEAD < Date.now() && e.start + 10 * 60 * MIN > Date.now());
+  map.on('zoomend', () => { const z = map.getZoom() >= EV_ZOOM; if (z !== evOnMap.z) { evOnMap.z = z; renderEvents(); } });
+  // Au zoom région, sept jours d'événements peuvent faire des centaines d'épingles : on garde les plus proches
+  // du centre de la carte, et toujours celui qui est ouvert.
+  function evShown() {
+    const list = evCache.e.filter(evOnMap);
+    if (list.length <= EV_MAX) return list;
+    const c = map.getCenter();
+    return list.slice().sort((a, b) => (b.id === selectedEv) - (a.id === selectedEv)
+      || dist([c.lat, c.lng], [a.lat, a.lng]) - dist([c.lat, c.lng], [b.lat, b.lng])).slice(0, EV_MAX);
+  }
   function evPopup(e) {
     const ty = EVT[e.type] || { glyph: '📍', label: '' };
     const root = el('div');
@@ -2347,7 +2398,7 @@
   }
   function renderEvents() {
     evLayer.clearLayers(); evMarkers.clear();
-    for (const e of evCache.e.filter(evOnMap)) {
+    for (const e of evShown()) {
       const ty = EVT[e.type] || { glyph: '📍' };
       if (e.route) {
         L.polyline(e.route, { color: themeCol('--route', '#f6a29c'), weight: 5, opacity: .9, dashArray: '10 8', interactive: false }).addTo(evLayer);
@@ -2364,16 +2415,89 @@
   }
   // Thème changé (réglage, système ou mode manif) : les parcours prennent la couleur du nouveau thème
   window.addEventListener('cortege-theme', () => { try { renderEvents(); drawFlow(); } catch {} });
+  // ---- Agenda : filtres, calendrier du mois, puis la liste ----
+  // Repris de la proposition de 22eme-Arkane (branche refonte-interface), y compris la correction du week-end le dimanche.
+  // Plus de rayon de 50 km par défaut : il se calculait depuis le centre de la carte et pouvait cacher des manifs proches.
+  let agWhen = 'all', agSel = null, agCal = false;
+  const agTypes = new Set();
+  const dayKey = x => { const d = new Date(x); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  function agWhenOk(e) {
+    const now = new Date(), day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    if (agWhen === 'today') return e.start < day0 + 864e5;
+    if (agWhen === 'week') return e.start < day0 + 7 * 864e5;
+    // Le dimanche, « ce week-end » se réduit à aujourd'hui : calculer le samedi suivant faisait sauter le jour même
+    if (agWhen === 'weekend') {
+      const wd = now.getDay(), sat = wd === 0 ? day0 : day0 + (6 - wd) * 864e5;
+      return e.start >= Math.min(sat, day0) && e.start < (wd === 0 ? day0 + 864e5 : sat + 2 * 864e5);
+    }
+    return true;
+  }
+  function renderAgChips() {
+    const box = $('#agFilters'); if (!box) return;
+    box.textContent = '';
+    const chip = (label, on, fn) => {
+      const b = el('button', { type: 'button', class: 'ag-chip' + (on ? ' on' : ''), 'aria-pressed': String(on) }, label);
+      b.onclick = () => { fn(); agSel = null; renderAgenda(); };
+      return b;
+    };
+    const when = el('div', { class: 'ag-chips', role: 'group', 'aria-label': t('Quand') });
+    for (const [k, l] of [['all', 'Tout'], ['today', 'Aujourd’hui'], ['weekend', 'Ce week-end'], ['week', '7 jours']])
+      when.append(chip(t(l), agWhen === k, () => { agWhen = k; }));
+    const what = el('div', { class: 'ag-chips', role: 'group', 'aria-label': t('Quoi') });
+    for (const ty of Object.values(EVT))
+      what.append(chip(ty.glyph + ' ' + t(ty.label), agTypes.has(ty.id), () => { agTypes.has(ty.id) ? agTypes.delete(ty.id) : agTypes.add(ty.id); }));
+    box.append(when, what);
+  }
+  // Calendrier du mois : une pastille les jours qui ont quelque chose, un appui filtre la liste sur ce jour.
+  // Replié par défaut : la liste du jour compte plus que la grille.
+  function renderCal(list) {
+    const box = $('#agCal'), tog = $('#agCalToggle');
+    if (!box || !tog) return;
+    box.hidden = !agCal;
+    tog.setAttribute('aria-expanded', String(agCal));
+    tog.textContent = (agCal ? '▾ ' : '▸ ') + t('Calendrier du mois');
+    if (!agCal) return;
+    box.textContent = '';
+    const now = new Date(), first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const days = new Set(list.map(e => dayKey(e.start)));
+    box.append(el('div', { class: 'cal-head' }, first.toLocaleDateString(I18N.locale, { month: 'long', year: 'numeric' })));
+    const grid = el('div', { class: 'cal-grid' });
+    // En-tête des jours, dans la langue de l'appli : sans elle, on ne sait pas quelle colonne est quel jour
+    for (let k = 0; k < 7; k++) {
+      const d = new Date(2024, 0, 1 + k);   // 1er janvier 2024 était un lundi
+      grid.append(el('abbr', { class: 'cal-wd', title: d.toLocaleDateString(I18N.locale, { weekday: 'long' }) },
+        d.toLocaleDateString(I18N.locale, { weekday: 'narrow' })));
+    }
+    // Première colonne : lundi (le tableau commence au jour 1 du mois)
+    const shift = (first.getDay() + 6) % 7;
+    for (let k = 0; k < shift; k++) grid.append(el('span', { class: 'cal-pad', 'aria-hidden': 'true' }));
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= last; d++) {
+      const date = new Date(now.getFullYear(), now.getMonth(), d), key = dayKey(date);
+      const past = d < now.getDate(), has = days.has(key);
+      if (!has) { grid.append(el('span', { class: 'cal-day' + (past ? ' past' : '') }, String(d))); continue; }
+      const b = el('button', { type: 'button', class: 'cal-day has' + (agSel === key ? ' on' : ''), 'aria-pressed': String(agSel === key) },
+        String(d), el('i', { class: 'cal-dot', 'aria-hidden': 'true' }));
+      b.setAttribute('aria-label', date.toLocaleDateString(I18N.locale, { weekday: 'long', day: 'numeric', month: 'long' }));
+      b.onclick = () => { agSel = agSel === key ? null : key; renderAgenda(); };
+      grid.append(b);
+    }
+    box.append(grid);
+  }
   function renderAgenda() {
-    const scope = document.querySelector('input[name="agScope"]:checked').value;
     const c = map.getCenter(), ref = me || [c.lat, c.lng], now = Date.now();
+    renderAgChips();
     let list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now);
-    if (scope === 'near') list = list.filter(e => dist(ref, [e.lat, e.lng]) <= 50_000);
-    list.sort((a, b) => a.start - b.start);
+    if (agTypes.size) list = list.filter(e => agTypes.has(e.type));
+    renderCal(list);                       // le calendrier montre le mois entier, avant le filtre « quand »
+    list = list.filter(agWhenOk);
+    if (agSel) list = list.filter(e => dayKey(e.start) === agSel);
+    list.sort((a, b) => a.start - b.start || dist(ref, [a.lat, a.lng]) - dist(ref, [b.lat, b.lng]));
     const ol = $('#agList'); ol.textContent = '';
     $('#agEmpty').hidden = list.length > 0;
-    $('#agEmpty').textContent = t(scope === 'all' ? 'Aucune mobilisation annoncée pour l’instant.'
-      : me ? t('Rien d’annoncé à moins de 50 km de toi. Regarde « Toute la France ».') : t('Rien d’annoncé à moins de 50 km du centre de la carte. Active ta position ou regarde « Toute la France ».'));
+    $('#agEmpty').textContent = agSel ? t('Rien d’annoncé ce jour-là.')
+      : agWhen !== 'all' || agTypes.size ? t('Rien d’annoncé avec ces filtres.')
+      : t('Aucune mobilisation annoncée pour l’instant.');
     let day = '';
     if (list.length > 200) ol.append(el('li', { class: 'ag-day' }, t('{n} événements : les 200 premiers', { n: list.length })));
     for (const e of list.slice(0, 200)) {
@@ -2392,14 +2516,6 @@
       el('span', { class: 'd' }, fmtDist(dist(ref, [e.lat, e.lng]))));
     btn.onclick = () => showEvent(e);
     return el('li', {}, btn);
-  }
-  // Infos : les 4 prochains événements à moins de 50 km
-  function feedAgenda(ref) {
-    const now = Date.now(), ol = $('#feedAg'); ol.textContent = '';
-    const list = evCache.e.filter(e => e.start + 3 * 60 * MIN > now && dist(ref, [e.lat, e.lng]) <= 50_000).sort((a, b) => a.start - b.start).slice(0, 4);
-    $('#feedAgEmpty').hidden = list.length > 0;
-    let day = '';
-    for (const e of list) { const d = agDay(e, now); if (d !== day) { day = d; ol.append(el('li', { class: 'ag-day' }, d)); } ol.append(agRow(e, ref)); }
   }
   function showEvent(e) {
     closeSheets(); setFollow(false);
@@ -2528,9 +2644,8 @@
       } catch { toast('Pas de réseau : réessaie plus tard.'); }
     });
   }
-  $('#btnAgenda').onclick = () => { closeReport(); closeSheets(); renderAgenda(); $('#sheetAgenda').hidden = false; };
   $('#agClose').onclick = () => closeSheets();
-  document.querySelectorAll('input[name="agScope"]').forEach(r => r.addEventListener('change', renderAgenda));
+  $('#agCalToggle').onclick = () => { agCal = !agCal; renderAgenda(); };
 
   // ---- Publier (orga) ou proposer (tout le monde) un événement, avec parcours tracé sur la carte ----
   const draft = { route: [] };
@@ -2738,6 +2853,38 @@
     }).catch(() => {});
   } catch {}
 
+
+  // ---- Réglages : un sommaire, puis une page par thème ----
+  // L'onglet contenait une vingtaine de tuiles à la suite. Les blocs n'ont pas bougé dans le HTML : on montre
+  // soit le sommaire, soit un thème. Chaque identifiant existant est conservé, donc le reste du code est inchangé.
+  {
+    const menu = $('#rgMenu'), subs = [...document.querySelectorAll('.rg-sub')];
+    // Ce qui reste visible au-dessus du sommaire (don, Instagram, Play Store) et disparaît dans un thème
+    const tops = [$('#kofiLink'), $('#igLink'), $('#testCard'), $('#playCard')].filter(Boolean);
+    const topHidden = new WeakSet();
+    let inSub = false;
+    function rgOpen(key) {
+      const sub = key && $('#rg-' + key);
+      for (const s of subs) s.hidden = s !== sub;
+      menu.hidden = !!sub;
+      // Les cartes du haut ont leur propre « hidden » (Play Store, selon les réglages du serveur) : on le retient
+      // en entrant dans un thème et on le rend en sortant, sans jamais y toucher sur le sommaire lui-même
+      if (sub) {
+        if (!inSub) for (const n of tops) if (n.hidden) topHidden.add(n);
+        for (const n of tops) n.hidden = true;
+      } else if (inSub) {
+        for (const n of tops) n.hidden = topHidden.has(n);
+      }
+      inSub = !!sub;
+      $('#siTitle').textContent = sub ? t('Réglages') + ' · ' + sub.querySelector('.rg-title').textContent : t('Réglages');
+      $('#sheetInfo').scrollTop = 0;
+      if (sub) sub.querySelector('.rg-back').focus({ preventScroll: true });
+    }
+    rgHome = () => rgOpen(null);
+    for (const b of document.querySelectorAll('.rg-item')) b.onclick = () => rgOpen(b.dataset.rg);
+    for (const b of document.querySelectorAll('.rg-back')) b.onclick = () => { rgOpen(null); $('#rgMenu').querySelector(`[data-rg="${b.closest('.rg-sub').id.slice(3)}"]`)?.focus({ preventScroll: true }); };
+    rgOpen(null);
+  }
   // ---- Notifications : annonces urgentes et dangers près de toi, même appli fermée ----
   const pushOK = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!cfg.pushKey;
   const b64u = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
@@ -2926,28 +3073,57 @@
     const anns = announcements.filter(a => a.kind === 'info').sort((a, b) => (b.level === 'urgent') - (a.level === 'urgent') || b.t - a.t);
     for (const a of anns) ab.append(annCard(a));
     if (!anns.length) ab.append(el('p', { class: 'empty' }, t('Aucune annonce d’orga dans cette zone pour l’instant.')));
-    feedAgenda(ref);
     feedBadge();
   }
-  // Pastille de l'onglet Infos : arrêtés qui concernent la zone, annonces urgentes
+  // Pastille de l'onglet Agenda : arrêtés qui concernent la zone, annonces urgentes
   function feedBadge() {
-    const b = $('#infosBadge'); if (!b) return;
+    const b = $('#agBadge'); if (!b) return;
     const n = (ordState && ordState.here ? ordState.here().length : 0) + announcements.filter(a => a.kind === 'info' && a.level === 'urgent').length;
     b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
-    $('#tabInfos').setAttribute('aria-label', n ? `Infos, ${n} à lire` : 'Infos');
+    $('#tabAgenda').setAttribute('aria-label', n ? t('Agenda, {n} à lire', { n }) : t('Agenda'));
   }
 
   // ---- Mode manif : la carte, Signaler, SOS et Droits, rien d'autre ----
   let manif = false; try { manif = localStorage.getItem('cortege-manif') === '1'; } catch {}
+  // Hauteur du soleil au-dessus de l'horizon, en degrés (calcul local, méthode NOAA simplifiée, à quelques minutes près).
+  // Le calcul se fait sur le centre de l'instance, jamais sur la position de la personne : rien de nouveau n'est écrit
+  // sur le téléphone, et la différence d'un bout à l'autre d'un pays est de l'ordre du quart d'heure.
+  function sunAltitude(now = new Date()) {
+    const RAD = Math.PI / 180, c = cfg.center || [46.6, 2.4], lat = c[0], lng = c[1];
+    const d = (now.getTime() - Date.UTC(2000, 0, 1, 12)) / 864e5;   // jours depuis J2000
+    const g = (357.529 + 0.98560028 * d) * RAD;                     // anomalie moyenne
+    const L = (280.459 + 0.98564736 * d + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * RAD; // longitude apparente
+    const e = (23.439 - 0.00000036 * d) * RAD;                      // obliquité
+    const dec = Math.asin(Math.sin(e) * Math.sin(L));               // déclinaison
+    const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)) / RAD / 15;  // ascension droite, en heures
+    const mod = (x, n) => ((x % n) + n) % n;
+    const ha = (mod(18.697375 + 24.065709824279 * d + lng / 15 - ra + 12, 24) - 12) * 15 * RAD; // angle horaire
+    const p = lat * RAD;
+    return Math.asin(Math.sin(p) * Math.sin(dec) + Math.cos(p) * Math.cos(dec) * Math.cos(ha)) / RAD;
+  }
+  // Apparence du mode manif : « plein jour » tant que le soleil est levé (un écran lu dehors), sombre une fois couché
+  // (écran discret dans la rue, moins de batterie). Comme avant, le mode manif impose l'apparence ; le choix de la
+  // personne revient en sortant. Revu toutes les dix minutes et au retour sur l'appli, pour la tombée de la nuit.
+  const manifTheme = () => (sunAltitude() > 0 ? 'jour' : 'dark');
+  let manifTimer = null;
+  function applyManifTheme() {
+    const want = manifTheme();
+    try { localStorage.setItem('cortege-manif-theme', want); } catch {}
+    window.cortegeTheme?.force(want);
+  }
   function setManif(on) {
     manif = on; document.body.classList.toggle('manif', on);
-    // Sombre imposé pendant le mode manif : écran discret la nuit, moins de batterie. Le choix d'apparence revient en sortant.
-    if (window.cortegeTheme) window.cortegeTheme.force(on ? 'dark' : null);
+    clearInterval(manifTimer); manifTimer = null;
+    if (on) { applyManifTheme(); manifTimer = setInterval(applyManifTheme, 10 * 60_000); }
+    else window.cortegeTheme?.force(null);
     try { localStorage.setItem('cortege-manif', on ? '1' : '0'); } catch {}
     $('#manifTitle').textContent = t('Mode manif') + (cfg.banner && cfg.event ? ' · ' + t(cfg.event) : '');
   }
+  document.addEventListener('visibilitychange', () => { if (manif && !document.hidden) applyManifTheme(); });
   $('#btnManif').onclick = () => { closeSheets(); setManif(true); if (watchId == null) locate(); toast('Mode manif. « Quitter » en haut pour revenir à l’appli complète.'); };
   $('#manifExit').onclick = () => setManif(false);
+  // Raccourci sur la carte : le mode manif ne se trouvait que dans les réglages, personne ne l'ouvrait dans la rue
+  $('#btnManifMap').onclick = () => { closeReport(); closeSheets(); $('#btnManif').click(); };
   $('#mbSos').onclick = openSos;
   $('#mbLegal').onclick = () => openPage('#sheetRights');
   setManif(manif);
