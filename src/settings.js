@@ -24,6 +24,8 @@ function settings() {
   }
   return SET.v;
 }
+// Adresse d'un site partenaire : https seulement. http n'est toléré que quand les tests ouvrent le réseau local.
+const feedBaseOk = base => (process.env.FETCH_ALLOW_PRIVATE === '1' ? /^https?:\/\/[\w.:-]{4,120}$/ : /^https:\/\/[\w.-]{4,120}$/).test(base);
 function cleanSettings(b) {
   const s = {}, str = (x, n) => String(x || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
   const day = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || '')) ? String(x) : null;
@@ -48,6 +50,15 @@ function cleanSettings(b) {
   const at = str(b.androidTest, 300); if (/^https:\/\/[^\s"<>]{4,290}$/.test(at)) s.androidTest = at;
   // Fiche de l'appli sur le Play Store, une fois publiée : remplace le cadre du test fermé dans Plus, lien sur les pages presse et orgas
   const ps = str(b.playStore, 300); if (/^https:\/\/play\.google\.com\/store\/apps\/details\?id=[\w.]{3,150}[^\s"<>]{0,100}$/.test(ps)) s.playStore = ps;
+  // Import d'un agenda partenaire : sans adresse, rien ne tourne. « off » coupe sans perdre l'adresse.
+  if (b.feed && typeof b.feed === 'object') {
+    const base = str(b.feed.base, 120).replace(/\/+$/, '');
+    if (feedBaseOk(base)) {
+      const every = Math.round(Number(b.feed.every)), days = Math.round(Number(b.feed.days)), label = str(b.feed.label, 60);
+      s.feed = { base, ...(every >= 10 && every <= 240 ? { every } : {}), ...(days >= 1 && days <= 60 ? { days } : {}),
+        ...(label ? { label } : {}), ...(b.feed.off ? { off: true } : {}) };
+    }
+  }
   const al = str(b.adminLabel, 40);
   if (al.length >= 2 && !readOrgas().some(o => labelKey(o.label) === labelKey(al)) && !ORGAS.some(o => labelKey(o.label) === labelKey(al))) s.adminLabel = al;
   return s;
@@ -70,4 +81,4 @@ const pausedUntil = now => { const p = Number(getMeta('paused') || 0); return p 
 
 function adminLabel() { return settings().adminLabel || ADMIN_LABEL_ENV; }
 
-module.exports = { settings, cleanSettings, saveSettings, mobsAll, mobToday, bannerNow, cfgHash, adminLabel, pausedUntil };
+module.exports = { settings, cleanSettings, saveSettings, feedBaseOk, mobsAll, mobToday, bannerNow, cfgHash, adminLabel, pausedUntil };

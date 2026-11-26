@@ -21,7 +21,7 @@ Cortège est un seul processus Node, sans aucune dépendance : le serveur n'util
 | `src/settings.js`, `src/instance.js` | Réglages modifiés depuis l'admin : bandeau, nom affiché, pause ; nom de la carte, contact, liens, marque (les variables d'environnement servent de valeurs de départ) |
 | `src/limits.js` | Limites anti-spam, quotas, plafonds des tables, mode manif renforcé |
 | `src/reports/` | Signalements : modèle et vue publique, stockage, votes « Plus là » et fiabilité |
-| `src/announcements/`, `src/events/` | Annonces et agenda (stockage, création) |
+| `src/announcements/`, `src/events/` | Annonces et agenda (stockage, création, import d'un agenda partenaire) |
 | `src/orgas/` | Orgas : clés, parrainage, journal, noms réservés, demandes d'accès |
 | `src/legal.js`, `src/orders.js` | Annuaire des legal teams, arrêtés et restrictions |
 | `src/refuges.js` | Lieux de repli des orgas : enregistrement, créneaux d'ouverture, logos validés par l'admin, publication des lieux ouverts (`live/repli.json`) |

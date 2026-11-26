@@ -12,6 +12,13 @@ async function loadSettings() {
   $('#setAdminLabel').value = s.adminLabel || '';
   $('#setAndroidTest').value = s.androidTest || '';
   $('#setPlayStore').value = s.playStore || '';
+  const f = s.feed || {};
+  $('#setFeedBase').value = f.base || ''; $('#setFeedLabel').value = f.label || '';
+  $('#setFeedEvery').value = f.every || ''; $('#setFeedEvery').placeholder = df.feedEvery;
+  $('#setFeedDays').value = f.days || ''; $('#setFeedDays').placeholder = df.feedDays;
+  $('#setFeedOff').checked = !!f.off;
+  $('#setFeedLabel').placeholder = (f.base || '').replace(/^https:\/\//, '') || 'exemple.org';
+  renderFeedState(setData.feed);
   const box = $('#setCats'); box.textContent = '';
   for (const c of setData.categories) {
     const on = document.createElement('label'); on.className = 'check';
@@ -32,10 +39,29 @@ $('#setForm').addEventListener('submit', async e => {
   const body = { cats, alertRadius: num('#setRadius'), nearKm: num('#setNear'), adminLabel: $('#setAdminLabel').value.trim(), androidTest: $('#setAndroidTest').value.trim(), playStore: $('#setPlayStore').value.trim() };
   if ($('#setBanner').value.trim()) body.banner = { text: $('#setBanner').value, from: $('#setFrom').value, to: $('#setTo').value };
   if (num('#setLat') != null && num('#setLng') != null) body.view = { lat: num('#setLat'), lng: num('#setLng'), zoom: num('#setZoom') ?? 12 };
+  // Agenda d'un site partenaire : sans adresse, la clé n'est pas envoyée, donc l'import s'éteint
+  const feedBase = $('#setFeedBase').value.trim();
+  if (feedBase) body.feed = { base: feedBase, label: $('#setFeedLabel').value.trim(), every: num('#setFeedEvery'), days: num('#setFeedDays'), off: $('#setFeedOff').checked };
   if ($('#setTo').value && $('#setFrom').value && $('#setTo').value < $('#setFrom').value) return alertMsg('La date de fin est avant la date de début.');
   try { await api('/api/admin/settings', { method: 'POST', body: JSON.stringify(body) }); $('#setMsg').textContent = 'Enregistré à ' + hhmm(Date.now()) + '.'; loadSettings(); }
   catch (err) { alertMsg(err.message); }
 });
+// État du dernier passage de l'import, et lecture à la demande
+function renderFeedState(st) {
+  const box = $('#setFeedState'); if (!box) return;
+  if (!st) { box.textContent = ''; return; }
+  if (!st.on) { box.textContent = st.count ? `Import coupé. ${st.count} événement(s) importé(s) encore affiché(s).` : 'Import éteint.'; return; }
+  const l = st.last;
+  box.textContent = `${st.count} événement(s) importé(s) en ce moment.` + (!l ? ' Première lecture au prochain passage.'
+    : l.ok ? ` Dernière lecture à ${hhmm(l.at)} : ${l.seen} repris de leur carte, ${l.added} ajouté(s) ou mis à jour, ${l.gone} retiré(s).`
+    : ` Dernière lecture à ${hhmm(l.at)} : échec (${l.error}).`);
+}
+$('#setFeedNow').onclick = async () => {
+  const b = $('#setFeedNow'); b.disabled = true; b.textContent = 'Lecture…';
+  try { renderFeedState((await api('/api/admin/feed', { method: 'POST', body: '{}' })).feed); loadAgenda?.(); }
+  catch (e) { alertMsg(e.message); }
+  b.disabled = false; b.textContent = 'Lire maintenant';
+};
 $('#tabSettings').onclick = () => { showTab('Settings'); loadSettings(); };
 
 // ---- L'instance : nom, contact, liens, marque, hébergeur (vide = valeur du serveur) ----

@@ -354,6 +354,19 @@ textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line
         <label>Fiche Google Play<input id="setPlayStore" type="url" placeholder="https://play.google.com/store/apps/details?id=…" style="width:100%"></label>
       </section>
       <section class="card">
+        <h2>Agenda d’un site partenaire</h2>
+        <p class="fine">Reprend automatiquement les mobilisations annoncées sur la carte d’un site partenaire, au format « 17 octobre » (<code>/api/lieux</code>, <code>/api/actions</code>, <code>/data/sites.json</code>). Vide : rien n’est importé. Seuls les manifs, blocages et rassemblements sont repris ; les ronds-points et les stations-service restent chez eux. Chaque événement importé affiche sa source et un lien vers la carte d’origine, et n’est jamais marqué « vérifié ». Un événement retiré ici ne revient pas.</p>
+        <label>Adresse du site (https)<input id="setFeedBase" type="url" placeholder="https://exemple.org" style="width:100%"></label>
+        <label>Nom affiché sur les événements<input id="setFeedLabel" type="text" maxlength="60" placeholder="exemple.org" style="width:100%"></label>
+        <div class="controls">
+          <label>Relire toutes les<input id="setFeedEvery" type="number" min="10" max="240" style="width:90px"> min</label>
+          <label>Reprendre les<input id="setFeedDays" type="number" min="1" max="60" style="width:90px"> jours à venir</label>
+        </div>
+        <label class="check"><input id="setFeedOff" type="checkbox"> Couper l’import sans effacer l’adresse</label>
+        <p class="fine" id="setFeedState"></p>
+        <div class="controls"><button type="button" id="setFeedNow" class="secondary">Lire maintenant</button></div>
+      </section>
+      <section class="card">
         <h2>Types de signalement</h2>
         <p class="fine">Décoche pour retirer un type du bouton « Signaler ». Durée : en minutes (de 5 à 1440).</p>
         <div class="cat-table" id="setCats"></div>

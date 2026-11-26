@@ -20,6 +20,7 @@ const { listEvents, evView, getEvent, EVENT_KEEP, dropEvent, saveEvent } = requi
 const { mobsToPublish, cleanMob } = require('../mobs');
 const { ordersAll, orderView, ORDER_KINDS, createOrder, approveOrder, dropOrder } = require('../orders');
 const { orgaLog } = require('../orgas/log');
+const { feedTick, feedState, feedCfg, EVERY_DEF, DAYS_DEF } = require('../events/import');
 const { send, readJson } = require('../http/respond');
 const { setMeta, q, getMeta, tx } = require('../db');
 const { parisDay } = require('../time');
@@ -27,8 +28,17 @@ const { parisDay } = require('../time');
 async function adminPublicationRoutes(req, res, url, pathname) {
   // --- Réglages modifiables (bandeau, vue d'ouverture, catégories, seuils) ---
   if (req.method === 'GET' && pathname === '/api/admin/settings')
-    return send(res, 200, { settings: settings(), defaults: { event: instance().event, center: CENTER, zoom: ZOOM, alertRadius: 300, nearKm: 10, ttl: BASE_TTL },
+    return send(res, 200, { settings: settings(), feed: feedState(),
+      defaults: { event: instance().event, center: CENTER, zoom: ZOOM, alertRadius: 300, nearKm: 10, ttl: BASE_TTL, feedEvery: EVERY_DEF, feedDays: DAYS_DEF },
       categories: activeCategories().map(c => ({ id: c.id, label: c.label, glyph: c.glyph, group: c.group, ttl: c.ttl, base: BASE_TTL[c.id], off: !!c.off })) });
+  // --- Agenda d'un site partenaire : lecture à la demande (le reste du temps, la boucle de ménage s'en charge) ---
+  if (req.method === 'POST' && pathname === '/api/admin/feed') {
+    if (!feedCfg()) return send(res, 400, { error: 'Aucune adresse de site partenaire réglée, ou import coupé.' });
+    await feedTick(Date.now(), true);
+    const st = feedState();
+    orgaLog({ id: 'admin', label: adminLabel() }, 'agenda partenaire relu', { detail: st.last && st.last.ok ? `${st.last.added} ajouté(s), ${st.last.gone} retiré(s)` : (st.last && st.last.error) || '' });
+    return send(res, 200, { feed: st });
+  }
   if (req.method === 'POST' && pathname === '/api/admin/settings') {
     const s = cleanSettings(await readJson(req, 8192));
     saveSettings(s);
