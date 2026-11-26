@@ -32,8 +32,8 @@ function quota(key, max, windowMs, now = Date.now()) {
   q('INSERT OR REPLACE INTO quota(k,t,n) VALUES(?,?,?)').run(key, cur.t, cur.n + 1);
   return true;
 }
-// Limites des orgas (hors admin) : vérifications par 5 min, annonces urgentes par heure, annonces et événements par jour
-const ORGA_LIMITS = { verify: Number(process.env.ORGA_VERIFY_MAX) || 30, urgentPerHour: Number(process.env.ORGA_URGENT_MAX) || 3, annPerDay: 30, eventsPerDay: 20 };
+// Limites des orgas (hors admin) : vérifications et signalements par 5 min, annonces urgentes par heure, annonces et événements par jour
+const ORGA_LIMITS = { verify: Number(process.env.ORGA_VERIFY_MAX) || 30, urgentPerHour: Number(process.env.ORGA_URGENT_MAX) || 3, annPerDay: 30, eventsPerDay: 20, reports: Number(process.env.ORGA_REPORT_MAX) || 20 };
 // Vrai si ce téléphone ET cette IP sont sous leurs limites.
 function allow(dev, ip, kind, now) {
   const rep = kind === 'report', cur = q('SELECT t, reports, votes FROM rate WHERE k=?').get('ip:' + ip);

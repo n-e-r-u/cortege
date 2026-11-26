@@ -38,7 +38,7 @@ function orgaOf(req) {
   // Une orga peut avoir plusieurs appareils : une clé principale (hash) et des clés d'appareils supplémentaires (keys)
   const o = readOrgas().find(o => keyEq(h, o.hash) || (o.keys || []).some(x => keyEq(h, x)));
   // Période d'essai : trial ; « parrainée » = invitée par une autre orga, surveillance renforcée jusqu'à sa confirmation
-  if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true, sponsored: o.sponsored === true && o.trial === true, by: o.by || null };
+  if (o) return { id: o.id, label: o.label, admin: false, trial: o.trial === true, sponsored: o.sponsored === true && o.trial === true, by: o.by || null, kh: h };
   // Clé admin et clés écrites dans les réglages du serveur (choisies par une personne) : le verrou s'applique
   if (keyLocked(req)) return null;
   if (ADMIN_KEY && keyEq(k, ADMIN_KEY)) return { id: 'admin', label: adminLabel(), admin: true, trial: false };

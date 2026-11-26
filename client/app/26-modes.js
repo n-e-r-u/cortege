@@ -45,6 +45,7 @@
   async function wipeAll() {
     document.querySelectorAll('[data-wipe] b').forEach(b => (b.textContent = t('Effacement…')));
     try { await Promise.race([pushDisable(), new Promise(r => setTimeout(r, 1500))]); } catch {}
+    try { await orgaRevoke(); } catch {}
     try { localStorage.clear(); } catch {}
     try { sessionStorage.clear(); } catch {}
     // Attend la fin de la suppression (bloquée tant qu'une connexion reste ouverte : 1,5 s au plus avant de quitter la page)

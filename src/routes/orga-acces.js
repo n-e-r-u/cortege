@@ -6,7 +6,7 @@ const { banUntil, newInvite, SPONSOR, orgaReady, DEVICE_MS } = require('../orgas
 const { NEXT } = require('./next');
 const { MIN } = require('../config');
 const { annAll, annView } = require('../announcements/store');
-const { newCode, codeHash } = require('../orgas/recovery');
+const { newCode, codeHash, validCode } = require('../orgas/recovery');
 const { mobsAll } = require('../settings');
 const { labelClash } = require('../orgas/names');
 const { orgaLog } = require('../orgas/log');
@@ -16,7 +16,7 @@ const { quota } = require('../limits');
 const { readOrgas, writeOrgas } = require('../orgas/store');
 const { send, readJson } = require('../http/respond');
 const { orgaBoard, remindSet, remindDrop } = require('../orgas/board');
-const { sha, withLock } = require('../util');
+const { sha, withLock, keyEq } = require('../util');
 
 // État de l'accès, pour l'espace orga et l'écran medic : code de secours présent, dernière récupération (14 jours),
 // et rappel la veille et le jour d'une mobilisation tant qu'il n'y a ni code de secours ni deuxième appareil
@@ -38,11 +38,31 @@ async function orgaAccesRoutes(req, res, url, pathname, orga) {
   if (req.method === 'POST' && pathname === '/api/orga/recovery') {
     const me = readOrgas().find(x => x.id === orga.id);
     if (!me) return send(res, 400, { error: 'Pas possible pour un accès défini par l’admin dans les réglages du serveur.' });
+    // Avec un code déjà créé, il faut le présenter : une clé volée seule ne peut pas le remplacer (et mettre l'orga dehors)
+    const b = await readJson(req);
+    if (me.rec && !(validCode(b.code) && keyEq(me.rec, codeHash(b.code)))) return send(res, 409, { error: 'Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation.', needCode: true });
     if (!quota('rec:' + orga.id, 5, 60 * MIN)) return send(res, 429, { error: 'Trop de codes demandés, réessaie plus tard.' });
     const rec = newCode();
     withLock(() => { const l = readOrgas().slice(), i = l.findIndex(x => x.id === orga.id); if (i >= 0) { l[i] = { ...l[i], rec: codeHash(rec) }; writeOrgas(l); } });
     orgaLog(orga, 'code de secours créé');
     return send(res, 200, { rec });
+  }
+
+  // Couper des appareils : sans option, la clé de CE téléphone ; { others: true }, tous les AUTRES (téléphone perdu ou saisi).
+  // Le code de secours reste valable : une clé coupée est remplacée par une clé que personne ne connaît, pas par un accès vide.
+  if (req.method === 'POST' && pathname === '/api/orga/revoke') {
+    const b = await readJson(req);
+    const dead = () => sha(crypto.randomBytes(18).toString('base64url'));
+    const out = withLock(() => {
+      const l = readOrgas().slice(), i = l.findIndex(x => x.id === orga.id);
+      if (i < 0 || !orga.kh) return false;
+      const o = l[i], all = [o.hash, ...(o.keys || [])].filter(Boolean);
+      const left = b.others === true ? all.filter(k => keyEq(k, orga.kh)) : all.filter(k => !keyEq(k, orga.kh));
+      l[i] = { ...o, hash: left[0] || dead(), keys: left.slice(1), devInv: undefined }; writeOrgas(l); return true;
+    });
+    if (!out) return send(res, 400, { error: 'Pas possible pour un accès défini par l’admin dans les réglages du serveur.' });
+    orgaLog(orga, b.others === true ? 'autres appareils coupés' : 'appareil coupé');
+    return send(res, 200, { ok: true });
   }
 
   // Tableau de bord (« Mon orga ») : chiffres tirés du journal, prochains rendez-vous

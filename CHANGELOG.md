@@ -2,6 +2,12 @@
 
 Versions : **majeure** (3.0) pour un gros changement visible ou qui casse l'existant, **mineure** (2.1, 2.2…) pour de nouvelles fonctions, **correctif** (2.1.1) pour une réparation sans nouveauté.
 
+## 2.24.5
+
+- **Accès des orgas renforcés** : une orga peut couper elle-même la clé d'un téléphone perdu ou saisi (bouton « Couper tous mes autres appareils », et « Quitter le mode orga » ou « Tout effacer » coupent la clé de ce téléphone). Un nouveau code de secours demande l'actuel. L'admin voit quand un appareil est ajouté ou un code de secours utilisé.
+- **Orgas confirmées** : un point vérifié par une orga ne peut être retiré que par elle ou par l'admin, un plafond limite les signalements d'une orga à 20 par 5 minutes, et un numéro de legal team est toujours validé par l'admin. Dans le SMS d'interpellation, l'annuaire vérifié à moins de 30 km passe avant un numéro publié par une orga.
+- Merci à [22eme-Arkane](https://github.com/22eme-Arkane) pour deux signalements de sécurité privés, avec leur analyse et leurs correctifs.
+
 ## 2.24.4
 
 - **Activité publique** (`/api/activity`) : le total suivait une règle moins stricte que les régions et était publié dès le premier signalement. Hors des régions listées, rien n'est plus compté sous cinq signalements : ni le total, ni le total moins les régions ne trahissent une poignée de points.

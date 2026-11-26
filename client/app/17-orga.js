@@ -9,9 +9,13 @@
     const body = await res.json().catch(() => ({}));
     // La clé n'est oubliée que si le serveur dit qu'elle n'existe plus : une action interdite ou « trop d'essais » la laisse en place
     if (res.status === 403 && body.gone) { setOrga(null); keySet('orga', null); }
-    if (!res.ok) throw new Error(body.error || t('Action impossible.'));
+    if (!res.ok) throw Object.assign(new Error(body.error || t('Action impossible.')), body.needCode ? { needCode: true } : {});
     return body;
   }
+  // Coupe côté serveur la clé de ce téléphone (ou tous les autres appareils) avant de l'effacer ici ; 1,5 s au plus, sans bloquer s'il n'y a pas de réseau
+  const orgaRevoke = (others = false) => !orgaKey() ? Promise.resolve() : Promise.race([
+    orgaFetch('/api/orga/revoke', { method: 'POST', body: JSON.stringify(others ? { others: true } : {}) }).catch(() => {}),
+    new Promise(r => setTimeout(r, 1500))]);
   // Espace orga : sa fiche et son script (public/app-orga.js) ne sont chargés que sur un téléphone qui a une clé d'orga
   let orgaMod = null;
   function setOrga(o) {
@@ -64,7 +68,7 @@
   // Pas de réseau et script pas encore gardé sur le téléphone : l'erreur est dite, l'accès revient à la prochaine ouverture
   function orgaPart() {
     return loadPart('orga', () => ({ $, el, t, tn, toast, map, I18N, MIN, CAT, cfg, IOS_WARN, iosEvict, keySet, showRec, closeReport, closeSheets, qrSvg, left, fmtHour, fmtExp, dist, reports,
-      orgaFetch, setOrga, setFollow, sync, resync() { etag = null; sync(); }, openEventForm, addSheet,
+      orgaFetch, orgaRevoke, setOrga, setFollow, sync, resync() { etag = null; sync(); }, openEventForm, addSheet,
       get orga() { return orga; }, get me() { return me; }, get pushSub() { return pushSub; }, get announcements() { return announcements; }, get evCache() { return evCache; } }))
       .then(m => { orgaMod = m; return m; }, () => { throw new Error(t('Pas de réseau : l’espace orga se chargera quand ça capte.')); });
   }

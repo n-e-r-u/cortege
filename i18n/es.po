@@ -5316,3 +5316,32 @@ msgstr "Sin red: el mapa de esta zona no está en el teléfono."
 
 msgid "Arrêter l’itinéraire"
 msgstr "Detener el itinerario"
+
+# --- textes à traduire ---
+#: client/parts/orga.js
+msgid "Saisis ton code de secours actuel pour en créer un nouveau"
+msgstr ""
+
+#: client/parts/orga.js
+msgid "Confirmer : les autres appareils perdront l’accès"
+msgstr ""
+
+#: client/parts/orga.js
+msgid "Couper tous mes autres appareils"
+msgstr ""
+
+#: client/parts/orga.js
+msgid "Les autres appareils n’ont plus accès"
+msgstr ""
+
+#: src/routes/orga-acces.js
+msgid "Pour créer un nouveau code, saisis le code de secours actuel. Tu l’as perdu : demande à l’admin ou à ta marraine une nouvelle invitation."
+msgstr ""
+
+#: src/routes/orga-publication.js
+msgid "Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer."
+msgstr ""
+
+#: src/routes/reports-create.js
+msgid "Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes."
+msgstr ""

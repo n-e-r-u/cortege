@@ -9,6 +9,7 @@ const { newCode, validCode, codeHash } = require('../orgas/recovery');
 const M = require('../medic');
 const { clientHash } = require('../privacy');
 const { orgaLog } = require('../orgas/log');
+const { abuseLog } = require('../moderation');
 const { bump } = require('../limits');
 const { readOrgas, writeOrgas } = require('../orgas/store');
 const { send, readJson } = require('../http/respond');
@@ -42,6 +43,7 @@ async function orgaRoutes(req, res, url, pathname) {
     if (!o) { const m = M.redeem(h, key); if (m) { o = m.o; device = m.device; rec = m.rec || null; medic = true; } }
     if (!o) { keyFailed(req); return send(res, 404, { error: 'Lien expiré ou déjà utilisé. Demande-en un nouveau.' }); }
     orgaLog({ id: (medic ? 'm:' : '') + o.id, label: o.label }, device ? 'appareil ajouté' : 'invitation utilisée');
+    if (device) abuseLog('orga : appareil ajouté', { ref: (medic ? 'm:' : '') + o.id });
     return send(res, 200, { key, label: o.label, device, ...(medic ? { medic: true } : {}), ...(rec ? { rec } : {}) });
   }
 
@@ -63,6 +65,7 @@ async function orgaRoutes(req, res, url, pathname) {
     if (!o) { const t = M.readMedics().find(x => x.rec && x.hash && keyEq(x.rec, h)); if (t) { o = M.editTeam(t.id, cur => cur.rec && keyEq(cur.rec, h) ? renew(cur, MEDIC_DEVICE_MAX) : null); medic = !!o; if (o && cut) M.forgetTeam(o.id); } }
     if (!o) { keyFailed(req); return send(res, 404, { error: 'Code de secours inconnu ou déjà utilisé.' }); }
     orgaLog({ id: (medic ? 'm:' : '') + o.id, label: o.label }, 'accès récupéré (code de secours)', { detail: cut ? 'autres appareils coupés' : 'appareil ajouté' });
+    abuseLog('orga : code de secours utilisé', { ref: (medic ? 'm:' : '') + o.id });
     return send(res, 200, { key, label: o.label, rec, cut, ...(medic ? { medic: true } : {}) });
   }
   

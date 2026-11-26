@@ -73,7 +73,11 @@
       for (const a of g.items) other.append(legalRow(a, true));
     }
   }
-  const nearestLegal = () => legalGroups()[0]?.items[0] || null;
+  // L'annuaire vérifié à moins de 30 km passe avant un numéro publié par une orga (filet : ce numéro part dans le SMS d'interpellation)
+  const nearestLegal = () => {
+    const groups = legalGroups(), dir = groups.flatMap(g => g.items).filter(x => x.dir).sort((a, b) => a.d - b.d)[0];
+    return dir && dir.d < 30000 ? dir : groups[0]?.items[0] || null;
+  };
   $('#rgClose').onclick = () => closeSheets();
 
   // ---- Partage par QR code (généré sur le téléphone, marche hors ligne) ----

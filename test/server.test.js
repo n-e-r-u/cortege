@@ -752,6 +752,46 @@ test('orgas : en essai, ni coche « vérifié » ni annonce visible avant valida
   assert.equal((await admin('/api/admin/announcements', { kind: 'info', text: 'Zone large admin', ...place(), radiusKm: 30, minutes: 30 })).j.r, 30);
 });
 
+test('orgas confirmées : clé coupée par l’orga, retrait réservé à qui a vérifié, plafond de signalements, numéro de legal team validé', async () => {
+  const confirmed = async label => {
+    const o = await orgaFrom((await admin('/api/admin/orgas', { label })).j.invite);
+    const id = (await fetch(B + '/api/admin/orgas', { headers: { 'x-admin-key': ADMIN } }).then(x => x.json())).orgas.find(x => x.label === label).id;
+    await admin(`/api/admin/orgas/${id}/trial`, { trial: false });
+    return o;
+  };
+  const me = key => fetch(B + '/api/orga/me', { headers: { 'x-orga-key': key } }).then(r => r.status);
+  const X = await confirmed('Collectif Un 2245'), Y = await confirmed('Collectif Deux 2245');
+  // Un point vérifié par une orga ne peut pas être retiré par une autre (409), mais l'est par elle
+  const r = (await post('/api/reports', { cat: 'police', ...place() })).j;
+  assert.equal((await asOrga(Y.key, `/api/reports/${r.id}/verify`, {})).s, 200);
+  assert.equal((await asOrga(X.key, `/api/reports/${r.id}/remove`, {})).s, 409, 'vérifié par une autre orga');
+  assert.equal((await asOrga(Y.key, `/api/reports/${r.id}/remove`, {})).s, 200);
+  // Numéro de legal team : en attente d'abord, même pour une orga confirmée
+  const lc = await asOrga(X.key, '/api/announcements', { kind: 'legal', phone: '0611223388', city: 'Confirmeville', ...place() });
+  assert.equal(lc.s, 201); assert.equal(lc.j.pending, true, 'numéro d’une orga confirmée en attente de validation');
+  assert.equal((await admin(`/api/admin/announcements/${lc.j.id}/approve`, {})).s, 200);
+  // Un deuxième appareil coupe le premier, puis se coupe lui-même ; le code de secours rend l'accès
+  const dev = await asOrga(X.key, '/api/orga/device', {});
+  const X2 = await orgaFrom(dev.j.invite);
+  assert.equal(X2.device, true); assert.equal(await me(X.key), 200); assert.equal(await me(X2.key), 200);
+  assert.equal((await asOrga(X2.key, '/api/orga/revoke', { others: true })).s, 200);
+  assert.equal(await me(X.key), 403, 'l’autre appareil est coupé'); assert.equal(await me(X2.key), 200, 'celui-ci garde son accès');
+  // Une clé seule ne remplace pas le code de secours : il faut présenter l'actuel
+  const noCode = await asOrga(X2.key, '/api/orga/recovery', {});
+  assert.equal(noCode.s, 409); assert.equal(noCode.j.needCode, true);
+  assert.equal((await asOrga(X2.key, '/api/orga/recovery', { code: 'AAAA-AAAA-AAAA-AAAA-AAAA' })).s, 409);
+  const rec = await asOrga(X2.key, '/api/orga/recovery', { code: X.rec });
+  assert.equal(rec.s, 200); assert.ok(rec.j.rec && rec.j.rec !== X.rec);
+  assert.equal((await asOrga(X2.key, '/api/orga/revoke', {})).s, 200);
+  assert.equal(await me(X2.key), 403, 'clé de ce téléphone coupée');
+  const back = await post('/api/recover', { code: rec.j.rec });
+  assert.equal(back.s, 200); assert.equal(await me(back.j.key), 200, 'le code de secours rend l’accès');
+  // Plafond par orga : 21 signalements depuis 21 téléphones, 20 acceptés
+  const codes = [];
+  for (let i = 0; i < 21; i++) codes.push((await post('/api/reports', { cat: 'police', ...place() }, phone(), { 'x-orga-key': Y.key })).s);
+  assert.equal(codes.filter(c => c === 201).length, 20); assert.equal(codes[20], 429);
+});
+
 test('cortège : tête qui suit (avec sa trace), queue, et position en direct des orgas confirmées', async () => {
   const p = place(), h1 = (await post('/api/reports', { cat: 'cortege', ...p })).j;
   const h2 = (await post('/api/reports', { cat: 'cortege', lat: p.lat + 0.002, lng: p.lng })).j; // ~220 m plus loin

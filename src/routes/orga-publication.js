@@ -35,8 +35,9 @@ async function orgaPublicationRoutes(req, res, url, pathname, orga) {
       abuseLog('orga en rafale', { ref: orga.id });
       return send(res, 429, { error: `${ORGA_LIMITS.urgentPerHour} annonces urgentes par heure au maximum. Publie celle-ci en « info ».` });
     }
-    // Période d'essai : toute annonce (info ou numéro de legal team) n'est visible qu'après validation par l'admin
-    const out = createAnnouncement(b, orga.label, orga.admin, orga.trial, orga.admin ? 'admin' : orga.id);
+    // Période d'essai : toute annonce (info ou numéro de legal team) n'est visible qu'après validation par l'admin.
+    // Un numéro de legal team est toujours validé par l'admin, même pour une orga confirmée (il part dans le SMS d'interpellation).
+    const out = createAnnouncement(b, orga.label, orga.admin, orga.trial || (!orga.admin && b.kind === 'legal'), orga.admin ? 'admin' : orga.id);
     if (out[0] === 201) orgaLog(orga, out[1].pending ? (out[1].kind === 'legal' ? 'legal team (en attente)' : 'annonce (en attente)') : 'annonce', { lat: out[1].lat, lng: out[1].lng, ref: out[1].id,
       detail: (out[1].kind === 'legal' ? out[1].phone + ' ' : '') + (out[1].level === 'urgent' ? '[urgent] ' : '') + (out[1].national ? '[nationale] ' : '') + (out[1].text || '') });
     return send(res, ...out);
@@ -124,6 +125,11 @@ async function orgaPublicationRoutes(req, res, url, pathname, orga) {
         orgaLog(orga, 'retrait (essai)', { r });
         if (!r.ver && r.down > r.up) { trashReport(r, orga); return [200, { removed: true }]; }
         saveReport(r); return [200, { ...publicView(r), trial: true }];
+      }
+      // Un point vérifié par une autre orga : seule elle (ou l'admin) peut le retirer. 409 et non 403 : le téléphone oublie sa clé à chaque 403.
+      if (r.ver && r.ver !== orga.label && !orga.admin) {
+        orgaLog(orga, 'retrait refusé (vérifié par une autre orga)', { r });
+        return [409, { error: 'Ce point a été vérifié par une autre orga : demande-lui, ou à l’admin, de le retirer.' }];
       }
       // Garde-fou : des retraits en rafale bloquent le retrait pour cette orga quelques minutes
       if (!orga.admin && !bump('orm:' + orga.id, 'report', ORGA_REMOVE_MAX, Date.now())) {

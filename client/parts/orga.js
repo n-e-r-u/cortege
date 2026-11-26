@@ -5,7 +5,7 @@
 // (position du téléphone, abonnement aux notifications, annonces affichées) se lit par core.me, core.pushSub, core.announcements.
 window.cortegeOrga = function (core) {
   const { $, el, t, tn, toast, map, I18N, MIN, CAT, cfg, IOS_WARN, iosEvict, keySet, showRec, closeReport, closeSheets, qrSvg, left, fmtHour, fmtExp, dist, reports,
-    orgaFetch, setOrga, setFollow, sync, resync, openEventForm } = core;
+    orgaFetch, orgaRevoke, setOrga, setFollow, sync, resync, openEventForm } = core;
   let orga = core.orga;   // l'orga de ce téléphone : tenue à jour par onOrga, appelé par le reste de l'appli à chaque changement
   let beacon = null;      // position partagée en direct : { role, until, timer, lock }
   core.addSheet(window.cortegeHtml.orga);
@@ -90,6 +90,7 @@ window.cortegeOrga = function (core) {
     if (me.sponsored) $('#orgaSponsored').textContent = `Orga parrainée par ${me.sponsor || 'une autre orga'} : surveillance renforcée jusqu’à ta confirmation. « Vérifier » compte comme une confirmation forte (le point reste contestable), 5 retraits par 5 minutes et 3 annonces par jour au maximum. Après 7 jours et 10 actions sans incident, ${me.sponsor || 'ta marraine'} ou l’admin pourra te confirmer.`;
     // Appareils
     $('#btnAddDevice').hidden = !me.canAddDevice;
+    $('#btnCutOthers').hidden = !me.canAddDevice || (me.devices || 1) < 2;
     $('#deviceState').textContent = me.canAddDevice
       ? t('{n} appareil(s) ont accès à cet espace orga (5 au plus). Ajouter un appareil crée un lien valable 10 minutes, à ouvrir sur l’autre appareil (ordinateur, deuxième téléphone…). Cet appareil-ci garde son accès.', { n: me.devices || 1 })
       : t('Ton accès est défini directement dans les réglages du serveur : demande à l’admin pour un autre appareil.');
@@ -188,7 +189,26 @@ window.cortegeOrga = function (core) {
     catch (e) { toast(e.message); }
   };
   $('#btnOrgaRec').onclick = async () => {
-    try { const r = await orgaFetch('/api/orga/recovery', { method: 'POST', body: '{}' }); showRec(r.rec, 'orga', () => $('#btnOrga').click()); }
+    const ask = body => orgaFetch('/api/orga/recovery', { method: 'POST', body: JSON.stringify(body) });
+    try {
+      let r;
+      try { r = await ask({}); }
+      catch (e) {
+        // Un code existe déjà : il faut le saisir (une clé volée seule ne peut pas le remplacer)
+        if (!e.needCode) throw e;
+        const code = window.prompt(t('Saisis ton code de secours actuel pour en créer un nouveau'));
+        if (!code) return;
+        r = await ask({ code });
+      }
+      showRec(r.rec, 'orga', () => $('#btnOrga').click());
+    } catch (e) { toast(e.message); }
+  };
+  // Téléphone perdu ou saisi : coupe tous les autres appareils, celui-ci garde son accès
+  $('#btnCutOthers').onclick = async () => {
+    const b = $('#btnCutOthers');
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = t('Confirmer : les autres appareils perdront l’accès'); setTimeout(() => { delete b.dataset.armed; b.textContent = t('Couper tous mes autres appareils'); }, 5000); return; }
+    delete b.dataset.armed; b.textContent = t('Couper tous mes autres appareils');
+    try { await orgaFetch('/api/orga/revoke', { method: 'POST', body: JSON.stringify({ others: true }) }); toast(t('Les autres appareils n’ont plus accès')); $('#btnOrga').click(); }
     catch (e) { toast(e.message); }
   };
   $('#orClose').onclick = () => closeSheets();
@@ -301,7 +321,7 @@ window.cortegeOrga = function (core) {
   $('#btnOrgaLogout').onclick = () => {
     const b = $('#btnOrgaLogout');
     if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = t('Confirmer : l’accès sera perdu sur cet appareil (il faudra une nouvelle invitation)'); setTimeout(() => { delete b.dataset.armed; b.textContent = t('Quitter le mode orga sur ce téléphone'); }, 6000); return; }
-    remindOff().finally(() => { keySet('orga', null); setOrga(null); });
+    remindOff().catch(() => {}).then(() => orgaRevoke()).finally(() => { keySet('orga', null); setOrga(null); });
     closeSheets(); toast('Mode orga désactivé sur ce téléphone');
   };
 

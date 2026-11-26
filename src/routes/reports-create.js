@@ -18,7 +18,7 @@ const { pushNearLater } = require('../push');
 const { q, tx } = require('../db');
 const { round, distM } = require('../util');
 const { send, readJson } = require('../http/respond');
-const { strictUntil, allow } = require('../limits');
+const { strictUntil, allow, bump, ORGA_LIMITS } = require('../limits');
 const { toReport, addTrail, addNote, publicView, authorOf, bearing45 } = require('../reports/model');
 
 async function reportsCreateRoutes(req, res, url, pathname) {
@@ -43,6 +43,8 @@ async function reportsCreateRoutes(req, res, url, pathname) {
       const t0 = Math.min(now, Number(b.t) || now);
       if (t0 + ttl <= now) return [410, { error: 'Signalement trop ancien, il n’a pas été publié.', stale: true }];
       if (pausedUntil(now)) return [503, { error: 'Les signalements sont en pause quelques minutes (afflux de faux signalements). Réessaie bientôt.' }];
+      // Une orga confirmée publie des points vérifiés d'office : plafond par orga, quel que soit le téléphone ou le réseau
+      if (sure && !orga.admin && !bump('orr:' + orga.id, 'report', ORGA_LIMITS.reports, now)) { abuseLog('orga en rafale', { lat, lng, ref: orga.id }); return [429, { error: 'Trop de signalements d’orga d’un coup. Réessaie dans quelques minutes.' }]; }
       if (!allow(dev, ipH, 'report', now)) { abuseOnce('signalements en rafale', dev, RATE.windowMs, { lat, lng }); return [429, { error: 'Trop de signalements d’un coup. Réessaie dans quelques minutes.' }]; }
       // Après la limite d'envois : un identifiant inventé à chaque requête refusée ne remplit pas la table
       const age = deviceAge(dev, now);

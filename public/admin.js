@@ -265,6 +265,8 @@ $('#wipeForm').addEventListener('submit', async e => {
 // ---- Abus ----
 const ABUSE_HELP = {
   'orga en rafale': 'une orga a été bloquée : trop de vérifications, de retraits ou d’annonces urgentes d’un coup (regarde son journal dans Orgas)',
+  'orga : appareil ajouté': 'une orga (ou une équipe medic) a ajouté un appareil : vérifie dans son journal que c’est elle',
+  'orga : code de secours utilisé': 'un code de secours a servi à récupérer un accès : vérifie dans le journal de l’orga que c’est elle',
   'abonnements en rafale': 'trop d’abonnements aux notifications depuis un même réseau : refusés',
   'point contesté': 'points devenus « contestés » par des « Plus là »',
   '« Plus là » en rafale': 'téléphones dont les « Plus là » ont été ignorés (trop d’un coup)',
